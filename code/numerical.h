@@ -21,5 +21,6 @@ mp_obj_t numerical_min(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_max(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_argmin(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_argmax(size_t , const mp_obj_t *, mp_map_t *);
+mp_obj_t numerical_roll(size_t , const mp_obj_t *, mp_map_t *);
 
 #endif

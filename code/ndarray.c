@@ -18,6 +18,7 @@
 #include "py/objtuple.h"
 #include "ndarray.h"
 
+// This function is copied verbatim from objarray.c
 STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
@@ -92,7 +93,17 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         mp_print_str(print, "]");
     }
     // TODO: print typecode
-    mp_print_str(print, ")\n");
+    if(self->data->typecode == NDARRAY_UINT8) {
+        printf(", dtype='uint8')\n");
+    } else if(self->data->typecode == NDARRAY_INT8) {
+        printf(", dtype='int8')\n");
+    } if(self->data->typecode == NDARRAY_UINT16) {
+        printf(", dtype='uint16')\n");
+    } if(self->data->typecode == NDARRAY_INT16) {
+        printf(", dtype='int16')\n");
+    } if(self->data->typecode == NDARRAY_FLOAT) {
+        printf(", dtype='float')\n");
+    } 
 }
 
 void ndarray_assign_elements(mp_obj_array_t *data, mp_obj_t iterable, uint8_t typecode, size_t *idx) {
@@ -127,8 +138,32 @@ mp_obj_t ndarray_copy(mp_obj_t self_in) {
     return MP_OBJ_FROM_PTR(out);
 }
 
+STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR__array_arr, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)}},
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_float)} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);    
+    GET_STR_DATA_LEN(args[1].u_rom_obj, str, str_len);
+    if(memcmp(str, "uint8", 5) == 0) {
+        return NDARRAY_UINT8;
+    } else if(memcmp(str, "uint16", 6) == 0) {
+        return NDARRAY_UINT16;
+    } else if(memcmp(str, "int8", 4) == 0) {
+        return NDARRAY_INT8;
+    } else if(memcmp(str, "int16", 5) == 0) {
+        return NDARRAY_INT16;
+    }
+    return NDARRAY_FLOAT;
+}
+
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 3, true);
+    mp_arg_check_num(n_args, n_kw, 1, 2, true);
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    uint8_t dtype = ndarray_init_helper(n_args, args, &kw_args);
     
     size_t len1, len2=0, i=0;
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
@@ -138,7 +173,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
         len1 = MP_OBJ_SMALL_INT_VALUE(len_in);
     }
 
-    // We have to figure out, whether the first element of the iterable is an iterable
+    // We have to figure out, whether the first element of the iterable is an iterable itself
     // Perhaps, there is a more elegant way of handling this
     mp_obj_iter_buf_t iter_buf1;
     mp_obj_t item1, iterable1 = mp_getiter(args[0], &iter_buf1);
@@ -158,24 +193,24 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     // By this time, it should be established, what the shape is, so we can now create the array
     // set the typecode to float, if the format specifier is missing
     // TODO: this would probably be more elegant with keyword arguments... 
-    uint8_t typecode;
-    if(n_args == 1) {
-        typecode = NDARRAY_FLOAT;
-    } else {
-        typecode = (uint8_t)mp_obj_get_int(args[1]);
-    }
-    ndarray_obj_t *self = create_new_ndarray(len1, (len2 == 0) ? 1 : len2, typecode);
+//    uint8_t typecode;
+//    if(n_args == 1) {
+//        typecode = NDARRAY_FLOAT;
+//    } else {
+//        typecode = (uint8_t)mp_obj_get_int(kw_args[0].u_int);
+ //   }
+    ndarray_obj_t *self = create_new_ndarray(len1, (len2 == 0) ? 1 : len2, dtype);
     iterable1 = mp_getiter(args[0], &iter_buf1);
     i = 0;
     if(len2 == 0) { // the first argument is a single iterable
-        ndarray_assign_elements(self->data, iterable1, typecode, &i);
+        ndarray_assign_elements(self->data, iterable1, dtype, &i);
     } else {
         mp_obj_iter_buf_t iter_buf2;
         mp_obj_t iterable2; 
 
         while ((item1 = mp_iternext(iterable1)) != MP_OBJ_STOP_ITERATION) {
             iterable2 = mp_getiter(item1, &iter_buf2);
-            ndarray_assign_elements(self->data, iterable2, typecode, &i);
+            ndarray_assign_elements(self->data, iterable2, dtype, &i);
         }
     }
     return MP_OBJ_FROM_PTR(self);

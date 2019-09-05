@@ -13,6 +13,7 @@
 
 #include "py/objarray.h" // this can in the future be dropped
 #include "py/binary.h"   // this can in the future be dropped
+#include "py/objstr.h"
 
 #define PRINT_MAX  10
 
@@ -25,12 +26,13 @@ enum NDARRAY_TYPE {
     NDARRAY_INT8 = 'B',
     NDARRAY_UINT16 = 'i', 
     NDARRAY_INT16 = 'I',
-    NDARRAY_FLOAT = 'f'
+    NDARRAY_FLOAT = 'f',
 };
 
 typedef struct _ndarray_obj_t {
     mp_obj_base_t base;
     size_t m, n;
+    size_t len;
     mp_obj_array_t *data;
     size_t bytes;
 } ndarray_obj_t;
