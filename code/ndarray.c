@@ -192,13 +192,6 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     }
     // By this time, it should be established, what the shape is, so we can now create the array
     // set the typecode to float, if the format specifier is missing
-    // TODO: this would probably be more elegant with keyword arguments... 
-//    uint8_t typecode;
-//    if(n_args == 1) {
-//        typecode = NDARRAY_FLOAT;
-//    } else {
-//        typecode = (uint8_t)mp_obj_get_int(kw_args[0].u_int);
- //   }
     ndarray_obj_t *self = create_new_ndarray(len1, (len2 == 0) ? 1 : len2, dtype);
     iterable1 = mp_getiter(args[0], &iter_buf1);
     i = 0;
@@ -273,12 +266,29 @@ typedef struct _mp_obj_ndarray_it_t {
 mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     mp_obj_ndarray_it_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
-    if (self->cur < ndarray->data->len) {
-        mp_obj_t value;
-        // read the current value
-        value = mp_binary_get_val_array(ndarray->data->typecode, ndarray->data->items, self->cur);
-        self->cur += 1;
-        return value;
+    // TODO: in numpy, ndarrays are iterated with respect to the first axis. 
+    size_t iter_end = 0;
+    if((ndarray->m == 1) || (ndarray->n ==1)) {
+        iter_end = ndarray->data->len;
+    } else {
+        iter_end = ndarray->m;
+    }
+    if(self->cur < iter_end) {
+        if(ndarray->m == ndarray->data->len) { // we are have a linear array
+            // read the current value
+            mp_obj_t value;
+            value = mp_binary_get_val_array(ndarray->data->typecode, ndarray->data->items, self->cur);
+            self->cur++;
+            return value;
+        } else { // we have a matrix, return the 
+            ndarray_obj_t *value = create_new_ndarray(1, ndarray->n, ndarray->data->typecode);
+            // copy the memory content here
+            uint8_t *tmp = (uint8_t *)ndarray->data->items;
+            size_t strip_size = ndarray->n * mp_binary_get_size('@', ndarray->data->typecode, NULL);
+            memcpy(value->data->items, &tmp[self->cur*strip_size], strip_size);
+            self->cur++;
+            return value;
+        }
     } else {
         return MP_OBJ_STOP_ITERATION;
     }
@@ -334,3 +344,129 @@ mp_obj_t ndarray_rawsize(mp_obj_t self_in) {
     tuple->items[4] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->data->typecode, NULL));
     return tuple;
 }
+
+// Binary operations
+/*
+STATIC uint8_t upcasting(ndarray_obj_t lhs, ndarray_obj_t rhs) {
+    // returns the upcast typecode
+    // what we have to establish is, whether either of sides has a type code that is 
+    // 'larger' than the other side
+    uint8_t typecode_l, typecode_r;
+    switch(lhs->data->typecode) {
+        case 'b':
+            typecode_l = (0x01 << 0);
+        case 'B':
+            typecode_l = (0x01 << 1);
+        case 'i':
+            typecode_l = (0x01 << 2);
+        case 'I':
+            typecode_l = (0x01 << 3);
+        case 'f':
+            typecode_l = (0x01 << 4);
+    }
+    switch(rhs->data->typecode) {
+        case 'b':
+            typecode_r = (0x01 << 0);
+        case 'B':
+            typecode_r = (0x01 << 1);
+        case 'i':
+            typecode_r = (0x01 << 2);
+        case 'I':
+            typecode_r = (0x01 << 3);
+        case 'f':
+            typecode_r = (0x01 << 4);
+    }
+    // Now we have to collect 25 cases 
+    if((typecode_l | typecode_r) == (0x01 << 0)) { // 2 cases
+        return 'b';
+    } else if((typecode_l | typecode_r) == (0x01 << 1)) { // 2 cases
+        return 'B';
+    } else if((typecode_l | typecode_r) == (0x01 << 2)) { // 2 casaes
+        return 'i';
+    } else if((typecode_l | typecode_r) == (0x01 << 3)) { // 2 cases
+        return 'I';
+    } else if((typecode_l | typecode_r) >= (0x01 << 4)) { // 10 cases
+        return 'f';
+    } else if((typecode_l | typecode_r) == ((0x01 << 0) | (0x01 << 1)) {
+        return 'i';
+    }
+}
+
+mp_obj_t ulab_ndarray_binary_op_helper(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+    // TODO: support scalar operations
+    if (MP_OBJ_IS_TYPE(rhs, &mp_type_int) || MP_OBJ_IS_TYPE(rhs, &mp_type_float)) {
+        return MP_OBJ_NULL; // op not supported
+    } else if(MP_OBJ_IS_TYPE(rhs, &ulab_ndarray_type)) {
+        // At this point, the operands should have the same shape
+        ndarray_obj_t *ol = MP_OBJ_TO_PTR(lhs);
+        ndarray_obj_t *or = MP_OBJ_TO_PTR(rhs);
+        ndarray_obj_t *array;
+        if((ol->m != or->m) || (ol->n != or->n)) {
+            mp_raise_ValueError("operands could not be broadcast together");
+        }
+        // do not convert types, if they are identical
+        // do not convert either, if the left hand side is a float
+        if((ol->data->typecode == or->data->typecode) || ol->data->typecode == NDARRAY_FLOAT) {
+            array = ulab_ndarray_copy(ol);
+        } else {
+            // the types are not equal, we have to do some conversion here
+            if(or->data->typecode == NDARRAY_FLOAT) {
+                array = ulab_ndarray_copy(ol);
+            } else if((ol->data->typecode == NDARRAY_INT16) || (or->data->typecode == NDARRAY_INT16)) {
+                array = create_new_ndarray(ol->m, ol->n, NDARRAY_INT16);
+            } else if((ol->data->typecode == NDARRAY_UINT16) || (or->data->typecode == NDARRAY_UINT16)) {
+                array = create_new_ndarray(ol->m, ol->n, NDARRAY_INT16);
+            }
+        }
+        switch(op) {
+            case MP_BINARY_OP_ADD:
+                for(size_t i=0; i < ol->data->len; i++) {
+
+                }
+                return MP_OBJ_FROM_PTR(array);
+                break;
+            default:
+                break;
+        }
+
+    }
+}
+
+STATIC mp_obj_t ulab_ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+    ndarray_obj_t *ol = MP_OBJ_TO_PTR(lhs);
+    ndarray_obj_t *or = MP_OBJ_TO_PTR(rhs);
+
+    // for in-place operations, we won't need this!!!
+    ndarray_obj_t *array = ulab_ndarray_copy(ol);    
+    switch (op) {
+        case MP_BINARY_OP_EQUAL:
+            if(!MP_OBJ_IS_TYPE(rhs, &ulab_ndarray_type)) {
+                return mp_const_false;
+            } else {
+                // Two arrays are equal, if their shape, typecode, and elements are equal
+                if((ol->m != or->m) || (ol->n != or->n) || (ol->data->typecode != or->data->typecode)) {
+                    return mp_const_false;
+                } else {
+                    size_t i = ol->bytes;
+                    uint8_t *l = (uint8_t *)ol->data->items;
+                    uint8_t *r = (uint8_t *)or->data->items;
+                    while(i) { // At this point, we can simply compare the bytes, the types is irrelevant
+                        if(*l++ != *r++) {
+                            return mp_const_false;
+                        }
+                        i--;
+                    }
+                    return mp_const_true;
+                }
+            }
+            break;
+        case MP_BINARY_OP_ADD:
+        case MP_BINARY_OP_MULTIPLY: 
+            return MP_OBJ_FROM_PTR(array);
+            break;
+
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+    }
+*/
