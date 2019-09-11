@@ -94,15 +94,15 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     }
     // TODO: print typecode
     if(self->data->typecode == NDARRAY_UINT8) {
-        printf(", dtype='uint8')\n");
+        printf(", dtype='uint8')");
     } else if(self->data->typecode == NDARRAY_INT8) {
-        printf(", dtype='int8')\n");
+        printf(", dtype='int8')");
     } if(self->data->typecode == NDARRAY_UINT16) {
-        printf(", dtype='uint16')\n");
+        printf(", dtype='uint16')");
     } if(self->data->typecode == NDARRAY_INT16) {
-        printf(", dtype='int16')\n");
+        printf(", dtype='int16')");
     } if(self->data->typecode == NDARRAY_FLOAT) {
-        printf(", dtype='float')\n");
+        printf(", dtype='float')");
     } 
 }
 
@@ -346,127 +346,190 @@ mp_obj_t ndarray_rawsize(mp_obj_t self_in) {
 }
 
 // Binary operations
-/*
-STATIC uint8_t upcasting(ndarray_obj_t lhs, ndarray_obj_t rhs) {
+STATIC uint8_t upcasting(uint8_t type_left, uint8_t type_right) {
     // returns the upcast typecode
-    // what we have to establish is, whether either of sides has a type code that is 
-    // 'larger' than the other side
-    uint8_t typecode_l, typecode_r;
-    switch(lhs->data->typecode) {
-        case 'b':
-            typecode_l = (0x01 << 0);
-        case 'B':
-            typecode_l = (0x01 << 1);
-        case 'i':
-            typecode_l = (0x01 << 2);
-        case 'I':
-            typecode_l = (0x01 << 3);
-        case 'f':
-            typecode_l = (0x01 << 4);
+    // Now we have to collect 25 cases. Perhaps there is a more elegant solution for this    
+    if(type_left == type_right) { 
+        // 5 cases
+        return type_left;
+    } else if((type_left == NDARRAY_FLOAT) || (type_right == NDARRAY_FLOAT)) { 
+        // 8 cases ('f' AND 'f' has already been accounted for) 
+        return NDARRAY_FLOAT;
+    } else if(((type_left == NDARRAY_UINT8) && (type_right == NDARRAY_INT8)) || 
+              ((type_left == NDARRAY_INT8) && (type_right == NDARRAY_UINT8)) || 
+              ((type_left == NDARRAY_UINT8) && (type_right == NDARRAY_INT16)) || 
+              ((type_left == NDARRAY_INT16) && (type_right == NDARRAY_UINT8)) || 
+              ((type_left == NDARRAY_UINT8) && (type_right == NDARRAY_UINT16)) ||
+              ((type_left == NDARRAY_UINT16) && (type_right == NDARRAY_UINT8)) || 
+              ((type_left == NDARRAY_INT8) && (type_right == NDARRAY_UINT16)) ||
+              ((type_left == NDARRAY_UINT16) && (type_right == NDARRAY_INT8)) ) {
+        // 8 cases
+        return NDARRAY_UINT16;
+    } else if ( ((type_left == NDARRAY_INT8) && (type_right == NDARRAY_INT16)) ||
+               ((type_left == NDARRAY_INT16) && (type_right == NDARRAY_INT8)) ) {
+        // 2 cases
+        return NDARRAY_INT16;
+    } else if ( ((type_left == NDARRAY_INT16) && (type_right == NDARRAY_UINT16)) ||
+               ((type_left == NDARRAY_UINT16) && (type_right == NDARRAY_INT16)) ) {
+        // 2 cases
+        return NDARRAY_FLOAT;
     }
-    switch(rhs->data->typecode) {
-        case 'b':
-            typecode_r = (0x01 << 0);
-        case 'B':
-            typecode_r = (0x01 << 1);
-        case 'i':
-            typecode_r = (0x01 << 2);
-        case 'I':
-            typecode_r = (0x01 << 3);
-        case 'f':
-            typecode_r = (0x01 << 4);
-    }
-    // Now we have to collect 25 cases 
-    if((typecode_l | typecode_r) == (0x01 << 0)) { // 2 cases
-        return 'b';
-    } else if((typecode_l | typecode_r) == (0x01 << 1)) { // 2 cases
-        return 'B';
-    } else if((typecode_l | typecode_r) == (0x01 << 2)) { // 2 casaes
-        return 'i';
-    } else if((typecode_l | typecode_r) == (0x01 << 3)) { // 2 cases
-        return 'I';
-    } else if((typecode_l | typecode_r) >= (0x01 << 4)) { // 10 cases
-        return 'f';
-    } else if((typecode_l | typecode_r) == ((0x01 << 0) | (0x01 << 1)) {
-        return 'i';
-    }
+    return NDARRAY_FLOAT; // we are never going to reach this statement, but we have to make the compiler happy
 }
 
-mp_obj_t ulab_ndarray_binary_op_helper(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
-    // TODO: support scalar operations
+mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+    ndarray_obj_t *ol = MP_OBJ_TO_PTR(lhs);
+    uint8_t typecode;
+    float value;
+    // First, the right hand side is a native micropython object, i.e, an integer, or a float
     if (MP_OBJ_IS_TYPE(rhs, &mp_type_int) || MP_OBJ_IS_TYPE(rhs, &mp_type_float)) {
-        return MP_OBJ_NULL; // op not supported
-    } else if(MP_OBJ_IS_TYPE(rhs, &ulab_ndarray_type)) {
-        // At this point, the operands should have the same shape
-        ndarray_obj_t *ol = MP_OBJ_TO_PTR(lhs);
+        // we have to split the two cases here...
+        if(MP_OBJ_IS_TYPE(rhs, &mp_type_int)) {
+            typecode = upcasting(ol->data->typecode, NDARRAY_INT16);
+        } else {
+            typecode = upcasting(ol->data->typecode, NDARRAY_FLOAT);    
+        }
+        if(MP_OBJ_IS_TYPE(rhs, &mp_type_int)) {
+            value = (float)mp_obj_get_int(rhs);
+        } else {
+            value = mp_obj_get_float(rhs);
+        }
+        if((op == MP_BINARY_OP_ADD) || (op == MP_BINARY_OP_MULTIPLY) || 
+            (op == MP_BINARY_OP_SUBTRACT) || (op == MP_BINARY_OP_TRUE_DIVIDE)) {
+            ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);
+            if(op == MP_BINARY_OP_SUBTRACT) value *= -1.0;
+            if(op == MP_BINARY_OP_TRUE_DIVIDE) value = 1.0/value;
+            if(typecode == NDARRAY_INT16) {
+                int16_t *outdata = (int16_t *)out->data->items;
+                if((op == MP_BINARY_OP_ADD) || (op == MP_BINARY_OP_SUBTRACT)) {
+                    for(size_t i=0; i < ol->data->len; i++) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
+                    }
+                } else if((op == MP_BINARY_OP_MULTIPLY) || (op == MP_BINARY_OP_TRUE_DIVIDE)) {
+                    for(size_t i=0; i < ol->data->len; i++) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
+                    }
+                }
+            } else if(typecode == NDARRAY_FLOAT) {
+                float *outdata = (float *)out->data->items;
+                if((op == MP_BINARY_OP_ADD) || (op == MP_BINARY_OP_SUBTRACT)) {
+                    for(size_t i=0; i < ol->data->len; i++) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
+                    }
+                } else if((op == MP_BINARY_OP_MULTIPLY) || (op == MP_BINARY_OP_TRUE_DIVIDE)) {
+                    for(size_t i=0; i < ol->data->len; i++) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
+                    }
+                }                    
+            }
+            return MP_OBJ_FROM_PTR(out);
+        } else {
+            return MP_OBJ_NULL; // op not supported
+        }
+    } else if(MP_OBJ_IS_TYPE(rhs, &ulab_ndarray_type)) { // next, the ndarray stuff
         ndarray_obj_t *or = MP_OBJ_TO_PTR(rhs);
-        ndarray_obj_t *array;
         if((ol->m != or->m) || (ol->n != or->n)) {
             mp_raise_ValueError("operands could not be broadcast together");
         }
-        // do not convert types, if they are identical
-        // do not convert either, if the left hand side is a float
-        if((ol->data->typecode == or->data->typecode) || ol->data->typecode == NDARRAY_FLOAT) {
-            array = ulab_ndarray_copy(ol);
-        } else {
-            // the types are not equal, we have to do some conversion here
-            if(or->data->typecode == NDARRAY_FLOAT) {
-                array = ulab_ndarray_copy(ol);
-            } else if((ol->data->typecode == NDARRAY_INT16) || (or->data->typecode == NDARRAY_INT16)) {
-                array = create_new_ndarray(ol->m, ol->n, NDARRAY_INT16);
-            } else if((ol->data->typecode == NDARRAY_UINT16) || (or->data->typecode == NDARRAY_UINT16)) {
-                array = create_new_ndarray(ol->m, ol->n, NDARRAY_INT16);
-            }
-        }
-        switch(op) {
-            case MP_BINARY_OP_ADD:
-                for(size_t i=0; i < ol->data->len; i++) {
-
-                }
-                return MP_OBJ_FROM_PTR(array);
-                break;
-            default:
-                break;
-        }
-
-    }
-}
-
-STATIC mp_obj_t ulab_ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
-    ndarray_obj_t *ol = MP_OBJ_TO_PTR(lhs);
-    ndarray_obj_t *or = MP_OBJ_TO_PTR(rhs);
-
-    // for in-place operations, we won't need this!!!
-    ndarray_obj_t *array = ulab_ndarray_copy(ol);    
-    switch (op) {
-        case MP_BINARY_OP_EQUAL:
-            if(!MP_OBJ_IS_TYPE(rhs, &ulab_ndarray_type)) {
+        // At this point, the operands should have the same shape
+        typecode = upcasting(or->data->typecode, ol->data->typecode);
+        if(op == MP_BINARY_OP_EQUAL) {
+            // Two arrays are equal, if their shape, typecode, and elements are equal
+            if((ol->m != or->m) || (ol->n != or->n) || (ol->data->typecode != or->data->typecode)) {
                 return mp_const_false;
             } else {
-                // Two arrays are equal, if their shape, typecode, and elements are equal
-                if((ol->m != or->m) || (ol->n != or->n) || (ol->data->typecode != or->data->typecode)) {
-                    return mp_const_false;
-                } else {
-                    size_t i = ol->bytes;
-                    uint8_t *l = (uint8_t *)ol->data->items;
-                    uint8_t *r = (uint8_t *)or->data->items;
-                    while(i) { // At this point, we can simply compare the bytes, the types is irrelevant
-                        if(*l++ != *r++) {
-                            return mp_const_false;
-                        }
-                        i--;
+                size_t i = ol->bytes;
+                uint8_t *l = (uint8_t *)ol->data->items;
+                uint8_t *r = (uint8_t *)or->data->items;
+                while(i) { // At this point, we can simply compare the bytes, the type is irrelevant
+                    if(*l++ != *r++) {
+                        return mp_const_false;
                     }
-                    return mp_const_true;
+                    i--;
+                }
+                return mp_const_true;
+            }
+        } else if((op == MP_BINARY_OP_ADD) || (op == MP_BINARY_OP_SUBTRACT) || 
+            (op == MP_BINARY_OP_TRUE_DIVIDE) || (op == MP_BINARY_OP_MULTIPLY)) {
+            // for in-place operations, we won't need this!!!
+            typecode = upcasting(or->data->typecode, ol->data->typecode);
+            ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);
+            if(typecode == NDARRAY_UINT8) {
+                uint8_t *outdata = (uint8_t *)out->data->items;
+                for(size_t i=0; i < ol->data->len; i++) {
+                    value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
+                    if(op == MP_BINARY_OP_ADD) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
+                    } else if(op == MP_BINARY_OP_SUBTRACT) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
+                    } else if(op == MP_BINARY_OP_MULTIPLY) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
+                    } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
+                    }
+                }
+            } else if(typecode == NDARRAY_INT8) {
+                int8_t *outdata = (int8_t *)out->data->items;
+                for(size_t i=0; i < ol->data->len; i++) {
+                    value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
+                    if(op == MP_BINARY_OP_ADD) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
+                    } else if(op == MP_BINARY_OP_SUBTRACT) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
+                    } else if(op == MP_BINARY_OP_MULTIPLY) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
+                    } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
+                    }
+                }                    
+            } else if(typecode == NDARRAY_UINT16) {
+                uint16_t *outdata = (uint16_t *)out->data->items;
+                for(size_t i=0; i < ol->data->len; i++) {
+                    value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
+                    if(op == MP_BINARY_OP_ADD) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
+                    } else if(op == MP_BINARY_OP_SUBTRACT) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
+                    } else if(op == MP_BINARY_OP_MULTIPLY) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
+                    } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
+                    }
+                }
+            } else if(typecode == NDARRAY_INT16) {
+                int16_t *outdata = (int16_t *)out->data->items;
+                for(size_t i=0; i < ol->data->len; i++) {
+                    value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
+                    if(op == MP_BINARY_OP_ADD) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
+                    } else if(op == MP_BINARY_OP_SUBTRACT) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
+                    } else if(op == MP_BINARY_OP_MULTIPLY) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
+                    } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
+                    }
+                } 
+            } else if(typecode == NDARRAY_FLOAT) {
+                float *outdata = (float *)out->data->items;
+                for(size_t i=0; i < ol->data->len; i++) {
+                    value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
+                    if(op == MP_BINARY_OP_ADD) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
+                    } else if(op == MP_BINARY_OP_SUBTRACT) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
+                    } else if(op == MP_BINARY_OP_MULTIPLY) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
+                    } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
+                        outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
+                    }
                 }
             }
-            break;
-        case MP_BINARY_OP_ADD:
-        case MP_BINARY_OP_MULTIPLY: 
-            return MP_OBJ_FROM_PTR(array);
-            break;
-
-        default:
-            return MP_OBJ_NULL; // op not supported
+            return MP_OBJ_FROM_PTR(out);
+        } else {
+            return MP_OBJ_NULL; // op not supported                                                        
+        }
+    } else {
+        mp_raise_TypeError("wrong operand type on the right hand side");
     }
-    }
-*/
+}

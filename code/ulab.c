@@ -79,11 +79,11 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
 //    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&ulab_ndarray_get_obj) },
 //    { MP_ROM_QSTR(MP_QSTR_dot), MP_ROM_PTR(&ulab_ndarray_dot_obj) },    
     // class constants
-//    { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },
-//    { MP_ROM_QSTR(MP_QSTR_int8), MP_ROM_INT(NDARRAY_INT8) },
-//    { MP_ROM_QSTR(MP_QSTR_uint16), MP_ROM_INT(NDARRAY_UINT16) },
-//    { MP_ROM_QSTR(MP_QSTR_int16), MP_ROM_INT(NDARRAY_INT16) },
-//    { MP_ROM_QSTR(MP_QSTR_float), MP_ROM_INT(NDARRAY_FLOAT) },
+    { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },
+    { MP_ROM_QSTR(MP_QSTR_int8), MP_ROM_INT(NDARRAY_INT8) },
+    { MP_ROM_QSTR(MP_QSTR_uint16), MP_ROM_INT(NDARRAY_UINT16) },
+    { MP_ROM_QSTR(MP_QSTR_int16), MP_ROM_INT(NDARRAY_INT16) },
+    { MP_ROM_QSTR(MP_QSTR_float), MP_ROM_INT(NDARRAY_FLOAT) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);
@@ -96,7 +96,7 @@ const mp_obj_type_t ulab_ndarray_type = {
     .subscr = ndarray_subscr,
     .getiter = ndarray_getiter,
 //    .unary_op = ndarray_unary_op,
-//    .binary_op = ndarray_binary_op,
+    .binary_op = ndarray_binary_op,
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 
