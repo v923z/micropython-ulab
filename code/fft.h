@@ -15,8 +15,7 @@
 #define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
 #endif
 
-#include <complex.h>
-typedef float complex complex_t;
+#define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
-mp_obj_t fft_fft(mp_obj_t, mp_obj_t);
+mp_obj_t fft_fft(size_t , const mp_obj_t *);
 #endif

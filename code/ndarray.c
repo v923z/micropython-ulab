@@ -94,15 +94,15 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     }
     // TODO: print typecode
     if(self->data->typecode == NDARRAY_UINT8) {
-        printf(", dtype='uint8')");
+        printf(", dtype=uint8)");
     } else if(self->data->typecode == NDARRAY_INT8) {
-        printf(", dtype='int8')");
+        printf(", dtype=int8)");
     } if(self->data->typecode == NDARRAY_UINT16) {
-        printf(", dtype='uint16')");
+        printf(", dtype=uint16)");
     } if(self->data->typecode == NDARRAY_INT16) {
-        printf(", dtype='int16')");
+        printf(", dtype=int16)");
     } if(self->data->typecode == NDARRAY_FLOAT) {
-        printf(", dtype='float')");
+        printf(", dtype=float)");
     } 
 }
 
@@ -138,25 +138,18 @@ mp_obj_t ndarray_copy(mp_obj_t self_in) {
     return MP_OBJ_FROM_PTR(out);
 }
 
+
 STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR__array_arr, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)}},
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_float)} },
+        { MP_QSTR_oin, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT } },
     };
-
+    
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);    
-    GET_STR_DATA_LEN(args[1].u_rom_obj, str, str_len);
-    if(memcmp(str, "uint8", 5) == 0) {
-        return NDARRAY_UINT8;
-    } else if(memcmp(str, "uint16", 6) == 0) {
-        return NDARRAY_UINT16;
-    } else if(memcmp(str, "int8", 4) == 0) {
-        return NDARRAY_INT8;
-    } else if(memcmp(str, "int16", 5) == 0) {
-        return NDARRAY_INT16;
-    }
-    return NDARRAY_FLOAT;
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    uint8_t dtype = args[1].u_int;
+    return dtype;
 }
 
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -164,6 +157,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     uint8_t dtype = ndarray_init_helper(n_args, args, &kw_args);
+
     
     size_t len1, len2=0, i=0;
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
@@ -191,7 +185,6 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
         }
     }
     // By this time, it should be established, what the shape is, so we can now create the array
-    // set the typecode to float, if the format specifier is missing
     ndarray_obj_t *self = create_new_ndarray(len1, (len2 == 0) ? 1 : len2, dtype);
     iterable1 = mp_getiter(args[0], &iter_buf1);
     i = 0;
@@ -214,7 +207,6 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (value == MP_OBJ_SENTINEL) { 
         // simply return the values at index, no assignment
-#if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             mp_seq_get_fast_slice_indexes(self->data->len, index, &slice);
@@ -229,9 +221,21 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
             return MP_OBJ_FROM_PTR(out);
         }
-#endif
-        // we have a single index, return a single number
+        // we have a single index, return either a single number (arrays), or an array (matrices)
         size_t idx = mp_obj_get_int(index);
+        if(self->m > 1) { // we do have a matrix
+            if(idx > self->m-1) {
+                mp_raise_ValueError("index is out of range");
+            }
+            // return an array
+            ndarray_obj_t *out = create_new_ndarray(1, self->n, self->data->typecode);
+            int _sizeof = mp_binary_get_size('@', self->data->typecode, NULL);
+            uint8_t *indata = (uint8_t *)self->data->items;
+            uint8_t *outdata = (uint8_t *)out->data->items;
+            memcpy(outdata, &indata[idx*self->n*_sizeof], self->n*_sizeof);
+            return MP_OBJ_FROM_PTR(out);            
+        }
+        // since self->m == 1, we have a flat array, hence, we've got to return a single number
         switch(self->data->typecode) {
             case NDARRAY_UINT8:
                 return MP_OBJ_NEW_SMALL_INT(((uint8_t *)self->data->items)[idx]);
@@ -382,16 +386,13 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     uint8_t typecode;
     float value;
     // First, the right hand side is a native micropython object, i.e, an integer, or a float
-    if (MP_OBJ_IS_TYPE(rhs, &mp_type_int) || MP_OBJ_IS_TYPE(rhs, &mp_type_float)) {
+    if (mp_obj_is_int(rhs) || mp_obj_is_float(rhs)) {
         // we have to split the two cases here...
-        if(MP_OBJ_IS_TYPE(rhs, &mp_type_int)) {
+        if(mp_obj_is_int(rhs)) {
             typecode = upcasting(ol->data->typecode, NDARRAY_INT16);
-        } else {
-            typecode = upcasting(ol->data->typecode, NDARRAY_FLOAT);    
-        }
-        if(MP_OBJ_IS_TYPE(rhs, &mp_type_int)) {
             value = (float)mp_obj_get_int(rhs);
         } else {
+            typecode = upcasting(ol->data->typecode, NDARRAY_FLOAT);
             value = mp_obj_get_float(rhs);
         }
         if((op == MP_BINARY_OP_ADD) || (op == MP_BINARY_OP_MULTIPLY) || 
@@ -426,7 +427,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
         } else {
             return MP_OBJ_NULL; // op not supported
         }
-    } else if(MP_OBJ_IS_TYPE(rhs, &ulab_ndarray_type)) { // next, the ndarray stuff
+    } else if(mp_obj_is_type(rhs, &ulab_ndarray_type)) { // next, the ndarray stuff
         ndarray_obj_t *or = MP_OBJ_TO_PTR(rhs);
         if((ol->m != or->m) || (ol->n != or->n)) {
             mp_raise_ValueError("operands could not be broadcast together");
@@ -531,5 +532,18 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
         }
     } else {
         mp_raise_TypeError("wrong operand type on the right hand side");
+    }
+}
+
+mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (op) {
+        case MP_UNARY_OP_LEN: 
+            if(self->m > 1) {
+                return mp_obj_new_int(self->m);
+            } else {
+                return mp_obj_new_int(self->n);                
+            }
+        default: return MP_OBJ_NULL; // operator not supported
     }
 }

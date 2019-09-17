@@ -9,6 +9,8 @@
 */
     
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
@@ -25,7 +27,7 @@ enum NUMERICAL_FUNCTION_TYPE {
 };
 
 mp_obj_t numerical_linspace(mp_obj_t _start, mp_obj_t _stop, mp_obj_t _len) {
-    // TODO: accept keyword argument endpoint=True
+    // TODO: accept keyword argument endpoint=True, dtype=...
     mp_int_t len = mp_obj_get_int_truncated(_len);
     if(len < 2) {
         mp_raise_ValueError("number of points must be at least 2");
@@ -82,27 +84,13 @@ STATIC mp_obj_t numerical_argmin_argmax_array(mp_obj_t o_in, mp_uint_t op, uint8
     }
 }
 
-STATIC float get_float_value(void *data, uint8_t typecode, size_t index) {
-    if(typecode == NDARRAY_UINT8) {
-        return (float)((uint8_t *)data)[index];
-    } else if(typecode == NDARRAY_INT8) {
-        return (float)((int8_t *)data)[index];
-    } else if(typecode == NDARRAY_UINT16) {
-        return (float)((uint16_t *)data)[index];
-    } else if(typecode == NDARRAY_INT16) {
-        return (float)((int16_t *)data)[index];
-    } else {
-        return (float)((float_t *)data)[index];
-    }
-}
-
 STATIC size_t numerical_argmin_argmax_single_line(void *data, size_t start, size_t stop, 
                                                   size_t stride, uint8_t typecode, uint8_t optype) {
     size_t best_idx = start;
-    mp_float_t value, best_value = get_float_value(data, typecode, start);
+    mp_float_t value, best_value = ndarray_get_float_value(data, typecode, start);
     
     for(size_t i=start; i < stop; i+=stride) {
-        value = get_float_value(data, typecode, i);
+        value = ndarray_get_float_value(data, typecode, i);
         if((optype == NUMERICAL_MIN) || (optype == NUMERICAL_ARGMIN)) {
             if(best_value > value) {
                 best_value = value;
@@ -129,7 +117,7 @@ STATIC mp_obj_t numerical_argmin_argmax_matrix(mp_obj_t oin, mp_obj_t axis, uint
             return MP_OBJ_NEW_SMALL_INT(best_idx);
         } else {
             // TODO: do we have to do type conversion here, depending on the type of the input array?
-            return mp_obj_new_float(get_float_value(in->data->items, in->data->typecode, best_idx));
+            return mp_obj_new_float(ndarray_get_float_value(in->data->items, in->data->typecode, best_idx));
         }
     } else {
         uint8_t _axis = mp_obj_get_int(axis);
@@ -147,7 +135,7 @@ STATIC mp_obj_t numerical_argmin_argmax_matrix(mp_obj_t oin, mp_obj_t axis, uint
                 if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
                     ((float_t *)out->data->items)[i] = (float)best_idx;
                 } else {
-                    ((float_t *)out->data->items)[i] = get_float_value(in->data->items, in->data->typecode, best_idx);
+                    ((float_t *)out->data->items)[i] = ndarray_get_float_value(in->data->items, in->data->typecode, best_idx);
                 }
             }
         } else { // horizontal
@@ -157,7 +145,7 @@ STATIC mp_obj_t numerical_argmin_argmax_matrix(mp_obj_t oin, mp_obj_t axis, uint
                 if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
                     ((float_t *)out->data->items)[i] = (float)best_idx;
                 } else {
-                    ((float_t *)out->data->items)[i] = get_float_value(in->data->items, in->data->typecode, best_idx);
+                    ((float_t *)out->data->items)[i] = ndarray_get_float_value(in->data->items, in->data->typecode, best_idx);
                 }
 
             }
@@ -173,7 +161,7 @@ STATIC mp_float_t numerical_sum_mean_std_single_line(void *data, size_t start, s
     mp_float_t sum = 0.0, sq_sum = 0.0, value;
     size_t len = 0;
     for(size_t i=start; i < stop; i+=stride, len++) {
-        value = get_float_value(data, typecode, i);        
+        value = ndarray_get_float_value(data, typecode, i);        
         sum += value;
         if(optype == NUMERICAL_STD) {
             sq_sum += value*value;
@@ -303,4 +291,75 @@ mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
 mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_STD);
+}
+
+mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_oin, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_shift, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(2, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    mp_obj_t oin = args[0].u_obj;
+    int16_t shift = mp_obj_get_int(args[1].u_obj);
+    int8_t axis = args[2].u_int;
+    if((axis != 0) && (axis != 1)) {
+        mp_raise_ValueError("axis must be None, 0, or 1");
+    }
+    ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
+    uint8_t _sizeof = mp_binary_get_size('@', in->data->typecode, NULL);
+    size_t len;
+    int16_t _shift;
+    uint8_t *data = (uint8_t *)in->data->items;
+    // TODO: transpose the matrix, if axis == 0
+    if(shift < 0) {
+        _shift = -shift;
+    } else {
+        _shift = shift;
+    }
+    if(axis == 0) {
+        len = in->m;
+        // temporary buffer
+        uint8_t *_data = (uint8_t *)malloc(_sizeof*len);
+        
+        _shift = _shift % len;
+        if(shift < 0) _shift = len - _shift;
+        _shift *= _sizeof;
+        uint8_t *tmp = (uint8_t *)malloc(_shift);
+
+        for(size_t n=0; n < in->n; n++) {
+            for(size_t m=0; m < len; m++) {
+                // this loop should fill up the temporary buffer
+                memcpy(&_data[m*_sizeof], &data[(m*in->n+n)*_sizeof], _sizeof);
+            }
+            // now, the actual shift
+            memcpy(tmp, _data, _shift);
+            memcpy(_data, &_data[_shift], len*_sizeof-_shift);
+            memcpy(&_data[len*_sizeof-_shift], tmp, _shift);
+            for(size_t m=0; m < len; m++) {
+                // this loop should dump the content of the temporary buffer into data
+                memcpy(&data[(m*in->n+n)*_sizeof], &_data[m*_sizeof], _sizeof);
+            }            
+        }
+        free(tmp);
+        return mp_const_none;
+    }
+    len = in->n;
+    if((in->m == 1) || (in->n == 1)) {
+        len = in->data->len;
+    }
+    _shift = _shift % len;
+    if(shift < 0) _shift = len - _shift;
+    // TODO: if(shift > len/2), we should move in the opposite direction. That would save RAM
+    _shift *= _sizeof;
+    uint8_t *tmp = (uint8_t *)malloc(_shift);
+    for(size_t m=0; m < in->m; m++) {
+        memcpy(tmp, &data[m*len*_sizeof], _shift);
+        memcpy(&data[m*len*_sizeof], &data[m*len*_sizeof+_shift], len*_sizeof-_shift);
+        memcpy(&data[(m+1)*len*_sizeof-_shift], tmp, _shift);
+    }
+    return mp_const_none;
 }

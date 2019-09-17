@@ -10,80 +10,108 @@
     
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #include "py/runtime.h"
 #include "ndarray.h"
 #include "fft.h"
-    
-STATIC void fft_kernel(complex_t *buffer, complex_t *out, int n, int step) {
-    // this is the actual FFT kernel that we call recursively
-    if (step < n) {
-        // split the input buffer in two
-        fft_kernel(out, buffer, n, step*2);
-        fft_kernel(out+step, buffer+step, n, step*2);
 
-        for (int i=0; i<n; i+=2*step) {
-            complex_t twiddle = (cosf(MP_PI*i/n)-I*sinf(MP_PI*i/n)) * out[i+step];
-            buffer[i/2] = out[i] + twiddle * out[i+step];
-            buffer[(i+n)/2] = out[i] - twiddle * out[i+step];
+
+void fft_kernel(float *real, float *imag, int n, int isign) {
+    // This is basically a modification of four1 from Numerical Recipes
+    // The main difference is that this function takes two arrays, one 
+    // for the real, and one for the imaginary parts. 
+    int j, m, mmax, istep;
+    float tempr, tempi;
+    float wtemp, wr, wpr, wpi, wi, theta;
+
+    j = 0;
+    for(int i = 0; i < n; i++) {
+        if (j > i) {
+            SWAP(float, real[i], real[j]);
+            SWAP(float, imag[i], imag[j]);            
         }
+        m = n >> 1;
+        while (j >= m && m > 0) {
+            j -= m;
+            m >>= 1;
+        }
+        j += m;
+    }
+
+    mmax = 1;
+    while (n > mmax) {
+        istep = mmax << 1;
+        theta = -1.0*isign*6.28318530717959/istep;
+        wtemp = sin(0.5 * theta);
+        wpr = -2.0 * wtemp * wtemp;
+        wpi = sin(theta);
+        wr = 1.0;
+        wi = 0.0;
+        for(m = 0; m < mmax; m++) {
+            for(int i = m; i < n; i += istep) {
+                j = i + mmax;
+                tempr = wr * real[j] - wi * imag[j];
+                tempi = wr * imag[j] + wi * real[j];
+                real[j] = real[i] - tempr;
+                imag[j] = imag[i] - tempi;
+                real[i] += tempr;
+                imag[i] += tempi;
+            }
+            wtemp = wr;
+            wr = wr*wpr - wi*wpi + wr;
+            wi = wi*wpr + wtemp*wpi + wi;
+        }
+        mmax = istep;
     }
 }
 
-mp_obj_t fft_fft(mp_obj_t real, mp_obj_t imag) {
+mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     // TODO: return the absolute value, if keyword argument is specified
-    // TODO: let go of the complex type, for the assignment of values is through reals and imags, anyway
+    // TODO: transform the data in place, if keyword argument is specified
+    if(!MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+        mp_raise_NotImplementedError("FFT is defined for ndarrays only");
+    } 
+    if(n_args == 2) {
+        if(!MP_OBJ_IS_TYPE(args[1], &ulab_ndarray_type)) {
+            mp_raise_NotImplementedError("FFT is defined for ndarrays only");
+        }
+    }
     // Check if input is of length of power of 2
-    mp_obj_array_t *re = MP_OBJ_TO_PTR(real);
-    if ((re->len & (re->len-1)) != 0) {
+    ndarray_obj_t *re = MP_OBJ_TO_PTR(args[0]);
+    uint16_t len = re->data->len;
+    if((len & (len-1)) != 0) {
         mp_raise_ValueError("input array length must be power of 2");
     }
-    mp_obj_array_t *im = MP_OBJ_TO_PTR(imag);
-    if (re->len != im->len) {
-        mp_raise_ValueError("real and imaginary parts must be of equal length");
-    }
-
-    complex_t *buffer, *out;
-    buffer = (complex_t *)malloc(sizeof(complex_t)*re->len);
-    out = (complex_t *)malloc(sizeof(complex_t)*re->len);
-    size_t i=0;
-
-    if(MP_OBJ_IS_TYPE(re, &ulab_ndarray_type) && MP_OBJ_IS_TYPE(im, &ulab_ndarray_type)) {
-        ndarray_obj_t *_re = MP_OBJ_TO_PTR(real);
-        ndarray_obj_t *_im = MP_OBJ_TO_PTR(imag);
-        for(size_t j=0; j < re->len; j++) {
-            buffer[i] = out[i] = ndarray_get_float_value(_re->data->items, _re->data->typecode, j) + 
-            I*ndarray_get_float_value(_im->data->items, _im->data->typecode, j);
-        }
+    
+    ndarray_obj_t *out_re = create_new_ndarray(1, len, NDARRAY_FLOAT);
+    float *data_re = (float *)out_re->data->items;
+    
+    if(re->data->typecode == NDARRAY_FLOAT) {
+        memcpy((float *)out_re->data->items, (float *)re->data->items, re->bytes);
     } else {
-        mp_obj_iter_buf_t re_buf;
-        mp_obj_t re_item, re_iterable = mp_getiter(real, &re_buf);
-
-        mp_obj_iter_buf_t im_buf;
-        mp_obj_t im_item, im_iterable = mp_getiter(imag, &im_buf);
-
-        while ((re_item = mp_iternext(re_iterable)) != MP_OBJ_STOP_ITERATION) {
-            im_item = mp_iternext(im_iterable);
-            buffer[i] = out[i] = mp_obj_get_float(re_item) + I*mp_obj_get_float(im_item);
-            i++;
+        for(size_t i=0; i < len; i++) {
+            data_re[i] = ndarray_get_float_value(re->data->items, re->data->typecode, i);
         }
     }
-    fft_kernel(buffer, out, re->len, 1);
+    ndarray_obj_t *out_im = create_new_ndarray(1, len, NDARRAY_FLOAT);
+    float *data_im = (float *)out_im->data->items;
 
-    complex_t z;
-    if(1) {
-        ndarray_obj_t *re_out = create_new_ndarray(1, re->len, NDARRAY_FLOAT);
-        ndarray_obj_t *im_out = create_new_ndarray(1, im->len, NDARRAY_FLOAT);
-        float *_re_out = (float *)re_out->data->items;
-        float *_im_out = (float *)im_out->data->items;        
-        for(i=0; i<re->len; i++) {
-            z = buffer[i];
-            _re_out[i] = creal(z);
-            _im_out[i] = cimag(z);
+    if(n_args == 2) {
+        ndarray_obj_t *im = MP_OBJ_TO_PTR(args[1]);
+        if (re->data->len != im->data->len) {
+            mp_raise_ValueError("real and imaginary parts must be of equal length");
         }
-        free(buffer);
-        mp_obj_t tuple[2];
-        tuple[0] = re_out;
-        tuple[1] = im_out;
-        return mp_obj_new_tuple(2, tuple);
-    } 
+        if(im->data->typecode == NDARRAY_FLOAT) {
+            memcpy((float *)out_im->data->items, (float *)im->data->items, im->bytes);
+        } else {
+            for(size_t i=0; i < len; i++) {
+                data_im[i] = ndarray_get_float_value(im->data->items, im->data->typecode, i);
+            }
+        }
+    }    
+    fft_kernel(data_re, data_im, len, 1);
+    mp_obj_t tuple[2];
+    tuple[0] = out_re;
+    tuple[1] = out_im;
+    return mp_obj_new_tuple(2, tuple);
 }
