@@ -222,10 +222,16 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return MP_OBJ_FROM_PTR(out);
         }
         // we have a single index, return either a single number (arrays), or an array (matrices)
-        size_t idx = mp_obj_get_int(index);
+        int16_t idx = mp_obj_get_int(index);
+        if(idx < 0) {
+            idx = self->m > 1 ? self->m + idx : self->n + idx;
+        }
         if(self->m > 1) { // we do have a matrix
-            if(idx > self->m-1) {
+            if(idx >= self->m) {
                 mp_raise_ValueError("index is out of range");
+            }
+            if(self->n == 1) { // the matrix is actually a column vector
+                return mp_binary_get_val_array(self->data->typecode, self->data->items, idx);
             }
             // return an array
             ndarray_obj_t *out = create_new_ndarray(1, self->n, self->data->typecode);
@@ -236,20 +242,23 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return MP_OBJ_FROM_PTR(out);            
         }
         // since self->m == 1, we have a flat array, hence, we've got to return a single number
-        switch(self->data->typecode) {
-            case NDARRAY_UINT8:
-                return MP_OBJ_NEW_SMALL_INT(((uint8_t *)self->data->items)[idx]);
-            case NDARRAY_INT8:
-                return MP_OBJ_NEW_SMALL_INT(((int8_t *)self->data->items)[idx]);
-            case NDARRAY_UINT16:
-                return MP_OBJ_NEW_SMALL_INT(((uint16_t *)self->data->items)[idx]);
-            case NDARRAY_INT16:
-                return MP_OBJ_NEW_SMALL_INT(((int16_t *)self->data->items)[idx]);
-            case NDARRAY_FLOAT:
-                return mp_obj_new_float(((float_t *)self->data->items)[idx]);
+        if(idx >= self->n) {
+            mp_raise_ValueError("index is out of range");
         }
-    } else { // do not deal with assignment, bail out
-        mp_raise_NotImplementedError("subcript assignment is not implemented for ndarrays");
+        return mp_binary_get_val_array(self->data->typecode, self->data->items, idx);
+    } else { 
+        int16_t idx = mp_obj_get_int(index);
+        if((self->m == 1) || (self->n == 1)) {
+            if(idx < 0) {
+                idx = self->m > 1 ? self->m + idx : self->n + idx;
+            }
+            if((idx > self->m) && (idx > self->n)) {
+                mp_raise_ValueError("index is out of range");                
+            }
+            mp_binary_set_val_array(self->data->typecode, self->data->items, idx, value);
+        } else { // do not deal with assignment, bail out, if the array is two-dimensional
+            mp_raise_NotImplementedError("subcript assignment is not implemented for 2D arrays");
+        }
     }
     return mp_const_none;
 }
