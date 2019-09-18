@@ -77,6 +77,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fft_spectrum_obj, fft_spectrum);
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
@@ -141,6 +142,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },    
     { MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_spectrum), (mp_obj_t)&fft_spectrum_obj },
     // class constants
     { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },
     { MP_ROM_QSTR(MP_QSTR_int8), MP_ROM_INT(NDARRAY_INT8) },

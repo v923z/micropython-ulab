@@ -14,6 +14,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
+#include "py/misc.h"
 #include "numerical.h"
 
 enum NUMERICAL_FUNCTION_TYPE {
@@ -323,12 +324,12 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     if(axis == 0) {
         len = in->m;
         // temporary buffer
-        uint8_t *_data = (uint8_t *)malloc(_sizeof*len);
+        uint8_t *_data = m_new(uint8_t, _sizeof*len);
         
         _shift = _shift % len;
         if(shift < 0) _shift = len - _shift;
         _shift *= _sizeof;
-        uint8_t *tmp = (uint8_t *)malloc(_shift);
+        uint8_t *tmp = m_new(uint8_t, _shift);
 
         for(size_t n=0; n < in->n; n++) {
             for(size_t m=0; m < len; m++) {
@@ -344,7 +345,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
                 memcpy(&data[(m*in->n+n)*_sizeof], &_data[m*_sizeof], _sizeof);
             }            
         }
-        free(tmp);
+        m_del(uint8_t, tmp, _shift);
         return mp_const_none;
     }
     len = in->n;
@@ -355,7 +356,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     if(shift < 0) _shift = len - _shift;
     // TODO: if(shift > len/2), we should move in the opposite direction. That would save RAM
     _shift *= _sizeof;
-    uint8_t *tmp = (uint8_t *)malloc(_shift);
+    uint8_t *tmp = m_new(uint8_t, _shift);
     for(size_t m=0; m < in->m; m++) {
         memcpy(tmp, &data[m*len*_sizeof], _shift);
         memcpy(&data[m*len*_sizeof], &data[m*len*_sizeof+_shift], len*_sizeof-_shift);

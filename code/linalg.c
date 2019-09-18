@@ -12,6 +12,7 @@
 #include <string.h>
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/misc.h"
 #include "linalg.h"
 
 mp_obj_t linalg_transpose(mp_obj_t self_in) {
@@ -37,14 +38,14 @@ mp_obj_t linalg_transpose(mp_obj_t self_in) {
     if((self->m != 1) && (self->n != 1)) {
         uint8_t *c = (uint8_t *)self->data->items;
         // self->bytes is the size of the bytearray, irrespective of the typecode
-        uint8_t *tmp = (uint8_t *)malloc(self->bytes);
+        uint8_t *tmp = m_new(uint8_t, self->bytes);
         for(size_t m=0; m < self->m; m++) {
             for(size_t n=0; n < self->n; n++) {
                 memcpy(tmp+_sizeof*(n*self->m + m), c+_sizeof*(m*self->n + n), _sizeof);
             }
         }
         memcpy(self->data->items, tmp, self->bytes);
-        free(tmp);
+        m_del(uint8_t, tmp, self->bytes);
     } 
     SWAP(size_t, self->m, self->n);
     return mp_const_none;
@@ -130,4 +131,29 @@ mp_obj_t linalg_inv(mp_obj_t o_in) {
     }
     ndarray_obj_t *inverted = invert_matrix(o->data, o->m);
     return MP_OBJ_FROM_PTR(inverted);
+}
+
+mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
+    // TODO: should the results be upcast?
+    ndarray_obj_t *m1 = MP_OBJ_TO_PTR(_m1);
+    ndarray_obj_t *m2 = MP_OBJ_TO_PTR(_m2);    
+    if(m1->n != m2->m) {
+        mp_raise_ValueError("matrix dimensions do not match");
+    }
+    ndarray_obj_t *out = create_new_ndarray(m1->m, m2->n, NDARRAY_FLOAT);
+    float *outdata = (float *)out->data->items;
+    float sum, v1, v2;
+    for(size_t i=0; i < m1->n; i++) {
+        for(size_t j=0; j < m2->m; j++) {
+            sum = 0.0;
+            for(size_t k=0; k < m1->m; k++) {
+                // (j, k) * (k, j)
+                v1 = ndarray_get_float_value(m1->data->items, m1->data->typecode, i*m1->n+k);
+                v2 = ndarray_get_float_value(m2->data->items, m2->data->typecode, k*m2->n+j);
+                sum += v1 * v2;
+            }
+            outdata[i*m1->m+j] = sum;
+        }
+    }
+    return MP_OBJ_FROM_PTR(out);
 }

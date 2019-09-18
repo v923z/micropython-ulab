@@ -9,12 +9,15 @@
 */
     
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "py/runtime.h"
+#include "py/binary.h"
+#include "py/obj.h"
+#include "py/objarray.h"
 #include "ndarray.h"
 #include "fft.h"
-
 
 void fft_kernel(float *real, float *imag, int n, int isign) {
     // This is basically a modification of four1 from Numerical Recipes
@@ -42,9 +45,9 @@ void fft_kernel(float *real, float *imag, int n, int isign) {
     while (n > mmax) {
         istep = mmax << 1;
         theta = -1.0*isign*6.28318530717959/istep;
-        wtemp = sin(0.5 * theta);
+        wtemp = sinf(0.5 * theta);
         wpr = -2.0 * wtemp * wtemp;
-        wpi = sin(theta);
+        wpi = sinf(theta);
         wr = 1.0;
         wi = 0.0;
         for(m = 0; m < mmax; m++) {
@@ -114,4 +117,30 @@ mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     tuple[0] = out_re;
     tuple[1] = out_im;
     return mp_obj_new_tuple(2, tuple);
+}
+
+mp_obj_t fft_spectrum(mp_obj_t oin) {
+    // calculates the the spectrum of a single real ndarray in place
+    if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+        mp_raise_NotImplementedError("FFT is defined for ndarrays only");
+    }
+    ndarray_obj_t *re = MP_OBJ_TO_PTR(oin);
+    uint16_t len = re->data->len;
+    if((re->m > 1) && (re->n > 1)) {
+        mp_raise_ValueError("input data must be an array");
+    }
+    if((len & (len-1)) != 0) {
+        mp_raise_ValueError("input array length must be power of 2");
+    }
+    if(re->data->typecode != NDARRAY_FLOAT) {
+        mp_raise_TypeError("input array must be of type float");
+    }
+    float *data_re = (float *)re->data->items;
+    ndarray_obj_t *im = create_new_ndarray(1, len, NDARRAY_FLOAT);
+    float *data_im = (float *)im->data->items;
+    fft_kernel(data_re, data_im, len, 1);
+    for(size_t i=0; i < len; i++) {
+        data_re[i] = sqrtf(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
+    }
+    return mp_const_none;
 }
