@@ -136,11 +136,11 @@ mp_obj_t fft_spectrum(mp_obj_t oin) {
         mp_raise_TypeError("input array must be of type float");
     }
     float *data_re = (float *)re->data->items;
-    ndarray_obj_t *im = create_new_ndarray(1, len, NDARRAY_FLOAT);
-    float *data_im = (float *)im->data->items;
+    float *data_im = m_new(float, len);
     fft_kernel(data_re, data_im, len, 1);
     for(size_t i=0; i < len; i++) {
         data_re[i] = sqrtf(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
     }
+    m_del(float, data_im, len);
     return mp_const_none;
 }

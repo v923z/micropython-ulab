@@ -12,5 +12,6 @@
 #define _POLY_
 
 mp_obj_t poly_polyval(mp_obj_t , mp_obj_t );
+mp_obj_t poly_polyfit(size_t  , const mp_obj_t *);
 
 #endif

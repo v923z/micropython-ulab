@@ -40,6 +40,8 @@ typedef struct _ndarray_obj_t {
 mp_obj_t mp_obj_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
 
 float ndarray_get_float_value(void *, uint8_t , size_t );
+void fill_array_iterable(float *, mp_obj_t );
+
 void ndarray_print_row(const mp_print_t *, mp_obj_array_t *, size_t , size_t );
 void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
 void ndarray_assign_elements(mp_obj_array_t *, mp_obj_t , uint8_t , size_t *);

@@ -51,6 +51,16 @@ float ndarray_get_float_value(void *data, uint8_t typecode, size_t index) {
     }
 }
 
+void fill_array_iterable(float *array, mp_obj_t iterable) {
+    mp_obj_iter_buf_t x_buf;
+    mp_obj_t x_item, x_iterable = mp_getiter(iterable, &x_buf);
+    size_t i=0;
+    while ((x_item = mp_iternext(x_iterable)) != MP_OBJ_STOP_ITERATION) {
+        array[i] = (float)mp_obj_get_float(x_item);
+        i++;
+    }
+}
+
 void ndarray_print_row(const mp_print_t *print, mp_obj_array_t *data, size_t n0, size_t n) {
     mp_print_str(print, "[");
     size_t i;
@@ -158,7 +168,6 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     uint8_t dtype = ndarray_init_helper(n_args, args, &kw_args);
 
-    
     size_t len1, len2=0, i=0;
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
     if (len_in == MP_OBJ_NULL) {

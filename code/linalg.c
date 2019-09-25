@@ -73,55 +73,52 @@ mp_obj_t linalg_reshape(mp_obj_t self_in, mp_obj_t shape) {
     return MP_OBJ_FROM_PTR(self);
 }
 
-ndarray_obj_t *invert_matrix(mp_obj_array_t *data, size_t N) {
-    // After inversion the matrix is most certainly a float
-    ndarray_obj_t *tmp = create_new_ndarray(N, N, NDARRAY_FLOAT);
-    // initially, this is the unit matrix: this is what will be returned a
-    // after all the transformations
-    ndarray_obj_t *unitm = create_new_ndarray(N, N, NDARRAY_FLOAT);
+bool linalg_invert_matrix(float *data, size_t N) {
+    // returns true, of the inversion was successful, 
+    // false, if the matrix is singular
+    
+    // initially, this is the unit matrix: the contents of this matrix is what 
+    // will be returned after all the transformations
+    float *unit = m_new(float, N*N);
 
-    float *c = (float *)tmp->data->items;
-    float *unit = (float *)unitm->data->items;
-    mp_obj_t elem;
-    float elemf;
-    for(size_t m=0; m < N; m++) { // rows first
-        for(size_t n=0; n < N; n++) { // columns next
-            // this could, perhaps, be done in single line...
-            elem = mp_binary_get_val_array(data->typecode, data->items, m*N+n);
-            elemf = (float)mp_obj_get_float(elem);
-            memcpy(&c[m*N+n], &elemf, sizeof(float));
-        }
-        // initialise the unit matrix
-        elemf = 1.0;
-        memcpy(&unit[m*(N+1)], &elemf, sizeof(float));
+    float elem = 1.0;
+    // initialise the unit matrix
+    memset(unit, 0, sizeof(float)*N*N);
+    for(size_t m=0; m < N; m++) {
+        memcpy(&unit[m*(N+1)], &elem, sizeof(float));
     }
     for(size_t m=0; m < N; m++){
         // this could be faster with ((c < epsilon) && (c > -epsilon))
-        if(abs(c[m*(N+1)]) < epsilon) {
-            // TODO: check what kind of exception numpy raises
-            mp_raise_ValueError("input matrix is singular");
+        if(abs(data[m*(N+1)]) < epsilon) {
+            m_del(float, unit, N*N);
+            return false;
         }
         for(size_t n=0; n < N; n++){
             if(m != n){
-                elemf = c[N*n+m] / c[m*(N+1)];
+                elem = data[N*n+m] / data[m*(N+1)];
                 for(size_t k=0; k < N; k++){
-                    c[N*n+k] -= elemf * c[N*m+k];
-                    unit[N*n+k] -= elemf * unit[N*m+k];
+                    data[N*n+k] -= elem * data[N*m+k];
+                    unit[N*n+k] -= elem * unit[N*m+k];
                 }
             }
         }
     }
     for(size_t m=0; m < N; m++){ 
-        elemf = c[m*(N+1)];
+        elem = data[m*(N+1)];
         for(size_t n=0; n < N; n++){
-            c[N*m+n] /= elemf;
-            unit[N*m+n] /= elemf;
+            data[N*m+n] /= elem;
+            unit[N*m+n] /= elem;
         }
     }
-    return unitm;
+    memcpy(data, unit, sizeof(float)*N*N);
+    m_del(float, unit, N*N);
+    return true;
 }
 
 mp_obj_t linalg_inv(mp_obj_t o_in) {
+    if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
+        mp_raise_TypeError("only ndarrays can be inverted");
+    }
     ndarray_obj_t *o = MP_OBJ_TO_PTR(o_in);
     if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         mp_raise_TypeError("only ndarray objects can be inverted");
@@ -129,7 +126,24 @@ mp_obj_t linalg_inv(mp_obj_t o_in) {
     if(o->m != o->n) {
         mp_raise_ValueError("only square matrices can be inverted");
     }
-    ndarray_obj_t *inverted = invert_matrix(o->data, o->m);
+    ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
+    float *data = (float *)inverted->data->items;
+    mp_obj_t elem;
+    for(size_t m=0; m < o->m; m++) { // rows first
+        for(size_t n=0; n < o->n; n++) { // columns next
+            // this could, perhaps, be done in single line... 
+            // On the other hand, we probably spend little time here
+            elem = mp_binary_get_val_array(o->data->typecode, o->data->items, m*o->n+n);
+            data[m*o->n+n] = (float)mp_obj_get_float(elem);
+        }
+    }
+    
+    if(!linalg_invert_matrix(data, o->m)) {
+        // TODO: I am not sure this is needed here. Otherwise, 
+        // how should we free up the unused RAM of inverted?
+        m_del(float, inverted->data->items, o->n*o->n);
+        mp_raise_ValueError("input matrix is singular");
+    }
     return MP_OBJ_FROM_PTR(inverted);
 }
 
