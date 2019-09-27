@@ -1,5 +1,5 @@
 
-.. code ::
+ipython3.. code ::
         
     %pylab inline
 .. parsed-literal::
@@ -24,12 +24,12 @@ The main points of ulab are
    arrays/matrices (universal functions)
 -  basic linear algebra routines (matrix inversion, matrix reshaping,
    and transposition)
--  polynomial first to numerical data
+-  polynomial fits to numerical data
 -  fast Fourier transforms
 
 The code itself is split into submodules. This should make exclusion of
-unnecessary function, if storage space is a concern. Each section of the
-implementation part kicks out with a short discussion on what can be
+unnecessary functions, if storage space is a concern. Each section of
+the implementation part kicks out with a short discussion on what can be
 done with the particular submodule, and what are the tripping points at
 the C level. I hope that these musings can be used as a starting point
 for further discussion on the code.
@@ -56,21 +56,21 @@ directly from the notebook. This is why this section contains a couple
 of magic functions. But once again: the C module can be used without the
 notebook.
 
-.. code ::
+ipython3.. code ::
         
     %cd ../../micropython/ports/unix/
 .. parsed-literal::
 
     /home/v923z/sandbox/micropython/v1.11/micropython/ports/unix
 
-.. code ::
+ipython3.. code ::
         
     from IPython.core.magic import Magics, magics_class, line_cell_magic
     from IPython.core.magic import cell_magic, register_cell_magic, register_line_magic
     from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
     import subprocess
     import os
-.. code ::
+ipython3.. code ::
         
     def string_to_matrix(string):
         matrix = []
@@ -79,13 +79,6 @@ notebook.
             if len(_str) > 0:
                 matrix.append([float(n) for n in _str.split(',')])
         return array(matrix)
-.. code ::
-        
-    %cd ../../micropython/ports/unix/
-.. parsed-literal::
-
-    /home/v923z/sandbox/micropython/v1.11/micropython/ports/unix
-
 micropython magic command
 -------------------------
 
@@ -94,7 +87,7 @@ the arguments, either passes it to the unix, or the stm32
 implementation. In the latter case, a pyboard must be connected to the
 computer, and must be initialised beforehand.
 
-.. code ::
+ipython3.. code ::
         
     @magics_class
     class PyboardMagic(Magics):
@@ -160,7 +153,7 @@ computer, and must be initialised beforehand.
 pyboard initialisation
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     import pyboard
     pyb = pyboard.Pyboard('/dev/ttyACM0')
@@ -168,11 +161,11 @@ pyboard initialisation
 pyboad detach
 ~~~~~~~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     pyb.exit_raw_repl()
     pyb.close()
-.. code ::
+ipython3.. code ::
         
     import IPython
     
@@ -206,7 +199,7 @@ Code magic
 The following cell magic simply writes a licence header, and the
 contents of the cell to the file given in the header of the cell.
 
-.. code ::
+ipython3.. code ::
         
     @magics_class
     class MyMagics(Magics):
@@ -235,14 +228,10 @@ contents of the cell to the file given in the header of the cell.
 Notebook conversion
 ===================
 
-.. code ::
+ipython3.. code ::
         
     %cd ../../../ulab/docs/
-.. parsed-literal::
-
-    /home/v923z/sandbox/micropython/v1.11/ulab/docs
-
-.. code ::
+ipython3.. code ::
         
     import nbformat as nb
     import nbformat.v4.nbbase as nb4
@@ -339,6 +328,17 @@ replaced by a single void array. We should, perhaps, consider the pros
 and cons of that. One patent advantage is that we could get rid of the
 verbatim copy of array_new function in ndarray.c. On the other hand,
 objarray.c facilities couldn’t be used anymore.**
+
+Handling different types
+------------------------
+
+In order to make the code type-agnostic, we will resort to macros, where
+necessary. This will inevitably add to the firmware size, because, in
+effect, we unroll the code for each possible case. However, the source
+will be much more readable. Also note that by unrolling, we no longer
+need intermediate containers and we no longer need to dispatch
+type-conversion functions, which means that we should be able to gain in
+speed.
 
 Additional structure members in numpy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -453,7 +453,7 @@ arrays), or an iterable of iterables (matrices) into the constructor. In
 addition, the constructor can take a keyword argument, ``dtype``, that
 will force type conversion. The default value is ``float``.
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -493,7 +493,7 @@ This is something that should be sorted out in the future. As a
 temporary solution, we could implement the ``getter`` and ``setter``
 special methods that handle this issue.
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -529,7 +529,7 @@ Iterators
 ``ndarray`` objects can be iterated on, and just as in numpy, matrices
 are iterated along their first axis, and they return ``ndarray``\ s.
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -556,7 +556,7 @@ are iterated along their first axis, and they return ``ndarray``\ s.
 
 On the other hand, flat arrays return their elements:
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -588,24 +588,780 @@ On the other hand, flat arrays return their elements:
 Upcasting
 ---------
 
-There are some unexpected results in numpy. E.g., it seems that the
-upcasting happens only *after* the calculation has been carried out.
-Besides, the sum of a signed and an unsigned character should be an
-unsigned integer.
+The following section shows the upcasting rules of ``numpy``, and
+immediately after each case, the test for ``ulab``.
 
-.. code ::
+Question: what should happen with the division? ``numpy`` seems to
+convert to float…
+
+uint8
+~~~~~
+
+ipython3.. code ::
         
-    a = array([200], dtype=int8)
-    b = array([201], dtype=uint8)
-    a + b
+    a = array([100], dtype=uint8)
+    b = array([101], dtype=uint8)
+    a+b, a-b, a*b, a/b
 
 
 
 .. parsed-literal::
 
-    array([145], dtype=int16)
+    (array([201], dtype=uint8),
+     array([255], dtype=uint8),
+     array([116], dtype=uint8),
+     array([0.99009901]))
 
 
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.uint8)
+    b = ulab.ndarray([101], dtype=ulab.uint8)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=uint8)
+    ndarray([255], dtype=uint8)
+    ndarray([116], dtype=uint8)
+    ndarray([0], dtype=uint8)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=uint8)
+    b = array([101], dtype=int8)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=int16),
+     array([-1], dtype=int16),
+     array([10100], dtype=int16),
+     array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.uint8)
+    b = ulab.ndarray([101], dtype=ulab.int8)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=int16)
+    ndarray([-1], dtype=int16)
+    ndarray([10100], dtype=int16)
+    ndarray([0], dtype=int16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=uint8)
+    b = array([101], dtype=uint16)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=uint16),
+     array([65535], dtype=uint16),
+     array([10100], dtype=uint16),
+     array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.uint8)
+    b = ulab.ndarray([101], dtype=ulab.uint16)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=uint16)
+    ndarray([65535], dtype=uint16)
+    ndarray([10100], dtype=uint16)
+    ndarray([0], dtype=uint16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=uint8)
+    b = array([101], dtype=int16)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=int16),
+     array([-1], dtype=int16),
+     array([10100], dtype=int16),
+     array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.uint8)
+    b = ulab.ndarray([101], dtype=ulab.int16)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=int16)
+    ndarray([-1], dtype=int16)
+    ndarray([10100], dtype=int16)
+    ndarray([0], dtype=int16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=uint8)
+    b = array([101], dtype=float)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201.]), array([-1.]), array([10100.]), array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.uint8)
+    b = ulab.ndarray([101], dtype=ulab.float)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201.0], dtype=float)
+    ndarray([-1.0], dtype=float)
+    ndarray([10100.0], dtype=float)
+    ndarray([0.9900990128517151], dtype=float)
+    
+    
+
+int8
+~~~~
+
+ipython3.. code ::
+        
+    a = array([100], dtype=int8)
+    b = array([101], dtype=uint8)
+    a + b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=int16),
+     array([-1], dtype=int16),
+     array([10100], dtype=int16),
+     array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.int8)
+    b = ulab.ndarray([101], dtype=ulab.uint8)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=int16)
+    ndarray([-1], dtype=int16)
+    ndarray([10100], dtype=int16)
+    ndarray([0], dtype=int16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100, 101], dtype=int8)
+    b = array([200, 101], dtype=int8)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([ 44, -54], dtype=int8),
+     array([-100,    0], dtype=int8),
+     array([ 32, -39], dtype=int8),
+     array([-1.78571429,  1.        ]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100, 101], dtype=ulab.int8)
+    b = ulab.ndarray([200, 101], dtype=ulab.int8)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([44, -54], dtype=int8)
+    ndarray([-100, 0], dtype=int8)
+    ndarray([32, -39], dtype=int8)
+    ndarray([-1, 1], dtype=int8)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=int8)
+    b = array([200], dtype=uint16)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([300], dtype=int32),
+     array([-100], dtype=int32),
+     array([20000], dtype=int32),
+     array([0.5]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.int8)
+    b = ulab.ndarray([200], dtype=ulab.uint16)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([300], dtype=int16)
+    ndarray([-100], dtype=int16)
+    ndarray([20000], dtype=int16)
+    ndarray([0], dtype=int16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=int8)
+    b = array([200], dtype=int16)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([300], dtype=int16),
+     array([-100], dtype=int16),
+     array([20000], dtype=int16),
+     array([0.5]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.int8)
+    b = ulab.ndarray([200], dtype=ulab.int16)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([300], dtype=int16)
+    ndarray([-100], dtype=int16)
+    ndarray([20000], dtype=int16)
+    ndarray([0], dtype=int16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100, 101], dtype=int8)
+    b = array([200, 101], dtype=float)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([300., 202.]),
+     array([-100.,    0.]),
+     array([20000., 10201.]),
+     array([0.5, 1. ]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100, 101], dtype=ulab.int8)
+    b = ulab.ndarray([200, 101], dtype=ulab.float)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([300.0, 202.0], dtype=float)
+    ndarray([-100.0, 0.0], dtype=float)
+    ndarray([20000.0, 10201.0], dtype=float)
+    ndarray([0.5, 1.0], dtype=float)
+    
+    
+
+uint16
+~~~~~~
+
+ipython3.. code ::
+        
+    a = array([100, 101], dtype=uint16)
+    b = array([200, 101], dtype=uint8)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([300, 202], dtype=uint16),
+     array([65436,     0], dtype=uint16),
+     array([20000, 10201], dtype=uint16),
+     array([0.5, 1. ]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100, 101], dtype=ulab.uint16)
+    b = ulab.ndarray([200, 101], dtype=ulab.uint8)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([300, 202], dtype=uint16)
+    ndarray([65436, 0], dtype=uint16)
+    ndarray([20000, 10201], dtype=uint16)
+    ndarray([0, 1], dtype=uint16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100, 101], dtype=uint16)
+    b = array([200, 101], dtype=int8)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([ 44, 202], dtype=int32),
+     array([156,   0], dtype=int32),
+     array([-5600, 10201], dtype=int32),
+     array([-1.78571429,  1.        ]))
+
+
+
+**This deviates from numpy’s behaviour, because we don’t have int32.**
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100, 101], dtype=ulab.uint16)
+    b = ulab.ndarray([200, 101], dtype=ulab.int8)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([44, 202], dtype=uint16)
+    ndarray([156, 0], dtype=uint16)
+    ndarray([59936, 10201], dtype=uint16)
+    ndarray([65535, 1], dtype=uint16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=uint16)
+    b = array([101], dtype=uint16)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=uint16),
+     array([65535], dtype=uint16),
+     array([10100], dtype=uint16),
+     array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.uint16)
+    b = ulab.ndarray([101], dtype=ulab.uint16)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=uint16)
+    ndarray([65535], dtype=uint16)
+    ndarray([10100], dtype=uint16)
+    ndarray([0], dtype=uint16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=uint16)
+    b = array([101], dtype=int16)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=int32),
+     array([-1], dtype=int32),
+     array([10100], dtype=int32),
+     array([0.99009901]))
+
+
+
+**Again, in numpy, the result is an int32**
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.uint16)
+    b = ulab.ndarray([101], dtype=ulab.int16)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201.0], dtype=float)
+    ndarray([-1.0], dtype=float)
+    ndarray([10100.0], dtype=float)
+    ndarray([0.0], dtype=float)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=uint16)
+    b = array([101], dtype=float)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201.]), array([-1.]), array([10100.]), array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.uint16)
+    b = ulab.ndarray([101], dtype=ulab.float)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201.0], dtype=float)
+    ndarray([-1.0], dtype=float)
+    ndarray([10100.0], dtype=float)
+    ndarray([0.9900990128517151], dtype=float)
+    
+    
+
+int16
+~~~~~
+
+ipython3.. code ::
+        
+    a = array([100], dtype=int16)
+    b = array([101], dtype=uint8)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=int16),
+     array([-1], dtype=int16),
+     array([10100], dtype=int16),
+     array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.int16)
+    b = ulab.ndarray([101], dtype=ulab.uint8)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=int16)
+    ndarray([-1], dtype=int16)
+    ndarray([10100], dtype=int16)
+    ndarray([0], dtype=int16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=int16)
+    b = array([101], dtype=int8)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=int16),
+     array([-1], dtype=int16),
+     array([10100], dtype=int16),
+     array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.int16)
+    b = ulab.ndarray([101], dtype=ulab.int8)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=int16)
+    ndarray([-1], dtype=int16)
+    ndarray([10100], dtype=int16)
+    ndarray([0], dtype=int16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=int16)
+    b = array([101], dtype=uint16)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=int32),
+     array([-1], dtype=int32),
+     array([10100], dtype=int32),
+     array([0.99009901]))
+
+
+
+**While the results are correct, here we have float instead of int32**
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.int16)
+    b = ulab.ndarray([101], dtype=ulab.uint16)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201.0], dtype=float)
+    ndarray([-1.0], dtype=float)
+    ndarray([10100.0], dtype=float)
+    ndarray([0.0], dtype=float)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=int16)
+    b = array([101], dtype=int16)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201], dtype=int16),
+     array([-1], dtype=int16),
+     array([10100], dtype=int16),
+     array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.int16)
+    b = ulab.ndarray([101], dtype=ulab.int16)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201], dtype=int16)
+    ndarray([-1], dtype=int16)
+    ndarray([10100], dtype=int16)
+    ndarray([0], dtype=int16)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([100], dtype=int16)
+    b = array([101], dtype=float)
+    a+b, a-b, a*b, a/b
+
+
+
+.. parsed-literal::
+
+    (array([201.]), array([-1.]), array([10100.]), array([0.99009901]))
+
+
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([100], dtype=ulab.int16)
+    b = ulab.ndarray([101], dtype=ulab.float)
+    print(a+b)
+    print(a-b)
+    print(a*b)
+    print(a/b)
+.. parsed-literal::
+
+    ndarray([201.0], dtype=float)
+    ndarray([-1.0], dtype=float)
+    ndarray([10100.0], dtype=float)
+    ndarray([0.9900990128517151], dtype=float)
+    
+    
 
 When in an operation the ``dtype`` of two arrays is different, the
 result’s ``dtype`` will be decided by the following upcasting rules:
@@ -617,26 +1373,22 @@ result’s ``dtype`` will be decided by the following upcasting rules:
 
 3. 
 
-   -  ``uint8`` + ``int8`` => ``uint16``,
+   -  ``uint8`` + ``int8`` => ``int16``,
 
-   -  ``uint8`` + ``int16`` => ``uint16``
+   -  ``uint8`` + ``int16`` => ``int16``
 
    -  ``uint8`` + ``uint16`` => ``uint16``
 
    -  ``int8`` + ``int16`` => ``int16``
 
-   -  ``int8`` + ``uint16`` => ``uint16``
+   -  ``int8`` + ``uint16`` => ``uint16`` (in numpy, it is a ``int32``)
 
-   -  ``uint16`` + ``int16`` => ``float``
+   -  ``uint16`` + ``int16`` => ``float`` (in numpy, it is a ``int32``)
 
 4. When the right hand side of a binary operator is a micropython
    variable, ``mp_obj_int``, or ``mp_obj_float``, then the result will
    be promoted to ``dtype`` ``float``. This is necessary, because a
    micropython integer can be 31 bites wide.
-
-Note that the rules of ``numpy`` are not very consistent: while
-upcasting is meant to preserve the accuracy of the computation, the sum
-of an ``int8``, and a ``uint8`` is an ``int16``.
 
 ``numpy`` is also inconsistent in how it represents ``dtype``: as an
 argument, it is denoted by the constants ``int8``, ``uint8``, etc.,
@@ -665,7 +1417,7 @@ intermediate array (at the expense of RAM), then the ``for`` loops can
 be made more efficient, because one does not have to dispatch the
 read-out function in each iteration.
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -687,7 +1439,7 @@ Simple running weighted average
 With the subscription tools, a weighted running average can very easily
 be implemented as follows:
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -722,7 +1474,7 @@ At the moment, only ``len`` is implemented, which returns the number of
 elements for one-dimensional arrays, and the length of the first axis
 for matrices. One should consider other possibilities.
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -741,7 +1493,7 @@ for matrices. One should consider other possibilities.
     
     
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -766,7 +1518,7 @@ for matrices. One should consider other possibilities.
 Class methods: shape, size, rawsize
 -----------------------------------
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -821,7 +1573,7 @@ Class methods: shape, size, rawsize
 ndarray.h
 ---------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsndarray.h
+https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.h
 
 .. code:: cpp
         
@@ -838,12 +1590,23 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetsndarray.h
     
     const mp_obj_type_t ulab_ndarray_type;
     
+    #define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op) do {\
+        ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);\
+        type_out *(odata) = (type_out *)out->data->items;\
+        type_left *left = (type_left *)(ol)->data->items;\
+        type_right *right = (type_right *)(or)->data->items;\
+        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] + right[i];}\
+        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] - right[i];}\
+        if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] * right[i];}\
+        if((op) == MP_BINARY_OP_TRUE_DIVIDE) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] / right[i];}\
+        return MP_OBJ_FROM_PTR(out);\
+        } while(0)
     
     enum NDARRAY_TYPE {
-        NDARRAY_UINT8 = 'b',
-        NDARRAY_INT8 = 'B',
-        NDARRAY_UINT16 = 'i', 
-        NDARRAY_INT16 = 'I',
+        NDARRAY_UINT8 = 'B',
+        NDARRAY_INT8 = 'b',
+        NDARRAY_UINT16 = 'H', 
+        NDARRAY_INT16 = 'h',
         NDARRAY_FLOAT = 'f',
     };
     
@@ -881,7 +1644,7 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetsndarray.h
 ndarray.c
 ---------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsndarray.c
+https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
 
 .. code:: cpp
         
@@ -1278,6 +2041,7 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetsndarray.c
     }
     
     mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+        // TODO: swap left and right for scalar + ndarray
         ndarray_obj_t *ol = MP_OBJ_TO_PTR(lhs);
         uint8_t typecode;
         float value;
@@ -1348,81 +2112,82 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetsndarray.c
                 }
             } else if((op == MP_BINARY_OP_ADD) || (op == MP_BINARY_OP_SUBTRACT) || 
                 (op == MP_BINARY_OP_TRUE_DIVIDE) || (op == MP_BINARY_OP_MULTIPLY)) {
-                // for in-place operations, we won't need this!!!
-                typecode = upcasting(or->data->typecode, ol->data->typecode);
-                ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);
-                if(typecode == NDARRAY_UINT8) {
-                    uint8_t *outdata = (uint8_t *)out->data->items;
-                    for(size_t i=0; i < ol->data->len; i++) {
-                        value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
-                        if(op == MP_BINARY_OP_ADD) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
-                        } else if(op == MP_BINARY_OP_SUBTRACT) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
-                        } else if(op == MP_BINARY_OP_MULTIPLY) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
-                        } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
-                        }
+                // These are the upcasting rules
+                // float always becomes float
+                // operation on identical types preserves type
+                // uint8 + int8 => int16
+                // uint8 + int16 => int16
+                // uint8 + uint16 => uint16
+                // int8 + int16 => int16
+                // int8 + uint16 => uint16
+                // uint16 + int16 => float
+                // The parameters of RUN_BINARY_LOOP are 
+                // typecode of result, type_out, type_left, type_right, lhs operand, rhs operand, operator
+                if(ol->data->typecode == NDARRAY_UINT8) {
+                    if(or->data->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT8, uint8_t, uint8_t, uint8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint8_t, uint16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint8_t, float, ol, or, op);
                     }
-                } else if(typecode == NDARRAY_INT8) {
-                    int8_t *outdata = (int8_t *)out->data->items;
-                    for(size_t i=0; i < ol->data->len; i++) {
-                        value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
-                        if(op == MP_BINARY_OP_ADD) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
-                        } else if(op == MP_BINARY_OP_SUBTRACT) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
-                        } else if(op == MP_BINARY_OP_MULTIPLY) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
-                        } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
-                        }
-                    }                    
-                } else if(typecode == NDARRAY_UINT16) {
-                    uint16_t *outdata = (uint16_t *)out->data->items;
-                    for(size_t i=0; i < ol->data->len; i++) {
-                        value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
-                        if(op == MP_BINARY_OP_ADD) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
-                        } else if(op == MP_BINARY_OP_SUBTRACT) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
-                        } else if(op == MP_BINARY_OP_MULTIPLY) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
-                        } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
-                        }
+                } else if(ol->data->typecode == NDARRAY_INT8) {
+                    if(or->data->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT8, int8_t, int8_t, int8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, int8_t, float, ol, or, op);
+                    }                
+                } else if(ol->data->typecode == NDARRAY_UINT16) {
+                    if(or->data->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, int8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint16_t, int16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint8_t, float, ol, or, op);
                     }
-                } else if(typecode == NDARRAY_INT16) {
-                    int16_t *outdata = (int16_t *)out->data->items;
-                    for(size_t i=0; i < ol->data->len; i++) {
-                        value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
-                        if(op == MP_BINARY_OP_ADD) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
-                        } else if(op == MP_BINARY_OP_SUBTRACT) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
-                        } else if(op == MP_BINARY_OP_MULTIPLY) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
-                        } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
-                        }
-                    } 
-                } else if(typecode == NDARRAY_FLOAT) {
-                    float *outdata = (float *)out->data->items;
-                    for(size_t i=0; i < ol->data->len; i++) {
-                        value = ndarray_get_float_value(or->data->items, or->data->typecode, i);
-                        if(op == MP_BINARY_OP_ADD) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) + value;
-                        } else if(op == MP_BINARY_OP_SUBTRACT) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) - value;                            
-                        } else if(op == MP_BINARY_OP_MULTIPLY) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) * value;
-                        } else if(op == MP_BINARY_OP_TRUE_DIVIDE) {
-                            outdata[i] = ndarray_get_float_value(ol->data->items, ol->data->typecode, i) / value;
-                        }
+                } else if(ol->data->typecode == NDARRAY_INT16) {
+                    if(or->data->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, uint8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, int16_t, uint16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint16_t, float, ol, or, op);
                     }
+                } else if(ol->data->typecode == NDARRAY_FLOAT) {
+                    if(or->data->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, uint8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, int8_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, uint16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, int16_t, ol, or, op);
+                    } else if(or->data->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, float, ol, or, op);
+                    }
+                } else {
+                    mp_raise_TypeError("wrong input type");
                 }
-                return MP_OBJ_FROM_PTR(out);
+                // this instruction should never be reached, but we have to make the compiler happy
+                return MP_OBJ_NULL; 
             } else {
                 return MP_OBJ_NULL; // op not supported                                                        
             }
@@ -1443,6 +2208,21 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetsndarray.c
             default: return MP_OBJ_NULL; // operator not supported
         }
     }
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([1, 2, 3], dtype=ulab.uint8)
+    
+    print(a-a)
+.. parsed-literal::
+
+    ndarray([0, 0, 0], dtype=uint8)
+    
+    
 
 Linear algebra
 ==============
@@ -1466,7 +2246,7 @@ Examples
 Transpose of one- and two-dimensional arrays, .transpose()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -1513,7 +2293,7 @@ Transpose of one- and two-dimensional arrays, .transpose()
 .reshape()
 ~~~~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -1542,7 +2322,7 @@ Transpose of one- and two-dimensional arrays, .transpose()
 inverse of a matrix (inv)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -1570,7 +2350,7 @@ matrix multiplication (dot)
 With the ``dot`` function, we can now check, whether the inverse of the
 matrix was correct:
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -1603,7 +2383,7 @@ matrix was correct:
 linalg.h
 --------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetslinalg.h
+https://github.com/v923z/micropython-ulab/tree/master/code/linalg.h
 
 .. code:: cpp
         
@@ -1627,7 +2407,7 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetslinalg.h
 linalg.c
 --------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetslinalg.c
+https://github.com/v923z/micropython-ulab/tree/master/code/linalg.c
 
 .. code:: cpp
         
@@ -1813,7 +2593,7 @@ type ``float``.
 Examples
 --------
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -1863,7 +2643,7 @@ faster.
 vectorise.h
 -----------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsvectorise.h
+https://github.com/v923z/micropython-ulab/tree/master/code/vectorise.h
 
 .. code:: cpp
         
@@ -1902,7 +2682,7 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetsvectorise.h
 vectorise.c
 -----------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsvectorise.c
+https://github.com/v923z/micropython-ulab/tree/master/code/vectorise.c
 
 .. code:: cpp
         
@@ -2044,7 +2824,7 @@ Examples
 polyval
 ~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -2077,7 +2857,7 @@ polyfit
 
 First a perfect parabola with zero shift, and leading coefficient of 1.
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -2099,7 +2879,7 @@ First a perfect parabola with zero shift, and leading coefficient of 1.
 
 We can now take a more meaningful example: the data points scatter here:
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -2121,7 +2901,7 @@ We can now take a more meaningful example: the data points scatter here:
 
 Finally, let us see, what this looks like in numpy:
 
-.. code ::
+ipython3.. code ::
         
     x = array([-3, -2, -1, 0, 1, 2, 3])
     y = array([10, 5, 1, 0, 1, 4.2, 9.1])
@@ -2140,7 +2920,7 @@ Look at that!
 poly.h
 ------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetspoly.h
+https://github.com/v923z/micropython-ulab/tree/master/code/poly.h
 
 .. code:: cpp
         
@@ -2156,7 +2936,7 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetspoly.h
 poly.c
 ------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetspoly.c
+https://github.com/v923z/micropython-ulab/tree/master/code/poly.c
 
 .. code:: cpp
         
@@ -2373,7 +3153,7 @@ Examples
 Full FFT
 ~~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -2392,7 +3172,7 @@ Full FFT
 
 The same Fourier transform on numpy:
 
-.. code ::
+ipython3.. code ::
         
     fft.fft([0, 1, 2, 3, 0, 1, 2, 3])
 
@@ -2408,7 +3188,7 @@ The same Fourier transform on numpy:
 Spectrum
 ~~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -2426,7 +3206,7 @@ Spectrum
 And watch this: if you need the spectrum, but do not want to overwrite
 your data, you can do the following
 
-.. code ::
+ipython3.. code ::
         
     %%micropython -unix 1
     
@@ -2444,7 +3224,7 @@ your data, you can do the following
 fft.h
 -----
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsfft.h
+https://github.com/v923z/micropython-ulab/tree/master/code/fft.h
 
 .. code:: cpp
         
@@ -2465,7 +3245,7 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetsfft.h
 fft.c
 -----
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsfft.c
+https://github.com/v923z/micropython-ulab/tree/master/code/fft.c
 
 .. code:: cpp
         
@@ -2637,7 +3417,7 @@ the new array over and over again.
 Examples
 --------
 
-.. code ::
+ipython3.. code ::
         
     %%micropython
     
@@ -2671,7 +3451,7 @@ Examples
 numerical.h
 -----------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsnumerical.h
+https://github.com/v923z/micropython-ulab/tree/master/code/numerical.h
 
 .. code:: cpp
         
@@ -2704,7 +3484,7 @@ might make sense to factor out the parsing of arguments and keyword
 arguments. The void function ``numerical_parse_args`` fills in the
 pointer for the matrix/array, and the axis.
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsnumerical.c
+https://github.com/v923z/micropython-ulab/tree/master/code/numerical.c
 
 .. code:: cpp
         
@@ -3077,7 +3857,7 @@ new function definitions.
 ulab.c
 ------
 
-https://github.com/v923z/micropython-usermod/tree/master/snippetsulab.c
+https://github.com/v923z/micropython-ulab/tree/master/code/ulab.c
 
 .. code:: cpp
         
@@ -3245,7 +4025,7 @@ https://github.com/v923z/micropython-usermod/tree/master/snippetsulab.c
 makefile
 --------
 
-.. code ::
+ipython3.. code ::
         
     %%writefile ../../../ulab/code/micropython.mk
     
@@ -3286,17 +4066,17 @@ unix port
     GEN build/genhdr/qstrdefs.collected.h
     QSTR not updated
     CC ../../py/objmodule.c
-    CC ../../../ulab/code/fft.c
+    CC ../../../ulab/code/ndarray.c
     LINK micropython
        text	   data	    bss	    dec	    hex	filename
        2085	   6862	      0	   8947	   22f3	build/build/frozen_mpy.o
           2	      0	      0	      2	      2	build/build/frozen.o
-     460588	  57440	   2104	 520132	  7efc4	micropython
+     464996	  57440	   2104	 524540	  800fc	micropython
 
 stm32 port
 ~~~~~~~~~~
 
-.. code ::
+ipython3.. code ::
         
     %pwd ../stm32/
 

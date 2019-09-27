@@ -20,12 +20,23 @@
 
 const mp_obj_type_t ulab_ndarray_type;
 
+#define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op) do {\
+    ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);\
+    type_out *(odata) = (type_out *)out->data->items;\
+    type_left *left = (type_left *)(ol)->data->items;\
+    type_right *right = (type_right *)(or)->data->items;\
+    if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] + right[i];}\
+    if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] - right[i];}\
+    if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] * right[i];}\
+    if((op) == MP_BINARY_OP_TRUE_DIVIDE) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] / right[i];}\
+    return MP_OBJ_FROM_PTR(out);\
+    } while(0)
 
 enum NDARRAY_TYPE {
-    NDARRAY_UINT8 = 'b',
-    NDARRAY_INT8 = 'B',
-    NDARRAY_UINT16 = 'i', 
-    NDARRAY_INT16 = 'I',
+    NDARRAY_UINT8 = 'B',
+    NDARRAY_INT8 = 'b',
+    NDARRAY_UINT16 = 'H', 
+    NDARRAY_INT16 = 'h',
     NDARRAY_FLOAT = 'f',
 };
 

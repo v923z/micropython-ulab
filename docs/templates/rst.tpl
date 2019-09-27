@@ -11,14 +11,14 @@
 {% block input scoped%}
 
 {%- if '%%ccode' in cell.source.strip().split('\n')[0] -%}
-{{ 'https://github.com/v923z/micropython-usermod/tree/master/snippets' + cell.source.strip().split('\n')[0].split()[-1] }}
+{{ 'https://github.com/v923z/micropython-ulab/tree/master/code/' + cell.source.strip().split('\n')[0].split()[-1] }}
 
 .. code:: cpp
         
 {{ '\n'.join( cell.source.strip().split('\n')[1:] ) | indent }}
 
 {%- elif '%%makefile' in cell.source.strip().split('\n')[0] -%}
-{{ 'https://github.com/v923z/micropython-usermod/tree/master/snippets/' + cell.source.strip().split('\n')[0].split()[-1].split('/')[1] + '/micropython.mk' }}
+{{ 'https://github.com/v923z/micropython-ulab/tree/master/cpde/' + cell.source.strip().split('\n')[0].split()[-1].split('/')[1] + '/micropython.mk' }}
 
 .. code:: make
         
