@@ -21,5 +21,8 @@ mp_obj_t linalg_reshape(mp_obj_t , mp_obj_t );
 bool linalg_invert_matrix(float *, size_t );
 mp_obj_t linalg_inv(mp_obj_t );
 mp_obj_t linalg_dot(mp_obj_t , mp_obj_t );
+mp_obj_t linalg_zeros(mp_obj_t );
+mp_obj_t linalg_ones(mp_obj_t );
+mp_obj_t linalg_eye(mp_obj_t );
 
 #endif

@@ -11,6 +11,7 @@
 {% block input scoped%}
 
 {%- if '%%ccode' in cell.source.strip().split('\n')[0] -%}
+
 {{ 'https://github.com/v923z/micropython-ulab/tree/master/code/' + cell.source.strip().split('\n')[0].split()[-1] }}
 
 .. code:: cpp
@@ -18,7 +19,8 @@
 {{ '\n'.join( cell.source.strip().split('\n')[1:] ) | indent }}
 
 {%- elif '%%makefile' in cell.source.strip().split('\n')[0] -%}
-{{ 'https://github.com/v923z/micropython-ulab/tree/master/cpde/' + cell.source.strip().split('\n')[0].split()[-1].split('/')[1] + '/micropython.mk' }}
+
+{{ 'https://github.com/v923z/micropython-ulab/tree/master/code/' + cell.source.strip().split('\n')[0].split()[-1].split('/')[1] + '/micropython.mk' }}
 
 .. code:: make
         
@@ -38,6 +40,7 @@
 {%- elif 'name' in nb.metadata.get('language_info', {}) -%}
     {{ nb.metadata.language_info.name }}
 {%- endif -%}
+
 .. code ::
         
 {{ cell.source | indent}}
@@ -63,6 +66,7 @@
 {% block stream %}
 {%- if '%%ccode' in cell.source.strip().split('\n')[0] -%}
 {%- else -%}
+
 .. parsed-literal::
 
 {{ output.text | indent }}
@@ -108,6 +112,7 @@
 {% endblock data_latex %}
 
 {% block data_text scoped %}
+
 .. parsed-literal::
 
 {{ output.data['text/plain'] | indent }}
@@ -131,6 +136,7 @@
 
 {% block headingcell scoped %}
 {{ ("#" * cell.level + cell.source) | replace('\n', ' ') | convert_pandoc("markdown", "rst") }}
+
 {% endblock headingcell %}
 
 {% block unknowncell scoped %}

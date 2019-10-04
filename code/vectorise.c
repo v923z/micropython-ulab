@@ -11,7 +11,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <complex.h>
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/obj.h"
@@ -31,9 +30,9 @@ mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *o = MP_OBJ_TO_PTR(o_in);
         ndarray_obj_t *out = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
-        float *datain = (float *)o->data->items;
-        float *dataout = (float *)out->data->items;
-        for(size_t i=0; i < o->data->len; i++) {
+        float *datain = (float *)o->array->items;
+        float *dataout = (float *)out->array->items;
+        for(size_t i=0; i < o->array->len; i++) {
             dataout[i] = f(datain[i]);
         }
         return MP_OBJ_FROM_PTR(out);
@@ -41,7 +40,7 @@ mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
         MP_OBJ_IS_TYPE(o_in, &mp_type_range)) {
             mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
             ndarray_obj_t *out = create_new_ndarray(1, o->len, NDARRAY_FLOAT);
-            float *dataout = (float *)out->data->items;
+            float *dataout = (float *)out->array->items;
             mp_obj_iter_buf_t iter_buf;
             mp_obj_t item, iterable = mp_getiter(o_in, &iter_buf);
             size_t i=0;

@@ -38,7 +38,7 @@ mp_obj_t numerical_linspace(mp_obj_t _start, mp_obj_t _stop, mp_obj_t _len) {
     step = (mp_obj_get_float(_stop)-value)/(len-1);
     ndarray_obj_t *nd_array = create_new_ndarray(1, len, NDARRAY_FLOAT);
     for(size_t i=0; i < len; i++, value += step) {
-        mp_binary_set_val_array('f', nd_array->data->items, i, mp_obj_new_float(value));
+        mp_binary_set_val_array('f', nd_array->array->items, i, mp_obj_new_float(value));
     }
     return MP_OBJ_FROM_PTR(nd_array);
 }
@@ -112,41 +112,41 @@ STATIC mp_obj_t numerical_argmin_argmax_matrix(mp_obj_t oin, mp_obj_t axis, uint
     size_t best_idx;
     if((axis == mp_const_none) || (in->m == 1) || (in->n == 1)) { 
         // return the value for the flattened array
-        best_idx = numerical_argmin_argmax_single_line(in->data->items, 0, 
-                                                      in->data->len, 1, in->data->typecode, optype);
+        best_idx = numerical_argmin_argmax_single_line(in->array->items, 0, 
+                                                      in->array->len, 1, in->array->typecode, optype);
         if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
             return MP_OBJ_NEW_SMALL_INT(best_idx);
         } else {
             // TODO: do we have to do type conversion here, depending on the type of the input array?
-            return mp_obj_new_float(ndarray_get_float_value(in->data->items, in->data->typecode, best_idx));
+            return mp_obj_new_float(ndarray_get_float_value(in->array->items, in->array->typecode, best_idx));
         }
     } else {
         uint8_t _axis = mp_obj_get_int(axis);
         size_t m = (_axis == 0) ? 1 : in->m;
         size_t n = (_axis == 0) ? in->n : 1;
-        size_t len = in->data->len;
-        // TODO: pass in->data->typcode to create_new_ndarray
+        size_t len = in->array->len;
+        // TODO: pass in->array->typcode to create_new_ndarray
         ndarray_obj_t *out = create_new_ndarray(m, n, NDARRAY_FLOAT);
 
         // TODO: these two cases could probably be combined in a more elegant fashion...
         if(_axis == 0) { // vertical
             for(size_t i=0; i < n; i++) {
-                best_idx = numerical_argmin_argmax_single_line(in->data->items, i, len, 
-                                                               n, in->data->typecode, optype);
+                best_idx = numerical_argmin_argmax_single_line(in->array->items, i, len, 
+                                                               n, in->array->typecode, optype);
                 if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
-                    ((float_t *)out->data->items)[i] = (float)best_idx;
+                    ((float_t *)out->array->items)[i] = (float)best_idx;
                 } else {
-                    ((float_t *)out->data->items)[i] = ndarray_get_float_value(in->data->items, in->data->typecode, best_idx);
+                    ((float_t *)out->array->items)[i] = ndarray_get_float_value(in->array->items, in->array->typecode, best_idx);
                 }
             }
         } else { // horizontal
             for(size_t i=0; i < m; i++) {
-                best_idx = numerical_argmin_argmax_single_line(in->data->items, i*in->n, 
-                                                               (i+1)*in->n, 1, in->data->typecode, optype);
+                best_idx = numerical_argmin_argmax_single_line(in->array->items, i*in->n, 
+                                                               (i+1)*in->n, 1, in->array->typecode, optype);
                 if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
-                    ((float_t *)out->data->items)[i] = (float)best_idx;
+                    ((float_t *)out->array->items)[i] = (float)best_idx;
                 } else {
-                    ((float_t *)out->data->items)[i] = ndarray_get_float_value(in->data->items, in->data->typecode, best_idx);
+                    ((float_t *)out->array->items)[i] = ndarray_get_float_value(in->array->items, in->array->typecode, best_idx);
                 }
 
             }
@@ -185,29 +185,29 @@ STATIC mp_obj_t numerical_sum_mean_std_matrix(mp_obj_t oin, mp_obj_t axis, uint8
     ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
     if((axis == mp_const_none) || (in->m == 1) || (in->n == 1)) { 
         // return the value for the flattened array
-        return mp_obj_new_float(numerical_sum_mean_std_single_line(in->data->items, 0, 
-                                                      in->data->len, 1, in->data->typecode, optype));
+        return mp_obj_new_float(numerical_sum_mean_std_single_line(in->array->items, 0, 
+                                                      in->array->len, 1, in->array->typecode, optype));
     } else {
         uint8_t _axis = mp_obj_get_int(axis);
         size_t m = (_axis == 0) ? 1 : in->m;
         size_t n = (_axis == 0) ? in->n : 1;
-        size_t len = in->data->len;
+        size_t len = in->array->len;
         mp_float_t sms;
-        // TODO: pass in->data->typcode to create_new_ndarray
+        // TODO: pass in->array->typcode to create_new_ndarray
         ndarray_obj_t *out = create_new_ndarray(m, n, NDARRAY_FLOAT);
 
         // TODO: these two cases could probably be combined in a more elegant fashion...
         if(_axis == 0) { // vertical
             for(size_t i=0; i < n; i++) {
-                sms = numerical_sum_mean_std_single_line(in->data->items, i, len, 
-                                                               n, in->data->typecode, optype);
-                ((float_t *)out->data->items)[i] = sms;
+                sms = numerical_sum_mean_std_single_line(in->array->items, i, len, 
+                                                               n, in->array->typecode, optype);
+                ((float_t *)out->array->items)[i] = sms;
             }
         } else { // horizontal
             for(size_t i=0; i < m; i++) {
-                sms = numerical_sum_mean_std_single_line(in->data->items, i*in->n, 
-                                                               (i+1)*in->n, 1, in->data->typecode, optype);
-                ((float_t *)out->data->items)[i] = sms;
+                sms = numerical_sum_mean_std_single_line(in->array->items, i*in->n, 
+                                                               (i+1)*in->n, 1, in->array->typecode, optype);
+                ((float_t *)out->array->items)[i] = sms;
             }
         }
     return MP_OBJ_FROM_PTR(out);
@@ -311,10 +311,10 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_ValueError("axis must be None, 0, or 1");
     }
     ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
-    uint8_t _sizeof = mp_binary_get_size('@', in->data->typecode, NULL);
+    uint8_t _sizeof = mp_binary_get_size('@', in->array->typecode, NULL);
     size_t len;
     int16_t _shift;
-    uint8_t *data = (uint8_t *)in->data->items;
+    uint8_t *data = (uint8_t *)in->array->items;
     // TODO: transpose the matrix, if axis == 0
     if(shift < 0) {
         _shift = -shift;
@@ -346,11 +346,12 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             }            
         }
         m_del(uint8_t, tmp, _shift);
+        m_del(uint8_t, _data, _sizeof*len);
         return mp_const_none;
     }
     len = in->n;
     if((in->m == 1) || (in->n == 1)) {
-        len = in->data->len;
+        len = in->array->len;
     }
     _shift = _shift % len;
     if(shift < 0) _shift = len - _shift;
@@ -362,5 +363,6 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         memcpy(&data[m*len*_sizeof], &data[m*len*_sizeof+_shift], len*_sizeof-_shift);
         memcpy(&data[(m+1)*len*_sizeof-_shift], tmp, _shift);
     }
+    m_del(uint8_t, tmp, _shift);
     return mp_const_none;
 }

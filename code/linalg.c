@@ -18,7 +18,7 @@
 mp_obj_t linalg_transpose(mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // the size of a single item in the array
-    uint8_t _sizeof = mp_binary_get_size('@', self->data->typecode, NULL);
+    uint8_t _sizeof = mp_binary_get_size('@', self->array->typecode, NULL);
     
     // NOTE: In principle, we could simply specify the stride direction, and then we wouldn't 
     // even have to shuffle the elements. The downside of that approach is that we would have 
@@ -36,7 +36,7 @@ mp_obj_t linalg_transpose(mp_obj_t self_in) {
     
     // one-dimensional arrays can be transposed by simply swapping the dimensions
     if((self->m != 1) && (self->n != 1)) {
-        uint8_t *c = (uint8_t *)self->data->items;
+        uint8_t *c = (uint8_t *)self->array->items;
         // self->bytes is the size of the bytearray, irrespective of the typecode
         uint8_t *tmp = m_new(uint8_t, self->bytes);
         for(size_t m=0; m < self->m; m++) {
@@ -44,7 +44,7 @@ mp_obj_t linalg_transpose(mp_obj_t self_in) {
                 memcpy(tmp+_sizeof*(n*self->m + m), c+_sizeof*(m*self->n + n), _sizeof);
             }
         }
-        memcpy(self->data->items, tmp, self->bytes);
+        memcpy(self->array->items, tmp, self->bytes);
         m_del(uint8_t, tmp, self->bytes);
     } 
     SWAP(size_t, self->m, self->n);
@@ -116,6 +116,7 @@ bool linalg_invert_matrix(float *data, size_t N) {
 }
 
 mp_obj_t linalg_inv(mp_obj_t o_in) {
+    // since inv is not a class method, we have to inspect the input argument first
     if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         mp_raise_TypeError("only ndarrays can be inverted");
     }
@@ -127,13 +128,13 @@ mp_obj_t linalg_inv(mp_obj_t o_in) {
         mp_raise_ValueError("only square matrices can be inverted");
     }
     ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
-    float *data = (float *)inverted->data->items;
+    float *data = (float *)inverted->array->items;
     mp_obj_t elem;
     for(size_t m=0; m < o->m; m++) { // rows first
         for(size_t n=0; n < o->n; n++) { // columns next
             // this could, perhaps, be done in single line... 
             // On the other hand, we probably spend little time here
-            elem = mp_binary_get_val_array(o->data->typecode, o->data->items, m*o->n+n);
+            elem = mp_binary_get_val_array(o->array->typecode, o->array->items, m*o->n+n);
             data[m*o->n+n] = (float)mp_obj_get_float(elem);
         }
     }
@@ -141,7 +142,7 @@ mp_obj_t linalg_inv(mp_obj_t o_in) {
     if(!linalg_invert_matrix(data, o->m)) {
         // TODO: I am not sure this is needed here. Otherwise, 
         // how should we free up the unused RAM of inverted?
-        m_del(float, inverted->data->items, o->n*o->n);
+        m_del(float, inverted->array->items, o->n*o->n);
         mp_raise_ValueError("input matrix is singular");
     }
     return MP_OBJ_FROM_PTR(inverted);
@@ -155,15 +156,15 @@ mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
         mp_raise_ValueError("matrix dimensions do not match");
     }
     ndarray_obj_t *out = create_new_ndarray(m1->m, m2->n, NDARRAY_FLOAT);
-    float *outdata = (float *)out->data->items;
+    float *outdata = (float *)out->array->items;
     float sum, v1, v2;
     for(size_t i=0; i < m1->n; i++) {
         for(size_t j=0; j < m2->m; j++) {
             sum = 0.0;
             for(size_t k=0; k < m1->m; k++) {
                 // (j, k) * (k, j)
-                v1 = ndarray_get_float_value(m1->data->items, m1->data->typecode, i*m1->n+k);
-                v2 = ndarray_get_float_value(m2->data->items, m2->data->typecode, k*m2->n+j);
+                v1 = ndarray_get_float_value(m1->array->items, m1->array->typecode, i*m1->n+k);
+                v2 = ndarray_get_float_value(m2->array->items, m2->array->typecode, k*m2->n+j);
                 sum += v1 * v2;
             }
             outdata[i*m1->m+j] = sum;

@@ -81,34 +81,34 @@ mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     }
     // Check if input is of length of power of 2
     ndarray_obj_t *re = MP_OBJ_TO_PTR(args[0]);
-    uint16_t len = re->data->len;
+    uint16_t len = re->array->len;
     if((len & (len-1)) != 0) {
         mp_raise_ValueError("input array length must be power of 2");
     }
     
     ndarray_obj_t *out_re = create_new_ndarray(1, len, NDARRAY_FLOAT);
-    float *data_re = (float *)out_re->data->items;
+    float *data_re = (float *)out_re->array->items;
     
-    if(re->data->typecode == NDARRAY_FLOAT) {
-        memcpy((float *)out_re->data->items, (float *)re->data->items, re->bytes);
+    if(re->array->typecode == NDARRAY_FLOAT) {
+        memcpy((float *)out_re->array->items, (float *)re->array->items, re->bytes);
     } else {
         for(size_t i=0; i < len; i++) {
-            data_re[i] = ndarray_get_float_value(re->data->items, re->data->typecode, i);
+            data_re[i] = ndarray_get_float_value(re->array->items, re->array->typecode, i);
         }
     }
     ndarray_obj_t *out_im = create_new_ndarray(1, len, NDARRAY_FLOAT);
-    float *data_im = (float *)out_im->data->items;
+    float *data_im = (float *)out_im->array->items;
 
     if(n_args == 2) {
         ndarray_obj_t *im = MP_OBJ_TO_PTR(args[1]);
-        if (re->data->len != im->data->len) {
+        if (re->array->len != im->array->len) {
             mp_raise_ValueError("real and imaginary parts must be of equal length");
         }
-        if(im->data->typecode == NDARRAY_FLOAT) {
-            memcpy((float *)out_im->data->items, (float *)im->data->items, im->bytes);
+        if(im->array->typecode == NDARRAY_FLOAT) {
+            memcpy((float *)out_im->array->items, (float *)im->array->items, im->bytes);
         } else {
             for(size_t i=0; i < len; i++) {
-                data_im[i] = ndarray_get_float_value(im->data->items, im->data->typecode, i);
+                data_im[i] = ndarray_get_float_value(im->array->items, im->array->typecode, i);
             }
         }
     }    
@@ -125,17 +125,17 @@ mp_obj_t fft_spectrum(mp_obj_t oin) {
         mp_raise_NotImplementedError("FFT is defined for ndarrays only");
     }
     ndarray_obj_t *re = MP_OBJ_TO_PTR(oin);
-    uint16_t len = re->data->len;
+    uint16_t len = re->array->len;
     if((re->m > 1) && (re->n > 1)) {
         mp_raise_ValueError("input data must be an array");
     }
     if((len & (len-1)) != 0) {
         mp_raise_ValueError("input array length must be power of 2");
     }
-    if(re->data->typecode != NDARRAY_FLOAT) {
+    if(re->array->typecode != NDARRAY_FLOAT) {
         mp_raise_TypeError("input array must be of type float");
     }
-    float *data_re = (float *)re->data->items;
+    float *data_re = (float *)re->array->items;
     float *data_im = m_new(float, len);
     fft_kernel(data_re, data_im, len, 1);
     for(size_t i=0; i < len; i++) {

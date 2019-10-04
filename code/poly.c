@@ -29,7 +29,7 @@ bool object_is_nditerable(mp_obj_t o_in) {
 size_t get_nditerable_len(mp_obj_t o_in) {
     if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *in = MP_OBJ_TO_PTR(o_in);
-        return in->data->len;
+        return in->array->len;
     } else {
         return (size_t)mp_obj_get_int(mp_obj_len_maybe(o_in));
     }
@@ -57,7 +57,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     mp_obj_t p_item, p_iterable;
 
     mp_float_t x, y;
-    float *outf = (float *)out->data->items;
+    float *outf = (float *)out->array->items;
     uint8_t plen = mp_obj_get_int(mp_obj_len_maybe(o_p));
     float *p = m_new(float, plen);
     p_iterable = mp_getiter(o_p, &p_buf);
@@ -169,7 +169,7 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     m_del(float, XT, (deg+1)*leny);
     
     ndarray_obj_t *beta = create_new_ndarray(deg+1, 1, NDARRAY_FLOAT);
-    float *betav = (float *)beta->data->items;
+    float *betav = (float *)beta->array->items;
     // x[0..(deg+1)] contains now the product X^T * y; we can get rid of y
     m_del(float, y, leny);
     

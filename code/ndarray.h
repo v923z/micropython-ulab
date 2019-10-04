@@ -20,15 +20,27 @@
 
 const mp_obj_type_t ulab_ndarray_type;
 
+#define RUN_BINARY_SCALAR(typecode, type_out, type_array, type_scalar, nd_array, scalar, op) do {\
+    ndarray_obj_t *out = create_new_ndarray(nd_array->m, nd_array->n, typecode);\
+    type_out *(odata) = (type_out *)out->array->items;\
+    type_array *avalue = (type_array *)(nd_array)->array->items;\
+    type_scalar svalue = (type_scalar)scalar;\
+    if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] + svalue;}\
+    if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] - svalue;}\
+    if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] * svalue;}\
+    if((op) == MP_BINARY_OP_TRUE_DIVIDE) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] / svalue;}\
+    return MP_OBJ_FROM_PTR(out);\
+    } while(0)
+
 #define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op) do {\
     ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);\
-    type_out *(odata) = (type_out *)out->data->items;\
-    type_left *left = (type_left *)(ol)->data->items;\
-    type_right *right = (type_right *)(or)->data->items;\
-    if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] + right[i];}\
-    if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] - right[i];}\
-    if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] * right[i];}\
-    if((op) == MP_BINARY_OP_TRUE_DIVIDE) { for(size_t i=0; i < (ol)->data->len; i++) odata[i] = left[i] / right[i];}\
+    type_out *(odata) = (type_out *)out->array->items;\
+    type_left *left = (type_left *)(ol)->array->items;\
+    type_right *right = (type_right *)(or)->array->items;\
+    if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] + right[i];}\
+    if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] - right[i];}\
+    if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] * right[i];}\
+    if((op) == MP_BINARY_OP_TRUE_DIVIDE) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] / right[i];}\
     return MP_OBJ_FROM_PTR(out);\
     } while(0)
 
@@ -44,7 +56,7 @@ typedef struct _ndarray_obj_t {
     mp_obj_base_t base;
     size_t m, n;
     size_t len;
-    mp_obj_array_t *data;
+    mp_obj_array_t *array;
     size_t bytes;
 } ndarray_obj_t;
 

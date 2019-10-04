@@ -24,7 +24,7 @@
 #include "fft.h"
 #include "numerical.h"
 
-#define ULAB_VERSION 0.1
+#define ULAB_VERSION 0.11
 
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
@@ -164,6 +164,5 @@ const mp_obj_module_t ulab_user_cmodule = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_globals,
 };
-
 
 MP_REGISTER_MODULE(MP_QSTR_ulab, ulab_user_cmodule, MODULE_ULAB_ENABLED);
