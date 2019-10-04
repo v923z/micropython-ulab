@@ -107,11 +107,11 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         printf(", dtype=uint8)");
     } else if(self->array->typecode == NDARRAY_INT8) {
         printf(", dtype=int8)");
-    } if(self->array->typecode == NDARRAY_UINT16) {
+    } else if(self->array->typecode == NDARRAY_UINT16) {
         printf(", dtype=uint16)");
-    } if(self->array->typecode == NDARRAY_INT16) {
+    } else if(self->array->typecode == NDARRAY_INT16) {
         printf(", dtype=int16)");
-    } if(self->array->typecode == NDARRAY_FLOAT) {
+    } else if(self->array->typecode == NDARRAY_FLOAT) {
         printf(", dtype=float)");
     } 
 }
@@ -133,7 +133,7 @@ ndarray_obj_t *create_new_ndarray(size_t m, size_t n, uint8_t typecode) {
     mp_obj_array_t *array = array_new(typecode, m*n);
     ndarray->bytes = m * n * mp_binary_get_size('@', typecode, NULL);
     // this should set all elements to 0, irrespective of the of the typecode (all bits are zero)
-    // we could, perhaps, leave this step out, and initialise the array, only, when needed
+    // we could, perhaps, leave this step out, and initialise the array only, when needed
     memset(array->items, 0, ndarray->bytes); 
     ndarray->array = array;
     return ndarray;
@@ -150,7 +150,7 @@ mp_obj_t ndarray_copy(mp_obj_t self_in) {
 
 STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_oin, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT } },
     };
     
@@ -364,6 +364,41 @@ mp_obj_t ndarray_rawsize(mp_obj_t self_in) {
     tuple->items[3] = MP_OBJ_NEW_SMALL_INT(self->array->len);
     tuple->items[4] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->array->typecode, NULL));
     return tuple;
+}
+
+mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_order, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_C)} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_obj_t self_copy = ndarray_copy(pos_args[0]);
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self_copy);
+    
+    GET_STR_DATA_LEN(args[0].u_obj, order, len);    
+    if((len != 1) || ((memcmp(order, "C", 1) != 0) && (memcmp(order, "F", 1) != 0))) {
+        mp_raise_ValueError("flattening order must be either 'C', or 'F'");        
+    }
+
+    // if order == 'C', we simply have to set m, and n, there is nothing else to do
+    if(memcmp(order, "F", 1) == 0) {
+        ndarray_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+        uint8_t _sizeof = mp_binary_get_size('@', self->array->typecode, NULL);
+        // get the data of self_in: we won't need a temporary buffer for the transposition
+        uint8_t *self_array = (uint8_t *)self->array->items;
+        uint8_t *array = (uint8_t *)ndarray->array->items;
+        size_t i=0;
+        for(size_t n=0; n < self->n; n++) {
+            for(size_t m=0; m < self->m; m++) {
+                memcpy(array+_sizeof*i, self_array+_sizeof*(m*self->n + n), _sizeof);
+                i++;
+            }
+        }        
+    }
+    ndarray->n = ndarray->array->len;
+    ndarray->m = 1;
+    return self_copy;
 }
 
 // Binary operations

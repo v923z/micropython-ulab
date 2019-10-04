@@ -36,11 +36,15 @@ mp_obj_float_t ulab_version = {{&mp_type_float}, ULAB_VERSION};
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_shape_obj, ndarray_shape);
 MP_DEFINE_CONST_FUN_OBJ_2(ndarray_size_obj, ndarray_size);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_rawsize_obj, ndarray_rawsize);
+MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_transpose_obj, linalg_transpose);
 MP_DEFINE_CONST_FUN_OBJ_2(linalg_reshape_obj, linalg_reshape);
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
+MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
+MP_DEFINE_CONST_FUN_OBJ_KW(linalg_zeros_obj, 0, linalg_zeros);
+MP_DEFINE_CONST_FUN_OBJ_KW(linalg_ones_obj, 0, linalg_ones);
+MP_DEFINE_CONST_FUN_OBJ_KW(linalg_eye_obj, 0, linalg_eye);
 
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acos_obj, vectorise_acos);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acosh_obj, vectorise_acosh);
@@ -86,9 +90,9 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
     { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&ndarray_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_rawsize), MP_ROM_PTR(&ndarray_rawsize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },    
     { MP_ROM_QSTR(MP_QSTR_transpose), MP_ROM_PTR(&linalg_transpose_obj) },
     { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&linalg_reshape_obj) },
-//    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&ndarray_get_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);
@@ -111,6 +115,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ndarray), (mp_obj_t)&ulab_ndarray_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
     { MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
+    { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&linalg_zeros_obj },
+    { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&linalg_ones_obj },
+    { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&linalg_eye_obj },    
     { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },

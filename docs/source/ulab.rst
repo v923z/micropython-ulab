@@ -1567,8 +1567,8 @@ ipython3.. code ::
     
     
 
-Class methods: shape, size, rawsize
------------------------------------
+Class methods: shape, size, rawsize, flatten
+--------------------------------------------
 
 ipython3.. code ::
         
@@ -1601,6 +1601,12 @@ ipython3.. code ::
     
     #print out the raw size
     print('raw size: ', a.rawsize())
+    
+    #flattened array
+    a = ndarray([range(3), range(3), range(3)])
+    print('\n2D array: \n', a)
+    print('flattened array: (C)', a.flatten(order='C'))
+    print('flattened array: (F)', a.flatten(order='F'))
 .. parsed-literal::
 
     1D array:  ndarray([0.0, 1.0, 2.0, ..., 7.0, 8.0, 9.0], dtype=float)
@@ -1619,6 +1625,13 @@ ipython3.. code ::
     size 1:  3 
     size 2:  10
     raw size:  (3, 10, 120, 30, 4)
+    
+    2D array: 
+     ndarray([[0.0, 1.0, 2.0],
+    	 [0.0, 1.0, 2.0],
+    	 [0.0, 1.0, 2.0]], dtype=float)
+    flattened array: (C) ndarray([0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0], dtype=float)
+    flattened array: (F) ndarray([0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0], dtype=float)
     
     
 
@@ -1702,6 +1715,7 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.h
     mp_obj_t ndarray_shape(mp_obj_t );
     mp_obj_t ndarray_size(mp_obj_t , mp_obj_t );
     mp_obj_t ndarray_rawsize(mp_obj_t );
+    mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
     
     #endif
 
@@ -1812,11 +1826,11 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
             printf(", dtype=uint8)");
         } else if(self->array->typecode == NDARRAY_INT8) {
             printf(", dtype=int8)");
-        } if(self->array->typecode == NDARRAY_UINT16) {
+        } else if(self->array->typecode == NDARRAY_UINT16) {
             printf(", dtype=uint16)");
-        } if(self->array->typecode == NDARRAY_INT16) {
+        } else if(self->array->typecode == NDARRAY_INT16) {
             printf(", dtype=int16)");
-        } if(self->array->typecode == NDARRAY_FLOAT) {
+        } else if(self->array->typecode == NDARRAY_FLOAT) {
             printf(", dtype=float)");
         } 
     }
@@ -1838,7 +1852,7 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
         mp_obj_array_t *array = array_new(typecode, m*n);
         ndarray->bytes = m * n * mp_binary_get_size('@', typecode, NULL);
         // this should set all elements to 0, irrespective of the of the typecode (all bits are zero)
-        // we could, perhaps, leave this step out, and initialise the array, only, when needed
+        // we could, perhaps, leave this step out, and initialise the array only, when needed
         memset(array->items, 0, ndarray->bytes); 
         ndarray->array = array;
         return ndarray;
@@ -1855,7 +1869,7 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
     
     STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
         static const mp_arg_t allowed_args[] = {
-            { MP_QSTR_oin, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+            { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
             { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT } },
         };
         
@@ -2069,6 +2083,41 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
         tuple->items[3] = MP_OBJ_NEW_SMALL_INT(self->array->len);
         tuple->items[4] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->array->typecode, NULL));
         return tuple;
+    }
+    
+    mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+        static const mp_arg_t allowed_args[] = {
+            { MP_QSTR_order, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_C)} },
+        };
+    
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        mp_obj_t self_copy = ndarray_copy(pos_args[0]);
+        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self_copy);
+        
+        GET_STR_DATA_LEN(args[0].u_obj, order, len);    
+        if((len != 1) || ((memcmp(order, "C", 1) != 0) && (memcmp(order, "F", 1) != 0))) {
+            mp_raise_ValueError("flattening order must be either 'C', or 'F'");        
+        }
+    
+        // if order == 'C', we simply have to set m, and n, there is nothing else to do
+        if(memcmp(order, "F", 1) == 0) {
+            ndarray_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+            uint8_t _sizeof = mp_binary_get_size('@', self->array->typecode, NULL);
+            // get the data of self_in: we won't need a temporary buffer for the transposition
+            uint8_t *self_array = (uint8_t *)self->array->items;
+            uint8_t *array = (uint8_t *)ndarray->array->items;
+            size_t i=0;
+            for(size_t n=0; n < self->n; n++) {
+                for(size_t m=0; m < self->m; m++) {
+                    memcpy(array+_sizeof*i, self_array+_sizeof*(m*self->n + n), _sizeof);
+                    i++;
+                }
+            }        
+        }
+        ndarray->n = ndarray->array->len;
+        ndarray->m = 1;
+        return self_copy;
     }
     
     // Binary operations
@@ -2333,6 +2382,22 @@ ipython3.. code ::
     
     
 
+ipython3.. code ::
+        
+    a = array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+ipython3.. code ::
+        
+    a[0, 1]
+
+
+
+
+.. parsed-literal::
+
+    2
+
+
+
 Linear algebra
 ==============
 
@@ -2489,6 +2554,69 @@ ipython3.. code ::
     
     
 
+zeros, ones, eye
+~~~~~~~~~~~~~~~~
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    print(ulab.zeros(3, dtype=ulab.int16))
+    print(ulab.zeros((5, 3), dtype=ulab.float))
+    
+    print("\n====================\n");
+    print(ulab.ones(3, dtype=ulab.int16))
+    print(ulab.ones((5, 3), dtype=ulab.float))
+    
+    print("\n====================\n");
+    print(ulab.eye(5, dtype=ulab.int16))
+    print(ulab.eye(5, M=3, dtype=ulab.float))
+    
+    print(ulab.eye(5, k=1, dtype=ulab.uint8))
+    print(ulab.eye(5, k=-3, dtype=ulab.uint8))
+.. parsed-literal::
+
+    ndarray([0, 0, 0], dtype=int16)
+    ndarray([[0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0]], dtype=float)
+    
+    ====================
+    
+    ndarray([1, 1, 1], dtype=int16)
+    ndarray([[1.0, 1.0, 1.0],
+    	 [1.0, 1.0, 1.0],
+    	 [1.0, 1.0, 1.0],
+    	 [1.0, 1.0, 1.0],
+    	 [1.0, 1.0, 1.0]], dtype=float)
+    
+    ====================
+    
+    ndarray([[1, 0, 0, 0, 0],
+    	 [0, 1, 0, 0, 0],
+    	 [0, 0, 1, 0, 0],
+    	 [0, 0, 0, 1, 0],
+    	 [0, 0, 0, 0, 1]], dtype=int16)
+    ndarray([[1.0, 0.0, 0.0, 0.0, 0.0],
+    	 [0.0, 1.0, 0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 1.0, 0.0, 0.0]], dtype=float)
+    ndarray([[0, 1, 0, 0, 0],
+    	 [0, 0, 1, 0, 0],
+    	 [0, 0, 0, 1, 0],
+    	 [0, 0, 0, 0, 1],
+    	 [0, 0, 0, 0, 0]], dtype=uint8)
+    ndarray([[0, 0, 0, 0, 0],
+    	 [0, 0, 0, 0, 0],
+    	 [0, 0, 0, 0, 0],
+    	 [1, 0, 0, 0, 0],
+    	 [0, 1, 0, 0, 0]], dtype=uint8)
+    
+    
+
 linalg.h
 --------
 
@@ -2510,9 +2638,9 @@ https://github.com/v923z/micropython-ulab/tree/master/code/linalg.h
     bool linalg_invert_matrix(float *, size_t );
     mp_obj_t linalg_inv(mp_obj_t );
     mp_obj_t linalg_dot(mp_obj_t , mp_obj_t );
-    mp_obj_t linalg_zeros(mp_obj_t );
-    mp_obj_t linalg_ones(mp_obj_t );
-    mp_obj_t linalg_eye(mp_obj_t );
+    mp_obj_t linalg_zeros(size_t , const mp_obj_t *, mp_map_t *);
+    mp_obj_t linalg_ones(size_t , const mp_obj_t *, mp_map_t *);
+    mp_obj_t linalg_eye(size_t , const mp_obj_t *, mp_map_t *);
     
     #endif
 
@@ -2687,6 +2815,89 @@ https://github.com/v923z/micropython-ulab/tree/master/code/linalg.c
             }
         }
         return MP_OBJ_FROM_PTR(out);
+    }
+    
+    mp_obj_t linalg_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
+        static const mp_arg_t allowed_args[] = {
+            { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} } ,
+            { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+        };
+    
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        
+        uint8_t dtype = args[1].u_int;
+        if(!mp_obj_is_int(args[0].u_obj) && !mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
+            mp_raise_TypeError("input argument must be an integer or a 2-tuple");
+        }
+        ndarray_obj_t *ndarray = NULL;
+        if(mp_obj_is_int(args[0].u_obj)) {
+            size_t n = mp_obj_get_int(args[0].u_obj);
+            ndarray = create_new_ndarray(1, n, dtype);
+        } else if(mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
+            mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0].u_obj);
+            if(tuple->len != 2) {
+                mp_raise_TypeError("input argument must be an integer or a 2-tuple");            
+            }
+            ndarray = create_new_ndarray(mp_obj_get_int(tuple->items[0]), 
+                                                      mp_obj_get_int(tuple->items[1]), dtype);
+        }
+        if(kind == 1) {
+            mp_obj_t one = mp_obj_new_int(1);
+            for(size_t i=0; i < ndarray->array->len; i++) {
+                mp_binary_set_val_array(dtype, ndarray->array->items, i, one);
+            }
+        }
+        return MP_OBJ_FROM_PTR(ndarray);
+    }
+    
+    mp_obj_t linalg_zeros(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+        return linalg_zeros_ones(n_args, pos_args, kw_args, 0);
+    }
+    
+    mp_obj_t linalg_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+        return linalg_zeros_ones(n_args, pos_args, kw_args, 1);
+    }
+    
+    mp_obj_t linalg_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+        static const mp_arg_t allowed_args[] = {
+            { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_M, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+            { MP_QSTR_k, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },        
+            { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+        };
+    
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+        size_t n = args[0].u_int, m;
+        int16_t k = args[2].u_int;
+        uint8_t dtype = args[3].u_int;
+        if(args[1].u_rom_obj == mp_const_none) {
+            m = n;
+        } else {
+            m = mp_obj_get_int(args[1].u_rom_obj);
+        }
+        
+        ndarray_obj_t *ndarray = create_new_ndarray(m, n, dtype);
+        mp_obj_t one = mp_obj_new_int(1);
+        size_t i = 0;
+        if((k >= 0) && (k < n)) {
+            while(k < n) {
+                mp_binary_set_val_array(dtype, ndarray->array->items, i*n+k, one);
+                k++;
+                i++;
+            }
+        } else if((k < 0) && (-k < m)) {
+            k = -k;
+            i = 0;
+            while(k < m) {
+                mp_binary_set_val_array(dtype, ndarray->array->items, k*n+i, one);
+                k++;
+                i++;
+            }
+        }
+        return MP_OBJ_FROM_PTR(ndarray);
     }
 
 Vectorising mathematical operations
@@ -3810,7 +4021,7 @@ https://github.com/v923z/micropython-ulab/tree/master/code/numerical.c
     
     STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t type) {
         static const mp_arg_t allowed_args[] = {
-            { MP_QSTR_oin, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} } ,
+            { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} } ,
             { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         };
     
@@ -3889,9 +4100,10 @@ https://github.com/v923z/micropython-ulab/tree/master/code/numerical.c
     }
     
     mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+        // TODO: replace memcpy by memmove
         static const mp_arg_t allowed_args[] = {
-            { MP_QSTR_oin, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-            { MP_QSTR_shift, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+            { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+            { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
             { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         };
     
@@ -4003,11 +4215,15 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ulab.c
     MP_DEFINE_CONST_FUN_OBJ_1(ndarray_shape_obj, ndarray_shape);
     MP_DEFINE_CONST_FUN_OBJ_2(ndarray_size_obj, ndarray_size);
     MP_DEFINE_CONST_FUN_OBJ_1(ndarray_rawsize_obj, ndarray_rawsize);
+    MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
     
     MP_DEFINE_CONST_FUN_OBJ_1(linalg_transpose_obj, linalg_transpose);
     MP_DEFINE_CONST_FUN_OBJ_2(linalg_reshape_obj, linalg_reshape);
     MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
-    STATIC MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
+    MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
+    MP_DEFINE_CONST_FUN_OBJ_KW(linalg_zeros_obj, 0, linalg_zeros);
+    MP_DEFINE_CONST_FUN_OBJ_KW(linalg_ones_obj, 0, linalg_ones);
+    MP_DEFINE_CONST_FUN_OBJ_KW(linalg_eye_obj, 0, linalg_eye);
     
     MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acos_obj, vectorise_acos);
     MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acosh_obj, vectorise_acosh);
@@ -4053,9 +4269,9 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ulab.c
         { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
         { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&ndarray_size_obj) },
         { MP_ROM_QSTR(MP_QSTR_rawsize), MP_ROM_PTR(&ndarray_rawsize_obj) },
+        { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },    
         { MP_ROM_QSTR(MP_QSTR_transpose), MP_ROM_PTR(&linalg_transpose_obj) },
         { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&linalg_reshape_obj) },
-    //    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&ndarray_get_obj) },
     };
     
     STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);
@@ -4078,6 +4294,9 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ulab.c
         { MP_OBJ_NEW_QSTR(MP_QSTR_ndarray), (mp_obj_t)&ulab_ndarray_type },
         { MP_OBJ_NEW_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
         { MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
+        { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&linalg_zeros_obj },
+        { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&linalg_ones_obj },
+        { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&linalg_eye_obj },    
         { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
         { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
         { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },
@@ -4178,12 +4397,12 @@ unix port
     GEN build/genhdr/qstrdefs.collected.h
     QSTR not updated
     CC ../../py/objmodule.c
-    CC ../../../ulab/code/ndarray.c
+    CC ../../../ulab/code/linalg.c
     LINK micropython
        text	   data	    bss	    dec	    hex	filename
        2085	   6862	      0	   8947	   22f3	build/build/frozen_mpy.o
           2	      0	      0	      2	      2	build/build/frozen.o
-     470156	  57440	   2104	 529700	  81524	micropython
+     472100	  57728	   2104	 531932	  81ddc	micropython
 
 stm32 port
 ~~~~~~~~~~
@@ -4216,6 +4435,12 @@ ipython3.. code ::
         
     %%writefile ulab-change-log.md
     
+    Fri, 4 Oct 2019
+    
+    version 0.12
+    
+        added .flatten to ndarray, ones, zeros, and eye to linalg
+    
     Thu, 3 Oct 2019
     
     version 0.11
@@ -4223,7 +4448,7 @@ ipython3.. code ::
         binary operators are now based on macros
 .. parsed-literal::
 
-    Writing ulab-change-log.md
+    Overwriting ulab-change-log.md
 
 ipython3.. code ::
         

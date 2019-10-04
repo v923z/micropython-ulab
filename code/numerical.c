@@ -38,7 +38,7 @@ mp_obj_t numerical_linspace(mp_obj_t _start, mp_obj_t _stop, mp_obj_t _len) {
     step = (mp_obj_get_float(_stop)-value)/(len-1);
     ndarray_obj_t *nd_array = create_new_ndarray(1, len, NDARRAY_FLOAT);
     for(size_t i=0; i < len; i++, value += step) {
-        mp_binary_set_val_array('f', nd_array->array->items, i, mp_obj_new_float(value));
+        mp_binary_set_val_array(NDARRAY_FLOAT, nd_array->array->items, i, mp_obj_new_float(value));
     }
     return MP_OBJ_FROM_PTR(nd_array);
 }
@@ -216,7 +216,7 @@ STATIC mp_obj_t numerical_sum_mean_std_matrix(mp_obj_t oin, mp_obj_t axis, uint8
 
 STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t type) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_oin, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} } ,
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} } ,
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
     };
 
@@ -295,9 +295,10 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 }
 
 mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // TODO: replace memcpy by memmove
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_oin, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-        { MP_QSTR_shift, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 

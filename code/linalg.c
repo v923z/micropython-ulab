@@ -172,3 +172,86 @@ mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     }
     return MP_OBJ_FROM_PTR(out);
 }
+
+mp_obj_t linalg_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} } ,
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    uint8_t dtype = args[1].u_int;
+    if(!mp_obj_is_int(args[0].u_obj) && !mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
+        mp_raise_TypeError("input argument must be an integer or a 2-tuple");
+    }
+    ndarray_obj_t *ndarray = NULL;
+    if(mp_obj_is_int(args[0].u_obj)) {
+        size_t n = mp_obj_get_int(args[0].u_obj);
+        ndarray = create_new_ndarray(1, n, dtype);
+    } else if(mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
+        mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0].u_obj);
+        if(tuple->len != 2) {
+            mp_raise_TypeError("input argument must be an integer or a 2-tuple");            
+        }
+        ndarray = create_new_ndarray(mp_obj_get_int(tuple->items[0]), 
+                                                  mp_obj_get_int(tuple->items[1]), dtype);
+    }
+    if(kind == 1) {
+        mp_obj_t one = mp_obj_new_int(1);
+        for(size_t i=0; i < ndarray->array->len; i++) {
+            mp_binary_set_val_array(dtype, ndarray->array->items, i, one);
+        }
+    }
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+mp_obj_t linalg_zeros(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return linalg_zeros_ones(n_args, pos_args, kw_args, 0);
+}
+
+mp_obj_t linalg_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return linalg_zeros_ones(n_args, pos_args, kw_args, 1);
+}
+
+mp_obj_t linalg_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_M, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_k, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },        
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    size_t n = args[0].u_int, m;
+    int16_t k = args[2].u_int;
+    uint8_t dtype = args[3].u_int;
+    if(args[1].u_rom_obj == mp_const_none) {
+        m = n;
+    } else {
+        m = mp_obj_get_int(args[1].u_rom_obj);
+    }
+    
+    ndarray_obj_t *ndarray = create_new_ndarray(m, n, dtype);
+    mp_obj_t one = mp_obj_new_int(1);
+    size_t i = 0;
+    if((k >= 0) && (k < n)) {
+        while(k < n) {
+            mp_binary_set_val_array(dtype, ndarray->array->items, i*n+k, one);
+            k++;
+            i++;
+        }
+    } else if((k < 0) && (-k < m)) {
+        k = -k;
+        i = 0;
+        while(k < m) {
+            mp_binary_set_val_array(dtype, ndarray->array->items, k*n+i, one);
+            k++;
+            i++;
+        }
+    }
+    return MP_OBJ_FROM_PTR(ndarray);
+}
