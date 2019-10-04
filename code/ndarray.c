@@ -417,7 +417,6 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             nd_array = MP_OBJ_TO_PTR(rhs);
             if(mp_obj_is_int(lhs)) {
                 ivalue = mp_obj_get_int(lhs);
-                printf("here: %d", ivalue);
             } else if(mp_obj_is_float(lhs)){
                 fvalue = mp_obj_get_float(lhs);
                 scalar_is_int = false;
@@ -428,7 +427,6 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             nd_array = MP_OBJ_TO_PTR(lhs);
             if(mp_obj_is_int(rhs)) {
                 ivalue = mp_obj_get_int(rhs);
-                printf("there: %d", ivalue);
             } else if(mp_obj_is_float(rhs)) {
                 fvalue = mp_obj_get_float(rhs);
                 scalar_is_int = false;

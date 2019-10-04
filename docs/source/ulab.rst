@@ -2136,7 +2136,6 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
                 nd_array = MP_OBJ_TO_PTR(rhs);
                 if(mp_obj_is_int(lhs)) {
                     ivalue = mp_obj_get_int(lhs);
-                    printf("here: %d", ivalue);
                 } else if(mp_obj_is_float(lhs)){
                     fvalue = mp_obj_get_float(lhs);
                     scalar_is_int = false;
@@ -2147,7 +2146,6 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
                 nd_array = MP_OBJ_TO_PTR(lhs);
                 if(mp_obj_is_int(rhs)) {
                     ivalue = mp_obj_get_int(rhs);
-                    printf("there: %d", ivalue);
                 } else if(mp_obj_is_float(rhs)) {
                     fvalue = mp_obj_get_float(rhs);
                     scalar_is_int = false;
@@ -4203,7 +4201,7 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ulab.c
     #include "fft.h"
     #include "numerical.h"
     
-    #define ULAB_VERSION 0.11
+    #define ULAB_VERSION 0.12
     
     typedef struct _mp_obj_float_t {
         mp_obj_base_t base;
@@ -4409,25 +4407,27 @@ stm32 port
 
 ipython3.. code ::
         
-    %pwd ../stm32/
+    pwd
 
 
 
 
 .. parsed-literal::
 
-    '/home/v923z/sandbox/micropython/v1.11/micropython/ports/unix'
+    '/home/v923z/sandbox/micropython/v1.11/ulab/docs'
 
 
+
+ipython3.. code ::
+        
+    %cd ../../micropython/ports/stm32/
+.. parsed-literal::
+
+    /home/v923z/sandbox/micropython/v1.11/micropython/ports/stm32
 
 .. code:: bash
 
     !make BOARD=PYBV11 CROSS_COMPILE=../../../../compiler/bin/arm-none-eabi- USER_C_MODULES=../../../ulab all
-.. parsed-literal::
-
-    Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
-    Including User C Module from ../../../ulab/code
-
 Change log
 ==========
 
