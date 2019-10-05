@@ -11,38 +11,130 @@
 #ifndef _NDARRAY_
 #define _NDARRAY_
 
-#include "py/objarray.h" // this can in the future be dropped
-#include "py/binary.h"   // this can in the future be dropped
+#include "py/objarray.h"
+#include "py/binary.h"
 #include "py/objstr.h"
+#include "py/objlist.h"
 
 #define PRINT_MAX  10
 
 
 const mp_obj_type_t ulab_ndarray_type;
 
-#define RUN_BINARY_SCALAR(typecode, type_out, type_array, type_scalar, nd_array, scalar, op) do {\
-    ndarray_obj_t *out = create_new_ndarray(nd_array->m, nd_array->n, typecode);\
-    type_out *(odata) = (type_out *)out->array->items;\
-    type_array *avalue = (type_array *)(nd_array)->array->items;\
-    type_scalar svalue = (type_scalar)scalar;\
-    if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] + svalue;}\
-    if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] - svalue;}\
-    if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] * svalue;}\
-    if((op) == MP_BINARY_OP_TRUE_DIVIDE) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] / svalue;}\
-    return MP_OBJ_FROM_PTR(out);\
-    } while(0)
+#define RUN_BINARY_SCALAR(typecode, type_out, type_array, type_scalar, ndarray, scalar, op) do {\
+    type_array *avalue = (type_array *)(ndarray)->array->items;\
+    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
+        ndarray_obj_t *out = create_new_ndarray((ndarray)->m, (ndarray)->n, typecode);\
+        type_out *(odata) = (type_out *)out->array->items;\
+        type_scalar svalue = (type_scalar)scalar;\
+        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] + svalue;}\
+        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] - svalue;}\
+        if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] * svalue;}\
+        return MP_OBJ_FROM_PTR(out);\
+    } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
+        float value = (float)scalar;\
+        ndarray_obj_t *out = create_new_ndarray((ndarray)->m, (ndarray)->n, NDARRAY_FLOAT);\
+        float *odata = (float *)out->array->items;\
+        for(size_t i=0; i < out->array->len; i++) odata[i] = (float)avalue[i]/value;\
+        return MP_OBJ_FROM_PTR(out);\
+    } else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
+             ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\
+        mp_obj_t out_list = mp_obj_new_list(0, NULL);\
+        size_t m = (ndarray)->m, n = (ndarray)->n;\
+        float value = (float)scalar;\
+        for(size_t i=0; i < m; i++) {\
+            mp_obj_t row = mp_obj_new_list(n, NULL);\
+            mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
+            for(size_t j=0; j < n; j++) {\
+                row_ptr->items[j] = mp_const_false;\
+                if((op) == MP_BINARY_OP_LESS) {\
+                    if(avalue[i*n+j] < value) row_ptr->items[j] = mp_const_true;\
+                } else if((op) == MP_BINARY_OP_LESS_EQUAL) {\
+                    if(avalue[i*n+j] <= value) row_ptr->items[j] = mp_const_true;\
+                } else if((op) == MP_BINARY_OP_MORE) {\
+                    if(avalue[i*n+j] > value) row_ptr->items[j] = mp_const_true;\
+                } else if((op) == MP_BINARY_OP_MORE_EQUAL) {\
+                    if(avalue[i*n+j] >= value) row_ptr->items[j] = mp_const_true;\
+                }\
+            }\
+            if(m == 1) return row;\
+            mp_obj_list_append(out_list, row);\
+        }\
+        return out_list;\
+    }\
+} while(0)
+
+/*  
+    mp_obj_t row = mp_obj_new_list(n, NULL);
+    mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);
+    
+    should work outside the loop, but it doesn't. Go figure! */
+
+#define RUN_BINARY_COMPARE(type_array, ndarray, svalue, op) do {\
+    mp_obj_t out_list = mp_obj_new_list(0, NULL);\
+    size_t m = (ndarray)->m, n = (ndarray)->n;\
+    type_array *avalue = (type_array *)(ndarray)->array->items;\
+    for(size_t i=0; i < m; i++) {\
+        mp_obj_t row = mp_obj_new_list(n, NULL);\
+        mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
+        for(size_t j=0; j < n; j++) {\
+            row_ptr->items[j] = mp_const_false;\
+            if((op) == MP_BINARY_OP_LESS) {\
+                if(avalue[i*n+j] < svalue) row_ptr->items[j] = mp_const_true;\
+            } else if((op) == MP_BINARY_OP_LESS_EQUAL) {\
+                if(avalue[i*n+j] <= svalue) row_ptr->items[j] = mp_const_true;\
+            } else if((op) == MP_BINARY_OP_MORE) {\
+                if(avalue[i*n+j] > svalue) row_ptr->items[j] = mp_const_true;\
+            } else if((op) == MP_BINARY_OP_MORE_EQUAL) {\
+                if(avalue[i*n+j] >= svalue) row_ptr->items[j] = mp_const_true;\
+            }\
+        }\
+        if(m == 1) return row;\
+        mp_obj_list_append(out_list, row);\
+    }\
+    return out_list;\
+} while(0)
 
 #define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op) do {\
-    ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);\
-    type_out *(odata) = (type_out *)out->array->items;\
     type_left *left = (type_left *)(ol)->array->items;\
     type_right *right = (type_right *)(or)->array->items;\
-    if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] + right[i];}\
-    if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] - right[i];}\
-    if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] * right[i];}\
-    if((op) == MP_BINARY_OP_TRUE_DIVIDE) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] / right[i];}\
-    return MP_OBJ_FROM_PTR(out);\
-    } while(0)
+    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
+        ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);\
+        type_out *(odata) = (type_out *)out->array->items;\
+        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] + right[i];}\
+        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] - right[i];}\
+        if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] * right[i];}\
+        return MP_OBJ_FROM_PTR(out);\
+    } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
+        ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, NDARRAY_FLOAT);\
+        float *odata = (float *)out->array->items;\
+        for(size_t i=0; i < (ol)->array->len; i++) odata[i] = (float)left[i]/(float)right[i];\
+        return MP_OBJ_FROM_PTR(out);\
+    } else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
+             ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\
+        mp_obj_t out_list = mp_obj_new_list(0, NULL);\
+        size_t m = (ol)->m, n = (ol)->n;\
+        for(size_t i=0; i < m; i++) {\
+            mp_obj_t row = mp_obj_new_list(n, NULL);\
+            mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
+            for(size_t j=0; j < n; j++) {\
+                row_ptr->items[j] = mp_const_false;\
+                if((op) == MP_BINARY_OP_LESS) {\
+                    if(left[i*n+j] < right[i*n+j]) row_ptr->items[j] = mp_const_true;\
+                } else if((op) == MP_BINARY_OP_LESS_EQUAL) {\
+                    if(left[i*n+j] <= right[i*n+j]) row_ptr->items[j] = mp_const_true;\
+                } else if((op) == MP_BINARY_OP_MORE) {\
+                    if(left[i*n+j] > right[i*n+j]) row_ptr->items[j] = mp_const_true;\
+                } else if((op) == MP_BINARY_OP_MORE_EQUAL) {\
+                    if(left[i*n+j] >= right[i*n+j]) row_ptr->items[j] = mp_const_true;\
+                }\
+            }\
+            if(m == 1) return row;\
+            mp_obj_list_append(out_list, row);\
+        }\
+        return out_list;\
+    }\
+} while(0)
 
 enum NDARRAY_TYPE {
     NDARRAY_UINT8 = 'B',

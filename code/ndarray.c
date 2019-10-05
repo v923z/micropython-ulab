@@ -410,13 +410,14 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     if(!mp_obj_is_type(lhs, &ulab_ndarray_type) || !mp_obj_is_type(rhs, &ulab_ndarray_type)) {
         float fvalue = 0.0;
         int32_t ivalue = 0;
-        ndarray_obj_t *nd_array = NULL;
+        ndarray_obj_t *ndarray = NULL;
         bool scalar_is_int = true;
         uint8_t scalar_typecode = NDARRAY_FLOAT;
         if(!mp_obj_is_type(lhs, &ulab_ndarray_type)) { // the left hand side is a scalar
-            nd_array = MP_OBJ_TO_PTR(rhs);
+            ndarray = MP_OBJ_TO_PTR(rhs);
             if(mp_obj_is_int(lhs)) {
                 ivalue = mp_obj_get_int(lhs);
+                fvalue = (float)ivalue;
             } else if(mp_obj_is_float(lhs)){
                 fvalue = mp_obj_get_float(lhs);
                 scalar_is_int = false;
@@ -424,9 +425,10 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 mp_raise_TypeError("wrong operand type");
             }
         } else if(!mp_obj_is_type(rhs, &ulab_ndarray_type)) { // the right hand side is a scalar
-            nd_array = MP_OBJ_TO_PTR(lhs);
+            ndarray = MP_OBJ_TO_PTR(lhs);
             if(mp_obj_is_int(rhs)) {
                 ivalue = mp_obj_get_int(rhs);
+                fvalue = (float)ivalue;
             } else if(mp_obj_is_float(rhs)) {
                 fvalue = mp_obj_get_float(rhs);
                 scalar_is_int = false;
@@ -442,86 +444,94 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             // TODO: fix this!!!
             // else scalar_typecode = NDARRAY_INT32;
         }
-        if((op == MP_BINARY_OP_ADD) || (op == MP_BINARY_OP_MULTIPLY) || 
-            (op == MP_BINARY_OP_SUBTRACT) || (op == MP_BINARY_OP_TRUE_DIVIDE)) {
-            // These are the upcasting rules
-            // float always becomes float
-            // operation on identical types preserves type
-            // uint8 + int8 => int16
-            // uint8 + int16 => int16
-            // uint8 + uint16 => uint16
-            // int8 + int16 => int16
-            // int8 + uint16 => uint16
-            // uint16 + int16 => float
-            // The parameters of RUN_BINARY_SCALAR are 
-            // typecode of result, type_out, type_array, type_scalar, nd_array, scalar, operator
-            if(nd_array->array->typecode == NDARRAY_UINT8) {
-                if(scalar_typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_UINT8, uint8_t, uint8_t, uint8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, uint8_t, int8_t, nd_array, ivalue, op);                    
-                } else if(scalar_typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_UINT16, uint16_t, uint8_t, uint16_t, nd_array, ivalue, op);                    
-                } else if(scalar_typecode == NDARRAY_INT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, uint8_t, int16_t, nd_array, ivalue, op);                    
-                } else if(scalar_typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, uint8_t, float, nd_array, fvalue, op);
+        switch(op) {
+            case MP_BINARY_OP_LESS:
+            case MP_BINARY_OP_LESS_EQUAL:
+            case MP_BINARY_OP_MORE:
+            case MP_BINARY_OP_MORE_EQUAL:
+            case MP_BINARY_OP_ADD:
+            case MP_BINARY_OP_MULTIPLY:
+            case MP_BINARY_OP_SUBTRACT: 
+            case MP_BINARY_OP_TRUE_DIVIDE:
+                // These are the upcasting rules
+                // float always becomes float
+                // operation on identical types preserves type
+                // uint8 + int8 => int16
+                // uint8 + int16 => int16
+                // uint8 + uint16 => uint16
+                // int8 + int16 => int16
+                // int8 + uint16 => uint16
+                // uint16 + int16 => float
+                // The parameters of RUN_BINARY_SCALAR are 
+                // typecode of result, type_out, type_array, type_scalar, ndarray, scalar, operator
+                if(ndarray->array->typecode == NDARRAY_UINT8) {
+                    if(scalar_typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_UINT8, uint8_t, uint8_t, uint8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, uint8_t, int8_t, ndarray, ivalue, op);                    
+                    } else if(scalar_typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_UINT16, uint16_t, uint8_t, uint16_t, ndarray, ivalue, op);                    
+                    } else if(scalar_typecode == NDARRAY_INT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, uint8_t, int16_t, ndarray, ivalue, op);                    
+                    } else if(scalar_typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, uint8_t, float, ndarray, fvalue, op);
+                    }
+                } else if(ndarray->array->typecode == NDARRAY_INT8) {
+                    if(scalar_typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int8_t, uint8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT8, int8_t, int8_t, int8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int8_t, uint16_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int8_t, int16_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, int8_t, float, ndarray, fvalue, op);
+                    }
+                } else if(ndarray->array->typecode == NDARRAY_UINT16) {
+                    if(scalar_typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_UINT16, uint16_t, uint16_t, uint8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_UINT16, uint16_t, uint16_t, int8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, uint16_t, int16_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, uint8_t, float, ndarray, fvalue, op);
+                    }
+                } else if(ndarray->array->typecode == NDARRAY_INT16) {
+                    if(scalar_typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int16_t, uint8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int16_t, int8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, int16_t, uint16_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int16_t, int16_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, uint16_t, float, ndarray, fvalue, op);
+                    }
+                } else if(ndarray->array->typecode == NDARRAY_FLOAT) {
+                    if(scalar_typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, uint8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT8) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, int8_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, uint16_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_INT16) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, int16_t, ndarray, ivalue, op);
+                    } else if(scalar_typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, float, ndarray, fvalue, op);
+                    }
+                } else { // this should never happen
+                    mp_raise_TypeError("wrong input type");
                 }
-            } else if(nd_array->array->typecode == NDARRAY_INT8) {
-                if(scalar_typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int8_t, uint8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT8, int8_t, int8_t, int8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int8_t, uint16_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int8_t, int16_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, int8_t, float, nd_array, fvalue, op);
-                }
-            } else if(nd_array->array->typecode == NDARRAY_UINT16) {
-                if(scalar_typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_UINT16, uint16_t, uint16_t, uint8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_UINT16, uint16_t, uint16_t, int8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, uint16_t, int16_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, uint8_t, float, nd_array, fvalue, op);
-                }
-            } else if(nd_array->array->typecode == NDARRAY_INT16) {
-                if(scalar_typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int16_t, uint8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int16_t, int8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, int16_t, uint16_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_INT16, int16_t, int16_t, int16_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, uint16_t, float, nd_array, fvalue, op);
-                }
-            } else if(nd_array->array->typecode == NDARRAY_FLOAT) {
-                if(scalar_typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, uint8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT8) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, int8_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, uint16_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_INT16) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, int16_t, nd_array, ivalue, op);
-                } else if(scalar_typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_SCALAR(NDARRAY_FLOAT, float, float, float, nd_array, fvalue, op);
-                }
-            } else {
-                mp_raise_TypeError("wrong input type");
-            }
-            // this instruction should never be reached, but we have to make the compiler happy
-            return MP_OBJ_NULL; 
-        } else {
-            return MP_OBJ_NULL; // op not supported
+                // this instruction should never be reached, but we have to make the compiler happy
+                return MP_OBJ_NULL; 
+                break;
+            default:
+                return MP_OBJ_NULL; // op not supported
         }
     } else if(mp_obj_is_type(lhs, &ulab_ndarray_type) && mp_obj_is_type(rhs, &ulab_ndarray_type)) { 
         // next, the ndarray stuff
@@ -531,102 +541,110 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             mp_raise_ValueError("operands could not be broadcast together");
         }
         // At this point, the operands should have the same shape
-        if(op == MP_BINARY_OP_EQUAL) {
-            // Two arrays are equal, if their shape, typecode, and elements are equal
-            if((ol->m != or->m) || (ol->n != or->n) || (ol->array->typecode != or->array->typecode)) {
-                return mp_const_false;
-            } else {
-                size_t i = ol->bytes;
-                uint8_t *l = (uint8_t *)ol->array->items;
-                uint8_t *r = (uint8_t *)or->array->items;
-                while(i) { // At this point, we can simply compare the bytes, the type is irrelevant
-                    if(*l++ != *r++) {
-                        return mp_const_false;
+        switch(op) {
+            case MP_BINARY_OP_EQUAL:
+                // Two arrays are equal, if their shape, typecode, and elements are equal
+                if((ol->m != or->m) || (ol->n != or->n) || (ol->array->typecode != or->array->typecode)) {
+                    return mp_const_false;
+                } else {
+                    size_t i = ol->bytes;
+                    uint8_t *l = (uint8_t *)ol->array->items;
+                    uint8_t *r = (uint8_t *)or->array->items;
+                    while(i) { // At this point, we can simply compare the bytes, the type is irrelevant
+                        if(*l++ != *r++) {
+                            return mp_const_false;
+                        }
+                        i--;
                     }
-                    i--;
+                    return mp_const_true;
                 }
-                return mp_const_true;
-            }
-        } else if((op == MP_BINARY_OP_ADD) || (op == MP_BINARY_OP_SUBTRACT) || 
-            (op == MP_BINARY_OP_TRUE_DIVIDE) || (op == MP_BINARY_OP_MULTIPLY)) {
-            // These are the upcasting rules
-            // float always becomes float
-            // operation on identical types preserves type
-            // uint8 + int8 => int16
-            // uint8 + int16 => int16
-            // uint8 + uint16 => uint16
-            // int8 + int16 => int16
-            // int8 + uint16 => uint16
-            // uint16 + int16 => float
-            // The parameters of RUN_BINARY_LOOP are 
-            // typecode of result, type_out, type_left, type_right, lhs operand, rhs operand, operator
-            if(ol->array->typecode == NDARRAY_UINT8) {
-                if(or->array->typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT8, uint8_t, uint8_t, uint8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint8_t, uint16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint8_t, float, ol, or, op);
+                break;
+            case MP_BINARY_OP_LESS:
+            case MP_BINARY_OP_LESS_EQUAL:
+            case MP_BINARY_OP_MORE:
+            case MP_BINARY_OP_MORE_EQUAL:
+            case MP_BINARY_OP_ADD:
+            case MP_BINARY_OP_SUBTRACT:
+            case MP_BINARY_OP_TRUE_DIVIDE:
+            case MP_BINARY_OP_MULTIPLY:
+                // These are the upcasting rules
+                // float always becomes float
+                // operation on identical types preserves type
+                // uint8 + int8 => int16
+                // uint8 + int16 => int16
+                // uint8 + uint16 => uint16
+                // int8 + int16 => int16
+                // int8 + uint16 => uint16
+                // uint16 + int16 => float
+                // The parameters of RUN_BINARY_LOOP are 
+                // typecode of result, type_out, type_left, type_right, lhs operand, rhs operand, operator
+                if(ol->array->typecode == NDARRAY_UINT8) {
+                    if(or->array->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT8, uint8_t, uint8_t, uint8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint8_t, uint16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint8_t, float, ol, or, op);
+                    }
+                } else if(ol->array->typecode == NDARRAY_INT8) {
+                    if(or->array->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT8, int8_t, int8_t, int8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, int8_t, float, ol, or, op);
+                    }                
+                } else if(ol->array->typecode == NDARRAY_UINT16) {
+                    if(or->array->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, int8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint16_t, int16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint8_t, float, ol, or, op);
+                    }
+                } else if(ol->array->typecode == NDARRAY_INT16) {
+                    if(or->array->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, uint8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, int16_t, uint16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint16_t, float, ol, or, op);
+                    }
+                } else if(ol->array->typecode == NDARRAY_FLOAT) {
+                    if(or->array->typecode == NDARRAY_UINT8) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, uint8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT8) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, int8_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_UINT16) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, uint16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_INT16) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, int16_t, ol, or, op);
+                    } else if(or->array->typecode == NDARRAY_FLOAT) {
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, float, ol, or, op);
+                    }
+                } else { // this should never happen
+                    mp_raise_TypeError("wrong input type");
                 }
-            } else if(ol->array->typecode == NDARRAY_INT8) {
-                if(or->array->typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT8, int8_t, int8_t, int8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, int8_t, float, ol, or, op);
-                }                
-            } else if(ol->array->typecode == NDARRAY_UINT16) {
-                if(or->array->typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, int8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint16_t, int16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint8_t, float, ol, or, op);
-                }
-            } else if(ol->array->typecode == NDARRAY_INT16) {
-                if(or->array->typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, uint8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, int16_t, uint16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint16_t, float, ol, or, op);
-                }
-            } else if(ol->array->typecode == NDARRAY_FLOAT) {
-                if(or->array->typecode == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, uint8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, int8_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, uint16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, int16_t, ol, or, op);
-                } else if(or->array->typecode == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, float, ol, or, op);
-                }
-            } else {
-                mp_raise_TypeError("wrong input type");
-            }
-            // this instruction should never be reached, but we have to make the compiler happy
-            return MP_OBJ_NULL; 
-        } else {
-            return MP_OBJ_NULL; // op not supported                                                        
+                // this instruction should never be reached, but we have to make the compiler happy
+                return MP_OBJ_NULL; 
+            default:
+                return MP_OBJ_NULL; // op not supported                                                        
         }
     } else {
         mp_raise_TypeError("wrong operand type on the right hand side");

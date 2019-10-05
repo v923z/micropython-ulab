@@ -1,4 +1,10 @@
 
+Sat, 4 Oct 2019
+
+version 0.13
+
+    added the <, <=, >, >= binary operators to ndarray
+
 Fri, 4 Oct 2019
 
 version 0.12
