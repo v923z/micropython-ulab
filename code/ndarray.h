@@ -21,6 +21,13 @@
 
 const mp_obj_type_t ulab_ndarray_type;
 
+/*  
+    mp_obj_t row = mp_obj_new_list(n, NULL);
+    mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);
+    
+    should work outside the loop, but it doesn't. Go figure! 
+*/
+
 #define RUN_BINARY_SCALAR(typecode, type_out, type_array, type_scalar, ndarray, scalar, op) do {\
     type_array *avalue = (type_array *)(ndarray)->array->items;\
     if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
@@ -62,37 +69,6 @@ const mp_obj_type_t ulab_ndarray_type;
         }\
         return out_list;\
     }\
-} while(0)
-
-/*  
-    mp_obj_t row = mp_obj_new_list(n, NULL);
-    mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);
-    
-    should work outside the loop, but it doesn't. Go figure! */
-
-#define RUN_BINARY_COMPARE(type_array, ndarray, svalue, op) do {\
-    mp_obj_t out_list = mp_obj_new_list(0, NULL);\
-    size_t m = (ndarray)->m, n = (ndarray)->n;\
-    type_array *avalue = (type_array *)(ndarray)->array->items;\
-    for(size_t i=0; i < m; i++) {\
-        mp_obj_t row = mp_obj_new_list(n, NULL);\
-        mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
-        for(size_t j=0; j < n; j++) {\
-            row_ptr->items[j] = mp_const_false;\
-            if((op) == MP_BINARY_OP_LESS) {\
-                if(avalue[i*n+j] < svalue) row_ptr->items[j] = mp_const_true;\
-            } else if((op) == MP_BINARY_OP_LESS_EQUAL) {\
-                if(avalue[i*n+j] <= svalue) row_ptr->items[j] = mp_const_true;\
-            } else if((op) == MP_BINARY_OP_MORE) {\
-                if(avalue[i*n+j] > svalue) row_ptr->items[j] = mp_const_true;\
-            } else if((op) == MP_BINARY_OP_MORE_EQUAL) {\
-                if(avalue[i*n+j] >= svalue) row_ptr->items[j] = mp_const_true;\
-            }\
-        }\
-        if(m == 1) return row;\
-        mp_obj_list_append(out_list, row);\
-    }\
-    return out_list;\
 } while(0)
 
 #define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op) do {\
