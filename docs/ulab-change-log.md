@@ -1,4 +1,10 @@
 
+Mon, 7 Oct 2019
+
+version 0.14
+
+    made the internal binary_op function tighter, and added keyword arguments to linspace
+    
 Sat, 4 Oct 2019
 
 version 0.13

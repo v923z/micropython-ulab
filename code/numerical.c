@@ -27,20 +27,53 @@ enum NUMERICAL_FUNCTION_TYPE {
     NUMERICAL_STD,
 };
 
-mp_obj_t numerical_linspace(mp_obj_t _start, mp_obj_t _stop, mp_obj_t _len) {
-    // TODO: accept keyword argument endpoint=True, dtype=...
-    mp_int_t len = mp_obj_get_int_truncated(_len);
+mp_obj_t numerical_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_num, MP_ARG_INT, {.u_int = 50} },
+        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_true_obj)} },
+        { MP_QSTR_retstep, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_false_obj)} },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(2, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint16_t len = args[2].u_int;
     if(len < 2) {
         mp_raise_ValueError("number of points must be at least 2");
     }
-    mp_float_t value, step;
-    value = mp_obj_get_float(_start);
-    step = (mp_obj_get_float(_stop)-value)/(len-1);
-    ndarray_obj_t *nd_array = create_new_ndarray(1, len, NDARRAY_FLOAT);
-    for(size_t i=0; i < len; i++, value += step) {
-        mp_binary_set_val_array(NDARRAY_FLOAT, nd_array->array->items, i, mp_obj_new_float(value));
+    float value, step;
+    value = mp_obj_get_float(args[0].u_obj);
+    uint8_t typecode = args[5].u_int;
+    if(args[3].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-value)/(len-1);
+    else step = (mp_obj_get_float(args[1].u_obj)-value)/len;
+    ndarray_obj_t *ndarray = create_new_ndarray(1, len, typecode);
+    if(typecode == NDARRAY_UINT8) {
+        uint8_t *array = (uint8_t *)ndarray->array->items;
+        for(size_t i=0; i < len; i++, value += step) array[i] = (uint8_t)value;
+    } else if(typecode == NDARRAY_INT8) {
+        int8_t *array = (int8_t *)ndarray->array->items;
+        for(size_t i=0; i < len; i++, value += step) array[i] = (int8_t)value;
+    } else if(typecode == NDARRAY_UINT16) {
+        uint16_t *array = (uint16_t *)ndarray->array->items;
+        for(size_t i=0; i < len; i++, value += step) array[i] = (uint16_t)value;
+    } else if(typecode == NDARRAY_INT16) {
+        int16_t *array = (int16_t *)ndarray->array->items;
+        for(size_t i=0; i < len; i++, value += step) array[i] = (int16_t)value;
+    } else {
+        float *array = (float *)ndarray->array->items;
+        for(size_t i=0; i < len; i++, value += step) array[i] = value;
     }
-    return MP_OBJ_FROM_PTR(nd_array);
+    if(args[4].u_obj == mp_const_false) {
+        return MP_OBJ_FROM_PTR(ndarray);
+    } else {
+        mp_obj_t tuple[2];
+        tuple[0] = ndarray;
+        tuple[1] = mp_obj_new_float(step);
+        return mp_obj_new_tuple(2, tuple);
+    }
 }
 
 mp_obj_t numerical_sum_mean_std_array(mp_obj_t oin, uint8_t optype) {

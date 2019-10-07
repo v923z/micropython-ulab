@@ -21,6 +21,13 @@
 
 const mp_obj_type_t ulab_ndarray_type;
 
+#define CREATE_SINGLE_ITEM(outarray, type, typecode, value) do {\
+    ndarray_obj_t *tmp = create_new_ndarray(1, 1, (typecode));\
+    type *tmparr = (type *)tmp->array->items;\
+    tmparr[0] = (type)(value);\
+    (outarray) = MP_OBJ_FROM_PTR(tmp);\
+} while(0)
+
 /*  
     mp_obj_t row = mp_obj_new_list(n, NULL);
     mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);
@@ -28,81 +35,40 @@ const mp_obj_type_t ulab_ndarray_type;
     should work outside the loop, but it doesn't. Go figure! 
 */
 
-#define RUN_BINARY_SCALAR(typecode, type_out, type_array, type_scalar, ndarray, scalar, op) do {\
-    type_array *avalue = (type_array *)(ndarray)->array->items;\
-    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
-        ndarray_obj_t *out = create_new_ndarray((ndarray)->m, (ndarray)->n, typecode);\
-        type_out *(odata) = (type_out *)out->array->items;\
-        type_scalar svalue = (type_scalar)scalar;\
-        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] + svalue;}\
-        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] - svalue;}\
-        if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < out->array->len; i++) odata[i] = avalue[i] * svalue;}\
-        return MP_OBJ_FROM_PTR(out);\
-    } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
-        float value = (float)scalar;\
-        ndarray_obj_t *out = create_new_ndarray((ndarray)->m, (ndarray)->n, NDARRAY_FLOAT);\
-        float *odata = (float *)out->array->items;\
-        for(size_t i=0; i < out->array->len; i++) odata[i] = (float)avalue[i]/value;\
-        return MP_OBJ_FROM_PTR(out);\
-    } else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
-             ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\
-        mp_obj_t out_list = mp_obj_new_list(0, NULL);\
-        size_t m = (ndarray)->m, n = (ndarray)->n;\
-        float value = (float)scalar;\
-        for(size_t i=0; i < m; i++) {\
-            mp_obj_t row = mp_obj_new_list(n, NULL);\
-            mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
-            for(size_t j=0; j < n; j++) {\
-                row_ptr->items[j] = mp_const_false;\
-                if((op) == MP_BINARY_OP_LESS) {\
-                    if(avalue[i*n+j] < value) row_ptr->items[j] = mp_const_true;\
-                } else if((op) == MP_BINARY_OP_LESS_EQUAL) {\
-                    if(avalue[i*n+j] <= value) row_ptr->items[j] = mp_const_true;\
-                } else if((op) == MP_BINARY_OP_MORE) {\
-                    if(avalue[i*n+j] > value) row_ptr->items[j] = mp_const_true;\
-                } else if((op) == MP_BINARY_OP_MORE_EQUAL) {\
-                    if(avalue[i*n+j] >= value) row_ptr->items[j] = mp_const_true;\
-                }\
-            }\
-            if(m == 1) return row;\
-            mp_obj_list_append(out_list, row);\
-        }\
-        return out_list;\
-    }\
-} while(0)
-
 #define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op) do {\
     type_left *left = (type_left *)(ol)->array->items;\
     type_right *right = (type_right *)(or)->array->items;\
+    uint8_t inc = 0;\
+    if((or)->array->len > 1) inc = 1;\
     if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
         ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);\
         type_out *(odata) = (type_out *)out->array->items;\
-        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] + right[i];}\
-        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] - right[i];}\
-        if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (ol)->array->len; i++) odata[i] = left[i] * right[i];}\
+        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = left[i] + right[j];}\
+        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = left[i] - right[j];}\
+        if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = left[i] * right[j];}\
         return MP_OBJ_FROM_PTR(out);\
     } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
         ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, NDARRAY_FLOAT);\
         float *odata = (float *)out->array->items;\
-        for(size_t i=0; i < (ol)->array->len; i++) odata[i] = (float)left[i]/(float)right[i];\
+        for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = (float)left[i]/(float)right[j];\
         return MP_OBJ_FROM_PTR(out);\
     } else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
              ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\
         mp_obj_t out_list = mp_obj_new_list(0, NULL);\
         size_t m = (ol)->m, n = (ol)->n;\
-        for(size_t i=0; i < m; i++) {\
+        for(size_t i=0, r=0; i < m; i++, r+=inc) {\
             mp_obj_t row = mp_obj_new_list(n, NULL);\
             mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
-            for(size_t j=0; j < n; j++) {\
+            for(size_t j=0, s=0; j < n; j++, s+=inc) {\
                 row_ptr->items[j] = mp_const_false;\
                 if((op) == MP_BINARY_OP_LESS) {\
-                    if(left[i*n+j] < right[i*n+j]) row_ptr->items[j] = mp_const_true;\
+                    if(left[i*n+j] < right[r*n+s]) row_ptr->items[j] = mp_const_true;\
                 } else if((op) == MP_BINARY_OP_LESS_EQUAL) {\
-                    if(left[i*n+j] <= right[i*n+j]) row_ptr->items[j] = mp_const_true;\
+                    if(left[i*n+j] <= right[r*n+s]) row_ptr->items[j] = mp_const_true;\
                 } else if((op) == MP_BINARY_OP_MORE) {\
-                    if(left[i*n+j] > right[i*n+j]) row_ptr->items[j] = mp_const_true;\
+                    if(left[i*n+j] > right[r*n+s]) row_ptr->items[j] = mp_const_true;\
                 } else if((op) == MP_BINARY_OP_MORE_EQUAL) {\
-                    if(left[i*n+j] >= right[i*n+j]) row_ptr->items[j] = mp_const_true;\
+                    if(left[i*n+j] >= right[r*n+s]) row_ptr->items[j] = mp_const_true;\
                 }\
             }\
             if(m == 1) return row;\
