@@ -143,8 +143,7 @@ mp_obj_t ndarray_copy(mp_obj_t self_in) {
     // returns a verbatim (shape and typecode) copy of self_in
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *out = create_new_ndarray(self->m, self->n, self->array->typecode);
-    int typecode_size = mp_binary_get_size('@', self->array->typecode, NULL);
-    memcpy(out->array->items, self->array->items, self->array->len*typecode_size);
+    memcpy(out->array->items, self->array->items, self->bytes);
     return MP_OBJ_FROM_PTR(out);
 }
 
@@ -551,13 +550,75 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 
 mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    ndarray_obj_t *ndarray = NULL;
     switch (op) {
         case MP_UNARY_OP_LEN: 
             if(self->m > 1) {
                 return mp_obj_new_int(self->m);
             } else {
-                return mp_obj_new_int(self->n);                
+                return mp_obj_new_int(self->len);
             }
+            break;
+        
+        case MP_UNARY_OP_INVERT:
+            if(self->array->typecode == NDARRAY_FLOAT) {
+                mp_raise_ValueError("operation is not supported for given type");
+            }
+            // we can invert the content byte by byte, there is no need to distinguish 
+            // between different typecodes
+            ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
+            uint8_t *array = (uint8_t *)ndarray->array->items;
+            for(size_t i=0; i < self->bytes; i++) array[i] = ~array[i];
+            return MP_OBJ_FROM_PTR(ndarray);
+            break;
+        
+        case MP_UNARY_OP_NEGATIVE:
+            ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
+            if(self->array->typecode == NDARRAY_UINT8) {
+                uint8_t *array = (uint8_t *)ndarray->array->items;
+                for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+            } else if(self->array->typecode == NDARRAY_INT8) {
+                int8_t *array = (int8_t *)ndarray->array->items;
+                for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+            } else if(self->array->typecode == NDARRAY_UINT16) {                
+                uint16_t *array = (uint16_t *)ndarray->array->items;
+                for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+            } else if(self->array->typecode == NDARRAY_INT16) {
+                int16_t *array = (int16_t *)ndarray->array->items;
+                for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+            } else {
+                float *array = (float *)ndarray->array->items;
+                for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+            }
+            return MP_OBJ_FROM_PTR(ndarray);
+            break;
+
+        case MP_UNARY_OP_POSITIVE:
+            return ndarray_copy(self_in);
+
+        case MP_UNARY_OP_ABS:
+            if((self->array->typecode == NDARRAY_UINT8) || (self->array->typecode == NDARRAY_UINT16)) {
+                return ndarray_copy(self_in);
+            }
+            ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
+            if((self->array->typecode == NDARRAY_INT8)) {
+                int8_t *array = (int8_t *)ndarray->array->items;
+                for(size_t i=0; i < self->array->len; i++) {
+                    if(array[i] < 0) array[i] = -array[i];
+                }
+            } else if((self->array->typecode == NDARRAY_INT16)) {
+                int16_t *array = (int16_t *)ndarray->array->items;
+                for(size_t i=0; i < self->array->len; i++) {
+                    if(array[i] < 0) array[i] = -array[i];
+                }
+            } else {
+                float *array = (float *)ndarray->array->items;
+                for(size_t i=0; i < self->array->len; i++) {
+                    if(array[i] < 0) array[i] = -array[i];
+                }                
+            }
+            return MP_OBJ_FROM_PTR(ndarray);
+            break;
         default: return MP_OBJ_NULL; // operator not supported
     }
 }

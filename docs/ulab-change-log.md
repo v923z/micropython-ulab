@@ -1,4 +1,10 @@
 
+Tue, 8 Oct 2019
+
+version 0.15
+
+    added inv, neg, pos, and abs unary operators to ndarray.c
+    
 Mon, 7 Oct 2019
 
 version 0.14

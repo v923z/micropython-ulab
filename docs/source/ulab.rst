@@ -314,7 +314,7 @@ the ``ndarray`` is meant to be linear, either ``m``, or ``n`` is equal
 to 1), as well as the byte size, ``bytes``, i.e., the total number of
 bytes consumed by the data container. ``bytes`` is equal to ``m*n`` for
 ``byte`` types (``uint8``, and ``int8``), to ``2*m*n`` for integers
-(``uint16``, and ``int16``), and ``2*m*n`` for floats.
+(``uint16``, and ``int16``), and ``4*m*n`` for floats.
 
 The type definition is as follows:
 
@@ -2204,8 +2204,7 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
         // returns a verbatim (shape and typecode) copy of self_in
         ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
         ndarray_obj_t *out = create_new_ndarray(self->m, self->n, self->array->typecode);
-        int typecode_size = mp_binary_get_size('@', self->array->typecode, NULL);
-        memcpy(out->array->items, self->array->items, self->array->len*typecode_size);
+        memcpy(out->array->items, self->array->items, self->bytes);
         return MP_OBJ_FROM_PTR(out);
     }
     
@@ -2612,13 +2611,75 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ndarray.c
     
     mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+        ndarray_obj_t *ndarray = NULL;
         switch (op) {
             case MP_UNARY_OP_LEN: 
                 if(self->m > 1) {
                     return mp_obj_new_int(self->m);
                 } else {
-                    return mp_obj_new_int(self->n);                
+                    return mp_obj_new_int(self->len);
                 }
+                break;
+            
+            case MP_UNARY_OP_INVERT:
+                if(self->array->typecode == NDARRAY_FLOAT) {
+                    mp_raise_ValueError("operation is not supported for given type");
+                }
+                // we can invert the content byte by byte, there is no need to distinguish 
+                // between different typecodes
+                ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
+                uint8_t *array = (uint8_t *)ndarray->array->items;
+                for(size_t i=0; i < self->bytes; i++) array[i] = ~array[i];
+                return MP_OBJ_FROM_PTR(ndarray);
+                break;
+            
+            case MP_UNARY_OP_NEGATIVE:
+                ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
+                if(self->array->typecode == NDARRAY_UINT8) {
+                    uint8_t *array = (uint8_t *)ndarray->array->items;
+                    for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+                } else if(self->array->typecode == NDARRAY_INT8) {
+                    int8_t *array = (int8_t *)ndarray->array->items;
+                    for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+                } else if(self->array->typecode == NDARRAY_UINT16) {                
+                    uint16_t *array = (uint16_t *)ndarray->array->items;
+                    for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+                } else if(self->array->typecode == NDARRAY_INT16) {
+                    int16_t *array = (int16_t *)ndarray->array->items;
+                    for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+                } else {
+                    float *array = (float *)ndarray->array->items;
+                    for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
+                }
+                return MP_OBJ_FROM_PTR(ndarray);
+                break;
+    
+            case MP_UNARY_OP_POSITIVE:
+                return ndarray_copy(self_in);
+    
+            case MP_UNARY_OP_ABS:
+                if((self->array->typecode == NDARRAY_UINT8) || (self->array->typecode == NDARRAY_UINT16)) {
+                    return ndarray_copy(self_in);
+                }
+                ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
+                if((self->array->typecode == NDARRAY_INT8)) {
+                    int8_t *array = (int8_t *)ndarray->array->items;
+                    for(size_t i=0; i < self->array->len; i++) {
+                        if(array[i] < 0) array[i] = -array[i];
+                    }
+                } else if((self->array->typecode == NDARRAY_INT16)) {
+                    int16_t *array = (int16_t *)ndarray->array->items;
+                    for(size_t i=0; i < self->array->len; i++) {
+                        if(array[i] < 0) array[i] = -array[i];
+                    }
+                } else {
+                    float *array = (float *)ndarray->array->items;
+                    for(size_t i=0; i < self->array->len; i++) {
+                        if(array[i] < 0) array[i] = -array[i];
+                    }                
+                }
+                return MP_OBJ_FROM_PTR(ndarray);
+                break;
             default: return MP_OBJ_NULL; // operator not supported
         }
     }
@@ -2643,14 +2704,69 @@ ipython3.. code ::
     
     import ulab
     
-    a = ulab.ndarray([1, 2, 3], dtype=ulab.uint8)
+    a = ulab.ndarray([1, -2, 3], dtype=ulab.int8)
     
-    print(a-a)
+    print(abs(a))
+    
+    a = ulab.ndarray([1, 2, 3], dtype=ulab.uint8)
+    print(~a)
+    
+    a = ulab.ndarray([1, 2, 3], dtype=ulab.int8)
+    print(~a)
 .. parsed-literal::
 
-    ndarray([0, 0, 0], dtype=uint8)
+    ndarray([1, 2, 3], dtype=int8)
+    ndarray([254, 253, 252], dtype=uint8)
+    ndarray([-2, -3, -4], dtype=int8)
     
     
+
+ipython3.. code ::
+        
+    a = array([1, -2, 3], dtype=int8)
+    print(-a, +a)
+    
+    a = array([1, 2, 3], dtype=uint8)
+    print(-a, +a)
+    
+    a = array([1, 2, -3], dtype=float)
+    print(-a, +a)
+.. parsed-literal::
+
+    [-1  2 -3] [ 1 -2  3]
+    [255 254 253] [1 2 3]
+    [-1. -2.  3.] [ 1.  2. -3.]
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([1, -2, 3], dtype=ulab.int8)
+    print(-a, +a)
+    
+    a = ulab.ndarray([1, 2, 3], dtype=ulab.uint8)
+    print(-a, +a)
+    
+    a = ulab.ndarray([1, 2, -3], dtype=ulab.float)
+    print(-a, +a)
+.. parsed-literal::
+
+    ndarray([-1, 2, -3], dtype=int8) ndarray([1, -2, 3], dtype=int8)
+    ndarray([255, 254, 253], dtype=uint8) ndarray([1, 2, 3], dtype=uint8)
+    ndarray([-1.0, -2.0, 3.0], dtype=float) ndarray([1.0, 2.0, -3.0], dtype=float)
+    
+    
+
+ipython3.. code ::
+        
+    a = array([1, 2, 3], dtype=int8)
+    
+    print(~a)
+.. parsed-literal::
+
+    [-2 -3 -4]
 
 ipython3.. code ::
         
@@ -4057,6 +4173,20 @@ ipython3.. code ::
 
 ipython3.. code ::
         
+    a = array([0, 1, 2, 3], dtype=float)
+    abs(a), -a
+
+
+
+
+.. parsed-literal::
+
+    (array([0., 1., 2., 3.]), array([-0., -1., -2., -3.]))
+
+
+
+ipython3.. code ::
+        
     %%micropython -unix 1
     
     import ulab
@@ -4067,6 +4197,20 @@ ipython3.. code ::
 
     (ndarray([0, 1, 2, ..., 8, 9, 10], dtype=int8), 1.0)
     (ndarray([0, 0, 1, ..., 7, 8, 9], dtype=int16), 0.9090909361839294)
+    
+    
+
+ipython3.. code ::
+        
+    %%micropython -unix 1
+    
+    import ulab
+    
+    a = ulab.ndarray([0, 1, 2, -3], dtype=ulab.float)
+    print(abs(a))
+.. parsed-literal::
+
+    ndarray([0.0, 1.0, 2.0, 3.0], dtype=float)
     
     
 
@@ -4534,7 +4678,7 @@ https://github.com/v923z/micropython-ulab/tree/master/code/ulab.c
     #include "fft.h"
     #include "numerical.h"
     
-    #define ULAB_VERSION 0.14
+    #define ULAB_VERSION 0.15
     
     typedef struct _mp_obj_float_t {
         mp_obj_base_t base;
@@ -4735,13 +4879,13 @@ ipython3.. code ::
     GEN build/genhdr/qstrdefs.collected.h
     QSTR not updated
     CC ../../py/objmodule.c
-    CC ../../../ulab/code/numerical.c
+    CC ../../../ulab/code/ndarray.c
     CC ../../../ulab/code/ulab.c
     LINK micropython
        text	   data	    bss	    dec	    hex	filename
        2085	   6862	      0	   8947	   22f3	build/build/frozen_mpy.o
           2	      0	      0	      2	      2	build/build/frozen.o
-     476708	  57856	   2104	 536668	  8305c	micropython
+     477228	  57856	   2104	 537188	  83264	micropython
 
 stm32 port
 ~~~~~~~~~~
@@ -4756,28 +4900,6 @@ ipython3.. code ::
 .. code:: bash
 
     !make BOARD=PYBV11 CROSS_COMPILE=../../../../compiler/bin/arm-none-eabi- USER_C_MODULES=../../../ulab all
-.. parsed-literal::
-
-    Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
-    Including User C Module from ../../../ulab/code
-    GEN build-PYBV11/genhdr/mpversion.h
-    GEN build-PYBV11/genhdr/qstrdefs.collected.h
-    QSTR not updated
-    CC ../../lib/utils/pyexec.c
-    CC moduos.c
-    CC ../../../ulab/code/ndarray.c
-    CC ../../../ulab/code/linalg.c
-    CC ../../../ulab/code/vectorise.c
-    CC ../../../ulab/code/poly.c
-    CC ../../../ulab/code/fft.c
-    CC ../../../ulab/code/numerical.c
-    CC ../../../ulab/code/ulab.c
-    LINK build-PYBV11/firmware.elf
-       text	   data	    bss	    dec	    hex	filename
-     365572	     40	  27888	 393500	  6011c	build-PYBV11/firmware.elf
-    GEN build-PYBV11/firmware.dfu
-    GEN build-PYBV11/firmware.hex
-
 Change log
 ==========
 
@@ -4785,6 +4907,12 @@ ipython3.. code ::
         
     %%writefile ../../../ulab/docs/ulab-change-log.md
     
+    Tue, 8 Oct 2019
+    
+    version 0.15
+    
+        added inv, neg, pos, and abs unary operators to ndarray.c
+        
     Mon, 7 Oct 2019
     
     version 0.14
