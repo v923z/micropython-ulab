@@ -1,4 +1,11 @@
 
+Thu, 10 Oct 2019
+
+varsion 0.16
+
+    changed ndarray to array in ulab.c, so as to conform to numpy's notation
+    extended subscr method to include slices (partially works)
+    
 Tue, 8 Oct 2019
 
 version 0.15

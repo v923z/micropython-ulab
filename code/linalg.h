@@ -25,4 +25,7 @@ mp_obj_t linalg_zeros(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t linalg_ones(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t linalg_eye(size_t , const mp_obj_t *, mp_map_t *);
 
+mp_obj_t linalg_det(mp_obj_t );
+mp_obj_t linalg_eig(mp_obj_t );
+
 #endif
