@@ -24,7 +24,7 @@
 #include "fft.h"
 #include "numerical.h"
 
-#define ULAB_VERSION 0.161
+#define ULAB_VERSION 0.17
 
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;

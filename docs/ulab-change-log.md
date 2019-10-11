@@ -1,6 +1,12 @@
 
 Fri, 11 Oct 2019
 
+version 0.17
+
+    universal function can now take arbitrary typecodes
+
+Fri, 11 Oct 2019
+
 version 0.161
 
     fixed bad error in iterator, and make_new_ndarray 

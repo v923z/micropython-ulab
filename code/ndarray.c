@@ -251,6 +251,47 @@ size_t slice_length(mp_bound_slice_t slice) {
     }
 }
 
+mp_obj_t fill_in_trues(ndarray_obj_t *source, mp_obj_t index) {
+    if(source->array->len != mp_obj_get_int(mp_obj_len(index))) {
+        // the index vector should be exactly as long as self
+        mp_raise_ValueError("boolean index did not match array length");  
+    }
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t item, iterable = mp_getiter(index, &iter_buf);
+    size_t trues = 0;
+    while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if(!mp_obj_is_type(item, &mp_type_bool)) {
+            // numpy seems to be a little bit inconsistent in when an index is considered 
+            // to be True/False. Bail out immediately, if the items is not True/False
+            return mp_const_none;
+        }
+        if(mp_obj_is_true(item)) {
+            trues++;
+        }
+    }
+    if(trues == 0) { // there is not too much we can do with an empty array...
+        return mp_const_none;
+    }
+    
+    ndarray_obj_t *ndarray = create_new_ndarray(1, trues, source->array->typecode);
+    size_t i = 0;
+    
+    // reset trues counter, and iterator
+    trues = 0;
+    iterable = mp_getiter(index, &iter_buf);
+    
+    while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if(mp_obj_is_true(item)) {
+             mp_binary_set_val_array(ndarray->array->typecode, 
+                                     ndarray->array->items, trues++, 
+                                     mp_binary_get_val_array(source->array->typecode, 
+                                                             source->array->items, i));
+        }
+        i++;
+    }
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
 mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     // NOTE: this will work only on the flattened array!
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -260,7 +301,11 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_raise_NotImplementedError("slicing is not implemented for 2D arrays");            
         }
         if(MP_OBJ_IS_TYPE(index, &mp_type_list)) {
-            mp_raise_NotImplementedError("list indices are not implemented");
+            if(self->n != self->array->len) {
+                mp_raise_ValueError("list indices are implemented for row vectors only");
+            } else { 
+                return fill_in_trues(self, index);
+            }
         }
         if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;

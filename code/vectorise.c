@@ -20,7 +20,7 @@
 #ifndef MP_PI
 #define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
 #endif
-
+    
 mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     // Return a single value, if o_in is not iterable
     if(mp_obj_is_float(o_in) || mp_obj_is_integer(o_in)) {
@@ -28,16 +28,23 @@ mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     }
     mp_float_t x;
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
-        ndarray_obj_t *o = MP_OBJ_TO_PTR(o_in);
-        ndarray_obj_t *out = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
-        float *datain = (float *)o->array->items;
-        float *dataout = (float *)out->array->items;
-        for(size_t i=0; i < o->array->len; i++) {
-            dataout[i] = f(datain[i]);
+        ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
+        ndarray_obj_t *ndarray = create_new_ndarray(source->m, source->n, NDARRAY_FLOAT);
+        float *dataout = (float *)ndarray->array->items;
+        if(source->array->typecode == NDARRAY_UINT8) {
+            ITERATE_VECTOR(uint8_t, source, dataout);
+        } else if(source->array->typecode == NDARRAY_INT8) {
+            ITERATE_VECTOR(int8_t, source, dataout);
+        } else if(source->array->typecode == NDARRAY_UINT16) {
+            ITERATE_VECTOR(uint16_t, source, dataout);
+        } else if(source->array->typecode == NDARRAY_INT16) {
+            ITERATE_VECTOR(int16_t, source, dataout);
+        } else {
+            ITERATE_VECTOR(float, source, dataout);
         }
-        return MP_OBJ_FROM_PTR(out);
+        return MP_OBJ_FROM_PTR(ndarray);
     } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
-        MP_OBJ_IS_TYPE(o_in, &mp_type_range)) {
+        MP_OBJ_IS_TYPE(o_in, &mp_type_range)) { // i.e., the input is a generic iterable
             mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
             ndarray_obj_t *out = create_new_ndarray(1, o->len, NDARRAY_FLOAT);
             float *dataout = (float *)out->array->items;
@@ -52,12 +59,6 @@ mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     }
     return mp_const_none;
 }
-
-
-#define MATH_FUN_1(py_name, c_name) \
-    mp_obj_t vectorise_ ## py_name(mp_obj_t x_obj) { \
-        return vectorise_generic_vector(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
-    }
 
 // _degrees won't compile for the unix port
 /*
