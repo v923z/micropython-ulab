@@ -170,6 +170,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     if (len_in == MP_OBJ_NULL) {
         mp_raise_ValueError("first argument must be an iterable");
     } else {
+        // len1 is either the number of rows (for matrices), or the number of elements (row vectors)
         len1 = MP_OBJ_SMALL_INT_VALUE(len_in);
     }
 
@@ -191,7 +192,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
         }
     }
     // By this time, it should be established, what the shape is, so we can now create the array
-    ndarray_obj_t *self = create_new_ndarray((len2 == 0) ? 1 : len2, len1, dtype);
+    ndarray_obj_t *self = create_new_ndarray((len2 == 0) ? 1 : len1, (len2 == 0) ? len1 : len2, dtype);
     iterable1 = mp_getiter(args[0], &iter_buf1);
     i = 0;
     if(len2 == 0) { // the first argument is a single iterable
@@ -367,13 +368,13 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
     // TODO: in numpy, ndarrays are iterated with respect to the first axis. 
     size_t iter_end = 0;
-    if((ndarray->m == 1) || (ndarray->n ==1)) {
+    if((ndarray->m == 1)) {
         iter_end = ndarray->array->len;
     } else {
         iter_end = ndarray->m;
     }
     if(self->cur < iter_end) {
-        if(ndarray->m == ndarray->array->len) { // we have a linear array
+        if(ndarray->n == ndarray->array->len) { // we have a linear array
             // read the current value
             mp_obj_t value;
             value = mp_binary_get_val_array(ndarray->array->typecode, ndarray->array->items, self->cur);
@@ -637,7 +638,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             if(self->m > 1) {
                 return mp_obj_new_int(self->m);
             } else {
-                return mp_obj_new_int(self->len);
+                return mp_obj_new_int(self->n);
             }
             break;
         

@@ -1,4 +1,10 @@
 
+Fri, 11 Oct 2019
+
+version 0.161
+
+    fixed bad error in iterator, and make_new_ndarray 
+    
 Thu, 10 Oct 2019
 
 varsion 0.16
