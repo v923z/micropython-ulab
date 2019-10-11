@@ -1,6 +1,12 @@
 
 Fri, 11 Oct 2019
 
+version 0.171
+
+    found and fixed small bux in roll function
+
+Fri, 11 Oct 2019
+
 version 0.17
 
     universal function can now take arbitrary typecodes

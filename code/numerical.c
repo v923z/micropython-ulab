@@ -355,7 +355,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     } else {
         _shift = shift;
     }
-    if(axis == 0) {
+    if(axis == 1) {
         len = in->m;
         // temporary buffer
         uint8_t *_data = m_new(uint8_t, _sizeof*len);

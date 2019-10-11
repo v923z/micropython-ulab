@@ -245,9 +245,9 @@ void ndarray_assign_slice(mp_bound_slice_t slice, mp_obj_t source, ndarray_obj_t
 
 size_t slice_length(mp_bound_slice_t slice) {
     if(slice.stop > slice.start) {
-      return (slice.stop - slice.start) / slice.step + 1;
+      return (slice.stop - slice.start) / slice.step;
     } else {
-      return (slice.start - slice.stop) / slice.step + 1;
+      return (slice.start - slice.stop) / slice.step;
     }
 }
 
