@@ -37,6 +37,8 @@ size_t get_nditerable_len(mp_obj_t o_in) {
 
 mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: return immediately, if o_p is not an iterable
+    // TODO: there is a bug here: matrices won't work, 
+    // because there is a single iteration loop
     size_t m, n;
     if(MP_OBJ_IS_TYPE(o_x, &ulab_ndarray_type)) {
         ndarray_obj_t *ndx = MP_OBJ_TO_PTR(o_x);

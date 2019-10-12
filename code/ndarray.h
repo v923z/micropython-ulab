@@ -58,6 +58,7 @@ mp_obj_t ndarray_shape(mp_obj_t );
 mp_obj_t ndarray_size(mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_rawsize(mp_obj_t );
 mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
+mp_obj_t ndarray_asbytearray(mp_obj_t );
 
 #define CREATE_SINGLE_ITEM(outarray, type, typecode, value) do {\
     ndarray_obj_t *tmp = create_new_ndarray(1, 1, (typecode));\
