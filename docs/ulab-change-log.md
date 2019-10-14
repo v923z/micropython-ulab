@@ -1,4 +1,10 @@
 
+Mon, 14 Oct 2019
+
+version 0.18
+
+    fixed min/man function in numerical.c; it conforms to numpy behaviour
+
 Fri, 11 Oct 2019
 
 version 0.171

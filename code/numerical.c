@@ -98,97 +98,6 @@ mp_obj_t numerical_sum_mean_std_array(mp_obj_t oin, uint8_t optype) {
     }
 }
 
-STATIC mp_obj_t numerical_argmin_argmax_array(mp_obj_t o_in, mp_uint_t op, uint8_t type) {
-    size_t idx = 0, best_idx = 0;
-    mp_obj_iter_buf_t iter_buf;
-    mp_obj_t iterable = mp_getiter(o_in, &iter_buf);
-    mp_obj_t best_obj = MP_OBJ_NULL;
-    mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        if ((best_obj == MP_OBJ_NULL) || (mp_binary_op(op, item, best_obj) == mp_const_true)) {
-            best_obj = item;
-            best_idx = idx;
-        }
-        idx++;
-    }
-    if((type == NUMERICAL_ARGMIN) || (type == NUMERICAL_ARGMAX)) {
-        return MP_OBJ_NEW_SMALL_INT(best_idx);
-    } else {
-        return best_obj;
-    }
-}
-
-STATIC size_t numerical_argmin_argmax_single_line(void *data, size_t start, size_t stop, 
-                                                  size_t stride, uint8_t typecode, uint8_t optype) {
-    size_t best_idx = start;
-    mp_float_t value, best_value = ndarray_get_float_value(data, typecode, start);
-    
-    for(size_t i=start; i < stop; i+=stride) {
-        value = ndarray_get_float_value(data, typecode, i);
-        if((optype == NUMERICAL_MIN) || (optype == NUMERICAL_ARGMIN)) {
-            if(best_value > value) {
-                best_value = value;
-                best_idx = i;
-            }
-        } else if((optype == NUMERICAL_MAX) || (optype == NUMERICAL_ARGMAX)) {
-            if(best_value < value) {
-                best_value = value;
-                best_idx = i;
-            }
-        }
-    }
-    return best_idx;
-}
-
-STATIC mp_obj_t numerical_argmin_argmax_matrix(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
-    ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
-    size_t best_idx;
-    if((axis == mp_const_none) || (in->m == 1) || (in->n == 1)) { 
-        // return the value for the flattened array
-        best_idx = numerical_argmin_argmax_single_line(in->array->items, 0, 
-                                                      in->array->len, 1, in->array->typecode, optype);
-        if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
-            return MP_OBJ_NEW_SMALL_INT(best_idx);
-        } else {
-            // TODO: do we have to do type conversion here, depending on the type of the input array?
-            return mp_obj_new_float(ndarray_get_float_value(in->array->items, in->array->typecode, best_idx));
-        }
-    } else {
-        uint8_t _axis = mp_obj_get_int(axis);
-        size_t m = (_axis == 0) ? 1 : in->m;
-        size_t n = (_axis == 0) ? in->n : 1;
-        size_t len = in->array->len;
-        // TODO: pass in->array->typcode to create_new_ndarray
-        ndarray_obj_t *out = create_new_ndarray(m, n, NDARRAY_FLOAT);
-
-        // TODO: these two cases could probably be combined in a more elegant fashion...
-        if(_axis == 0) { // vertical
-            for(size_t i=0; i < n; i++) {
-                best_idx = numerical_argmin_argmax_single_line(in->array->items, i, len, 
-                                                               n, in->array->typecode, optype);
-                if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
-                    ((float_t *)out->array->items)[i] = (float)best_idx;
-                } else {
-                    ((float_t *)out->array->items)[i] = ndarray_get_float_value(in->array->items, in->array->typecode, best_idx);
-                }
-            }
-        } else { // horizontal
-            for(size_t i=0; i < m; i++) {
-                best_idx = numerical_argmin_argmax_single_line(in->array->items, i*in->n, 
-                                                               (i+1)*in->n, 1, in->array->typecode, optype);
-                if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
-                    ((float_t *)out->array->items)[i] = (float)best_idx;
-                } else {
-                    ((float_t *)out->array->items)[i] = ndarray_get_float_value(in->array->items, in->array->typecode, best_idx);
-                }
-
-            }
-        }
-    return MP_OBJ_FROM_PTR(out);
-    }
-    return mp_const_none;
-}
-
 STATIC mp_float_t numerical_sum_mean_std_single_line(void *data, size_t start, size_t stop, 
                                                   size_t stride, uint8_t typecode, uint8_t optype) {
     
@@ -247,6 +156,113 @@ STATIC mp_obj_t numerical_sum_mean_std_matrix(mp_obj_t oin, mp_obj_t axis, uint8
     }
 }
 
+size_t numerical_argmin_argmax_array(ndarray_obj_t *in, size_t start, 
+                                       size_t stop, size_t stride, uint8_t op) {
+    size_t best_idx = start;
+    if(in->array->typecode == NDARRAY_UINT8) {
+        ARG_MIN_LOOP(in, uint8_t, start, stop, stride, op);
+    } else if(in->array->typecode == NDARRAY_INT8) {
+        ARG_MIN_LOOP(in, int8_t, start, stop, stride, op);
+    } else if(in->array->typecode == NDARRAY_UINT16) {
+        ARG_MIN_LOOP(in, uint16_t, start, stop, stride, op);
+    } else if(in->array->typecode == NDARRAY_INT16) {
+        ARG_MIN_LOOP(in, uint16_t, start, stop, stride, op);
+    } else if(in->array->typecode == NDARRAY_FLOAT) {
+        ARG_MIN_LOOP(in, float, start, stop, stride, op);
+    }
+    return best_idx;
+}
+
+void copy_value_into_ndarray(ndarray_obj_t *target, ndarray_obj_t *source, size_t target_idx, size_t source_idx) {
+    // since we are simply copying, it doesn't matter, whether the arrays are signed or unsigned, 
+    // we can cast them in any way we like
+    if((target->array->typecode == NDARRAY_UINT8) || (target->array->typecode == NDARRAY_INT8)) {
+        ((uint8_t *)target->array->items)[target_idx] = ((uint8_t *)source->array->items)[source_idx];
+    } else if((target->array->typecode == NDARRAY_UINT16) || (target->array->typecode == NDARRAY_INT16)) {
+        ((uint16_t *)target->array->items)[target_idx] = ((uint16_t *)source->array->items)[source_idx];
+    } else { 
+        ((float *)target->array->items)[target_idx] = ((float *)source->array->items)[source_idx];
+    }
+}
+ 
+STATIC mp_obj_t numerical_argmin_argmax(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
+    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || 
+        MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
+        // This case will work for single iterables only 
+        size_t idx = 0, best_idx = 0;
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iterable = mp_getiter(oin, &iter_buf);
+        mp_obj_t best_obj = MP_OBJ_NULL;
+        mp_obj_t item;
+        mp_uint_t op = MP_BINARY_OP_LESS;
+        if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) op = MP_BINARY_OP_MORE;
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            if ((best_obj == MP_OBJ_NULL) || (mp_binary_op(op, item, best_obj) == mp_const_true)) {
+                best_obj = item;
+                best_idx = idx;
+            }
+            idx++;
+        }
+        if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
+            return MP_OBJ_NEW_SMALL_INT(best_idx);
+        } else {
+            return best_obj;
+        }
+    } else if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
+            ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
+            size_t best_idx;
+            if((axis == mp_const_none) || (in->m == 1) || (in->n == 1)) {
+                // return the value for the flattened array                
+                best_idx = numerical_argmin_argmax_array(in, 0, in->array->len, 1, optype);
+                if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
+                    return MP_OBJ_NEW_SMALL_INT(best_idx);
+                } else {
+                    if(in->array->typecode == NDARRAY_FLOAT) {
+                        return mp_obj_new_float(ndarray_get_float_value(in->array->items, in->array->typecode, best_idx));
+                    } else {
+                        return mp_binary_get_val_array(in->array->typecode, in->array->items, best_idx);
+                    }
+                }
+            } else { // we have to work with a full matrix here
+                uint8_t _axis = mp_obj_get_int(axis);
+                size_t m = (_axis == 0) ? 1 : in->m;
+                size_t n = (_axis == 0) ? in->n : 1;
+                size_t len = in->array->len;
+                ndarray_obj_t *ndarray = NULL;
+                if((optype == NUMERICAL_MAX) || (optype == NUMERICAL_MIN)) {
+                    ndarray = create_new_ndarray(m, n, in->array->typecode);
+                } else { // argmin/argmax
+                    // TODO: one might get away with uint8_t, if both m, and n < 255
+                    ndarray = create_new_ndarray(m, n, NDARRAY_UINT16);
+                }
+
+                // TODO: these two cases could probably be combined in a more elegant fashion...
+                if(_axis == 0) { // vertical
+                    for(size_t i=0; i < n; i++) {
+                        best_idx = numerical_argmin_argmax_array(in, i, len, n, optype);
+                        if((optype == NUMERICAL_MIN) || (optype == NUMERICAL_MAX)) {
+                            copy_value_into_ndarray(ndarray, in, i, best_idx);
+                        } else {
+                            ((uint16_t *)ndarray->array->items)[i] = (uint16_t)(best_idx / n);
+                        }
+                    }
+                } else { // horizontal
+                    for(size_t i=0; i < m; i++) {
+                        best_idx = numerical_argmin_argmax_array(in, i*in->n, (i+1)*in->n, 1, optype);
+                        if((optype == NUMERICAL_MIN) || (optype == NUMERICAL_MAX)) {
+                             copy_value_into_ndarray(ndarray, in, i, best_idx);
+                        } else {
+                            ((uint16_t *)ndarray->array->items)[i] = (uint16_t)(best_idx - i*in->n);
+                        }
+                    }
+                }
+                return MP_OBJ_FROM_PTR(ndarray);
+            }
+            return mp_const_none;
+        }
+    mp_raise_TypeError("input type is not supported");
+}
+
 STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t type) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} } ,
@@ -268,10 +284,9 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
         switch(type) {
             case NUMERICAL_MIN:
             case NUMERICAL_ARGMIN:
-                return numerical_argmin_argmax_array(oin, MP_BINARY_OP_LESS, type);
             case NUMERICAL_MAX:
             case NUMERICAL_ARGMAX:
-                return numerical_argmin_argmax_array(oin, MP_BINARY_OP_MORE, type);
+                return numerical_argmin_argmax(oin, axis, type);
             case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
             case NUMERICAL_STD:
@@ -285,7 +300,7 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_MAX:
             case NUMERICAL_ARGMIN:
             case NUMERICAL_ARGMAX:
-                return numerical_argmin_argmax_matrix(oin, axis, type);
+                return numerical_argmin_argmax(oin, axis, type);
             case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
             case NUMERICAL_STD:
@@ -329,6 +344,7 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
 mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: replace memcpy by memmove
+    // TODO: I have the feeling that the values of the axis keywords are swapped...
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
