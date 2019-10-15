@@ -1,4 +1,9 @@
 
+Tue, 15 Oct 2019
+
+version 0.19
+
+    added determinant to linalg.c
 
 Tue, 15 Oct 2019
 

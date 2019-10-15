@@ -23,9 +23,11 @@ mp_obj_t numerical_argmin(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_argmax(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_roll(size_t , const mp_obj_t *, mp_map_t *);
 
-// TODO: implement minimum/maximum
+// TODO: implement minimum/maximum, flip, and cumsum
 mp_obj_t numerical_minimum(mp_obj_t , mp_obj_t );
 mp_obj_t numerical_maximum(mp_obj_t , mp_obj_t );
+mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);
+mp_obj_t numerical_flip(size_t , const mp_obj_t *, mp_map_t *);
 
 // this macro could be tighter, if we moved the ifs to the argmin function, assigned <, as well as >
 #define ARG_MIN_LOOP(in, type, start, stop, stride, op) do {\

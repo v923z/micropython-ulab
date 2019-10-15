@@ -255,3 +255,40 @@ mp_obj_t linalg_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     }
     return MP_OBJ_FROM_PTR(ndarray);
 }
+
+mp_obj_t linalg_det(mp_obj_t oin) {
+    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
+        mp_raise_TypeError("function defined for ndarrays only");
+    }
+    ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
+    if(in->m != in->n) {
+        mp_raise_ValueError("input must be square matrix");
+    }
+    
+    float *tmp = m_new(float, in->n*in->n);
+    for(size_t i=0; i < in->array->len; i++){
+        tmp[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
+    }
+    float c;
+    for(size_t m=0; m < in->m-1; m++){
+        if(abs(tmp[m*(in->n+1)]) < epsilon) {
+            m_del(float, tmp, in->n*in->n);
+            mp_raise_ValueError("singular matrix");
+        }
+        for(size_t n=0; n < in->n; n++){
+            if(m != n) {
+                c = tmp[in->n*n+m] / tmp[m*(in->n+1)];
+                for(size_t k=0; k < in->n; k++){
+                    tmp[in->n*n+k] -= c * tmp[in->n*m+k];
+                }
+            }
+        }
+    }
+    float det = 1.0;
+                            
+    for(size_t m=0; m < in->m; m++){ 
+        det *= tmp[m*(in->n+1)];
+    }
+    m_del(float, tmp, in->n*in->n);
+    return mp_obj_new_float(det);
+}
