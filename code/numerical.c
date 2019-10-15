@@ -176,6 +176,7 @@ size_t numerical_argmin_argmax_array(ndarray_obj_t *in, size_t start,
 void copy_value_into_ndarray(ndarray_obj_t *target, ndarray_obj_t *source, size_t target_idx, size_t source_idx) {
     // since we are simply copying, it doesn't matter, whether the arrays are signed or unsigned, 
     // we can cast them in any way we like
+    // This could also be done with byte copies. I don't know, whether that would have any benefits
     if((target->array->typecode == NDARRAY_UINT8) || (target->array->typecode == NDARRAY_INT8)) {
         ((uint8_t *)target->array->items)[target_idx] = ((uint8_t *)source->array->items)[source_idx];
     } else if((target->array->typecode == NDARRAY_UINT16) || (target->array->typecode == NDARRAY_INT16)) {
@@ -346,9 +347,9 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     // TODO: replace memcpy by memmove
     // TODO: I have the feeling that the values of the axis keywords are swapped...
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -356,22 +357,45 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     
     mp_obj_t oin = args[0].u_obj;
     int16_t shift = mp_obj_get_int(args[1].u_obj);
-    int8_t axis = args[2].u_int;
-    if((axis != 0) && (axis != 1)) {
+    if((args[2].u_obj != mp_const_none) && 
+           (mp_obj_get_int(args[2].u_obj) != 0) && 
+           (mp_obj_get_int(args[2].u_obj) != 1)) {
         mp_raise_ValueError("axis must be None, 0, or 1");
     }
+
     ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
     uint8_t _sizeof = mp_binary_get_size('@', in->array->typecode, NULL);
     size_t len;
     int16_t _shift;
-    uint8_t *data = (uint8_t *)in->array->items;
-    // TODO: transpose the matrix, if axis == 0
+    uint8_t *array = (uint8_t *)in->array->items;
+    // TODO: transpose the matrix, if axis == 0. Though, that is hard on the RAM...
     if(shift < 0) {
         _shift = -shift;
     } else {
         _shift = shift;
     }
-    if(axis == 1) {
+    if((args[2].u_obj == mp_const_none) || (mp_obj_get_int(args[2].u_obj) == 1)) { // shift horizontally
+        uint16_t M;
+        if(args[2].u_obj == mp_const_none) {
+            len = in->array->len;
+            M = 1;
+        } else {
+            len = in->n;
+            M = in->m;
+        }
+        _shift = _shift % len;
+        if(shift < 0) _shift = len - _shift;
+        // TODO: if(shift > len/2), we should move in the opposite direction. That would save RAM
+        _shift *= _sizeof;
+        uint8_t *tmp = m_new(uint8_t, _shift);
+        for(size_t m=0; m < M; m++) {
+            memmove(tmp, &array[m*len*_sizeof], _shift);
+            memmove(&array[m*len*_sizeof], &array[m*len*_sizeof+_shift], len*_sizeof-_shift);
+            memmove(&array[(m+1)*len*_sizeof-_shift], tmp, _shift);
+        }
+        m_del(uint8_t, tmp, _shift);
+        return mp_const_none;
+    } else {
         len = in->m;
         // temporary buffer
         uint8_t *_data = m_new(uint8_t, _sizeof*len);
@@ -384,35 +408,19 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         for(size_t n=0; n < in->n; n++) {
             for(size_t m=0; m < len; m++) {
                 // this loop should fill up the temporary buffer
-                memcpy(&_data[m*_sizeof], &data[(m*in->n+n)*_sizeof], _sizeof);
+                memmove(&_data[m*_sizeof], &array[(m*in->n+n)*_sizeof], _sizeof);
             }
             // now, the actual shift
-            memcpy(tmp, _data, _shift);
-            memcpy(_data, &_data[_shift], len*_sizeof-_shift);
-            memcpy(&_data[len*_sizeof-_shift], tmp, _shift);
+            memmove(tmp, _data, _shift);
+            memmove(_data, &_data[_shift], len*_sizeof-_shift);
+            memmove(&_data[len*_sizeof-_shift], tmp, _shift);
             for(size_t m=0; m < len; m++) {
                 // this loop should dump the content of the temporary buffer into data
-                memcpy(&data[(m*in->n+n)*_sizeof], &_data[m*_sizeof], _sizeof);
+                memmove(&array[(m*in->n+n)*_sizeof], &_data[m*_sizeof], _sizeof);
             }            
         }
         m_del(uint8_t, tmp, _shift);
         m_del(uint8_t, _data, _sizeof*len);
         return mp_const_none;
     }
-    len = in->n;
-    if((in->m == 1) || (in->n == 1)) {
-        len = in->array->len;
-    }
-    _shift = _shift % len;
-    if(shift < 0) _shift = len - _shift;
-    // TODO: if(shift > len/2), we should move in the opposite direction. That would save RAM
-    _shift *= _sizeof;
-    uint8_t *tmp = m_new(uint8_t, _shift);
-    for(size_t m=0; m < in->m; m++) {
-        memcpy(tmp, &data[m*len*_sizeof], _shift);
-        memcpy(&data[m*len*_sizeof], &data[m*len*_sizeof+_shift], len*_sizeof-_shift);
-        memcpy(&data[(m+1)*len*_sizeof-_shift], tmp, _shift);
-    }
-    m_del(uint8_t, tmp, _shift);
-    return mp_const_none;
 }

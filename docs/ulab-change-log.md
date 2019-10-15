@@ -1,4 +1,11 @@
 
+
+Tue, 15 Oct 2019
+
+version 0.181
+
+    fixed roll in numerical.c: it can now accept the axis=None keyword argument
+
 Mon, 14 Oct 2019
 
 version 0.18
