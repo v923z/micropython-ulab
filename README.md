@@ -1,7 +1,7 @@
 # micropython-ulab
 
 ulab is a numpy-like array manipulation library for micropython. 
-The modules is written in C, defines compact containers for numerical 
+The module is written in C, defines compact containers for numerical 
 data, and is fast. 
 
 Rudimentary documentation can be found under

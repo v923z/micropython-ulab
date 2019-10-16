@@ -458,20 +458,6 @@ mp_obj_t ndarray_shape(mp_obj_t self_in) {
     return mp_obj_new_tuple(2, tuple);
 }
 
-mp_obj_t ndarray_size(mp_obj_t self_in, mp_obj_t axis) {
-    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint8_t ax = mp_obj_get_int(axis);
-    if(ax == 0) {
-        return mp_obj_new_int(self->array->len);
-    } else if(ax == 1) {
-        return mp_obj_new_int(self->m);
-    } else if(ax == 2) {
-        return mp_obj_new_int(self->n);
-    } else {
-        return mp_const_none;
-    }
-}
-
 mp_obj_t ndarray_rawsize(mp_obj_t self_in) {
     // returns a 5-tuple with the 
     // 

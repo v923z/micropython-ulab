@@ -1,15 +1,16 @@
 
+Wed, 16 Oct 2019
+
+version 0.20
+
+    Added flip function to numerical.c, and moved the size function to linalg. In addition, 
+    size is a function now, and not a method.
+
 Tue, 15 Oct 2019
 
 version 0.19
 
-    added determinant to linalg.c
-
-Tue, 15 Oct 2019
-
-version 0.181
-
-    fixed roll in numerical.c: it can now accept the axis=None keyword argument
+    fixed roll in numerical.c: it can now accept the axis=None keyword argument, added determinant to linalg.c
 
 Mon, 14 Oct 2019
 

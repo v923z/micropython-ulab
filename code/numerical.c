@@ -344,8 +344,6 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 }
 
 mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // TODO: replace memcpy by memmove
-    // TODO: I have the feeling that the values of the axis keywords are swapped...
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
@@ -423,4 +421,51 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         m_del(uint8_t, _data, _sizeof*len);
         return mp_const_none;
     }
+}
+
+mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError("flip argument must be an ndarray");
+    }
+    if((args[1].u_obj != mp_const_none) && 
+           (mp_obj_get_int(args[1].u_obj) != 0) && 
+           (mp_obj_get_int(args[1].u_obj) != 1)) {
+        mp_raise_ValueError("axis must be None, 0, or 1");
+    }
+
+    ndarray_obj_t *in = MP_OBJ_TO_PTR(args[0].u_obj);
+    mp_obj_t oout = ndarray_copy(args[0].u_obj);
+    ndarray_obj_t *out = MP_OBJ_TO_PTR(oout);
+    uint8_t _sizeof = mp_binary_get_size('@', in->array->typecode, NULL);
+    uint8_t *array_in = (uint8_t *)in->array->items;
+    uint8_t *array_out = (uint8_t *)out->array->items;    
+    size_t len;
+    if((args[1].u_obj == mp_const_none) || (mp_obj_get_int(args[1].u_obj) == 1)) { // flip horizontally
+        uint16_t M = in->m;
+        len = in->n;
+        if(args[1].u_obj == mp_const_none) { // flip flattened array
+            len = in->array->len;
+            M = 1;
+        }
+        for(size_t m=0; m < M; m++) {
+            for(size_t n=0; n < len; n++) {
+                memcpy(array_out+_sizeof*(m*len+n), array_in+_sizeof*((m+1)*len-n-1), _sizeof);
+            }
+        }
+    } else { // flip vertically
+        for(size_t m=0; m < in->m; m++) {
+            for(size_t n=0; n < in->n; n++) {
+                memcpy(array_out+_sizeof*(m*in->n+n), array_in+_sizeof*((in->m-m-1)*in->n+n), _sizeof);
+            }
+        }
+    }
+    return out;
 }

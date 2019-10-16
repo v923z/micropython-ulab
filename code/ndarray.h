@@ -55,7 +55,6 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_unary_op(mp_unary_op_t , mp_obj_t );
 
 mp_obj_t ndarray_shape(mp_obj_t );
-mp_obj_t ndarray_size(mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_rawsize(mp_obj_t );
 mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t ndarray_asbytearray(mp_obj_t );

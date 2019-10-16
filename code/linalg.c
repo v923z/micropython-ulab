@@ -73,6 +73,44 @@ mp_obj_t linalg_reshape(mp_obj_t self_in, mp_obj_t shape) {
     return MP_OBJ_FROM_PTR(self);
 }
 
+mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError("size is defined for ndarrays only");
+    } else {
+        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+        if(args[1].u_obj == mp_const_none) {
+            return mp_obj_new_int(ndarray->array->len);
+        } else if(mp_obj_is_int(args[1].u_obj)) {
+            uint8_t ax = mp_obj_get_int(args[1].u_obj);
+            if(ax == 0) {
+                if(ndarray->m == 1) {
+                    return mp_obj_new_int(ndarray->n);
+                } else {
+                    return mp_obj_new_int(ndarray->m);                    
+                }
+            } else if(ax == 1) {
+                if(ndarray->m == 1) {
+                    mp_raise_ValueError("tuple index out of range");
+                } else {
+                    return mp_obj_new_int(ndarray->n);
+                }
+            } else {
+                    mp_raise_ValueError("tuple index out of range");                
+            }
+        } else {
+            mp_raise_TypeError("wrong argument type");
+        }
+    }
+}
+
 bool linalg_invert_matrix(float *data, size_t N) {
     // returns true, of the inversion was successful, 
     // false, if the matrix is singular
