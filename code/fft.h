@@ -18,5 +18,6 @@
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
 mp_obj_t fft_fft(size_t , const mp_obj_t *);
-mp_obj_t fft_spectrum(mp_obj_t );
+mp_obj_t fft_ifft(size_t , const mp_obj_t *);
+mp_obj_t fft_spectrum(size_t , const mp_obj_t *);
 #endif

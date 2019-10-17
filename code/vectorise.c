@@ -85,7 +85,7 @@ MATH_FUN_1(acos, acos);
 MATH_FUN_1(acosh, acosh);
 MATH_FUN_1(asin, asin);
 MATH_FUN_1(asinh, asinh);
-MATH_FUN_1(atan, atan);	
+MATH_FUN_1(atan, atan);
 MATH_FUN_1(atanh, atanh);
 MATH_FUN_1(ceil, ceil);
 MATH_FUN_1(cos, cos);

@@ -19,6 +19,13 @@
 #include "ndarray.h"
 #include "fft.h"
 
+
+enum FFT_TYPE {
+    FFT_FFT,
+    FFT_IFFT,
+    FFT_SPECTRUM,
+};
+
 void fft_kernel(float *real, float *imag, int n, int isign) {
     // This is basically a modification of four1 from Numerical Recipes
     // The main difference is that this function takes two arrays, one 
@@ -68,19 +75,17 @@ void fft_kernel(float *real, float *imag, int n, int isign) {
     }
 }
 
-mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
-    // TODO: return the absolute value, if keyword argument is specified
-    // TODO: transform the data in place, if keyword argument is specified
-    if(!MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, uint8_t type) {
+    if(!MP_OBJ_IS_TYPE(arg_re, &ulab_ndarray_type)) {
         mp_raise_NotImplementedError("FFT is defined for ndarrays only");
     } 
     if(n_args == 2) {
-        if(!MP_OBJ_IS_TYPE(args[1], &ulab_ndarray_type)) {
+        if(!MP_OBJ_IS_TYPE(arg_im, &ulab_ndarray_type)) {
             mp_raise_NotImplementedError("FFT is defined for ndarrays only");
         }
     }
     // Check if input is of length of power of 2
-    ndarray_obj_t *re = MP_OBJ_TO_PTR(args[0]);
+    ndarray_obj_t *re = MP_OBJ_TO_PTR(arg_re);
     uint16_t len = re->array->len;
     if((len & (len-1)) != 0) {
         mp_raise_ValueError("input array length must be power of 2");
@@ -89,7 +94,9 @@ mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     ndarray_obj_t *out_re = create_new_ndarray(1, len, NDARRAY_FLOAT);
     float *data_re = (float *)out_re->array->items;
     
-    if(re->array->typecode == NDARRAY_FLOAT) {
+    if(re->array->typecode == NDARRAY_FLOAT) { 
+        // By treating this case separately, we can save a bit of time.
+        // I don't know if it is worthwhile, though...
         memcpy((float *)out_re->array->items, (float *)re->array->items, re->bytes);
     } else {
         for(size_t i=0; i < len; i++) {
@@ -100,7 +107,7 @@ mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     float *data_im = (float *)out_im->array->items;
 
     if(n_args == 2) {
-        ndarray_obj_t *im = MP_OBJ_TO_PTR(args[1]);
+        ndarray_obj_t *im = MP_OBJ_TO_PTR(arg_im);
         if (re->array->len != im->array->len) {
             mp_raise_ValueError("real and imaginary parts must be of equal length");
         }
@@ -111,36 +118,51 @@ mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
                 data_im[i] = ndarray_get_float_value(im->array->items, im->array->typecode, i);
             }
         }
-    }    
-    fft_kernel(data_re, data_im, len, 1);
-    mp_obj_t tuple[2];
-    tuple[0] = out_re;
-    tuple[1] = out_im;
-    return mp_obj_new_tuple(2, tuple);
+    }
+    if((type == FFT_FFT) || (type == FFT_SPECTRUM)) {
+        fft_kernel(data_re, data_im, len, 1);
+        if(type == FFT_SPECTRUM) {
+            for(size_t i=0; i < len; i++) {
+                data_re[i] = sqrtf(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
+            }
+        }
+    } else { // inverse transform
+        fft_kernel(data_re, data_im, len, -1);
+        for(size_t i=0; i < len; i++) {
+            data_re[i] /= len;
+            data_im[i] /= len;
+        }
+    }
+    if(type == FFT_SPECTRUM) {
+        return MP_OBJ_TO_PTR(out_re);
+    } else {
+        mp_obj_t tuple[2];
+        tuple[0] = out_re;
+        tuple[1] = out_im;
+        return mp_obj_new_tuple(2, tuple);
+    }
 }
 
-mp_obj_t fft_spectrum(mp_obj_t oin) {
-    // calculates the the spectrum of a single real ndarray in place
-    if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
-        mp_raise_NotImplementedError("FFT is defined for ndarrays only");
+mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
+    if(n_args == 2) {
+        return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_FFT);
+    } else {
+        return fft_fft_ifft_spectrum(n_args, args[0], mp_const_none, FFT_FFT);        
     }
-    ndarray_obj_t *re = MP_OBJ_TO_PTR(oin);
-    uint16_t len = re->array->len;
-    if((re->m > 1) && (re->n > 1)) {
-        mp_raise_ValueError("input data must be an array");
+}
+
+mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
+    if(n_args == 2) {
+        return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_IFFT);
+    } else {
+        return fft_fft_ifft_spectrum(n_args, args[0], mp_const_none, FFT_IFFT);
     }
-    if((len & (len-1)) != 0) {
-        mp_raise_ValueError("input array length must be power of 2");
+}
+
+mp_obj_t fft_spectrum(size_t n_args, const mp_obj_t *args) {
+    if(n_args == 2) {
+        return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_SPECTRUM);
+    } else {
+        return fft_fft_ifft_spectrum(n_args, args[0], mp_const_none, FFT_SPECTRUM);
     }
-    if(re->array->typecode != NDARRAY_FLOAT) {
-        mp_raise_TypeError("input array must be of type float");
-    }
-    float *data_re = (float *)re->array->items;
-    float *data_im = m_new(float, len);
-    fft_kernel(data_re, data_im, len, 1);
-    for(size_t i=0; i < len; i++) {
-        data_re[i] = sqrtf(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
-    }
-    m_del(float, data_im, len);
-    return mp_const_none;
 }

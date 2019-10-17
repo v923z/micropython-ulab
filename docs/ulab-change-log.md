@@ -1,4 +1,10 @@
 
+Thu, 17 Oct 2019
+
+version 0.21
+
+    implemented uniform interface for fft, and spectrum, and added ifft.
+
 Wed, 16 Oct 2019
 
 version 0.20
