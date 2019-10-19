@@ -470,8 +470,8 @@ mp_obj_t ndarray_rawsize(mp_obj_t self_in) {
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(self->m);
     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(self->n);
-    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(self->bytes);
-    tuple->items[3] = MP_OBJ_NEW_SMALL_INT(self->array->len);
+    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(self->array->len);
+    tuple->items[3] = MP_OBJ_NEW_SMALL_INT(self->bytes);
     tuple->items[4] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->array->typecode, NULL));
     return tuple;
 }

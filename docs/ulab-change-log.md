@@ -1,6 +1,12 @@
 
 Sat, 19 Oct 2019
 
+version 0.21
+
+    fixed trivial bug in .rawsize()
+
+Sat, 19 Oct 2019
+
 version 0.22
 
     fixed small error in linalg_det, and implemented linalg_eig.

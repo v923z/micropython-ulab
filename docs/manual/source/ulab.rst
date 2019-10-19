@@ -458,7 +458,7 @@ following data
 .. parsed-literal::
 
     a: 		 array([1.0, 2.0, 3.0, 4.0], dtype=float)
-    rawsize of a: 	 (1, 4, 16, 4, 4)
+    rawsize of a: 	 (1, 4, 4, 16, 4)
     
     
 
