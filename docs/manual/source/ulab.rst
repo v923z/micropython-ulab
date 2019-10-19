@@ -1730,10 +1730,9 @@ signature is
    eye(N, M, k=0, dtype=float)
 
 where ``N`` (``M``) specify the dimensions of the matrix (if only ``N``
-is supplied, then we get a square matrix, otherwise one with ``N`` rows,
-and ``M`` columns), whether the ones are in the main diagonal (``k=0``),
-or in another diagonal that is shifted by ``k`` positions. Here are a
-couple of examples.
+is supplied, then we get a square matrix, otherwise one with ``M`` rows,
+and ``N`` columns), and ``k`` is the shift of the ones (the main
+diagonal corresponds to ``k=0``). Here are a couple of examples.
 
 With a single argument
 ~~~~~~~~~~~~~~~~~~~~~~
