@@ -10,7 +10,7 @@ Welcome to ulab-manual's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   ulab-manual
+   ulab
 
 Indices and tables
 ==================
