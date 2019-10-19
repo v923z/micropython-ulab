@@ -469,10 +469,10 @@ in ``numpy``.
 numpy:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.htm
 
-``.flatten`` returns the flattened array. The array can be flatten in
+``.flatten`` returns the flattened array. The array can be flattened in
 ``C`` style (i.e., moving horizontally in the matrix), or in ``fortran``
 style (i.e., moving vertically in the matrix). The ``C``-style
-flattening is the default, and it is also fast, because this is just
+flattening is the default, and it is also fast, because this is just a
 verbatim copy of the contents.
 
 .. code::
@@ -508,8 +508,8 @@ verbatim copy of the contents.
 ~~~~~~~~~~~~
 
 The contents of an ``ndarray`` can be accessed directly by calling the
-``.asbytearray`` method. This will return a pointer to the underlying
-``array`` object, which can then be manipulated directly.
+``.asbytearray`` method. This will simply return a pointer to the
+underlying ``array`` object, which can then be manipulated directly.
 
 **WARNING:** ``asbytearray`` is a ``ulab``-only method; it has no
 equivalent in ``numpy``.
@@ -559,7 +559,9 @@ applied to the results of timed ADC conversions.
     print("mean of results:\t", np.mean(a))
     print("std of results:\t", np.std(a))
 Likewise, data can be read directly into ``ndarray``\ s from other
-interfaces, e.g., SPI, I2C etc.
+interfaces, e.g., SPI, I2C etc, and also, by laying bare the
+``ndarray``, we can pass results of ``ulab`` computations to anything
+that can read from a buffer.
 
 .transpose
 ~~~~~~~~~~
@@ -781,6 +783,7 @@ columns the matrix has. This feature will be added in future versions of
 .. code::
 
     # code to be run in CPython
+    a = array([[1, 2, 3], [4, 5, 6], [7, 8, 6]])
     b = array([10, 20, 30])
     a+b
 
@@ -1018,6 +1021,7 @@ use cases this fact should not make a difference.
 .. code::
 
     # code to be run in CPython
+    a = array([1, 2, 3, 4, 5, 6, 7, 8])
     a < 5
 
 
@@ -1978,6 +1982,7 @@ The same matrix diagonalised with ``numpy`` yields:
 .. code::
 
     # code to be run in CPython
+    a = array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
     x, y = eig(a)
     print('eigenvectors of a:\n', x)
     print('\neigenvalues of a:\n', y)
@@ -2111,6 +2116,7 @@ it will be treated as a complex array:
 .. code::
 
     # code to be run in CPython
+    fft.fft([1, 2, 3, 4, 1, 2, 3, 4])
 
 
 

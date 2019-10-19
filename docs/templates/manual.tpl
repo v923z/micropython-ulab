@@ -18,7 +18,7 @@
 {%- else -%}
 .. code::
 
-{{ '\n'.join(['# code to be run in CPython'] + cell.source.strip().split('\n')[1:]) | indent}}
+{{ '\n'.join(['# code to be run in CPython'] + cell.source.strip().split('\n')) | indent}}
 {%- endif -%}
 {% endblock input %}
 
