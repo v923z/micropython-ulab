@@ -13,7 +13,7 @@
 {%- if cell.source.split('\n')[0].startswith('%%micropython') -%}
 .. code::
         
-{{ '\n>>> '.join(['>>> # code to be run in micropython'] + cell.source.strip().split('\n')[1:]) | indent}}
+{{ '\n'.join(['# code to be run in micropython'] + cell.source.strip().split('\n')[1:]) | indent}}
 
 {%- else -%}
 .. code::

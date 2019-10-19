@@ -269,23 +269,23 @@ default.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = [1, 2, 3, 4, 5, 6, 7, 8]
-    >>> b = np.array(a)
-    >>> 
-    >>> print("a:\t", a)
-    >>> print("b:\t", b)
-    >>> 
-    >>> # a two-dimensional array with mixed-type initialisers
-    >>> c = np.array([range(5), range(20, 25, 1), [44, 55, 66, 77, 88]], dtype=np.uint8)
-    >>> print("\nc:\t", c)
-    >>> 
-    >>> # and now we throw an exception
-    >>> d = np.array([range(5), range(10), [44, 55, 66, 77, 88]], dtype=np.uint8)
-    >>> print("\nd:\t", d)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = [1, 2, 3, 4, 5, 6, 7, 8]
+    b = np.array(a)
+    
+    print("a:\t", a)
+    print("b:\t", b)
+    
+    # a two-dimensional array with mixed-type initialisers
+    c = np.array([range(5), range(20, 25, 1), [44, 55, 66, 77, 88]], dtype=np.uint8)
+    print("\nc:\t", c)
+    
+    # and now we throw an exception
+    d = np.array([range(5), range(10), [44, 55, 66, 77, 88]], dtype=np.uint8)
+    print("\nd:\t", d)
 
 .. parsed-literal::
 
@@ -309,12 +309,12 @@ note that, as opposed to ``numpy``, the printout always contains the
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array(range(200))
-    >>> print("a:\t", a)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(200))
+    print("a:\t", a)
 
 .. parsed-literal::
 
@@ -334,17 +334,17 @@ inspection, iteration etc.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = [1, 2, 3, 4, 5, 6, 7, 8]
-    >>> b = np.array(a)
-    >>> c = np.array(b)
-    >>> 
-    >>> print("a:\t", a)
-    >>> print("b:\t", b)
-    >>> print("\nc:\t", c)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = [1, 2, 3, 4, 5, 6, 7, 8]
+    b = np.array(a)
+    c = np.array(b)
+    
+    print("a:\t", a)
+    print("b:\t", b)
+    print("\nc:\t", c)
 
 .. parsed-literal::
 
@@ -367,17 +367,17 @@ columns.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4], dtype=np.int8)
-    >>> print("a:\n", a)
-    >>> print("shape of a:", a.shape())
-    >>> 
-    >>> b= np.array([[1, 2], [3, 4]], dtype=np.int8)
-    >>> print("\nb:\n", b)
-    >>> print("shape of b:", b.shape())
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    print("a:\n", a)
+    print("shape of a:", a.shape())
+    
+    b= np.array([[1, 2], [3, 4]], dtype=np.int8)
+    print("\nb:\n", b)
+    print("shape of b:", b.shape())
 
 .. parsed-literal::
 
@@ -407,14 +407,14 @@ consistent with the old, a ``ValueError`` exception will be raised.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]], dtype=np.uint8)
-    >>> print('a (4 by 4):', a)
-    >>> print('a (2 by 8):', a.reshape((2, 8)))
-    >>> print('a (1 by 16):', a.reshape((1, 16)))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]], dtype=np.uint8)
+    print('a (4 by 4):', a)
+    print('a (2 by 8):', a.reshape((2, 8)))
+    print('a (1 by 16):', a.reshape((1, 16)))
 
 .. parsed-literal::
 
@@ -447,13 +447,13 @@ following data
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4], dtype=np.float)
-    >>> print("a: \t\t", a)
-    >>> print("rawsize of a: \t", a.rawsize())
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.float)
+    print("a: \t\t", a)
+    print("rawsize of a: \t", a.rawsize())
 
 .. parsed-literal::
 
@@ -477,19 +477,19 @@ verbatim copy of the contents.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4], dtype=np.int8)
-    >>> print("a: \t\t", a)
-    >>> print("a flattened: \t", a.flatten())
-    >>> 
-    >>> b = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.int8)
-    >>> print("\nb:", b)
-    >>> 
-    >>> print("b flattened (C): \t", b.flatten())
-    >>> print("b flattened (F): \t", b.flatten(order='F'))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    print("a: \t\t", a)
+    print("a flattened: \t", a.flatten())
+    
+    b = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.int8)
+    print("\nb:", b)
+    
+    print("b flattened (C): \t", b.flatten())
+    print("b flattened (F): \t", b.flatten(order='F'))
 
 .. parsed-literal::
 
@@ -516,15 +516,15 @@ in ``numpy``.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4], dtype=np.int8)
-    >>> buffer = a.asbytearray()
-    >>> print("array content:", buffer)
-    >>> buffer[1] = 123
-    >>> print("array content:", buffer)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    buffer = a.asbytearray()
+    print("array content:", buffer)
+    buffer[1] = 123
+    print("array content:", buffer)
 
 .. parsed-literal::
 
@@ -541,23 +541,23 @@ applied to the results of timed ADC conversions.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import pyb
-    >>> import ulab as np
-    >>> 
-    >>> n = 100
-    >>> 
-    >>> adc = pyb.ADC(pyb.Pin.board.X19)
-    >>> tim = pyb.Timer(6, freq=10)
-    >>> 
-    >>> a = np.array([0]*n, dtype=np.uint8)
-    >>> buffer = a.asbytearray()
-    >>> adc.read_timed(buf, tim)
-    >>> 
-    >>> print("ADC results:\t", a)
-    >>> print("mean of results:\t", np.mean(a))
-    >>> print("std of results:\t", np.std(a))
+    # code to be run in micropython
+    
+    import pyb
+    import ulab as np
+    
+    n = 100
+    
+    adc = pyb.ADC(pyb.Pin.board.X19)
+    tim = pyb.Timer(6, freq=10)
+    
+    a = np.array([0]*n, dtype=np.uint8)
+    buffer = a.asbytearray()
+    adc.read_timed(buf, tim)
+    
+    print("ADC results:\t", a)
+    print("mean of results:\t", np.mean(a))
+    print("std of results:\t", np.std(a))
 Likewise, data can be read directly into ``ndarray``\ s from other
 interfaces, e.g., SPI, I2C etc.
 
@@ -573,16 +573,16 @@ concern, plan accordingly!
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]], dtype=np.uint8)
-    >>> print('a:\n', a)
-    >>> print('shape of a:', a.shape())
-    >>> a.transpose()
-    >>> print('\ntranspose of a:\n', a)
-    >>> print('shape of a:', a.shape())
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]], dtype=np.uint8)
+    print('a:\n', a)
+    print('shape of a:', a.shape())
+    a.transpose()
+    print('\ntranspose of a:\n', a)
+    print('shape of a:', a.shape())
 
 .. parsed-literal::
 
@@ -616,19 +616,19 @@ This operator takes a single argument, and returns either the length
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4, 5], dtype=np.uint8)
-    >>> b = np.array([range(5), range(5), range(5), range(5)], dtype=np.uint8)
-    >>> 
-    >>> print("a:\t", a)
-    >>> print("length of a: ", len(a))
-    >>> print("shape of a: ", a.shape())
-    >>> print("\nb:\t", b)
-    >>> print("length of b: ", len(b))
-    >>> print("shape of b: ", b.shape())
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4, 5], dtype=np.uint8)
+    b = np.array([range(5), range(5), range(5), range(5)], dtype=np.uint8)
+    
+    print("a:\t", a)
+    print("length of a: ", len(a))
+    print("shape of a: ", a.shape())
+    print("\nb:\t", b)
+    print("length of b: ", len(b))
+    print("shape of b: ", b.shape())
 
 .. parsed-literal::
 
@@ -662,17 +662,17 @@ unexpected, as in the example below:
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([0, -1, -100], dtype=np.int8)
-    >>> print("a:\t\t", a)
-    >>> print("inverse of a:\t", ~a)
-    >>> 
-    >>> a = np.array([0, 1, 254, 255], dtype=np.uint8)
-    >>> print("\na:\t\t", a)
-    >>> print("inverse of a:\t", ~a)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([0, -1, -100], dtype=np.int8)
+    print("a:\t\t", a)
+    print("inverse of a:\t", ~a)
+    
+    a = np.array([0, 1, 254, 255], dtype=np.uint8)
+    print("\na:\t\t", a)
+    print("inverse of a:\t", ~a)
 
 .. parsed-literal::
 
@@ -695,13 +695,13 @@ returned immediately, and no calculation takes place.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([0, -1, -100], dtype=np.int8)
-    >>> print("a:\t\t\t ", a)
-    >>> print("absolute value of a:\t ", abs(a))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([0, -1, -100], dtype=np.int8)
+    print("a:\t\t\t ", a)
+    print("absolute value of a:\t ", abs(a))
 
 .. parsed-literal::
 
@@ -719,17 +719,17 @@ element in the array. Unsigned values are wrapped.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([10, -1, 1], dtype=np.int8)
-    >>> print("a:\t\t", a)
-    >>> print("negative of a:\t", -a)
-    >>> 
-    >>> b = np.array([0, 100, 200], dtype=np.uint8)
-    >>> print("\nb:\t\t", b)
-    >>> print("negative of b:\t", -b)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([10, -1, 1], dtype=np.int8)
+    print("a:\t\t", a)
+    print("negative of a:\t", -a)
+    
+    b = np.array([0, 100, 200], dtype=np.uint8)
+    print("\nb:\t\t", b)
+    print("negative of b:\t", -b)
 
 .. parsed-literal::
 
@@ -750,13 +750,13 @@ array.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([10, -1, 1], dtype=np.int8)
-    >>> print("a:\t\t", a)
-    >>> print("positive of a:\t", +a)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([10, -1, 1], dtype=np.int8)
+    print("a:\t\t", a)
+    print("positive of a:\t", +a)
 
 .. parsed-literal::
 
@@ -843,20 +843,20 @@ Upcasting can be seen in action in the following snippet:
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4], dtype=np.uint8)
-    >>> b = np.array([1, 2, 3, 4], dtype=np.int8)
-    >>> print("a:\t", a)
-    >>> print("b:\t", b)
-    >>> print("a+b:\t", a+b)
-    >>> 
-    >>> c = np.array([1, 2, 3, 4], dtype=np.float)
-    >>> print("\na:\t", a)
-    >>> print("c:\t", c)
-    >>> print("a*c:\t", a*c)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.uint8)
+    b = np.array([1, 2, 3, 4], dtype=np.int8)
+    print("a:\t", a)
+    print("b:\t", b)
+    print("a+b:\t", a+b)
+    
+    c = np.array([1, 2, 3, 4], dtype=np.float)
+    print("\na:\t", a)
+    print("c:\t", c)
+    print("a*c:\t", a*c)
 
 .. parsed-literal::
 
@@ -877,19 +877,19 @@ hand side.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> # this is going to work
-    >>> a = np.array([1, 2, 3, 4], dtype=np.uint8)
-    >>> b = 12
-    >>> print("a:\t", a)
-    >>> print("b:\t", b)
-    >>> print("a+b:\t", a+b)
-    >>> 
-    >>> # but this will spectacularly fail
-    >>> print("b+a:\t", b+a)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    # this is going to work
+    a = np.array([1, 2, 3, 4], dtype=np.uint8)
+    b = 12
+    print("a:\t", a)
+    print("b:\t", b)
+    print("a+b:\t", a+b)
+    
+    # but this will spectacularly fail
+    print("b+a:\t", b+a)
 
 .. parsed-literal::
 
@@ -917,16 +917,16 @@ take the following snippet from the micropython manual:
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> def timeit(f, *args, **kwargs):
-    >>>     func_name = str(f).split(' ')[1]
-    >>>     def new_func(*args, **kwargs):
-    >>>         t = utime.ticks_us()
-    >>>         result = f(*args, **kwargs)
-    >>>         print('execution time: ', utime.ticks_diff(utime.ticks_us(), t), ' us')
-    >>>         return result
-    >>>     return new_func
+    # code to be run in micropython
+    
+    def timeit(f, *args, **kwargs):
+        func_name = str(f).split(' ')[1]
+        def new_func(*args, **kwargs):
+            t = utime.ticks_us()
+            result = f(*args, **kwargs)
+            print('execution time: ', utime.ticks_diff(utime.ticks_us(), t), ' us')
+            return result
+        return new_func
 
 .. parsed-literal::
 
@@ -935,43 +935,43 @@ take the following snippet from the micropython manual:
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> @timeit
-    >>> def py_add(a, b):
-    >>>     return [a[i]+b[i] for i in range(1000)]
-    >>> 
-    >>> @timeit
-    >>> def py_multiply(a, b):
-    >>>     return [a[i]*b[i] for i in range(1000)]
-    >>> 
-    >>> @timeit
-    >>> def ulab_add(a, b):
-    >>>     return a + b
-    >>> 
-    >>> @timeit
-    >>> def ulab_multiply(a, b):
-    >>>     return a * b
-    >>> 
-    >>> a = [0.0]*1000
-    >>> b = range(1000)
-    >>> 
-    >>> print('python add:')
-    >>> py_add(a, b)
-    >>> 
-    >>> print('\npython multiply:')
-    >>> py_multiply(a, b)
-    >>> 
-    >>> a = np.linspace(0, 10, num=1000)
-    >>> b = np.ones(1000)
-    >>> 
-    >>> print('\nulab add:')
-    >>> ulab_add(a, b)
-    >>> 
-    >>> print('\nulab multiply:')
-    >>> ulab_multiply(a, b)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    @timeit
+    def py_add(a, b):
+        return [a[i]+b[i] for i in range(1000)]
+    
+    @timeit
+    def py_multiply(a, b):
+        return [a[i]*b[i] for i in range(1000)]
+    
+    @timeit
+    def ulab_add(a, b):
+        return a + b
+    
+    @timeit
+    def ulab_multiply(a, b):
+        return a * b
+    
+    a = [0.0]*1000
+    b = range(1000)
+    
+    print('python add:')
+    py_add(a, b)
+    
+    print('\npython multiply:')
+    py_multiply(a, b)
+    
+    a = np.linspace(0, 10, num=1000)
+    b = np.ones(1000)
+    
+    print('\nulab add:')
+    ulab_add(a, b)
+    
+    print('\nulab multiply:')
+    ulab_multiply(a, b)
 
 .. parsed-literal::
 
@@ -998,12 +998,12 @@ operators return a vector of Booleans indicating the positions
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4, 5, 6, 7, 8], dtype=np.uint8)
-    >>> print(a < 5)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4, 5, 6, 7, 8], dtype=np.uint8)
+    print(a < 5)
 
 .. parsed-literal::
 
@@ -1033,13 +1033,13 @@ of Booleans will be returned:
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([range(0, 5, 1), range(1, 6, 1), range(2, 7, 1)], dtype=np.uint8)
-    >>> print(a)
-    >>> print(a < 5)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([range(0, 5, 1), range(1, 6, 1), range(2, 7, 1)], dtype=np.uint8)
+    print(a)
+    print(a < 5)
 
 .. parsed-literal::
 
@@ -1062,22 +1062,22 @@ row of the matrix, i.e, its data type will be inherited.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4, 5], dtype=np.uint8)
-    >>> b = np.array([range(5), range(10, 15, 1), range(20, 25, 1), range(30, 35, 1)], dtype=np.uint8)
-    >>> 
-    >>> print("a:\t", a)
-    >>> 
-    >>> for i, _a in enumerate(a):
-    >>>     print("element %d in a:"%i, _a)
-    >>>     
-    >>> print("\nb:\t", b)
-    >>> 
-    >>> for i, _b in enumerate(b):
-    >>>     print("element %d in b:"%i, _b)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4, 5], dtype=np.uint8)
+    b = np.array([range(5), range(10, 15, 1), range(20, 25, 1), range(30, 35, 1)], dtype=np.uint8)
+    
+    print("a:\t", a)
+    
+    for i, _a in enumerate(a):
+        print("element %d in a:"%i, _a)
+        
+    print("\nb:\t", b)
+    
+    for i, _b in enumerate(b):
+        print("element %d in b:"%i, _b)
 
 .. parsed-literal::
 
@@ -1113,14 +1113,14 @@ square brackets as in
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array(range(10), dtype=np.uint8)
-    >>> print("a:\t\t\t\t\t\t", a)
-    >>> print("the first, and first from right element of a:\t", a[0], a[-1])
-    >>> print("the second, and second from right element of a:\t", a[1], a[-2])
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(10), dtype=np.uint8)
+    print("a:\t\t\t\t\t\t", a)
+    print("the first, and first from right element of a:\t", a[0], a[-1])
+    print("the second, and second from right element of a:\t", a[1], a[-2])
 
 .. parsed-literal::
 
@@ -1140,13 +1140,13 @@ version of ``ulab``.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array(range(9), dtype=np.float)
-    >>> print("a:\t", a)
-    >>> print("a < 5:\t", a[a < 5])
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(9), dtype=np.float)
+    print("a:\t", a)
+    print("a < 5:\t", a[a < 5])
 
 .. parsed-literal::
 
@@ -1161,17 +1161,17 @@ is a very concise way of comparing two vectors, e.g.:
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array(range(9), dtype=np.uint8)
-    >>> b = np.array([4, 4, 4, 3, 3, 3, 13, 13, 13], dtype=np.uint8)
-    >>> print("a:\t", a)
-    >>> print("\na**2:\t", a*a)
-    >>> print("\nb:\t", b)
-    >>> print("\n100*sin(b):\t", np.sin(b)*100.0)
-    >>> print("\na[a*a > np.sin(b)*100.0]:\t", a[a*a > np.sin(b)*100.0])
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(9), dtype=np.uint8)
+    b = np.array([4, 4, 4, 3, 3, 3, 13, 13, 13], dtype=np.uint8)
+    print("a:\t", a)
+    print("\na**2:\t", a*a)
+    print("\nb:\t", b)
+    print("\n100*sin(b):\t", np.sin(b)*100.0)
+    print("\na[a*a > np.sin(b)*100.0]:\t", a[a*a > np.sin(b)*100.0])
 
 .. parsed-literal::
 
@@ -1219,25 +1219,25 @@ because the values of the input vector can be extracted faster.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = range(9)
-    >>> b = np.array(a)
-    >>> 
-    >>> # works with ranges, lists, tuples etc.
-    >>> print('a:\t', a)
-    >>> print('exp(a):\t', np.exp(a))
-    >>> 
-    >>> # with 1D arrays
-    >>> print('\nb:\t', b)
-    >>> print('exp(b):\t', np.exp(b))
-    >>> 
-    >>> # as well as with matrices
-    >>> c = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    >>> print('\nc:\t', c)
-    >>> print('exp(c):\t', np.exp(c))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = range(9)
+    b = np.array(a)
+    
+    # works with ranges, lists, tuples etc.
+    print('a:\t', a)
+    print('exp(a):\t', np.exp(a))
+    
+    # with 1D arrays
+    print('\nb:\t', b)
+    print('exp(b):\t', np.exp(b))
+    
+    # as well as with matrices
+    c = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    print('\nc:\t', c)
+    print('exp(c):\t', np.exp(c))
 
 .. parsed-literal::
 
@@ -1261,20 +1261,20 @@ The overhead for iterables is
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = [0]*1000
-    >>> b = np.array(a)
-    >>> 
-    >>> @timeit(n=1000)
-    >>> def measure_run_time(x):
-    >>>     return np.exp(x)
-    >>> 
-    >>> measure_run_time(a)
-    >>> 
-    >>> measure_run_time(b)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = [0]*1000
+    b = np.array(a)
+    
+    @timeit(n=1000)
+    def measure_run_time(x):
+        return np.exp(x)
+    
+    measure_run_time(a)
+    
+    measure_run_time(b)
 Of course, such a time saving is reasonable only, if the data are
 already available as an ``ndarray``. If one has to initialise the
 ``ndarray`` from the list, then there is no gain, because the iterator
@@ -1301,21 +1301,21 @@ consequence of rounding. (This is also the ``numpy`` behaviour.)
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> # generate a sequence with defaults
-    >>> print('default sequence:\t', np.linspace(0, 10))
-    >>> 
-    >>> # num=5
-    >>> print('num=5:\t\t\t', np.linspace(0, 10, num=5))
-    >>> 
-    >>> # num=5, endpoint=False
-    >>> print('num=5:\t\t\t', np.linspace(0, 10, num=5, endpoint=False))
-    >>> 
-    >>> # num=5, endpoint=False, dtype=uint8
-    >>> print('num=5:\t\t\t', np.linspace(0, 5, num=7, endpoint=False, dtype=np.uint8))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    # generate a sequence with defaults
+    print('default sequence:\t', np.linspace(0, 10))
+    
+    # num=5
+    print('num=5:\t\t\t', np.linspace(0, 10, num=5))
+    
+    # num=5, endpoint=False
+    print('num=5:\t\t\t', np.linspace(0, 10, num=5, endpoint=False))
+    
+    # num=5, endpoint=False, dtype=uint8
+    print('num=5:\t\t\t', np.linspace(0, 5, num=7, endpoint=False, dtype=np.uint8))
 
 .. parsed-literal::
 
@@ -1358,20 +1358,20 @@ the sequence.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 0, 1, 10])
-    >>> print('a:', a)
-    >>> print('min of a:', np.min(a))
-    >>> print('argmin of a:', np.argmin(a))
-    >>> 
-    >>> b = np.array([[1, 2, 0], [1, 10, -1]])
-    >>> print('\nb:\n', b)
-    >>> print('min of b (flattened):', np.min(b))
-    >>> print('min of b (axis=0):', np.min(b, axis=0))
-    >>> print('min of b (axis=1):', np.min(b, axis=1))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 0, 1, 10])
+    print('a:', a)
+    print('min of a:', np.min(a))
+    print('argmin of a:', np.argmin(a))
+    
+    b = np.array([[1, 2, 0], [1, 10, -1]])
+    print('\nb:\n', b)
+    print('min of b (flattened):', np.min(b))
+    print('min of b (axis=0):', np.min(b, axis=0))
+    print('min of b (axis=1):', np.min(b, axis=1))
 
 .. parsed-literal::
 
@@ -1401,19 +1401,19 @@ is applied to the given axis.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4, 5, 6, 7, 8])
-    >>> print("a:\t\t\t", a)
-    >>> 
-    >>> np.roll(a, 2)
-    >>> print("a rolled to the left:\t", a)
-    >>> 
-    >>> # this should be the original vector
-    >>> np.roll(a, -2)
-    >>> print("a rolled to the right:\t", a)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+    print("a:\t\t\t", a)
+    
+    np.roll(a, 2)
+    print("a rolled to the left:\t", a)
+    
+    # this should be the original vector
+    np.roll(a, -2)
+    print("a rolled to the right:\t", a)
 
 .. parsed-literal::
 
@@ -1437,21 +1437,21 @@ Vertical rolls require two internal copies of single columns.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
-    >>> print("a:\n", a)
-    >>> 
-    >>> np.roll(a, 2)
-    >>> print("\na rolled to the left:\n", a)
-    >>> 
-    >>> np.roll(a, -1, axis=1)
-    >>> print("\na rolled up:\n", a)
-    >>> 
-    >>> np.roll(a, 1, axis=None)
-    >>> print("\na rolled with None:\n", a)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
+    print("a:\n", a)
+    
+    np.roll(a, 2)
+    print("\na rolled to the left:\n", a)
+    
+    np.roll(a, -1, axis=1)
+    print("\na rolled up:\n", a)
+    
+    np.roll(a, 1, axis=None)
+    print("\na rolled with None:\n", a)
 
 .. parsed-literal::
 
@@ -1485,30 +1485,30 @@ applications.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> def dummy_adc():
-    >>>     # dummy adc function, so that the results are reproducible
-    >>>     return 2
-    >>>     
-    >>> n = 10
-    >>> # These are the normalised weights; the last entry is the most dominant
-    >>> weight = np.exp([1, 2, 3, 4, 5])
-    >>> weight = weight/np.sum(weight)
-    >>> 
-    >>> print(weight)
-    >>> # initial array of samples
-    >>> samples = np.array([0]*n)
-    >>> 
-    >>> for i in range(n):
-    >>>     # a new datum is inserted on the right hand side. This simply overwrites whatever was in the last slot
-    >>>     samples[-1] = dummy_adc()
-    >>>     print(np.mean(samples[-5:]*weight))
-    >>>     print(samples[-5:])
-    >>>     # the data are shifted by one position to the left
-    >>>     np.roll(samples, 1)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    def dummy_adc():
+        # dummy adc function, so that the results are reproducible
+        return 2
+        
+    n = 10
+    # These are the normalised weights; the last entry is the most dominant
+    weight = np.exp([1, 2, 3, 4, 5])
+    weight = weight/np.sum(weight)
+    
+    print(weight)
+    # initial array of samples
+    samples = np.array([0]*n)
+    
+    for i in range(n):
+        # a new datum is inserted on the right hand side. This simply overwrites whatever was in the last slot
+        samples[-1] = dummy_adc()
+        print(np.mean(samples[-5:]*weight))
+        print(samples[-5:])
+        # the data are shifted by one position to the left
+        np.roll(samples, 1)
 
 .. parsed-literal::
 
@@ -1551,18 +1551,18 @@ array.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4, 5])
-    >>> print("a: \t", a)
-    >>> print("a flipped:\t", np.flip(a))
-    >>> 
-    >>> a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
-    >>> print("\na flipped horizontally\n", np.flip(a, axis=1))
-    >>> print("\na flipped vertically\n", np.flip(a, axis=0))
-    >>> print("\na flipped horizontally+vertically\n", np.flip(a))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4, 5])
+    print("a: \t", a)
+    print("a flipped:\t", np.flip(a))
+    
+    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
+    print("\na flipped horizontally\n", np.flip(a, axis=1))
+    print("\na flipped vertically\n", np.flip(a, axis=0))
+    print("\na flipped horizontally+vertically\n", np.flip(a))
 
 .. parsed-literal::
 
@@ -1603,17 +1603,17 @@ information will be returned:
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([1, 2, 3, 4], dtype=np.int8)
-    >>> print("a:\n", a)
-    >>> print("size of a:", np.size(a, axis=None), ",", np.size(a, axis=0))
-    >>> 
-    >>> b= np.array([[1, 2], [3, 4]], dtype=np.int8)
-    >>> print("\nb:\n", b)
-    >>> print("size of b:", np.size(b, axis=None), ",", np.size(b, axis=0), ",", np.size(b, axis=1))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    print("a:\n", a)
+    print("size of a:", np.size(a, axis=None), ",", np.size(a, axis=0))
+    
+    b= np.array([[1, 2], [3, 4]], dtype=np.int8)
+    print("\nb:\n", b)
+    print("size of b:", np.size(b, axis=None), ",", np.size(b, axis=0), ",", np.size(b, axis=1))
 
 .. parsed-literal::
 
@@ -1651,12 +1651,12 @@ where shape is either an integer, or a 2-tuple.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> print(np.ones(6, dtype=np.uint8))
-    >>> print(np.zeros((6, 4)))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    print(np.ones(6, dtype=np.uint8))
+    print(np.zeros((6, 4)))
 
 .. parsed-literal::
 
@@ -1695,11 +1695,11 @@ With a single argument
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> print(np.eye(5))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    print(np.eye(5))
 
 .. parsed-literal::
 
@@ -1717,11 +1717,11 @@ Specifying the dimensions of the matrix
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> print(np.eye(4, M=6, dtype=np.int8))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    print(np.eye(4, M=6, dtype=np.int8))
 
 .. parsed-literal::
 
@@ -1740,11 +1740,11 @@ Shifting the diagonal
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> print(np.eye(4, M=6, k=-1, dtype=np.int16))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    print(np.eye(4, M=6, k=-1, dtype=np.int16))
 
 .. parsed-literal::
 
@@ -1769,13 +1769,13 @@ to be singular (i.e., one of the diagonal entries is zero).
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> m = np.array([[1, 2, 3], [4, 5, 6], [7, 8.5, 9]])
-    >>> 
-    >>> print(np.inv(m))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    m = np.array([[1, 2, 3], [4, 5, 6], [7, 8.5, 9]])
+    
+    print(np.inv(m))
 
 .. parsed-literal::
 
@@ -1809,16 +1809,16 @@ below.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> m = np.array([[1, 2, 3], [4, 5, 6], [7, 10, 9]], dtype=np.uint8)
-    >>> n = np.inv(m)
-    >>> print("m:\t", m)
-    >>> print("m^-1:\t", n)
-    >>> # this should be the unit matrix
-    >>> print("m*m^-1:\t", np.dot(m, n))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    m = np.array([[1, 2, 3], [4, 5, 6], [7, 10, 9]], dtype=np.uint8)
+    n = np.inv(m)
+    print("m:\t", m)
+    print("m^-1:\t", n)
+    # this should be the unit matrix
+    print("m*m^-1:\t", np.dot(m, n))
 
 .. parsed-literal::
 
@@ -1842,15 +1842,15 @@ right-hand-side matrix rows):
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> m = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.uint8)
-    >>> n = np.array([[1, 2], [3, 4], [5, 6], [7, 8]], dtype=np.uint8)
-    >>> print(m)
-    >>> print(n)
-    >>> print(np.dot(m, n))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    m = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.uint8)
+    n = np.array([[1, 2], [3, 4], [5, 6], [7, 8]], dtype=np.uint8)
+    print(m)
+    print(n)
+    print(np.dot(m, n))
 
 .. parsed-literal::
 
@@ -1879,12 +1879,12 @@ even if the input array was of integer type.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([[1, 2], [3, 4]], dtype=np.uint8)
-    >>> print(np.det(a))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 2], [3, 4]], dtype=np.uint8)
+    print(np.det(a))
 
 .. parsed-literal::
 
@@ -1907,14 +1907,14 @@ stabilisation routines for robots.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> a = np.array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
-    >>> x, y = np.eig(a)
-    >>> print('eigenvectors of a:\n', x)
-    >>> print('\neigenvalues of a:\n', y)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
+    x, y = np.eig(a)
+    print('eigenvectors of a:\n', x)
+    print('\neigenvalues of a:\n', y)
 
 .. parsed-literal::
 
@@ -1973,20 +1973,20 @@ polyval takes two arguments, both arrays or other iterables.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> p = [1, 1, 1, 0]
-    >>> x = [0, 1, 2, 3, 4]
-    >>> print('coefficients: ', p)
-    >>> print('independent values: ', x)
-    >>> print('\nvalues of p(x): ', np.polyval(p, x))
-    >>> 
-    >>> # the same works with one-dimensional ndarrays
-    >>> a = np.array(x)
-    >>> print('\nndarray (a): ', a)
-    >>> print('value of p(a): ', np.polyval(p, a))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    p = [1, 1, 1, 0]
+    x = [0, 1, 2, 3, 4]
+    print('coefficients: ', p)
+    print('independent values: ', x)
+    print('\nvalues of p(x): ', np.polyval(p, x))
+    
+    # the same works with one-dimensional ndarrays
+    a = np.array(x)
+    print('\nndarray (a): ', a)
+    print('value of p(a): ', np.polyval(p, a))
 
 .. parsed-literal::
 
@@ -2018,19 +2018,19 @@ a ``ValueError``.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> x = np.array([0, 1, 2, 3, 4, 5, 6])
-    >>> y = np.array([9, 4, 1, 0, 1, 4, 9])
-    >>> print('independent values:\t', x)
-    >>> print('dependent values:\t', y)
-    >>> print('fitted values:\t\t', np.polyfit(x, y, 2))
-    >>> 
-    >>> # the same with missing x
-    >>> print('\ndependent values:\t', y)
-    >>> print('fitted values:\t\t', np.polyfit(y, 2))
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    x = np.array([0, 1, 2, 3, 4, 5, 6])
+    y = np.array([9, 4, 1, 0, 1, 4, 9])
+    print('independent values:\t', x)
+    print('dependent values:\t', y)
+    print('fitted values:\t\t', np.polyfit(x, y, 2))
+    
+    # the same with missing x
+    print('\ndependent values:\t', y)
+    print('fitted values:\t\t', np.polyfit(y, 2))
 
 .. parsed-literal::
 
@@ -2086,21 +2086,21 @@ parts of the transform separately.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> x = np.linspace(0, 10, num=1024)
-    >>> y = np.sin(x)
-    >>> z = np.zeros(len(x))
-    >>> 
-    >>> a, b = np.fft(x)
-    >>> print('real part:\t', a)
-    >>> print('\nimaginary part:\t', b)
-    >>> 
-    >>> c, d = np.fft(x, z)
-    >>> print('\nreal part:\t', c)
-    >>> print('\nimaginary part:\t', d)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    x = np.linspace(0, 10, num=1024)
+    y = np.sin(x)
+    z = np.zeros(len(x))
+    
+    a, b = np.fft(x)
+    print('real part:\t', a)
+    print('\nimaginary part:\t', b)
+    
+    c, d = np.fft(x, z)
+    print('\nreal part:\t', c)
+    print('\nimaginary part:\t', d)
 
 .. parsed-literal::
 
@@ -2121,22 +2121,22 @@ the inverse of the transform is equal to the original array.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> x = np.linspace(0, 10, num=1024)
-    >>> y = np.sin(x)
-    >>> 
-    >>> a, b = np.fft(y)
-    >>> 
-    >>> print('original vector:\t', y)
-    >>> 
-    >>> y, z = np.ifft(a, b)
-    >>> # the real part should be equal to y
-    >>> print('\nreal part of inverse:\t', y)
-    >>> # the imaginary part should be equal to zero
-    >>> print('\nimaginary part of inverse:\t', z)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    x = np.linspace(0, 10, num=1024)
+    y = np.sin(x)
+    
+    a, b = np.fft(y)
+    
+    print('original vector:\t', y)
+    
+    y, z = np.ifft(a, b)
+    # the real part should be equal to y
+    print('\nreal part of inverse:\t', y)
+    # the imaginary part should be equal to zero
+    print('\nimaginary part of inverse:\t', z)
 
 .. parsed-literal::
 
@@ -2160,17 +2160,17 @@ same way as in ``fft``, and ``ifft``.
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> x = np.linspace(0, 10, num=1024)
-    >>> y = np.sin(x)
-    >>> 
-    >>> a = np.spectrum(y)
-    >>> 
-    >>> print('original vector:\t', y)
-    >>> print('\nspectrum:\t', a)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    x = np.linspace(0, 10, num=1024)
+    y = np.sin(x)
+    
+    a = np.spectrum(y)
+    
+    print('original vector:\t', y)
+    print('\nspectrum:\t', a)
 
 .. parsed-literal::
 
@@ -2185,20 +2185,20 @@ As such, ``spectrum`` is really just a short hand for
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> x = np.linspace(0, 10, num=1024)
-    >>> y = np.sin(x)
-    >>> 
-    >>> a, b = np.fft(y)
-    >>> 
-    >>> print('\nspectrum calculated the hard way:\t', np.sqrt(a*a + b*b))
-    >>> 
-    >>> a = np.spectrum(y)
-    >>> 
-    >>> print('\nspectrum calculated the lazy way:\t', a)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    x = np.linspace(0, 10, num=1024)
+    y = np.sin(x)
+    
+    a, b = np.fft(y)
+    
+    print('\nspectrum calculated the hard way:\t', np.sqrt(a*a + b*b))
+    
+    a = np.spectrum(y)
+    
+    print('\nspectrum calculated the lazy way:\t', a)
 
 .. parsed-literal::
 
@@ -2231,20 +2231,20 @@ https://github.com/peterhinch/micropython-fourier/blob/master/README.md#8-perfor
 
 .. code::
         
-    >>> # code to be run in micropython
-    >>> 
-    >>> import ulab as np
-    >>> 
-    >>> x = np.linspace(0, 10, num=1024)
-    >>> y = np.sin(x)
-    >>> 
-    >>> np.fft(y)
-    >>> 
-    >>> @timeit
-    >>> def np_fft(y):
-    >>>     return np.fft(y)
-    >>> 
-    >>> a, b = np_fft(y)
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    x = np.linspace(0, 10, num=1024)
+    y = np.sin(x)
+    
+    np.fft(y)
+    
+    @timeit
+    def np_fft(y):
+        return np.fft(y)
+    
+    a, b = np_fft(y)
 
 .. parsed-literal::
 
