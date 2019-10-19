@@ -128,6 +128,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
         }
     } else { // inverse transform
         fft_kernel(data_re, data_im, len, -1);
+        // TODO: numpy accepts the norm keyword argument
         for(size_t i=0; i < len; i++) {
             data_re[i] /= len;
             data_im[i] /= len;

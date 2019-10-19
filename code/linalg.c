@@ -10,6 +10,7 @@
     
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
@@ -20,10 +21,6 @@ mp_obj_t linalg_transpose(mp_obj_t self_in) {
     // the size of a single item in the array
     uint8_t _sizeof = mp_binary_get_size('@', self->array->typecode, NULL);
     
-    // NOTE: In principle, we could simply specify the stride direction, and then we wouldn't 
-    // even have to shuffle the elements. The downside of that approach is that we would have 
-    // to implement two versions of the matrix multiplication and inversion functions
-    
     // NOTE: 
     // if the matrices are square, we can simply swap items, but 
     // generic matrices can't be transposed in place, so we have to 
@@ -32,7 +29,7 @@ mp_obj_t linalg_transpose(mp_obj_t self_in) {
     // NOTE: 
     //  In the old matrix, the coordinate (m, n) is m*self->n + n
     //  We have to assign this to the coordinate (n, m) in the new 
-    //  matrix, i.e., to n*self->m + m
+    //  matrix, i.e., to n*self->m + m (since the new matrix has self->m columns)
     
     // one-dimensional arrays can be transposed by simply swapping the dimensions
     if((self->m != 1) && (self->n != 1)) {
@@ -193,6 +190,7 @@ mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     if(m1->n != m2->m) {
         mp_raise_ValueError("matrix dimensions do not match");
     }
+    // TODO: numpy uses upcasting here
     ndarray_obj_t *out = create_new_ndarray(m1->m, m2->n, NDARRAY_FLOAT);
     float *outdata = (float *)out->array->items;
     float sum, v1, v2;
@@ -200,7 +198,7 @@ mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
         for(size_t j=0; j < m2->m; j++) {
             sum = 0.0;
             for(size_t k=0; k < m1->m; k++) {
-                // (j, k) * (k, j)
+                // (i, k) * (k, j)
                 v1 = ndarray_get_float_value(m1->array->items, m1->array->typecode, i*m1->n+k);
                 v2 = ndarray_get_float_value(m2->array->items, m2->array->typecode, k*m2->n+j);
                 sum += v1 * v2;
@@ -311,7 +309,7 @@ mp_obj_t linalg_det(mp_obj_t oin) {
     for(size_t m=0; m < in->m-1; m++){
         if(abs(tmp[m*(in->n+1)]) < epsilon) {
             m_del(float, tmp, in->n*in->n);
-            mp_raise_ValueError("singular matrix");
+            return mp_obj_new_float(0.0);
         }
         for(size_t n=0; n < in->n; n++){
             if(m != n) {
@@ -329,4 +327,130 @@ mp_obj_t linalg_det(mp_obj_t oin) {
     }
     m_del(float, tmp, in->n*in->n);
     return mp_obj_new_float(det);
+}
+
+mp_obj_t linalg_eig(mp_obj_t oin) {
+    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
+        mp_raise_TypeError("function defined for ndarrays only");
+    }
+    ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
+    if(in->m != in->n) {
+        mp_raise_ValueError("input must be square matrix");
+    }
+    float *array = m_new(float, in->array->len);
+    for(size_t i=0; i < in->array->len; i++) {
+        array[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
+    }
+    // make sure the matrix is symmetric
+    for(size_t m=0; m < in->m; m++) {
+        for(size_t n=m+1; n < in->n; n++) {
+            // compare entry (m, n) to (n, m)
+            if(epsilon < abs(array[m*in->n + n] - array[n*in->n + m])) {
+                mp_raise_ValueError("input matrix is asymmetric");
+            }
+        }
+    }
+    
+    // if we got this far, then the matrix will be symmetric
+    
+    ndarray_obj_t *eigenvectors = create_new_ndarray(in->m, in->n, NDARRAY_FLOAT);
+    float *eigvectors = (float *)eigenvectors->array->items;
+    // start out with the unit matrix
+    for(size_t m=0; m < in->m; m++) {
+        eigvectors[m*(in->n+1)] = 1.0;
+    }
+    float largest, w, t, c, s, tau, aMk, aNk, vm, vn;
+    size_t M, N;
+    size_t iterations = JACOBI_MAX*in->n*in->n;
+    do {
+        iterations--;
+        // find the pivot here
+        M = 0;
+        N = 0;
+        largest = 0.0;
+        for(size_t m=0; m < in->m-1; m++) { // -1: no need to inspect last row
+            for(size_t n=m+1; n < in->n; n++) {
+                w = fabs(array[m*in->n + n]);
+                if((largest < w) && (epsilon < w)) {
+                    M = m;
+                    N = n;
+                    largest = w;
+                }
+            }
+        }
+        if(M+N == 0) { // all entries are smaller than epsilon, there is not much we can do...
+            break;
+        }
+        // at this point, we have the pivot, and it is the entry (M, N)
+        // now we have to find the rotation angle
+        w = (array[N*in->n + N] - array[M*in->n + M]) / (2.0*array[M*in->n + N]);
+        // The following if/else chooses the smaller absolute value for the tangent 
+        // of the rotation angle. Going with the smaller should be numerically stabler.
+        if(w > 0) {
+            t = sqrtf(w*w + 1.0) - w;
+        } else {
+            t = -1.0*(sqrtf(w*w + 1.0) + w);
+        }
+        s = t / sqrtf(t*t + 1.0); // the sine of the rotation angle
+        c = 1.0 / sqrtf(t*t + 1.0); // the cosine of the rotation angle
+        tau = (1.0-c)/s; // this is equal to the tangent of the half of the rotation angle
+        
+        // at this point, we have the rotation angles, so we can transform the matrix
+        // first the two diagonal elements
+        // a(M, M) = a(M, M) - t*a(M, N)
+        array[M*in->n + M] = array[M*in->n + M] - t * array[M*in->n + N];
+        // a(N, N) = a(N, N) + t*a(M, N)
+        array[N*in->n + N] = array[N*in->n + N] + t * array[M*in->n + N];
+        // after the rotation, the a(M, N), and a(N, M) entries should become zero
+        array[M*in->n + N] = array[N*in->n + M] = 0.0;
+        // then all other elements in the column
+        for(size_t k=0; k < in->m; k++) {
+            if((k == M) || (k == N)) {
+                continue;
+            }
+            aMk = array[M*in->n + k];
+            aNk = array[N*in->n + k];
+            // a(M, k) = a(M, k) - s*(a(N, k) + tau*a(M, k))
+            array[M*in->n + k] -= s*(aNk + tau*aMk);
+            // a(N, k) = a(N, k) + s*(a(M, k) - tau*a(N, k))
+            array[N*in->n + k] += s*(aMk - tau*aNk);
+            // a(k, M) = a(M, k)
+            array[k*in->n + M] = array[M*in->n + k];
+            // a(k, N) = a(N, k)
+            array[k*in->n + N] = array[N*in->n + k];
+        }
+        // now we have to update the eigenvectors
+        // the rotation matrix, R, multiplies from the right
+        // R is the unit matrix, except for the 
+        // R(M,M) = R(N, N) = c
+        // R(N, M) = s
+        // (M, N) = -s
+        // entries. This means that only the Mth, and Nth columns will change
+        for(size_t m=0; m < in->m; m++) {
+            vm = eigvectors[m*in->n+M];
+            vn = eigvectors[m*in->n+N];
+            // the new value of eigvectors(m, M)
+            eigvectors[m*in->n+M] = c * vm - s * vn;
+            // the new value of eigvectors(m, N)
+            eigvectors[m*in->n+N] = s * vm + c * vn;
+        }
+    } while(iterations > 0);
+    
+    if(iterations == 0) { 
+        // the computation did not converge; numpy raises LinAlgError
+        m_del(float, array, in->array->len);
+        mp_raise_ValueError("iterations did not converge");
+    }
+    ndarray_obj_t *eigenvalues = create_new_ndarray(1, in->n, NDARRAY_FLOAT);
+    float *eigvalues = (float *)eigenvalues->array->items;
+    for(size_t i=0; i < in->n; i++) {
+        eigvalues[i] = array[i*(in->n+1)];
+    }
+    m_del(float, array, in->array->len);
+    
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+    tuple->items[0] = MP_OBJ_FROM_PTR(eigenvalues);
+    tuple->items[1] = MP_OBJ_FROM_PTR(eigenvectors);
+    return tuple;
+    return MP_OBJ_FROM_PTR(eigenvalues);
 }

@@ -4,10 +4,9 @@ ulab is a numpy-like array manipulation library for micropython.
 The module is written in C, defines compact containers for numerical 
 data, and is fast. 
 
-Rudimentary documentation can be found under
-https://github.com/v923z/micropython-ulab/blob/master/docs/ulab-manual.ipynb,
-while developer help is in
-https://github.com/v923z/micropython-ulab/blob/master/docs/ulab.ipynb.
+Documentation can be found under https://micropython-ulab.readthedocs.io/en/latest/
+The source for the manual is in https://github.com/v923z/micropython-ulab/blob/master/docs/ulab-manual.ipynb,
+while developer help is in https://github.com/v923z/micropython-ulab/blob/master/docs/ulab.ipynb.
 
 Firmware for pyboard.v.1.1 is updated once in a while, and can be downloaded
 from

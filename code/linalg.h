@@ -15,6 +15,7 @@
 
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 #define epsilon        1e-6
+#define JACOBI_MAX     20
 
 mp_obj_t linalg_transpose(mp_obj_t );
 mp_obj_t linalg_reshape(mp_obj_t , mp_obj_t );

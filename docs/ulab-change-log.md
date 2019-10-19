@@ -1,4 +1,11 @@
 
+Sat, 19 Oct 2019
+
+version 0.22
+
+    fixed small error in linalg_det, and implemented linalg_eig.
+
+
 Thu, 17 Oct 2019
 
 version 0.21
