@@ -175,28 +175,28 @@ Array initialisation functions
 
 `eye <#eye>`__
 
-`ones <#ones>`__
+`ones <#ones,-zeros>`__
 
-`zeros <#zeros>`__
+`zeros <#ones,-zeros>`__
 
 `linspace <#linspace>`__
 
 Statistical properties of arrays
 --------------------------------
 
-`min <#argmin,-argmax>`__
+`min <#min,-argmin,-max,-argmax>`__
 
-`argmin <#argmin,-argmax>`__
+`argmin <#min,-argmin,-max,-argmax>`__
 
-`max <#argmin,-argmax>`__
+`max <#min,-argmin,-max,-argmax>`__
 
-`argmax <#argmin,-argmax>`__
+`argmax <#min,-argmin,-max,-argmax>`__
 
-`sum <#sum>`__
+`sum <#sum,-std,-mean>`__
 
-`std <#std>`__
+`std <#sum,-std,-mean>`__
 
-`mean <#mean>`__
+`mean <#sum,-std,-mean>`__
 
 Manipulation of polynomials
 ---------------------------
@@ -210,9 +210,9 @@ FFT routines
 
 `fft\*\* <#fft>`__
 
-`ifft\*\* <#fft>`__
+`ifft\*\* <#ifft>`__
 
-`spectrum\*\* <#fft>`__
+`spectrum\*\* <#spectrum>`__
 
 ndarray, the basic container
 ============================
@@ -1389,6 +1389,51 @@ the sequence.
     
 
 
+sum, std, mean
+--------------
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.sum.html
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.std.html
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.mean.html
+
+These three functions follow the same pattern: if the axis keyword is
+not specified, it assumes the default value of ``None``, and returns the
+result of the computation for the flattened array. Otherwise, the
+calculation is along the given axis.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    print('a: \n', a)
+    
+    print('sum, flat array: ', np.sum(a))
+    
+    print('mean, horizontal: ', np.mean(a, axis=1))
+    
+    print('std, vertical: ', np.std(a, axis=0))
+
+.. parsed-literal::
+
+    a: 
+     array([[1.0, 2.0, 3.0],
+    	 [4.0, 5.0, 6.0],
+    	 [7.0, 8.0, 9.0]], dtype=float)
+    sum, flat array:  45.0
+    mean, horizontal:  array([2.0, 5.0, 8.0], dtype=float)
+    std, vertical:  array([2.449489831924438, 2.449489831924438, 2.449489831924438], dtype=float)
+    
+    
+
+
 roll
 ----
 
@@ -2056,6 +2101,9 @@ Fourier transforms
 numpy:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.fft.ifft.html
 
+fft
+---
+
 Since ulab’s ``ndarray`` does not support complex numbers, the
 invocation of the Fourier transform differs from that in ``numpy``. In
 ``numpy``, you can simply pass an array or iterable to the function, and
@@ -2114,6 +2162,9 @@ parts of the transform separately.
     
 
 
+ifft
+----
+
 The above-mentioned rules apply to the inverse Fourier transform. The
 inverse is also normalised by ``N``, the number of elements, as is
 customary in ``numpy``. With the normalisation, we can ascertain that
@@ -2151,6 +2202,9 @@ the inverse of the transform is equal to the original array.
 Note that unlike in ``numpy``, the length of the array on which the
 Fourier transform is carried out must be a power of 2. If this is not
 the case, the function raises a ``ValueError`` exception.
+
+spectrum
+--------
 
 In addition to the Fourier transform and its inverse, ``ulab`` also
 sports a function called ``spectrum``, which returns the absolute value
