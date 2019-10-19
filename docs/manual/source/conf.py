@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'ulab'
+project = 'micropython-ulab'
 copyright = '2019, Zoltán Vörös'
 author = 'Zoltán Vörös'
 
