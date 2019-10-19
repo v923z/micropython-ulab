@@ -439,11 +439,11 @@ following data
 2. number of columns
 3. length of the storage (should be equal to the product of 1. and 2.)
 4. length of the data storage in bytes
-5. datum size in bytes (1 for uint8/int8, 2 for uint16/int16, and 4 for
-   floats)
+5. datum size in bytes (1 for ``uint8``/``int8``, 2 for
+   ``uint16``/``int16``, and 4 for ``floats``)
 
-**WARNING:** ``rawsize`` is a ulab-only method; it has no equivalent in
-``numpy``.
+**WARNING:** ``rawsize`` is a ``ulab``-only method; it has no equivalent
+in ``numpy``.
 
 .. code::
         
@@ -511,8 +511,8 @@ The contents of an ``ndarray`` can be accessed directly by calling the
 ``.asbytearray`` method. This will return a pointer to the underlying
 ``array`` object, which can then be manipulated directly.
 
-**WARNING:** ``asbytearray`` is a ulab-only method; it has no equivalent
-in ``numpy``.
+**WARNING:** ``asbytearray`` is a ``ulab``-only method; it has no
+equivalent in ``numpy``.
 
 .. code::
         
@@ -2104,7 +2104,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.fft.ifft.html
 fft
 ---
 
-Since ulab’s ``ndarray`` does not support complex numbers, the
+Since ``ulab``\ ’s ``ndarray`` does not support complex numbers, the
 invocation of the Fourier transform differs from that in ``numpy``. In
 ``numpy``, you can simply pass an array or iterable to the function, and
 it will be treated as a complex array:
