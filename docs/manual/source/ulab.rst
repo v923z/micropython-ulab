@@ -509,7 +509,8 @@ verbatim copy of the contents.
 
 The contents of an ``ndarray`` can be accessed directly by calling the
 ``.asbytearray`` method. This will simply return a pointer to the
-underlying ``array`` object, which can then be manipulated directly.
+underlying flat ``array`` object, which can then be manipulated
+directly.
 
 **WARNING:** ``asbytearray`` is a ``ulab``-only method; it has no
 equivalent in ``numpy``.
@@ -553,11 +554,20 @@ applied to the results of timed ADC conversions.
     
     a = np.array([0]*n, dtype=np.uint8)
     buffer = a.asbytearray()
-    adc.read_timed(buf, tim)
+    adc.read_timed(buffer, tim)
     
     print("ADC results:\t", a)
     print("mean of results:\t", np.mean(a))
     print("std of results:\t", np.std(a))
+
+.. parsed-literal::
+
+    ADC results:	 array([48, 2, 2, ..., 0, 0, 0], dtype=uint8)
+    mean of results:	 1.22
+    std of results:	 4.744639
+    
+
+
 Likewise, data can be read directly into ``ndarray``\ s from other
 interfaces, e.g., SPI, I2C etc, and also, by laying bare the
 ``ndarray``, we can pass results of ``ulab`` computations to anything
@@ -783,6 +793,7 @@ columns the matrix has. This feature will be added in future versions of
 .. code::
 
     # code to be run in CPython
+    
     a = array([[1, 2, 3], [4, 5, 6], [7, 8, 6]])
     b = array([10, 20, 30])
     a+b
@@ -992,6 +1003,16 @@ take the following snippet from the micropython manual:
     
 
 
+I do not claim that the python implementation above is perfect, and
+certainly, there is much room for improvement. However, the factor of 50
+difference in execution time is very spectacular. This is nothing but a
+consequence of the fact that the ``ulab`` functions run ``C`` code, with
+very little python overhead. The factor of 50 appears to be quite
+universal: the FFT routine obeys similar scaling (see `Speed of
+FFTs <#Speed-of-FFTs>`__), and this number came up with font rendering,
+too: `fast font rendering on graphical
+displays <https://forum.micropython.org/viewtopic.php?f=15&t=5815&p=33362&hilit=ufont#p33383>`__.
+
 Comparison operators
 --------------------
 
@@ -1021,6 +1042,7 @@ use cases this fact should not make a difference.
 .. code::
 
     # code to be run in CPython
+    
     a = array([1, 2, 3, 4, 5, 6, 7, 8])
     a < 5
 
@@ -1185,10 +1207,9 @@ is a very concise way of comparing two vectors, e.g.:
     
     b:	 array([4, 4, 4, 3, 3, 3, 13, 13, 13], dtype=uint8)
     
-    100*sin(b):	 array([-75.68025207519532, -75.68025207519532, -75.68025207519532, 14.11200046539307, 14.11200046539307, 14.11200046539307, 42.01670455932617, 42.01670455932617, 42.01670455932617], dtype=float)
+    100*sin(b):	 array([-75.68025, -75.68025, -75.68025, 14.112, 14.112, 14.112, 42.01671, 42.01671, 42.01671], dtype=float)
     
     a[a*a > np.sin(b)*100.0]:	 array([0, 1, 2, 4, 5, 7, 8], dtype=uint8)
-    
     
 
 
@@ -1246,22 +1267,29 @@ because the values of the input vector can be extracted faster.
 .. parsed-literal::
 
     a:	 range(0, 9)
-    exp(a):	 array([1.0, 2.718281745910645, 7.389056205749512, 20.08553695678711, 54.59814834594727, 148.4131622314453, 403.4288024902343, 1096.633178710938, 2980.9580078125], dtype=float)
+    exp(a):	 array([1.0, 2.718282, 7.389056, 20.08554, 54.59816, 148.4132, 403.4288, 1096.633, 2980.958], dtype=float)
     
     b:	 array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
-    exp(b):	 array([1.0, 2.718281745910645, 7.389056205749512, 20.08553695678711, 54.59814834594727, 148.4131622314453, 403.4288024902343, 1096.633178710938, 2980.9580078125], dtype=float)
+    exp(b):	 array([1.0, 2.718282, 7.389056, 20.08554, 54.59816, 148.4132, 403.4288, 1096.633, 2980.958], dtype=float)
     
     c:	 array([[1.0, 2.0, 3.0],
     	 [4.0, 5.0, 6.0],
     	 [7.0, 8.0, 9.0]], dtype=float)
-    exp(c):	 array([[2.718281745910645, 7.389056205749512, 20.08553695678711],
-    	 [54.59814834594727, 148.4131622314453, 403.4288024902343],
-    	 [1096.633178710938, 2980.9580078125, 8103.083984375001]], dtype=float)
-    
+    exp(c):	 array([[2.718282, 7.389056, 20.08554],
+    	 [54.59816, 148.4132, 403.4288],
+    	 [1096.633, 2980.958, 8103.084]], dtype=float)
     
 
 
-The overhead for iterables is
+Computation expenses
+--------------------
+
+The overhead for calculating with micropython iterables is quite
+significant: for the 1000 samples below, the difference is more than 800
+microseconds, because internally the function has to create the
+``ndarray`` for the output, has to fetch the iterable’s items of unknown
+type, and then convert them to floats. All these steps are skipped for
+``ndarray``\ s, because these pieces of information are already known.
 
 .. code::
         
@@ -1272,13 +1300,21 @@ The overhead for iterables is
     a = [0]*1000
     b = np.array(a)
     
-    @timeit(n=1000)
+    @timeit
     def measure_run_time(x):
         return np.exp(x)
     
     measure_run_time(a)
     
     measure_run_time(b)
+
+.. parsed-literal::
+
+    execution time:  1259  us
+    execution time:  408  us
+    
+
+
 Of course, such a time saving is reasonable only, if the data are
 already available as an ``ndarray``. If one has to initialise the
 ``ndarray`` from the list, then there is no gain, because the iterator
@@ -1433,8 +1469,7 @@ calculation is along the given axis.
     	 [7.0, 8.0, 9.0]], dtype=float)
     sum, flat array:  45.0
     mean, horizontal:  array([2.0, 5.0, 8.0], dtype=float)
-    std, vertical:  array([2.449489831924438, 2.449489831924438, 2.449489831924438], dtype=float)
-    
+    std, vertical:  array([2.44949, 2.44949, 2.44949], dtype=float)
     
 
 
@@ -1821,22 +1856,69 @@ to be singular (i.e., one of the diagonal entries is zero).
     
     import ulab as np
     
-    m = np.array([[1, 2, 3], [4, 5, 6], [7, 8.5, 9]])
+    m = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
     
     print(np.inv(m))
 
 .. parsed-literal::
 
-    array([[-2.000000238418579, 2.5, -1.0],
-    	 [2.000000238418579, -4.0, 2.0],
-    	 [-0.3333334922790527, 1.833333373069763, -1.0]], dtype=float)
-    
+    array([[-2.166666, 1.499999, -0.8333326, 1.0],
+    	 [1.666666, -3.333331, 1.666666, -4.768516e-08],
+    	 [0.1666672, 2.166666, -0.8333327, -1.0],
+    	 [-0.1666666, -0.3333334, 4.96705e-08, 0.5]], dtype=float)
     
 
 
-Note that the cost of inverting a matrix is approximately is twice as
-many floats (RAM), as the number of entries in the original matrix, and
-approximately as many operations, as the number of entries.
+Computation expenses
+~~~~~~~~~~~~~~~~~~~~
+
+Note that the cost of inverting a matrix is approximately twice as many
+floats (RAM), as the number of entries in the original matrix, and
+approximately as many operations, as the number of entries. Here are a
+couple of numbers:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    @timeit
+    def invert_matrix(m):
+        return np.inv(m)
+    
+    m = np.array([[1, 2,], [4, 5]])
+    print('2 by 2 matrix:')
+    invert_matrix(m)
+    
+    m = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
+    print('\n4 by 4 matrix:')
+    invert_matrix(m)
+    
+    m = np.array([[1, 2, 3, 4, 5, 6, 7, 8], [0, 5, 6, 4, 5, 6, 4, 5], 
+                  [0, 0, 9, 7, 8, 9, 7, 8], [0, 0, 0, 10, 11, 12, 11, 12], 
+                 [0, 0, 0, 0, 4, 6, 7, 8], [0, 0, 0, 0, 0, 5, 6, 7], 
+                 [0, 0, 0, 0, 0, 0, 7, 6], [0, 0, 0, 0, 0, 0, 0, 2]])
+    print('\n8 by 8 matrix:')
+    invert_matrix(m)
+
+.. parsed-literal::
+
+    2 by 2 matrix:
+    execution time:  65  us
+    
+    4 by 4 matrix:
+    execution time:  105  us
+    
+    8 by 8 matrix:
+    execution time:  299  us
+    
+
+
+The above-mentioned scaling is not obeyed strictly. The reason for the
+discrepancy is that the function call is still the same for all three
+cases: the input must be inspected, the output array must be created,
+and so on.
 
 dot
 ---
@@ -1863,23 +1945,27 @@ below.
     
     m = np.array([[1, 2, 3], [4, 5, 6], [7, 10, 9]], dtype=np.uint8)
     n = np.inv(m)
-    print("m:\t", m)
-    print("m^-1:\t", n)
+    print("m:\n", m)
+    print("\nm^-1:\n", n)
     # this should be the unit matrix
-    print("m*m^-1:\t", np.dot(m, n))
+    print("\nm*m^-1:\n", np.dot(m, n))
 
 .. parsed-literal::
 
-    m:	 array([[1, 2, 3],
+    m:
+     array([[1, 2, 3],
     	 [4, 5, 6],
     	 [7, 10, 9]], dtype=uint8)
-    m^-1:	 array([[-1.25000011920929, 1.0, -0.25],
-    	 [0.5000000596046448, -1.0, 0.5],
-    	 [0.4166666269302368, 0.3333333432674408, -0.25]], dtype=float)
-    m*m^-1:	 array([[0.9999998807907104, 0.0, 0.0],
-    	 [-4.76837158203125e-07, 1.0, 0.0],
-    	 [-9.5367431640625e-07, 0.0, 1.0]], dtype=float)
     
+    m^-1:
+     array([[-1.25, 1.0, -0.25],
+    	 [0.5, -1.0, 0.5],
+    	 [0.4166667, 0.3333334, -0.25]], dtype=float)
+    
+    m*m^-1:
+     array([[1.0, 2.384186e-07, -1.490116e-07],
+    	 [-2.980232e-07, 1.000001, -4.172325e-07],
+    	 [-3.278255e-07, 1.311302e-06, 0.9999992]], dtype=float)
     
 
 
@@ -1940,6 +2026,34 @@ even if the input array was of integer type.
     
 
 
+Benchmark
+~~~~~~~~~
+
+Since the routine for calculating the determinant is pretty much the
+same as for finding the `inverse of a matrix <#inv>`__, the execution
+times are similar:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    @timeit
+    def matrix_det(m):
+        return np.inv(m)
+    
+    m = np.array([[1, 2, 3, 4, 5, 6, 7, 8], [0, 5, 6, 4, 5, 6, 4, 5], 
+                  [0, 0, 9, 7, 8, 9, 7, 8], [0, 0, 0, 10, 11, 12, 11, 12], 
+                 [0, 0, 0, 0, 4, 6, 7, 8], [0, 0, 0, 0, 0, 5, 6, 7], 
+                 [0, 0, 0, 0, 0, 0, 7, 6], [0, 0, 0, 0, 0, 0, 0, 2]])
+    
+    matrix_det(m)
+
+.. parsed-literal::
+
+    execution time:  294  us
+    
+
+
 eig
 ---
 
@@ -1982,6 +2096,7 @@ The same matrix diagonalised with ``numpy`` yields:
 .. code::
 
     # code to be run in CPython
+    
     a = array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
     x, y = eig(a)
     print('eigenvectors of a:\n', x)
@@ -2008,6 +2123,36 @@ When comparing results, we should keep two things in mind:
    all signs of the eigenvector belonging to 5.58, and 0.80 are flipped
    in ``ulab`` with respect to ``numpy``. This difference, however, is
    of absolutely no consequence.
+
+Computation expenses
+~~~~~~~~~~~~~~~~~~~~
+
+Since the function is based on `Givens
+rotations <https://en.wikipedia.org/wiki/Givens_rotation>`__ and runs
+till convergence is achieved, or till the maximum number of allowed
+rotations is exhausted, there is no universal estimate for the time
+required to find the eigenvalues. However, an order of magnitude can, at
+least, be guessed based on the measurement below:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    @timeit
+    def matrix_eig(a):
+        return np.eig(a)
+    
+    a = np.array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
+    
+    matrix_eig(a)
+
+.. parsed-literal::
+
+    execution time:  111  us
+    
+
 
 Polynomials
 ===========
@@ -2092,12 +2237,37 @@ a ``ValueError``.
     
 
 
+Execution time
+~~~~~~~~~~~~~~
+
 ``polyfit`` is based on the inversion of a matrix (there is more on the
 background in https://en.wikipedia.org/wiki/Polynomial_regression), and
 it requires the intermediate storage of ``2*N*(deg+1)`` floats, where
 ``N`` is the number of entries in the input array, and ``deg`` is the
 fit’s degree. The additional computation costs of the matrix inversion
-discussed in `inv <#inv>`__ also apply.
+discussed in `inv <#inv>`__ also apply. The example from above needs
+around 150 microseconds to return:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    @timeit
+    def time_polyfit(x, y, n):
+        return np.polyfit(x, y, n)
+    
+    x = np.array([0, 1, 2, 3, 4, 5, 6])
+    y = np.array([9, 4, 1, 0, 1, 4, 9])
+    
+    time_polyfit(x, y, 2)
+
+.. parsed-literal::
+
+    execution time:  153  us
+    
+
 
 Fourier transforms
 ==================
@@ -2116,6 +2286,7 @@ it will be treated as a complex array:
 .. code::
 
     # code to be run in CPython
+    
     fft.fft([1, 2, 3, 4, 1, 2, 3, 4])
 
 
@@ -2617,3 +2788,4 @@ for the ``pyboard``.
 .. code::
 
     # code to be run in CPython
+    
