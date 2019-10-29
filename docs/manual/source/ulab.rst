@@ -1,4 +1,3 @@
-
 Introduction
 ============
 
@@ -815,7 +814,7 @@ Binary operations require special attention, because two arrays with
 different typecodes can be the operands of an operation, in which case
 it is not trivial, what the typecode of the result is. This decision on
 the result’s typecode is called upcasting. Since the number of typecodes
-in ``ulab`` is significantly smaller than that of ``numpy``, we have to
+in ``ulab`` is significantly smaller than in ``numpy``, we have to
 define new upcasting rules. Where possible, I followed ``numpy``\ ’s
 conventions.
 
@@ -835,16 +834,21 @@ conventions.
 
 4. 
 
-============== =============== =========== ============
-left hand side right hand side ulab result numpy result
-============== =============== =========== ============
-``uint8``      ``int8``        ``int16``   ``int16``
-``uint8``      ``int16``       ``int16``   ``int16``
-``uint8``      ``uint16``      ``uint16``  ``uint16``
-``int8``       ``int16``       ``int16``   ``int16``
-``int8``       ``uint16``      ``uint16``  ``int32``
-``uint16``     ``int16``       ``float``   ``int32``
-============== =============== =========== ============
++----------------+-----------------+-------------+--------------+
+| left hand side | right hand side | ulab result | numpy result |
++================+=================+=============+==============+
+| ``uint8``      | ``int8``        | ``int16``   | ``int16``    |
++----------------+-----------------+-------------+--------------+
+| ``uint8``      | ``int16``       | ``int16``   | ``int16``    |
++----------------+-----------------+-------------+--------------+
+| ``uint8``      | ``uint16``      | ``uint16``  | ``uint16``   |
++----------------+-----------------+-------------+--------------+
+| ``int8``       | ``int16``       | ``int16``   | ``int16``    |
++----------------+-----------------+-------------+--------------+
+| ``int8``       | ``uint16``      | ``uint16``  | ``int32``    |
++----------------+-----------------+-------------+--------------+
+| ``uint16``     | ``int16``       | ``float``   | ``int32``    |
++----------------+-----------------+-------------+--------------+
 
 Note that the last two operations are promoted to ``int32`` in
 ``numpy``.
@@ -1158,7 +1162,7 @@ square brackets as in
 
 
 Indices are (not necessarily non-negative) integers, or a list of
-Booleans. By using Boolean list, we can select those elements of an
+Booleans. By using a Boolean list, we can select those elements of an
 array that satisfy a specific condition. At the moment, such indexing is
 defined for row vectors only, for matrices the function raises a
 ``ValueError`` exception, though this will be rectified in a future
@@ -1213,8 +1217,8 @@ is a very concise way of comparing two vectors, e.g.:
     
 
 
-Slicing
-~~~~~~~
+Slicing and assigning to slices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can also generate sub-arrays by specifying slices as the index of an
 array. Slices are special python objects of the form
@@ -1231,6 +1235,108 @@ defined in this way, only there, where an index is expected.) For a good
 explanation on how slices work in python, you can read the stackoverflow
 question
 https://stackoverflow.com/questions/509211/understanding-slice-notation.
+
+Slices work on both axes:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
+    print('a:\n', a)
+    
+    # the first row
+    print('\na[0]:\n', a[0])
+    
+    # the first two elements of the first row
+    print('\na[0,:2]:\n', a[0,:2])
+    
+    # the zeroth element in each row (also known as the zeroth column)
+    print('\na[:,0]:\n', a[:,0])
+    
+    # the last but one row
+    print('\na[-1]:\n', a[-1])
+    
+    # the last two rows backwards
+    print('\na[::1]:\n', a[::-1])
+
+.. parsed-literal::
+
+    a:
+     array([[1, 2, 3],
+    	 [4, 5, 6],
+    	 [7, 8, 9]], dtype=uint8)
+    
+    a[0]:
+     array([1, 2, 3], dtype=uint8)
+    
+    a[0,:2]:
+     array([1, 2], dtype=uint8)
+    
+    a[:,0]:
+     array([1, 4, 7], dtype=uint8)
+    
+    a[-1]:
+     array([7, 8, 9], dtype=uint8)
+    
+    a[::1]:
+     array([[7, 8, 9],
+    	 [4, 5, 6]], dtype=uint8)
+    
+    
+
+
+Assignment to slices can be done for the whole slice, per row, and per
+column. A couple of examples should make these statements clearer:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    zero_list = [0, 0, 0]
+    a = np.array([zero_list, zero_list, zero_list], dtype=np.uint8)
+    print('a:\n', a)
+    
+    # assigning to the whole row
+    a[0] = 1
+    print('\na[0] = 1\n', a)
+    
+    # assigning to the whole row
+    a[0] = np.array([1, 2, -333], dtype=np.float)
+    print('\na[0] = np.array([1, 2, 3])\n', a)
+    
+    # assigning to a column
+    a[:,2] = 3.0
+    print('\na[:,0]:\n', a)
+
+.. parsed-literal::
+
+    a:
+     array([[0, 0, 0],
+    	 [0, 0, 0],
+    	 [0, 0, 0]], dtype=uint8)
+    
+    a[0] = 1
+     array([[1, 1, 1],
+    	 [0, 0, 0],
+    	 [0, 0, 0]], dtype=uint8)
+    
+    a[0] = np.array([1, 2, 3])
+     array([[1, 2, 179],
+    	 [0, 0, 0],
+    	 [0, 0, 0]], dtype=uint8)
+    
+    a[:,0]:
+     array([[1, 2, 3],
+    	 [0, 0, 3],
+    	 [0, 0, 3]], dtype=uint8)
+    
+    
+
 
 Universal functions
 ===================

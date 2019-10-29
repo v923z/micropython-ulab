@@ -1,4 +1,10 @@
 
+Tue, 29 Oct 2019
+
+version 0.23
+
+    major revamp of subscription method
+
 Sat, 19 Oct 2019
 
 version 0.21
