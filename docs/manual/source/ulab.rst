@@ -68,8 +68,8 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.22), the library adds
-approximately 25 kB of extra compiled code to the micropython firmware.
+At the time of writing this manual (for version 0.24), the library adds
+approximately 27 kB of extra compiled code to the micropython firmware.
 
 Resources and legal matters
 ---------------------------
@@ -180,8 +180,8 @@ Array initialisation functions
 
 `linspace <#linspace>`__
 
-Statistical properties of arrays
---------------------------------
+Statistical and other properties of arrays
+------------------------------------------
 
 `min <#min,-argmin,-max,-argmax>`__
 
@@ -196,6 +196,8 @@ Statistical properties of arrays
 `std <#sum,-std,-mean>`__
 
 `mean <#sum,-std,-mean>`__
+
+`diff <#diff>`__
 
 Manipulation of polynomials
 ---------------------------
@@ -1773,6 +1775,81 @@ array.
      array([[9, 8, 7],
     	 [6, 5, 4],
     	 [3, 2, 1]], dtype=uint8)
+    
+    
+
+
+diff
+----
+
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.diff.html
+
+The ``diff`` function returns the numerical derivative of the forward
+scheme, or more accurately, the differences of an ``ndarray`` along a
+given axis. The order of derivative can be stipulated with the ``n``
+keyword argument, which should be between 0, and 9. Default is 1. If
+higher order derivatives are required, they can be gotten by repeated
+calls to the function. The ``axis`` keyword argument should be -1 (last
+axis, in ``ulab`` equivalent to the second axis, and this also happens
+to be the default value), 0, or 1.
+
+Beyond the output array, the function requires only a couple of bytes of
+extra RAM for the differentiation stencil. (The stencil is an ``int8``
+array, one byte longer than ``n``. This also explains, why the highest
+order is 9: the coefficients of a ninth-order stencil all fit in signed
+bytes, while 10 would require ``int16``.) Note that as usual in
+numerical differentiation (and also in ``numpy``), the length of the
+respective axis will be reduced by ``n`` after the operation. If ``n``
+is larger than, or equal to the length of the axis, an empty array will
+be returned.
+
+**WARNING**: the ``diff`` function does not implement the ``prepend``
+and ``append`` keywords that can be found in ``numpy``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(9), dtype=np.uint8)
+    print('a:\n', a)
+    
+    print('\nfirst derivative:\n', np.diff(a, n=1))
+    print('\nsecond derivative:\n', np.diff(a, n=2))
+    
+    c = np.array([[1, 2, 3, 4], [4, 3, 2, 1], [1, 4, 9, 16], [0, 0, 0, 0]])
+    print('\nc:\n', c)
+    print('\nfirst derivative, first axis:\n', np.diff(c, axis=0))
+    print('\nfirst derivative, second axis:\n', np.diff(c, axis=1))
+
+.. parsed-literal::
+
+    a:
+     array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    
+    first derivative:
+     array([1, 1, 1, 1, 1, 1, 1, 1], dtype=uint8)
+    
+    second derivative:
+     array([0, 0, 0, 0, 0, 0, 0], dtype=uint8)
+    
+    c:
+     array([[1.0, 2.0, 3.0, 4.0],
+    	 [4.0, 3.0, 2.0, 1.0],
+    	 [1.0, 4.0, 9.0, 16.0],
+    	 [0.0, 0.0, 0.0, 0.0]], dtype=float)
+    
+    first derivative, first axis:
+     array([[3.0, 1.0, -1.0, -3.0],
+    	 [-3.0, 1.0, 7.0, 15.0],
+    	 [-1.0, -4.0, -9.0, -16.0]], dtype=float)
+    
+    first derivative, second axis:
+     array([[1.0, 1.0, 1.0],
+    	 [-1.0, -1.0, -1.0],
+    	 [3.0, 5.0, 7.0],
+    	 [0.0, 0.0, 0.0]], dtype=float)
     
     
 
