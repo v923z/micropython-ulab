@@ -26,13 +26,13 @@ enum FFT_TYPE {
     FFT_SPECTRUM,
 };
 
-void fft_kernel(float *real, float *imag, int n, int isign) {
+void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     // This is basically a modification of four1 from Numerical Recipes
     // The main difference is that this function takes two arrays, one 
     // for the real, and one for the imaginary parts. 
     int j, m, mmax, istep;
-    float tempr, tempi;
-    float wtemp, wr, wpr, wpi, wi, theta;
+    mp_float_t tempr, tempi;
+    mp_float_t wtemp, wr, wpr, wpi, wi, theta;
 
     j = 0;
     for(int i = 0; i < n; i++) {
@@ -52,9 +52,9 @@ void fft_kernel(float *real, float *imag, int n, int isign) {
     while (n > mmax) {
         istep = mmax << 1;
         theta = -1.0*isign*6.28318530717959/istep;
-        wtemp = sinf(0.5 * theta);
+        wtemp = sin(0.5 * theta);
         wpr = -2.0 * wtemp * wtemp;
-        wpi = sinf(theta);
+        wpi = sin(theta);
         wr = 1.0;
         wi = 0.0;
         for(m = 0; m < mmax; m++) {
@@ -92,19 +92,19 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     }
     
     ndarray_obj_t *out_re = create_new_ndarray(1, len, NDARRAY_FLOAT);
-    float *data_re = (float *)out_re->array->items;
+    mp_float_t *data_re = (mp_float_t *)out_re->array->items;
     
     if(re->array->typecode == NDARRAY_FLOAT) { 
         // By treating this case separately, we can save a bit of time.
         // I don't know if it is worthwhile, though...
-        memcpy((float *)out_re->array->items, (float *)re->array->items, re->bytes);
+        memcpy((mp_float_t *)out_re->array->items, (mp_float_t *)re->array->items, re->bytes);
     } else {
         for(size_t i=0; i < len; i++) {
             data_re[i] = ndarray_get_float_value(re->array->items, re->array->typecode, i);
         }
     }
     ndarray_obj_t *out_im = create_new_ndarray(1, len, NDARRAY_FLOAT);
-    float *data_im = (float *)out_im->array->items;
+    mp_float_t *data_im = (mp_float_t *)out_im->array->items;
 
     if(n_args == 2) {
         ndarray_obj_t *im = MP_OBJ_TO_PTR(arg_im);
@@ -112,7 +112,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
             mp_raise_ValueError("real and imaginary parts must be of equal length");
         }
         if(im->array->typecode == NDARRAY_FLOAT) {
-            memcpy((float *)out_im->array->items, (float *)im->array->items, im->bytes);
+            memcpy((mp_float_t *)out_im->array->items, (mp_float_t *)im->array->items, im->bytes);
         } else {
             for(size_t i=0; i < len; i++) {
                 data_im[i] = ndarray_get_float_value(im->array->items, im->array->typecode, i);
@@ -123,7 +123,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
         fft_kernel(data_re, data_im, len, 1);
         if(type == FFT_SPECTRUM) {
             for(size_t i=0; i < len; i++) {
-                data_re[i] = sqrtf(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
+                data_re[i] = sqrt(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
             }
         }
     } else { // inverse transform

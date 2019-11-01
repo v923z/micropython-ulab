@@ -37,26 +37,26 @@ STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
     return o;
 }
 
-float ndarray_get_float_value(void *data, uint8_t typecode, size_t index) {
+mp_float_t ndarray_get_float_value(void *data, uint8_t typecode, size_t index) {
     if(typecode == NDARRAY_UINT8) {
-        return (float)((uint8_t *)data)[index];
+        return (mp_float_t)((uint8_t *)data)[index];
     } else if(typecode == NDARRAY_INT8) {
-        return (float)((int8_t *)data)[index];
+        return (mp_float_t)((int8_t *)data)[index];
     } else if(typecode == NDARRAY_UINT16) {
-        return (float)((uint16_t *)data)[index];
+        return (mp_float_t)((uint16_t *)data)[index];
     } else if(typecode == NDARRAY_INT16) {
-        return (float)((int16_t *)data)[index];
+        return (mp_float_t)((int16_t *)data)[index];
     } else {
-        return (float)((float_t *)data)[index];
+        return (mp_float_t)((float_t *)data)[index];
     }
 }
 
-void fill_array_iterable(float *array, mp_obj_t iterable) {
+void fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     mp_obj_iter_buf_t x_buf;
     mp_obj_t x_item, x_iterable = mp_getiter(iterable, &x_buf);
     size_t i=0;
     while ((x_item = mp_iternext(x_iterable)) != MP_OBJ_STOP_ITERATION) {
-        array[i] = (float)mp_obj_get_float(x_item);
+        array[i] = (mp_float_t)mp_obj_get_float(x_item);
         i++;
     }
 }
@@ -90,17 +90,22 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     (void)kind;
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_print_str(print, "array(");
-    if((self->m == 1) || (self->n == 1)) {
-        ndarray_print_row(print, self->array, 0, self->array->len);
+    
+    if(self->array->len == 0) {
+        mp_print_str(print, "[]");
     } else {
-        // TODO: add vertical ellipses for the case, when self->m > PRINT_MAX
-        mp_print_str(print, "[");
-        ndarray_print_row(print, self->array, 0, self->n);
-        for(size_t i=1; i < self->m; i++) {
-            mp_print_str(print, ",\n\t ");
-            ndarray_print_row(print, self->array, i*self->n, self->n);
+        if((self->m == 1) || (self->n == 1)) {
+            ndarray_print_row(print, self->array, 0, self->array->len);
+        } else {
+            // TODO: add vertical ellipses for the case, when self->m > PRINT_MAX
+            mp_print_str(print, "[");
+            ndarray_print_row(print, self->array, 0, self->n);
+            for(size_t i=1; i < self->m; i++) {
+                mp_print_str(print, ",\n\t ");
+                ndarray_print_row(print, self->array, i*self->n, self->n);
+            }
+            mp_print_str(print, "]");
         }
-        mp_print_str(print, "]");
     }
     if(self->array->typecode == NDARRAY_UINT8) {
         mp_print_str(print, ", dtype=uint8)");
@@ -112,7 +117,7 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         mp_print_str(print, ", dtype=int16)");
     } else if(self->array->typecode == NDARRAY_FLOAT) {
         mp_print_str(print, ", dtype=float)");
-    } 
+    }
 }
 
 void ndarray_assign_elements(mp_obj_array_t *data, mp_obj_t iterable, uint8_t typecode, size_t *idx) {
@@ -681,6 +686,9 @@ mp_obj_t ndarray_asbytearray(mp_obj_t self_in) {
 // Binary operations
 
 mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+//    if(op == MP_BINARY_OP_REVERSE_ADD) {
+ //       return ndarray_binary_op(MP_BINARY_OP_ADD, rhs, lhs);
+  //  }    
     // One of the operands is a scalar
     // TODO: conform to numpy with the upcasting
     // TODO: implement in-place operators
@@ -690,19 +698,18 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
         int32_t ivalue = mp_obj_get_int(rhs);
         if((ivalue > 0) && (ivalue < 256)) {
             CREATE_SINGLE_ITEM(RHS, uint8_t, NDARRAY_UINT8, ivalue);
-        }
-        else if((ivalue > 0) && (ivalue < 65535)) {
+        } else if((ivalue > 255) && (ivalue < 65535)) {
             CREATE_SINGLE_ITEM(RHS, uint16_t, NDARRAY_UINT16, ivalue);
-        }
-        else if((ivalue < 0) && (ivalue > -128)) {
+        } else if((ivalue < 0) && (ivalue > -128)) {
             CREATE_SINGLE_ITEM(RHS, int8_t, NDARRAY_INT8, ivalue);
-        }
-        else if((ivalue < 0) && (ivalue > -32767)) {
+        } else if((ivalue < -127) && (ivalue > -32767)) {
             CREATE_SINGLE_ITEM(RHS, int16_t, NDARRAY_INT16, ivalue);
+        } else { // the integer value clearly does not fit the ulab types, so move on to float
+            CREATE_SINGLE_ITEM(RHS, mp_float_t, NDARRAY_FLOAT, ivalue);
         }
     } else if(mp_obj_is_float(rhs)) {
-        float fvalue = mp_obj_get_float(rhs);        
-        CREATE_SINGLE_ITEM(RHS, float, NDARRAY_FLOAT, fvalue);
+        mp_float_t fvalue = mp_obj_get_float(rhs);        
+        CREATE_SINGLE_ITEM(RHS, mp_float_t, NDARRAY_FLOAT, fvalue);
     } else {
         RHS = rhs;
         rhs_is_scalar = false;
@@ -765,7 +772,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     } else if(or->array->typecode == NDARRAY_INT16) {
                         RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int16_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_FLOAT) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint8_t, float, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint8_t, mp_float_t, ol, or, op);
                     }
                 } else if(ol->array->typecode == NDARRAY_INT8) {
                     if(or->array->typecode == NDARRAY_UINT8) {
@@ -777,7 +784,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     } else if(or->array->typecode == NDARRAY_INT16) {
                         RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_FLOAT) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, int8_t, float, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, int8_t, mp_float_t, ol, or, op);
                     }                
                 } else if(ol->array->typecode == NDARRAY_UINT16) {
                     if(or->array->typecode == NDARRAY_UINT8) {
@@ -787,9 +794,9 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     } else if(or->array->typecode == NDARRAY_UINT16) {
                         RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_INT16) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint16_t, int16_t, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, int16_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_FLOAT) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint8_t, float, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint8_t, mp_float_t, ol, or, op);
                     }
                 } else if(ol->array->typecode == NDARRAY_INT16) {
                     if(or->array->typecode == NDARRAY_UINT8) {
@@ -797,23 +804,23 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     } else if(or->array->typecode == NDARRAY_INT8) {
                         RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int8_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_UINT16) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, int16_t, uint16_t, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, int16_t, uint16_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_INT16) {
                         RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int16_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_FLOAT) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, uint16_t, float, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, ol, or, op);
                     }
                 } else if(ol->array->typecode == NDARRAY_FLOAT) {
                     if(or->array->typecode == NDARRAY_UINT8) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, uint8_t, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, uint8_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_INT8) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, int8_t, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, int8_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_UINT16) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, uint16_t, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, uint16_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_INT16) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, int16_t, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, int16_t, ol, or, op);
                     } else if(or->array->typecode == NDARRAY_FLOAT) {
-                        RUN_BINARY_LOOP(NDARRAY_FLOAT, float, float, float, ol, or, op);
+                        RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, mp_float_t, ol, or, op);
                     }
                 } else { // this should never happen
                     mp_raise_TypeError("wrong input type");
@@ -867,7 +874,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 int16_t *array = (int16_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
             } else {
-                float *array = (float *)ndarray->array->items;
+                mp_float_t *array = (mp_float_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
             }
             return MP_OBJ_FROM_PTR(ndarray);
@@ -892,7 +899,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                     if(array[i] < 0) array[i] = -array[i];
                 }
             } else {
-                float *array = (float *)ndarray->array->items;
+                mp_float_t *array = (mp_float_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) {
                     if(array[i] < 0) array[i] = -array[i];
                 }                
