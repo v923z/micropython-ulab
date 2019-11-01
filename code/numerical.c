@@ -94,7 +94,7 @@ mp_obj_t numerical_sum_mean_std_array(mp_obj_t oin, uint8_t optype) {
         return mp_obj_new_float(sum/len);
     } else {
         sum /= len; // this is now the mean!
-        return mp_obj_new_float(sqrt((sq_sum/len-sum*sum)));
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(sq_sum/len-sum*sum));
     }
 }
 
@@ -119,7 +119,7 @@ STATIC mp_float_t numerical_sum_mean_std_single_line(void *data, size_t start, s
         return sum/len;
     } else {
         sum /= len; // this is now the mean!
-        return sqrt((sq_sum/len-sum*sum));
+        return MICROPY_FLOAT_C_FUN(sqrt)(sq_sum/len-sum*sum);
     }
 }
 

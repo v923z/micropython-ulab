@@ -345,6 +345,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
     for(size_t m=0; m < in->m; m++) {
         for(size_t n=m+1; n < in->n; n++) {
             // compare entry (m, n) to (n, m)
+            // TODO: this must probably be scaled!
             if(epsilon < abs(array[m*in->n + n] - array[n*in->n + m])) {
                 mp_raise_ValueError("input matrix is asymmetric");
             }
@@ -387,12 +388,12 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
         // The following if/else chooses the smaller absolute value for the tangent 
         // of the rotation angle. Going with the smaller should be numerically stabler.
         if(w > 0) {
-            t = sqrt(w*w + 1.0) - w;
+            t = MICROPY_FLOAT_C_FUN(sqrt)(w*w + 1.0) - w;
         } else {
-            t = -1.0*(sqrt(w*w + 1.0) + w);
+            t = -1.0*(MICROPY_FLOAT_C_FUN(sqrt)(w*w + 1.0) + w);
         }
-        s = t / sqrt(t*t + 1.0); // the sine of the rotation angle
-        c = 1.0 / sqrt(t*t + 1.0); // the cosine of the rotation angle
+        s = t / MICROPY_FLOAT_C_FUN(sqrt)(t*t + 1.0); // the sine of the rotation angle
+        c = 1.0 / MICROPY_FLOAT_C_FUN(sqrt)(t*t + 1.0); // the cosine of the rotation angle
         tau = (1.0-c)/s; // this is equal to the tangent of the half of the rotation angle
         
         // at this point, we have the rotation angles, so we can transform the matrix

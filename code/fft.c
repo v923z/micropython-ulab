@@ -52,9 +52,9 @@ void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     while (n > mmax) {
         istep = mmax << 1;
         theta = -1.0*isign*6.28318530717959/istep;
-        wtemp = sin(0.5 * theta);
+        wtemp = MICROPY_FLOAT_C_FUN(sin)(0.5 * theta);
         wpr = -2.0 * wtemp * wtemp;
-        wpi = sin(theta);
+        wpi = MICROPY_FLOAT_C_FUN(sin)(theta);
         wr = 1.0;
         wi = 0.0;
         for(m = 0; m < mmax; m++) {
@@ -123,7 +123,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
         fft_kernel(data_re, data_im, len, 1);
         if(type == FFT_SPECTRUM) {
             for(size_t i=0; i < len; i++) {
-                data_re[i] = sqrt(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
+                data_re[i] = MICROPY_FLOAT_C_FUN(sqrt)(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
             }
         }
     } else { // inverse transform
