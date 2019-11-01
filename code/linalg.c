@@ -108,24 +108,24 @@ mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     }
 }
 
-bool linalg_invert_matrix(float *data, size_t N) {
+bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     // returns true, of the inversion was successful, 
     // false, if the matrix is singular
     
     // initially, this is the unit matrix: the contents of this matrix is what 
     // will be returned after all the transformations
-    float *unit = m_new(float, N*N);
+    mp_float_t *unit = m_new(mp_float_t, N*N);
 
-    float elem = 1.0;
+    mp_float_t elem = 1.0;
     // initialise the unit matrix
-    memset(unit, 0, sizeof(float)*N*N);
+    memset(unit, 0, sizeof(mp_float_t)*N*N);
     for(size_t m=0; m < N; m++) {
-        memcpy(&unit[m*(N+1)], &elem, sizeof(float));
+        memcpy(&unit[m*(N+1)], &elem, sizeof(mp_float_t));
     }
     for(size_t m=0; m < N; m++){
         // this could be faster with ((c < epsilon) && (c > -epsilon))
         if(abs(data[m*(N+1)]) < epsilon) {
-            m_del(float, unit, N*N);
+            m_del(mp_float_t, unit, N*N);
             return false;
         }
         for(size_t n=0; n < N; n++){
@@ -145,8 +145,8 @@ bool linalg_invert_matrix(float *data, size_t N) {
             unit[N*m+n] /= elem;
         }
     }
-    memcpy(data, unit, sizeof(float)*N*N);
-    m_del(float, unit, N*N);
+    memcpy(data, unit, sizeof(mp_float_t)*N*N);
+    m_del(mp_float_t, unit, N*N);
     return true;
 }
 
@@ -163,21 +163,21 @@ mp_obj_t linalg_inv(mp_obj_t o_in) {
         mp_raise_ValueError("only square matrices can be inverted");
     }
     ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
-    float *data = (float *)inverted->array->items;
+    mp_float_t *data = (mp_float_t *)inverted->array->items;
     mp_obj_t elem;
     for(size_t m=0; m < o->m; m++) { // rows first
         for(size_t n=0; n < o->n; n++) { // columns next
             // this could, perhaps, be done in single line... 
             // On the other hand, we probably spend little time here
             elem = mp_binary_get_val_array(o->array->typecode, o->array->items, m*o->n+n);
-            data[m*o->n+n] = (float)mp_obj_get_float(elem);
+            data[m*o->n+n] = (mp_float_t)mp_obj_get_float(elem);
         }
     }
     
     if(!linalg_invert_matrix(data, o->m)) {
         // TODO: I am not sure this is needed here. Otherwise, 
         // how should we free up the unused RAM of inverted?
-        m_del(float, inverted->array->items, o->n*o->n);
+        m_del(mp_float_t, inverted->array->items, o->n*o->n);
         mp_raise_ValueError("input matrix is singular");
     }
     return MP_OBJ_FROM_PTR(inverted);
@@ -192,8 +192,8 @@ mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     }
     // TODO: numpy uses upcasting here
     ndarray_obj_t *out = create_new_ndarray(m1->m, m2->n, NDARRAY_FLOAT);
-    float *outdata = (float *)out->array->items;
-    float sum, v1, v2;
+    mp_float_t *outdata = (mp_float_t *)out->array->items;
+    mp_float_t sum, v1, v2;
     for(size_t i=0; i < m1->n; i++) {
         for(size_t j=0; j < m2->m; j++) {
             sum = 0.0;
@@ -301,14 +301,14 @@ mp_obj_t linalg_det(mp_obj_t oin) {
         mp_raise_ValueError("input must be square matrix");
     }
     
-    float *tmp = m_new(float, in->n*in->n);
+    mp_float_t *tmp = m_new(mp_float_t, in->n*in->n);
     for(size_t i=0; i < in->array->len; i++){
         tmp[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
     }
-    float c;
+    mp_float_t c;
     for(size_t m=0; m < in->m-1; m++){
         if(abs(tmp[m*(in->n+1)]) < epsilon) {
-            m_del(float, tmp, in->n*in->n);
+            m_del(mp_float_t, tmp, in->n*in->n);
             return mp_obj_new_float(0.0);
         }
         for(size_t n=0; n < in->n; n++){
@@ -320,12 +320,12 @@ mp_obj_t linalg_det(mp_obj_t oin) {
             }
         }
     }
-    float det = 1.0;
+    mp_float_t det = 1.0;
                             
     for(size_t m=0; m < in->m; m++){ 
         det *= tmp[m*(in->n+1)];
     }
-    m_del(float, tmp, in->n*in->n);
+    m_del(mp_float_t, tmp, in->n*in->n);
     return mp_obj_new_float(det);
 }
 
@@ -337,7 +337,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
     if(in->m != in->n) {
         mp_raise_ValueError("input must be square matrix");
     }
-    float *array = m_new(float, in->array->len);
+    mp_float_t *array = m_new(mp_float_t, in->array->len);
     for(size_t i=0; i < in->array->len; i++) {
         array[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
     }
@@ -345,6 +345,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
     for(size_t m=0; m < in->m; m++) {
         for(size_t n=m+1; n < in->n; n++) {
             // compare entry (m, n) to (n, m)
+            // TODO: this must probably be scaled!
             if(epsilon < abs(array[m*in->n + n] - array[n*in->n + m])) {
                 mp_raise_ValueError("input matrix is asymmetric");
             }
@@ -354,12 +355,12 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
     // if we got this far, then the matrix will be symmetric
     
     ndarray_obj_t *eigenvectors = create_new_ndarray(in->m, in->n, NDARRAY_FLOAT);
-    float *eigvectors = (float *)eigenvectors->array->items;
+    mp_float_t *eigvectors = (mp_float_t *)eigenvectors->array->items;
     // start out with the unit matrix
     for(size_t m=0; m < in->m; m++) {
         eigvectors[m*(in->n+1)] = 1.0;
     }
-    float largest, w, t, c, s, tau, aMk, aNk, vm, vn;
+    mp_float_t largest, w, t, c, s, tau, aMk, aNk, vm, vn;
     size_t M, N;
     size_t iterations = JACOBI_MAX*in->n*in->n;
     do {
@@ -387,12 +388,12 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
         // The following if/else chooses the smaller absolute value for the tangent 
         // of the rotation angle. Going with the smaller should be numerically stabler.
         if(w > 0) {
-            t = sqrtf(w*w + 1.0) - w;
+            t = MICROPY_FLOAT_C_FUN(sqrt)(w*w + 1.0) - w;
         } else {
-            t = -1.0*(sqrtf(w*w + 1.0) + w);
+            t = -1.0*(MICROPY_FLOAT_C_FUN(sqrt)(w*w + 1.0) + w);
         }
-        s = t / sqrtf(t*t + 1.0); // the sine of the rotation angle
-        c = 1.0 / sqrtf(t*t + 1.0); // the cosine of the rotation angle
+        s = t / MICROPY_FLOAT_C_FUN(sqrt)(t*t + 1.0); // the sine of the rotation angle
+        c = 1.0 / MICROPY_FLOAT_C_FUN(sqrt)(t*t + 1.0); // the cosine of the rotation angle
         tau = (1.0-c)/s; // this is equal to the tangent of the half of the rotation angle
         
         // at this point, we have the rotation angles, so we can transform the matrix
@@ -438,15 +439,15 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
     
     if(iterations == 0) { 
         // the computation did not converge; numpy raises LinAlgError
-        m_del(float, array, in->array->len);
+        m_del(mp_float_t, array, in->array->len);
         mp_raise_ValueError("iterations did not converge");
     }
     ndarray_obj_t *eigenvalues = create_new_ndarray(1, in->n, NDARRAY_FLOAT);
-    float *eigvalues = (float *)eigenvalues->array->items;
+    mp_float_t *eigvalues = (mp_float_t *)eigenvalues->array->items;
     for(size_t i=0; i < in->n; i++) {
         eigvalues[i] = array[i*(in->n+1)];
     }
-    m_del(float, array, in->array->len);
+    m_del(mp_float_t, array, in->array->len);
     
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     tuple->items[0] = MP_OBJ_FROM_PTR(eigenvalues);

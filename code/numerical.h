@@ -23,11 +23,13 @@ mp_obj_t numerical_argmin(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_argmax(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_roll(size_t , const mp_obj_t *, mp_map_t *);
 
-// TODO: implement minimum/maximum, flip, and cumsum
+// TODO: implement minimum/maximum, and cumsum
 mp_obj_t numerical_minimum(mp_obj_t , mp_obj_t );
 mp_obj_t numerical_maximum(mp_obj_t , mp_obj_t );
 mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_flip(size_t , const mp_obj_t *, mp_map_t *);
+mp_obj_t numerical_diff(size_t , const mp_obj_t *, mp_map_t *);
+mp_obj_t numerical_sort(size_t , const mp_obj_t *, mp_map_t *);
 
 // this macro could be tighter, if we moved the ifs to the argmin function, assigned <, as well as >
 #define ARG_MIN_LOOP(in, type, start, stop, stride, op) do {\
@@ -45,4 +47,17 @@ mp_obj_t numerical_flip(size_t , const mp_obj_t *, mp_map_t *);
     }\
 } while(0)
 
+    
+#define CALCULATE_DIFF(in, out, type, M, N, inn, increment) do {\
+    type *source = (type *)(in)->array->items;\
+    type *target = (type *)(out)->array->items;\
+    for(size_t i=0; i < (M); i++) {\
+        for(size_t j=0; j < (N); j++) {\
+            for(uint8_t k=0; k < n+1; k++) {\
+                target[i*(N)+j] -= stencil[k]*source[i*(inn)+j+k*(increment)];\
+            }\
+        }\
+    }\
+} while(0)
+    
 #endif

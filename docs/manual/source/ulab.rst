@@ -68,8 +68,8 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.22), the library adds
-approximately 25 kB of extra compiled code to the micropython firmware.
+At the time of writing this manual (for version 0.24), the library adds
+approximately 27 kB of extra compiled code to the micropython firmware.
 
 Resources and legal matters
 ---------------------------
@@ -121,7 +121,26 @@ denotes those cases, where a bit more caution should be exercised,
 though this usually means functions that are not supported by ``numpy``.
 
 The detailed discussion of the various functions always contains a link
-to the corresponding ``numpy`` documentation.
+to the corresponding ``numpy`` documentation. However, before going down
+the rabbit hole, the module also defines a constant, the version, which
+can always be queried as
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    print('you are running ulab version', np.__version__)
+
+.. parsed-literal::
+
+    you are running ulab version 0.24
+    
+    
+
+
+If you find a bug, please, include this number in your report!
 
 Basic ndarray operations
 ------------------------
@@ -180,8 +199,8 @@ Array initialisation functions
 
 `linspace <#linspace>`__
 
-Statistical properties of arrays
---------------------------------
+Statistical and other properties of arrays
+------------------------------------------
 
 `min <#min,-argmin,-max,-argmax>`__
 
@@ -196,6 +215,8 @@ Statistical properties of arrays
 `std <#sum,-std,-mean>`__
 
 `mean <#sum,-std,-mean>`__
+
+`diff <#diff>`__
 
 Manipulation of polynomials
 ---------------------------
@@ -229,7 +250,12 @@ type-aware, i.e., one can save RAM by specifying a data type, and using
 the smallest reasonable one. Five such types are defined, namely
 ``uint8``, ``int8``, which occupy a single byte of memory per datum,
 ``uint16``, and ``int16``, which occupy two bytes per datum, and
-``float``, which occupies four bytes per datum.
+``float``, which occupies four or eight bytes per datum. The
+precision/size of the ``float`` type depends on the definition of
+``mp_float_t``. Some platforms, e.g., the PYBD, implement ``double``\ s,
+but some, e.g., the pyboard.v.11, don’t. You can find out, what type of
+float your particular platform implements by looking at the output of
+the `.rawsize <#.rawsize>`__ class method.
 
 On the following pages, we will see how one can work with
 ``ndarray``\ s. Those familiar with ``numpy`` should find that the
@@ -330,6 +356,22 @@ statement is almost trivial, since ``ndarray``\ s are iterables
 themselves, though it should be pointed out that initialising through
 arrays should be faster, because simply a new copy is created, without
 inspection, iteration etc.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+    print(a+5)
+
+.. parsed-literal::
+
+    here is an intarray([6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0], dtype=float)
+    
+    
+
 
 .. code::
         
@@ -439,7 +481,8 @@ following data
 3. length of the storage (should be equal to the product of 1. and 2.)
 4. length of the data storage in bytes
 5. datum size in bytes (1 for ``uint8``/``int8``, 2 for
-   ``uint16``/``int16``, and 4 for ``floats``)
+   ``uint16``/``int16``, and 4, or 8 for ``floats``, see `ndarray, the
+   basic container <#ndarray,-the-basic-container>`__)
 
 **WARNING:** ``rawsize`` is a ``ulab``-only method; it has no equivalent
 in ``numpy``.
@@ -1777,6 +1820,81 @@ array.
     
 
 
+diff
+----
+
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.diff.html
+
+The ``diff`` function returns the numerical derivative of the forward
+scheme, or more accurately, the differences of an ``ndarray`` along a
+given axis. The order of derivative can be stipulated with the ``n``
+keyword argument, which should be between 0, and 9. Default is 1. If
+higher order derivatives are required, they can be gotten by repeated
+calls to the function. The ``axis`` keyword argument should be -1 (last
+axis, in ``ulab`` equivalent to the second axis, and this also happens
+to be the default value), 0, or 1.
+
+Beyond the output array, the function requires only a couple of bytes of
+extra RAM for the differentiation stencil. (The stencil is an ``int8``
+array, one byte longer than ``n``. This also explains, why the highest
+order is 9: the coefficients of a ninth-order stencil all fit in signed
+bytes, while 10 would require ``int16``.) Note that as usual in
+numerical differentiation (and also in ``numpy``), the length of the
+respective axis will be reduced by ``n`` after the operation. If ``n``
+is larger than, or equal to the length of the axis, an empty array will
+be returned.
+
+**WARNING**: the ``diff`` function does not implement the ``prepend``
+and ``append`` keywords that can be found in ``numpy``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(9), dtype=np.uint8)
+    print('a:\n', a)
+    
+    print('\nfirst derivative:\n', np.diff(a, n=1))
+    print('\nsecond derivative:\n', np.diff(a, n=2))
+    
+    c = np.array([[1, 2, 3, 4], [4, 3, 2, 1], [1, 4, 9, 16], [0, 0, 0, 0]])
+    print('\nc:\n', c)
+    print('\nfirst derivative, first axis:\n', np.diff(c, axis=0))
+    print('\nfirst derivative, second axis:\n', np.diff(c, axis=1))
+
+.. parsed-literal::
+
+    a:
+     array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    
+    first derivative:
+     array([1, 1, 1, 1, 1, 1, 1, 1], dtype=uint8)
+    
+    second derivative:
+     array([0, 0, 0, 0, 0, 0, 0], dtype=uint8)
+    
+    c:
+     array([[1.0, 2.0, 3.0, 4.0],
+    	 [4.0, 3.0, 2.0, 1.0],
+    	 [1.0, 4.0, 9.0, 16.0],
+    	 [0.0, 0.0, 0.0, 0.0]], dtype=float)
+    
+    first derivative, first axis:
+     array([[3.0, 1.0, -1.0, -3.0],
+    	 [-3.0, 1.0, 7.0, 15.0],
+    	 [-1.0, -4.0, -9.0, -16.0]], dtype=float)
+    
+    first derivative, second axis:
+     array([[1.0, 1.0, 1.0],
+    	 [-1.0, -1.0, -1.0],
+    	 [3.0, 5.0, 7.0],
+    	 [0.0, 0.0, 0.0]], dtype=float)
+    
+    
+
+
 Linalg
 ======
 
@@ -2293,10 +2411,11 @@ polyval takes two arguments, both arrays or other iterables.
     coefficients:  [1, 1, 1, 0]
     independent values:  [0, 1, 2, 3, 4]
     
-    values of p(x):  array([0.0, 3.0, 14.0, 39.0, 84.00001], dtype=float)
+    values of p(x):  array([0.0, 3.0, 14.0, 39.0, 84.0], dtype=float)
     
     ndarray (a):  array([0.0, 1.0, 2.0, 3.0, 4.0], dtype=float)
-    value of p(a):  array([0.0, 3.0, 14.0, 39.0, 84.00001], dtype=float)
+    value of p(a):  array([0.0, 3.0, 14.0, 39.0, 84.0], dtype=float)
+    
     
 
 
@@ -2336,10 +2455,11 @@ a ``ValueError``.
 
     independent values:	 array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=float)
     dependent values:	 array([9.0, 4.0, 1.0, 0.0, 1.0, 4.0, 9.0], dtype=float)
-    fitted values:		 array([1.0, -6.000003, 9.000003], dtype=float)
+    fitted values:		 array([1.0, -6.0, 9.000000000000004], dtype=float)
     
     dependent values:	 array([9.0, 4.0, 1.0, 0.0, 1.0, 4.0, 9.0], dtype=float)
-    fitted values:		 array([1.0, -6.000003, 9.000003], dtype=float)
+    fitted values:		 array([1.0, -6.0, 9.000000000000004], dtype=float)
+    
     
 
 

@@ -18,6 +18,11 @@
 
 #define PRINT_MAX  10
 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#define FLOAT_TYPECODE 'f'
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#define FLOAT_TYPECODE 'd'
+#endif
 
 const mp_obj_type_t ulab_ndarray_type;
 
@@ -26,7 +31,7 @@ enum NDARRAY_TYPE {
     NDARRAY_INT8 = 'b',
     NDARRAY_UINT16 = 'H', 
     NDARRAY_INT16 = 'h',
-    NDARRAY_FLOAT = 'f',
+    NDARRAY_FLOAT = FLOAT_TYPECODE,
 };
 
 typedef struct _ndarray_obj_t {
@@ -39,8 +44,8 @@ typedef struct _ndarray_obj_t {
 
 mp_obj_t mp_obj_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
 
-float ndarray_get_float_value(void *, uint8_t , size_t );
-void fill_array_iterable(float *, mp_obj_t );
+mp_float_t ndarray_get_float_value(void *, uint8_t , size_t );
+void fill_array_iterable(mp_float_t *, mp_obj_t );
 
 void ndarray_print_row(const mp_print_t *, mp_obj_array_t *, size_t , size_t );
 void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
@@ -87,8 +92,8 @@ mp_obj_t ndarray_asbytearray(mp_obj_t );
         return MP_OBJ_FROM_PTR(out);\
     } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
         ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, NDARRAY_FLOAT);\
-        float *odata = (float *)out->array->items;\
-        for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = (float)left[i]/(float)right[j];\
+        mp_float_t *odata = (mp_float_t *)out->array->items;\
+        for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = (mp_float_t)left[i]/(mp_float_t)right[j];\
         return MP_OBJ_FROM_PTR(out);\
     } else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
              ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\

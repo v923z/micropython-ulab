@@ -44,7 +44,7 @@ mp_obj_t numerical_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     if(len < 2) {
         mp_raise_ValueError("number of points must be at least 2");
     }
-    float value, step;
+    mp_float_t value, step;
     value = mp_obj_get_float(args[0].u_obj);
     uint8_t typecode = args[5].u_int;
     if(args[3].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-value)/(len-1);
@@ -63,7 +63,7 @@ mp_obj_t numerical_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         int16_t *array = (int16_t *)ndarray->array->items;
         for(size_t i=0; i < len; i++, value += step) array[i] = (int16_t)value;
     } else {
-        float *array = (float *)ndarray->array->items;
+        mp_float_t *array = (mp_float_t *)ndarray->array->items;
         for(size_t i=0; i < len; i++, value += step) array[i] = value;
     }
     if(args[4].u_obj == mp_const_false) {
@@ -94,7 +94,7 @@ mp_obj_t numerical_sum_mean_std_array(mp_obj_t oin, uint8_t optype) {
         return mp_obj_new_float(sum/len);
     } else {
         sum /= len; // this is now the mean!
-        return mp_obj_new_float(sqrtf((sq_sum/len-sum*sum)));
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(sq_sum/len-sum*sum));
     }
 }
 
@@ -119,7 +119,7 @@ STATIC mp_float_t numerical_sum_mean_std_single_line(void *data, size_t start, s
         return sum/len;
     } else {
         sum /= len; // this is now the mean!
-        return sqrtf((sq_sum/len-sum*sum));
+        return MICROPY_FLOAT_C_FUN(sqrt)(sq_sum/len-sum*sum);
     }
 }
 
@@ -168,7 +168,7 @@ size_t numerical_argmin_argmax_array(ndarray_obj_t *in, size_t start,
     } else if(in->array->typecode == NDARRAY_INT16) {
         ARG_MIN_LOOP(in, uint16_t, start, stop, stride, op);
     } else if(in->array->typecode == NDARRAY_FLOAT) {
-        ARG_MIN_LOOP(in, float, start, stop, stride, op);
+        ARG_MIN_LOOP(in, mp_float_t, start, stop, stride, op);
     }
     return best_idx;
 }
@@ -469,3 +469,134 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
     return out;
 }
+
+mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_n, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError("diff argument must be an ndarray");
+    }
+    
+    ndarray_obj_t *in = MP_OBJ_TO_PTR(args[0].u_obj);
+    size_t increment, N, M;
+    if((args[2].u_int == -1) || (args[2].u_int == 1)) { // differentiate along the horizontal axis
+        increment = 1;
+    } else if(args[2].u_int == 0) { // differtiate along vertical axis
+        increment = in->n;
+    } else {
+        mp_raise_ValueError("axis must be -1, 0, or 1");        
+    }
+    if((args[1].u_int < 0) || (args[1].u_int > 9)) {
+        mp_raise_ValueError("n must be between 0, and 9");
+    }
+    uint8_t n = args[1].u_int;
+    int8_t *stencil = m_new(int8_t, n+1);
+    stencil[0] = 1;
+    for(uint8_t i=1; i < n+1; i++) {
+        stencil[i] = -stencil[i-1]*(n-i+1)/i;
+    }
+
+    ndarray_obj_t *out;
+    
+    if(increment == 1) { // differentiate along the horizontal axis 
+        if(n >= in->n) {
+            out = create_new_ndarray(in->m, 0, in->array->typecode);
+            m_del(uint8_t, stencil, n);
+            return MP_OBJ_FROM_PTR(out);
+        }
+        N = in->n - n;
+        M = in->m;
+    } else { // differentiate along vertical axis
+        if(n >= in->m) {
+            out = create_new_ndarray(0, in->n, in->array->typecode);
+            m_del(uint8_t, stencil, n);
+            return MP_OBJ_FROM_PTR(out);
+        }
+        M = in->m - n;
+        N = in->n;
+    }
+    out = create_new_ndarray(M, N, in->array->typecode);
+    if(in->array->typecode == NDARRAY_UINT8) {
+        CALCULATE_DIFF(in, out, uint8_t, M, N, in->n, increment);
+    } else if(in->array->typecode == NDARRAY_INT8) {
+        CALCULATE_DIFF(in, out, int8_t, M, N, in->n, increment);
+    }  else if(in->array->typecode == NDARRAY_UINT16) {
+        CALCULATE_DIFF(in, out, uint16_t, M, N, in->n, increment);
+    } else if(in->array->typecode == NDARRAY_INT16) {
+        CALCULATE_DIFF(in, out, int16_t, M, N, in->n, increment);
+    } else {
+        CALCULATE_DIFF(in, out, mp_float_t, M, N, in->n, increment);
+    }
+    m_del(int8_t, stencil, n);
+    return MP_OBJ_FROM_PTR(out);
+}
+/*
+void heapsort(ndarray_obj_t *ndarray, size_t n, size_t increment) {
+    uint8_t type;
+    if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
+        type = 0;
+    }
+    if((ndarray->array->typecode == NDARRAY_UINT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
+        type = 1;
+    } else {
+        type = 2;
+    }
+
+    size_t i, j, k, l;
+    l = (n >> 1) + 1;
+    k = n;
+    uint8_t ui8_tmp, *ui8_array = NULL;
+    uint16_t ui16_tmp, *ui16_array = NULL;
+    mp_float_t float_tmp, *float_array = NULL;
+    
+    for(;;) {
+        if (l > 1) {
+            if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
+                ui8_tmp = ui8_array[--l];
+            }
+        } else {
+            tmp = array[k];
+            array[k] = array[1];
+            if (--k == 1) {
+                array[1] = tmp;
+                break;
+            }
+        }
+        i = l;
+        j = 2 * l;
+        while(j <= k) {
+            if(j < k && array[j] < array[j+1]) {
+                j++;
+            }
+        }            
+        if(tmp < array[j]) {
+            array[i] = array[j];
+            i = j;
+            j <<= 1;
+        } else break;
+    }
+    array[i] = tmp;
+}
+
+mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_n, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError("sort argument must be an ndarray");
+    }
+    return mp_const_none;
+}*/

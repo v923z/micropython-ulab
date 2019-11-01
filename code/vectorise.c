@@ -30,7 +30,7 @@ mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
         ndarray_obj_t *ndarray = create_new_ndarray(source->m, source->n, NDARRAY_FLOAT);
-        float *dataout = (float *)ndarray->array->items;
+        mp_float_t *dataout = (mp_float_t *)ndarray->array->items;
         if(source->array->typecode == NDARRAY_UINT8) {
             ITERATE_VECTOR(uint8_t, source, dataout);
         } else if(source->array->typecode == NDARRAY_INT8) {
@@ -40,14 +40,14 @@ mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
         } else if(source->array->typecode == NDARRAY_INT16) {
             ITERATE_VECTOR(int16_t, source, dataout);
         } else {
-            ITERATE_VECTOR(float, source, dataout);
+            ITERATE_VECTOR(mp_float_t, source, dataout);
         }
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
         MP_OBJ_IS_TYPE(o_in, &mp_type_range)) { // i.e., the input is a generic iterable
             mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
             ndarray_obj_t *out = create_new_ndarray(1, o->len, NDARRAY_FLOAT);
-            float *dataout = (float *)out->array->items;
+            mp_float_t *dataout = (mp_float_t *)out->array->items;
             mp_obj_iter_buf_t iter_buf;
             mp_obj_t item, iterable = mp_getiter(o_in, &iter_buf);
             size_t i=0;

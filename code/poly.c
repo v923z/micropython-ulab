@@ -59,13 +59,13 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     mp_obj_t p_item, p_iterable;
 
     mp_float_t x, y;
-    float *outf = (float *)out->array->items;
+    mp_float_t *outf = (mp_float_t *)out->array->items;
     uint8_t plen = mp_obj_get_int(mp_obj_len_maybe(o_p));
-    float *p = m_new(float, plen);
+    mp_float_t *p = m_new(mp_float_t, plen);
     p_iterable = mp_getiter(o_p, &p_buf);
     uint16_t i = 0;    
     while((p_item = mp_iternext(p_iterable)) != MP_OBJ_STOP_ITERATION) {
-        p[i] = (float)mp_obj_get_float(p_item);
+        p[i] = mp_obj_get_float(p_item);
         i++;
     }
     i = 0;
@@ -78,7 +78,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
         }
         outf[i++] = y;
     }
-    m_del(float, p, plen);
+    m_del(mp_float_t, p, plen);
     return MP_OBJ_FROM_PTR(out);
 }
 
@@ -91,7 +91,7 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     }
     uint16_t lenx, leny;
     uint8_t deg;
-    float *x, *XT, *y, *prod;
+    mp_float_t *x, *XT, *y, *prod;
 
     if(n_args == 2) { // only the y values are supplied
         // TODO: this is actually not enough: the first argument can very well be a matrix, 
@@ -102,11 +102,11 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
             mp_raise_ValueError("more degrees of freedom than data points");
         }
         lenx = leny;
-        x = m_new(float, lenx); // assume uniformly spaced data points
+        x = m_new(mp_float_t, lenx); // assume uniformly spaced data points
         for(size_t i=0; i < lenx; i++) {
             x[i] = i;
         }
-        y = m_new(float, leny);
+        y = m_new(mp_float_t, leny);
         fill_array_iterable(y, args[0]);
     } else if(n_args == 3) {
         lenx = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
@@ -118,15 +118,15 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         if(leny < deg) {
             mp_raise_ValueError("more degrees of freedom than data points");
         }
-        x = m_new(float, lenx);
+        x = m_new(mp_float_t, lenx);
         fill_array_iterable(x, args[0]);
-        y = m_new(float, leny);
+        y = m_new(mp_float_t, leny);
         fill_array_iterable(y, args[1]);
     }
     
     // one could probably express X as a function of XT, 
     // and thereby save RAM, because X is used only in the product
-    XT = m_new(float, (deg+1)*leny); // XT is a matrix of shape (deg+1, len) (rows, columns)
+    XT = m_new(mp_float_t, (deg+1)*leny); // XT is a matrix of shape (deg+1, len) (rows, columns)
     for(uint8_t i=0; i < leny; i++) { // column index
         XT[i+0*lenx] = 1.0; // top row
         for(uint8_t j=1; j < deg+1; j++) { // row index
@@ -134,8 +134,8 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         }
     }
     
-    prod = m_new(float, (deg+1)*(deg+1)); // the product matrix is of shape (deg+1, deg+1)
-    float sum;
+    prod = m_new(mp_float_t, (deg+1)*(deg+1)); // the product matrix is of shape (deg+1, deg+1)
+    mp_float_t sum;
     for(uint16_t i=0; i < deg+1; i++) { // column index
         for(uint16_t j=0; j < deg+1; j++) { // row index
             sum = 0.0;
@@ -152,10 +152,10 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         // Although X was a Vandermonde matrix, whose inverse is guaranteed to exist, 
         // we bail out here, if prod couldn't be inverted: if the values in x are not all 
         // distinct, prod is singular
-        m_del(float, XT, (deg+1)*lenx);
-        m_del(float, x, lenx);
-        m_del(float, y, lenx);
-        m_del(float, prod, (deg+1)*(deg+1));
+        m_del(mp_float_t, XT, (deg+1)*lenx);
+        m_del(mp_float_t, x, lenx);
+        m_del(mp_float_t, y, lenx);
+        m_del(mp_float_t, prod, (deg+1)*(deg+1));
         mp_raise_ValueError("could not invert Vandermonde matrix");
     } 
     // at this point, we have the inverse of X^T * X
@@ -168,10 +168,10 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         x[i] = sum;
     }
     // XT is no longer needed
-    m_del(float, XT, (deg+1)*leny);
+    m_del(mp_float_t, XT, (deg+1)*leny);
     
     ndarray_obj_t *beta = create_new_ndarray(deg+1, 1, NDARRAY_FLOAT);
-    float *betav = (float *)beta->array->items;
+    mp_float_t *betav = (mp_float_t *)beta->array->items;
     // x[0..(deg+1)] contains now the product X^T * y; we can get rid of y
     m_del(float, y, leny);
     
@@ -183,11 +183,11 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         }
         betav[i] = sum;
     }
-    m_del(float, x, lenx);
-    m_del(float, prod, (deg+1)*(deg+1));
+    m_del(mp_float_t, x, lenx);
+    m_del(mp_float_t, prod, (deg+1)*(deg+1));
     for(uint8_t i=0; i < (deg+1)/2; i++) {
         // We have to reverse the array, for the leading coefficient comes first. 
-        SWAP(float, betav[i], betav[deg-i]);
+        SWAP(mp_float_t, betav[i], betav[deg-i]);
     }
     return MP_OBJ_FROM_PTR(beta);
 }

@@ -1,4 +1,10 @@
 
+Thu, 31 Oct 2019
+
+version 0.24
+
+    added diff to numerical.c
+    
 Tue, 29 Oct 2019
 
 version 0.23
