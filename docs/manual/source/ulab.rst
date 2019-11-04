@@ -2711,7 +2711,7 @@ same way as in ``fft``, and ``ifft``.
     
 
 
-As such, ``spectrum`` is really just a short hand for
+As such, ``spectrum`` is really just a shorthand for
 ``np.sqrt(a*a + b*b)``:
 
 .. code::
@@ -2855,6 +2855,28 @@ and ``typecode`` is one of the values from
        NDARRAY_FLOAT = 'f',
    };
 
+or
+
+.. code:: c
+
+   enum NDARRAY_TYPE {
+       NDARRAY_UINT8 = 'B',
+       NDARRAY_INT8 = 'b',
+       NDARRAY_UINT16 = 'H', 
+       NDARRAY_INT16 = 'h',
+       NDARRAY_FLOAT = 'd',
+   };
+
+The ambiguity is caused by the fact that not all platforms implement
+``double``, and there one has to take ``float``\ s. But you haven’t
+actually got to be concerned by this, because at the very beginning of
+``ndarray.h``, this is already taken care of: the preprocessor figures
+out, what the ``float`` implementation of the hardware platform is, and
+defines the ``NDARRAY_FLOAT`` typecode accordingly. All you have to keep
+in mind is that wherever you would use ``float`` or ``double``, you have
+to use ``mp_float_t``. That type is defined in ``py/mpconfig.h`` of the
+micropython code base.
+
 Therefore, a 4-by-5 matrix of type float can be created as
 
 .. code:: c
@@ -2894,8 +2916,8 @@ through all entries as
 
 .. code:: c
 
-   float *items = (float *)new_ndarray->array->items;
-   float item;
+   mp_float_t *items = (mp_float_t *)new_ndarray->array->items;
+   mp_float_t item;
 
    for(size_t i=0; i < new_ndarray->array->len; i++) {
        item = items[i];
@@ -2906,8 +2928,8 @@ or, since the data are stored in the pointer in a C-like fashion, as
 
 .. code:: c
 
-   float *items = (float *)new_ndarray->array->items;
-   float item;
+   mp_float_t *items = (mp_float_t *)new_ndarray->array->items;
+   mp_float_t item;
 
    for(size_t m=0; m < new_ndarray->m; m++) { // loop through the rows
        for(size_t n=0; n < new_ndarray->n; n++) { // loop through the columns
@@ -2941,7 +2963,7 @@ should be equal to ``B``, ``b``, ``H``, ``h``, or ``f``. The size of a
 single item is returned by the function
 ``mp_binary_get_size('@', ndarray->array->typecode, NULL)``. This number
 is equal to 1, if the typecode is ``B``, or ``b``, 2, if the typecode is
-``H``, or ``h``, and 4, if the typecode is ``f``.
+``H``, or ``h``, 4, if the typecode is ``f``, and 8 for ``d``.
 
 Alternatively, the size can be found out by dividing ``ndarray->bytes``
 with the product of ``m``, and ``n``, i.e.,
@@ -3001,7 +3023,7 @@ with 13.
            int16_t *items = (int16_t *)ndarray->array->items;
            for(size_t i=0; i < ndarray->array->len; i++) items[i] = 13;
        } else {
-           float *items = (float *)ndarray->array->items;
+           float *items = (mp_float_t *)ndarray->array->items;
            for(size_t i=0; i < ndarray->array->len; i++) items[i] = 13;
        }
        return object_out;
