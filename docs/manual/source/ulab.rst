@@ -1896,10 +1896,11 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.sort.html?highlight=s
 
 The sort function takes an ndarray, and sorts it along the specified
 axis using a heap sort algorithm. Sorting takes place in place, without
-auxiliary storage. The ``axis`` keyword argument, just as in
-`diff <#diff>`__, takes on the possible values of -1 (the last axis, in
-``ulab`` equivalent to the second axis, and this also happens to be the
-default value), 0, or 1.
+auxiliary storage. The ``axis`` keyword argument takes on the possible
+values of -1 (the last axis, in ``ulab`` equivalent to the second axis,
+and this also happens to be the default value), 0, 1, or ``None``. The
+first three cases are identical to those in `diff <#diff>`__, while the
+last one flattens the array before sorting.
 
 **WARNING:** ``numpy`` defines the ``kind``, and ``order`` keyword
 arguments that are not implemented here. The function in ``ulab`` always
