@@ -1,4 +1,10 @@
 
+Mon, 04 Nov 2019
+
+version
+
+    added first implementation of sort, and fixed section on compilating the module in the manual
+
 Thu, 31 Oct 2019
 
 version 0.24
