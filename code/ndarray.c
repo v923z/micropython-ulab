@@ -47,7 +47,7 @@ mp_float_t ndarray_get_float_value(void *data, uint8_t typecode, size_t index) {
     } else if(typecode == NDARRAY_INT16) {
         return (mp_float_t)((int16_t *)data)[index];
     } else {
-        return (mp_float_t)((float_t *)data)[index];
+        return (mp_float_t)((mp_float_t *)data)[index];
     }
 }
 
