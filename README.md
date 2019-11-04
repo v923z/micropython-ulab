@@ -20,7 +20,7 @@ git clone https://github.com/micropython/micropython.git
 on the command line. This will create a new repository with the name `micropython`. Staying there, clone the `ulab` repository with 
 
 ```
-git clone https://github.com/v923z/micropython-ulab.git
+git clone https://github.com/v923z/micropython-ulab.git ulab
 ```
 
 Then you have to include `ulab` in the compilation process by editing `mpconfigport.h` of the directory of the port for which you want to compile, so, still on the command line, navigate to `micropython/ports/unix`, or `micropython/ports/stm32`, or whichever port is your favourite, and edit the `mpconfigport.h` file there. All you have to do is add a single line at the end: 
