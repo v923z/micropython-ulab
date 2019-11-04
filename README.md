@@ -10,8 +10,41 @@ while developer help is in https://github.com/v923z/micropython-ulab/blob/master
 
 Firmware for pyboard.v.1.1 is updated once in a while, and can be downloaded 
 from https://github.com/v923z/micropython-ulab/releases, otherwise, it can be 
-compiled from the source by following the steps
-https://micropython-usermod.readthedocs.io/en/latest/usermods_05.html#compiling-our-module.
+compiled from the source by following these steps:
 
+First, you have to clone the micropython repository by running 
 
+```
+git clone https://github.com/micropython/micropython.git
+```
+on the command line. This will create a new repository with the name `micropython`. Staying there, clone the `ulab` repository with 
 
+```
+git clone https://github.com/v923z/micropython-ulab.git
+```
+
+Then you have to include `ulab` in the compilation process by editing `mpconfigport.h` of the directory of the port for which you want to compile, so, still on the command line, navigate to `micropython/ports/unix`, or `micropython/ports/stm32`, or whichever port is your favourite, and edit the `mpconfigport.h` file there. All you have to do is add a single line at the end: 
+
+```
+#define MODULE_ULAB_ENABLED (1)
+```
+
+This line will inform the compiler that you want `ulab` in the resulting firmware. If you don't have the cross-compiler installed, your might want to do that now by executing 
+
+```
+sudo apt-get install gcc-arm-none-eabi
+```
+If that was successful, you can try to run the make command in the port's directory as 
+```
+make BOARD=PYBV11 USER_C_MODULES=../../../ulab all
+```
+which will prepare the firmware for pyboard.v.11. Provided that you managed to compile the firmware, you would upload that either by running 
+```
+dfu-util --alt 0 -D firmware.dfu
+```
+or 
+```
+python pydfu.py -u firmware.dfu
+```
+
+In case you got stuck somewhere in the process, a bit more detailed instructions can be found under https://github.com/micropython/micropython/wiki/Getting-Started, and https://github.com/micropython/micropython/wiki/Pyboard-Firmware-Update.
