@@ -29,7 +29,7 @@ Then you have to include `ulab` in the compilation process by editing `mpconfigp
 #define MODULE_ULAB_ENABLED (1)
 ```
 
-This line will inform the compiler that you want `ulab` in the resulting firmware. If you don't have the cross-compiler installed, your might want to do that now by executing 
+This line will inform the compiler that you want `ulab` in the resulting firmware. If you don't have the cross-compiler installed, your might want to do that now, for instance on Linux by executing 
 
 ```
 sudo apt-get install gcc-arm-none-eabi
