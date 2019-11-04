@@ -8,7 +8,7 @@ Documentation can be found under https://micropython-ulab.readthedocs.io/en/late
 The source for the manual is in https://github.com/v923z/micropython-ulab/blob/master/docs/ulab-manual.ipynb,
 while developer help is in https://github.com/v923z/micropython-ulab/blob/master/docs/ulab.ipynb.
 
-Firmware for pyboard.v.1.1 is updated once in a while, and can be downloaded 
+Firmware for pyboard.v.1.1, and PYBD_SF6 is updated once in a while, and can be downloaded 
 from https://github.com/v923z/micropython-ulab/releases, otherwise, it can be 
 compiled from the source by following these steps:
 
