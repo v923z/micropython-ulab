@@ -363,22 +363,6 @@ inspection, iteration etc.
     
     import ulab as np
     
-    a = np.array([1, 2, 3, 4, 5, 6, 7, 8])
-    print(a+5)
-
-.. parsed-literal::
-
-    here is an intarray([6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0], dtype=float)
-    
-    
-
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
     a = [1, 2, 3, 4, 5, 6, 7, 8]
     b = np.array(a)
     c = np.array(b)
@@ -557,6 +541,12 @@ directly.
 **WARNING:** ``asbytearray`` is a ``ulab``-only method; it has no
 equivalent in ``numpy``.
 
+In the example below, note the difference between ``a``, and ``buffer``:
+while both are designated as an array, you recognise the micropython
+array from the fact that it prints the typecode (``b`` in this
+particular case). The ``ndarray``, on the other hand, prints out the
+``dtype`` (``int8`` here).
+
 .. code::
         
     # code to be run in micropython
@@ -564,6 +554,7 @@ equivalent in ``numpy``.
     import ulab as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
+    print('a: ', a)
     buffer = a.asbytearray()
     print("array content:", buffer)
     buffer[1] = 123
@@ -571,6 +562,7 @@ equivalent in ``numpy``.
 
 .. parsed-literal::
 
+    a:  array([1, 2, 3, 4], dtype=int8)
     array content: array('b', [1, 2, 3, 4])
     array content: array('b', [1, 123, 3, 4])
     
@@ -1467,7 +1459,7 @@ type, and then convert them to floats. All these steps are skipped for
 Of course, such a time saving is reasonable only, if the data are
 already available as an ``ndarray``. If one has to initialise the
 ``ndarray`` from the list, then there is no gain, because the iterator
-was simple pushed into the initialisation function.
+was simply pushed into the initialisation function.
 
 Numerical
 =========
@@ -1823,6 +1815,7 @@ array.
 diff
 ----
 
+numpy:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.diff.html
 
 The ``diff`` function returns the numerical derivative of the forward
@@ -1895,6 +1888,87 @@ and ``append`` keywords that can be found in ``numpy``.
     
 
 
+sort
+----
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.sort.html?highlight=sort#numpy.sort
+
+The sort function takes an ndarray, and sorts it along the specified
+axis using a heap sort algorithm. Sorting takes place in place, without
+auxiliary storage. The ``axis`` keyword argument, just as in
+`diff <#diff>`__, takes on the possible values of -1 (the last axis, in
+``ulab`` equivalent to the second axis, and this also happens to be the
+default value), 0, or 1.
+
+**WARNING:** ``numpy`` defines the ``kind``, and ``order`` keyword
+arguments that are not implemented here. The function in ``ulab`` always
+takes heap sort, and since ``ulab`` does not have the concept of data
+fields, the ``order`` keyword argument has no meaning in our case.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.uint8)
+    print('\na:\n', a)
+    b = np.sort(a, axis=0)
+    print('\na sorted along vertical axis:\n', b)
+    
+    c = np.sort(a, axis=1)
+    print('\na sorted along horizontal axis:\n', c)
+    
+    c = np.sort(a, axis=None)
+    print('\nflat a sorted:\n', c)
+
+.. parsed-literal::
+
+    
+    a:
+     array([[1, 12, 3, 0],
+    	 [5, 3, 4, 1],
+    	 [9, 11, 1, 8],
+    	 [7, 10, 0, 1]], dtype=uint8)
+    
+    a sorted along vertical axis:
+     array([[1, 3, 0, 0],
+    	 [5, 10, 1, 1],
+    	 [7, 11, 3, 1],
+    	 [9, 12, 4, 8]], dtype=uint8)
+    
+    a sorted along horizontal axis:
+     array([[0, 1, 3, 12],
+    	 [1, 3, 4, 5],
+    	 [1, 8, 9, 11],
+    	 [0, 1, 7, 10]], dtype=uint8)
+    
+    flat a sorted:
+     array([0, 0, 1, ..., 10, 11, 12], dtype=uint8)
+    
+    
+
+
+Heap sort requires :math:`\sim N\log N` operations, and notably, the
+worst case costs only 20% more time than the average. In order to get an
+order-of-magnitude estimate, we will take the sine of 1000 uniformly
+spaced numbers between 0, and two pi, and sort them:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    @timeit
+    def sort_time(array):
+        return np.sort(array)
+    
+    b = np.sin(np.linspace(0, 6.28, num=1000))
+    print('b: ', b)
+    sort_time(b)
+    print('\nb sorted:\n', b)
 Linalg
 ======
 
@@ -2996,6 +3070,18 @@ and create a ``QString`` for the function name:
    ...
    };
 
+The exact form of the function object definition
+
+.. code:: c
+
+       MP_DEFINE_CONST_FUN_OBJ_1(useless_function_obj, userless_function);
+
+depends naturally on what exactly you implemented, i.e., how many
+arguments the function takes, whether only positional arguments allowed
+and so on. For a thorough discussion on how function objects have to be
+defined, see, e.g., the `user module programming
+manual <#https://micropython-usermod.readthedocs.io/en/latest/>`__.
+
 At this point, you should be able to compile the module with your
 extension by running ``make`` on the command line
 
@@ -3009,7 +3095,14 @@ for the unix port, and
 
    make BOARD=PYBV11 CROSS_COMPILE=<arm_tools_path>/bin/arm-none-eabi- USER_C_MODULES=../../../ulab all
 
-for the ``pyboard``.
+for the ``pyboard``, provided that the you have defined
+
+.. code:: makefile
+
+   #define MODULE_ULAB_ENABLED (1)
+
+somewhere in ``micropython/port/unix/mpconfigport.h``, or
+``micropython/stm32/unix/mpconfigport.h``, respectively.
 
 .. code::
 

@@ -59,5 +59,37 @@ mp_obj_t numerical_sort(size_t , const mp_obj_t *, mp_map_t *);
         }\
     }\
 } while(0)
-    
+
+#define HEAPSORT(type, ndarray) do {\
+    uint8_t *array = (uint8_t *)(ndarray)->array->items;\
+    uint8_t tmp;\
+    for (; q > 0;) {\
+        if (k > 0) {\
+            tmp = array[start+(--k)*increment];\
+        } else {\
+            q--;\
+            if(q == 0) {\
+                break;\
+            }\
+            tmp = array[start+q*increment];\
+            array[start+q*increment] = array[start];\
+        }\
+        p = k;\
+        c = k + k + 1;\
+        while (c < q) {\
+            if((c + 1 < q)  &&  (array[start+(c+1)*increment] > array[start+c*increment])) {\
+                c++;\
+            }\
+            if(array[start+c*increment] > tmp) {\
+                array[start+p*increment] = array[start+c*increment];\
+                p = c;\
+                c = p + p + 1;\
+            } else {\
+                break;\
+            }\
+        }\
+        array[start+p*increment] = tmp;\
+    }\
+} while(0)
+
 #endif

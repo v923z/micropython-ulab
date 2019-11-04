@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "py/obj.h"
+#include "py/objint.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/misc.h"
@@ -536,4 +537,60 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
     m_del(int8_t, stencil, n);
     return MP_OBJ_FROM_PTR(out);
+}
+
+mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_n, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError("sort argument must be an ndarray");
+    }
+    
+    mp_obj_t out = ndarray_copy(args[0].u_obj);
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(out);
+    size_t increment, start_inc, end, N;
+    if(args[2].u_obj == mp_const_none) { // flatten the array
+        ndarray->m = 1;
+        ndarray->n = ndarray->array->len;
+        increment = 1;
+        start_inc = ndarray->n;
+        end = ndarray->n;
+        N = ndarray->n;
+    } else if((mp_obj_get_int(args[2].u_obj) == -1) || 
+              (mp_obj_get_int(args[2].u_obj) == 1)) { // sort along the horizontal axis
+        increment = 1;
+        start_inc = ndarray->n;
+        end = ndarray->array->len;
+        N = ndarray->n;
+    } else if(mp_obj_get_int(args[2].u_obj) == 0) { // sort along vertical axis
+        increment = ndarray->n;
+        start_inc = 1;
+        end = ndarray->m;
+        N = ndarray->m;
+    } else {
+        mp_raise_ValueError("axis must be -1, 0, None, or 1");        
+    }
+    
+    size_t q, k, p, c;
+
+    for(size_t start=0; start < end; start+=start_inc) {
+        q = N; 
+        k = (q >> 1);
+        if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
+            HEAPSORT(uint8_t, ndarray);
+        } else if((ndarray->array->typecode == NDARRAY_INT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
+            HEAPSORT(uint16_t, ndarray);
+        } else {
+            HEAPSORT(mp_float_t, ndarray);
+        }
+    }
+    return out;
 }
