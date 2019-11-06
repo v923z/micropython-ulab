@@ -3160,8 +3160,8 @@ evaluating
 
 which should return ``true``.
 
-Boilerplate of sort
--------------------
+Boilerplate of sorts
+--------------------
 
 To summarise the contents of the previous three sections, here is a
 useless function that prints out the size (``m``, and ``n``) of an
