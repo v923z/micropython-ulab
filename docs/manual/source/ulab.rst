@@ -3297,9 +3297,4 @@ for the ``pyboard``, provided that the you have defined
    #define MODULE_ULAB_ENABLED (1)
 
 somewhere in ``micropython/port/unix/mpconfigport.h``, or
-``micropython/stm32/unix/mpconfigport.h``, respectively.
-
-.. code::
-
-    # code to be run in CPython
-    
+``micropython/stm32/mpconfigport.h``, respectively.
