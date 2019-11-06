@@ -68,8 +68,9 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.24), the library adds
-approximately 27 kB of extra compiled code to the micropython firmware.
+At the time of writing this manual (for version 0.26), the library adds
+approximately 30 kB of extra compiled code to the micropython
+(pyboard.v.11) firmware.
 
 Resources and legal matters
 ---------------------------
@@ -169,7 +170,7 @@ Methods of ndarrays
 
 `.transpose <#.transpose>`__
 
-`.flatten <#.flatten>`__
+`.flatten\*\* <#.flatten>`__
 
 `.asbytearray <#.asbytearray>`__
 
@@ -217,6 +218,10 @@ Statistical and other properties of arrays
 `mean <#sum,-std,-mean>`__
 
 `diff <#diff>`__
+
+`sort <#sort>`__
+
+`argsort <#argsort>`__
 
 Manipulation of polynomials
 ---------------------------
@@ -644,6 +649,61 @@ concern, plan accordingly!
     	 [2, 5, 8, 11],
     	 [3, 6, 9, 12]], dtype=uint8)
     shape of a: (3, 4)
+    
+    
+
+
+.sort
+~~~~~
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.sort.html
+
+In-place sorting of an ``ndarray``. For a more detailed exposition, see
+`sort <#sort>`__.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.uint8)
+    print('\na:\n', a)
+    a.sort(axis=0)
+    print('\na sorted along vertical axis:\n', a)
+    
+    a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.uint8)
+    a.sort(a, axis=1)
+    print('\na sorted along horizontal axis:\n', a)
+    
+    a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.uint8)
+    a.sort(a, axis=None)
+    print('\nflattened a sorted:\n', a)
+
+.. parsed-literal::
+
+    
+    a:
+     array([[1, 12, 3, 0],
+    	 [5, 3, 4, 1],
+    	 [9, 11, 1, 8],
+    	 [7, 10, 0, 1]], dtype=uint8)
+    
+    a sorted along vertical axis:
+     array([[1, 3, 0, 0],
+    	 [5, 10, 1, 1],
+    	 [7, 11, 3, 1],
+    	 [9, 12, 4, 8]], dtype=uint8)
+    
+    a sorted along horizontal axis:
+     array([[0, 1, 3, 12],
+    	 [1, 3, 4, 5],
+    	 [1, 8, 9, 11],
+    	 [0, 1, 7, 10]], dtype=uint8)
+    
+    flattened a sorted:
+     array([0, 0, 1, ..., 10, 11, 12], dtype=uint8)
     
     
 
@@ -1376,12 +1436,23 @@ column. A couple of examples should make these statements clearer:
 Universal functions
 ===================
 
-Standard mathematical functions can be calculated on any iterable, and
-on ``ndarray``\ s without having to change the call signature. In all
-cases the functions return a new ``ndarray`` of typecode ``float``
-(since these functions usually generate float values, anyway). The
-functions execute faster with ``ndarray`` arguments than with iterables,
-because the values of the input vector can be extracted faster.
+Standard mathematical functions can be calculated on any scalar-valued
+iterable (ranges, lists, tuples containing numbers), and on
+``ndarray``\ s without having to change the call signature. In all cases
+the functions return a new ``ndarray`` of typecode ``float`` (since
+these functions usually generate float values, anyway). The functions
+execute faster with ``ndarray`` arguments than with iterables, because
+the values of the input vector can be extracted faster.
+
+At present, the following functions are supported:
+
+``acos``, ``acosh``, ``asin``, ``asinh``, ``atan``, ``atanh``, ``ceil``,
+``cos``, ``erf``, ``erfc``, ``exp``, ``expm1``, ``floor``, ``tgamma``,
+``lgamma``, ``log``, ``log10``, ``log2``, ``sin``, ``sinh``, ``sqrt``,
+``tan``, ``tanh``.
+
+These functions are applied element-wise to the arguments, thus, e.g.,
+the exponential of a matrix cannot be calculated in this way.
 
 .. code::
         
@@ -1892,20 +1963,26 @@ sort
 ----
 
 numpy:
-https://docs.scipy.org/doc/numpy/reference/generated/numpy.sort.html?highlight=sort#numpy.sort
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.sort.html
 
-The sort function takes an ndarray, and sorts it along the specified
-axis using a heap sort algorithm. Sorting takes place in place, without
-auxiliary storage. The ``axis`` keyword argument takes on the possible
-values of -1 (the last axis, in ``ulab`` equivalent to the second axis,
-and this also happens to be the default value), 0, 1, or ``None``. The
-first three cases are identical to those in `diff <#diff>`__, while the
-last one flattens the array before sorting.
+The sort function takes an ndarray, and sorts its elements in ascending
+order along the specified axis using a heap sort algorithm. As opposed
+to the ``.sort()`` method discussed earlier, this function creates a
+copy of its input before sorting, and at the end, returns this copy.
+Sorting takes place in place, without auxiliary storage. The ``axis``
+keyword argument takes on the possible values of -1 (the last axis, in
+``ulab`` equivalent to the second axis, and this also happens to be the
+default value), 0, 1, or ``None``. The first three cases are identical
+to those in `diff <#diff>`__, while the last one flattens the array
+before sorting.
+
+If descending order is required, the result can simply be ``flip``\ ped,
+see `flip <#flip>`__.
 
 **WARNING:** ``numpy`` defines the ``kind``, and ``order`` keyword
 arguments that are not implemented here. The function in ``ulab`` always
-takes heap sort, and since ``ulab`` does not have the concept of data
-fields, the ``order`` keyword argument has no meaning in our case.
+uses heap sort, and since ``ulab`` does not have the concept of data
+fields, the ``order`` keyword argument would have no meaning.
 
 .. code::
         
@@ -1913,7 +1990,7 @@ fields, the ``order`` keyword argument has no meaning in our case.
     
     import ulab as np
     
-    a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.uint8)
+    a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.float)
     print('\na:\n', a)
     b = np.sort(a, axis=0)
     print('\na sorted along vertical axis:\n', b)
@@ -1922,31 +1999,31 @@ fields, the ``order`` keyword argument has no meaning in our case.
     print('\na sorted along horizontal axis:\n', c)
     
     c = np.sort(a, axis=None)
-    print('\nflat a sorted:\n', c)
+    print('\nflattened a sorted:\n', c)
 
 .. parsed-literal::
 
     
     a:
-     array([[1, 12, 3, 0],
-    	 [5, 3, 4, 1],
-    	 [9, 11, 1, 8],
-    	 [7, 10, 0, 1]], dtype=uint8)
+     array([[1.0, 12.0, 3.0, 0.0],
+    	 [5.0, 3.0, 4.0, 1.0],
+    	 [9.0, 11.0, 1.0, 8.0],
+    	 [7.0, 10.0, 0.0, 1.0]], dtype=float)
     
     a sorted along vertical axis:
-     array([[1, 3, 0, 0],
-    	 [5, 10, 1, 1],
-    	 [7, 11, 3, 1],
-    	 [9, 12, 4, 8]], dtype=uint8)
+     array([[1.0, 3.0, 0.0, 0.0],
+    	 [5.0, 10.0, 1.0, 1.0],
+    	 [7.0, 11.0, 3.0, 1.0],
+    	 [9.0, 12.0, 4.0, 8.0]], dtype=float)
     
     a sorted along horizontal axis:
-     array([[0, 1, 3, 12],
-    	 [1, 3, 4, 5],
-    	 [1, 8, 9, 11],
-    	 [0, 1, 7, 10]], dtype=uint8)
+     array([[0.0, 1.0, 3.0, 12.0],
+    	 [1.0, 3.0, 4.0, 5.0],
+    	 [1.0, 8.0, 9.0, 11.0],
+    	 [0.0, 1.0, 7.0, 10.0]], dtype=float)
     
-    flat a sorted:
-     array([0, 0, 1, ..., 10, 11, 12], dtype=uint8)
+    flattened a sorted:
+     array([0.0, 0.0, 1.0, ..., 10.0, 11.0, 12.0], dtype=float)
     
     
 
@@ -1970,6 +2047,101 @@ spaced numbers between 0, and two pi, and sort them:
     print('b: ', b)
     sort_time(b)
     print('\nb sorted:\n', b)
+argsort
+-------
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html
+
+Similarly to `sort <#sort>`__, ``argsort`` takes a positional, and a
+keyword argument, and returns an unsigned short index array of type
+``ndarray`` with the same dimensions as the input, or, if ``axis=None``,
+as a row vector with length equal to the number of elements in the input
+(i.e., the flattened array). The indices in the output sort the input in
+ascending order. The routine in ``argsort`` is the same as in ``sort``,
+therefore, the comments on computational expenses (time and RAM) also
+apply. In particular, since no copy of the original data is required,
+virtually no RAM beyond the output array is used.
+
+Since the underlying container of the output array is of type
+``uint16_t``, neither of the output dimensions should be larger than
+65535.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.float)
+    print('\na:\n', a)
+    b = np.argsort(a, axis=0)
+    print('\na sorted along vertical axis:\n', b)
+    
+    c = np.argsort(a, axis=1)
+    print('\na sorted along horizontal axis:\n', c)
+    
+    c = np.argsort(a, axis=None)
+    print('\nflattened a sorted:\n', c)
+
+.. parsed-literal::
+
+    
+    a:
+     array([[1.0, 12.0, 3.0, 0.0],
+    	 [5.0, 3.0, 4.0, 1.0],
+    	 [9.0, 11.0, 1.0, 8.0],
+    	 [7.0, 10.0, 0.0, 1.0]], dtype=float)
+    
+    a sorted along vertical axis:
+     array([[0, 1, 3, 0],
+    	 [1, 3, 2, 1],
+    	 [3, 2, 0, 3],
+    	 [2, 0, 1, 2]], dtype=uint16)
+    
+    a sorted along horizontal axis:
+     array([[3, 0, 2, 1],
+    	 [3, 1, 2, 0],
+    	 [2, 3, 0, 1],
+    	 [2, 3, 0, 1]], dtype=uint16)
+    
+    flattened a sorted:
+     array([3, 14, 0, ..., 13, 9, 1], dtype=uint16)
+    
+    
+
+
+Since during the sorting, only the indices are shuffled, ``argsort``
+does not modify the input array, as one can verify this by the following
+example:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([0, 5, 1, 3, 2, 4], dtype=np.uint8)
+    print('\na:\n', a)
+    b = np.argsort(a, axis=1)
+    print('\nsorting indices:\n', b)
+    print('\nthe original array:\n', a)
+
+.. parsed-literal::
+
+    
+    a:
+     array([0, 5, 1, 3, 2, 4], dtype=uint8)
+    
+    sorting indices:
+     array([0, 2, 4, 3, 5, 1], dtype=uint16)
+    
+    the original array:
+     array([0, 5, 1, 3, 2, 4], dtype=uint8)
+    
+    
+
+
 Linalg
 ======
 
@@ -2417,11 +2589,11 @@ When comparing results, we should keep two things in mind:
 
 1. the eigenvalues and eigenvectors are not necessarily sorted in the
    same way
-2. an eigenvector can be multiplied with an arbitrary non-zero scalar,
-   and it is still an eigenvector with the same eigenvalue. This is why
-   all signs of the eigenvector belonging to 5.58, and 0.80 are flipped
-   in ``ulab`` with respect to ``numpy``. This difference, however, is
-   of absolutely no consequence.
+2. an eigenvector can be multiplied by an arbitrary non-zero scalar, and
+   it is still an eigenvector with the same eigenvalue. This is why all
+   signs of the eigenvector belonging to 5.58, and 0.80 are flipped in
+   ``ulab`` with respect to ``numpy``. This difference, however, is of
+   absolutely no consequence.
 
 Computation expenses
 ~~~~~~~~~~~~~~~~~~~~

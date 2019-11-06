@@ -1,5 +1,11 @@
 
-Mon, 04 Nov 2019
+Tue, 6 Nov 2019
+
+version 0.26
+
+    added in-place sorting (method of ndarray), and argsort
+    
+Mon, 4 Nov 2019
 
 version 0.25
 

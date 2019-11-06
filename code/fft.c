@@ -19,7 +19,6 @@
 #include "ndarray.h"
 #include "fft.h"
 
-
 enum FFT_TYPE {
     FFT_FFT,
     FFT_IFFT,
@@ -37,8 +36,8 @@ void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     j = 0;
     for(int i = 0; i < n; i++) {
         if (j > i) {
-            SWAP(float, real[i], real[j]);
-            SWAP(float, imag[i], imag[j]);            
+            SWAP(mp_float_t, real[i], real[j]);
+            SWAP(mp_float_t, imag[i], imag[j]);
         }
         m = n >> 1;
         while (j >= m && m > 0) {
@@ -51,7 +50,7 @@ void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     mmax = 1;
     while (n > mmax) {
         istep = mmax << 1;
-        theta = -1.0*isign*6.28318530717959/istep;
+        theta = -2.0*isign*MP_PI/istep;
         wtemp = MICROPY_FLOAT_C_FUN(sin)(0.5 * theta);
         wpr = -2.0 * wtemp * wtemp;
         wpi = MICROPY_FLOAT_C_FUN(sin)(theta);

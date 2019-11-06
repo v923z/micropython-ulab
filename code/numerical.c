@@ -539,38 +539,34 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     return MP_OBJ_FROM_PTR(out);
 }
 
-mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
-        { MP_QSTR_n, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
-    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
+    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError("sort argument must be an ndarray");
     }
-    
-    mp_obj_t out = ndarray_copy(args[0].u_obj);
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(out);
+
+    ndarray_obj_t *ndarray;
+    mp_obj_t out;
+    if(inplace == 1) {
+        ndarray = MP_OBJ_TO_PTR(oin);
+    } else {
+        out = ndarray_copy(oin);
+        ndarray = MP_OBJ_TO_PTR(out);
+    }
     size_t increment, start_inc, end, N;
-    if(args[2].u_obj == mp_const_none) { // flatten the array
+    if(axis == mp_const_none) { // flatten the array
         ndarray->m = 1;
         ndarray->n = ndarray->array->len;
         increment = 1;
         start_inc = ndarray->n;
         end = ndarray->n;
         N = ndarray->n;
-    } else if((mp_obj_get_int(args[2].u_obj) == -1) || 
-              (mp_obj_get_int(args[2].u_obj) == 1)) { // sort along the horizontal axis
+    } else if((mp_obj_get_int(axis) == -1) || 
+              (mp_obj_get_int(axis) == 1)) { // sort along the horizontal axis
         increment = 1;
         start_inc = ndarray->n;
         end = ndarray->array->len;
         N = ndarray->n;
-    } else if(mp_obj_get_int(args[2].u_obj) == 0) { // sort along vertical axis
+    } else if(mp_obj_get_int(axis) == 0) { // sort along vertical axis
         increment = ndarray->n;
         start_inc = 1;
         end = ndarray->m;
@@ -592,5 +588,104 @@ mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             HEAPSORT(mp_float_t, ndarray);
         }
     }
-    return out;
+    if(inplace == 1) {
+        return mp_const_none;
+    } else {
+        return out;
+    }
+}
+
+// numpy function
+mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    return numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
+}
+// method of an ndarray
+mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    return numerical_sort_helper(args[0].u_obj, args[1].u_obj, 1);
+}
+
+mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj) } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError("argsort argument must be an ndarray");
+    }
+
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    size_t increment, start_inc, end, N, m, n;
+    if(args[1].u_obj == mp_const_none) { // flatten the array
+        m = 1;
+        n = ndarray->array->len;
+        ndarray->m = m;
+        ndarray->n = n;
+        increment = 1;
+        start_inc = ndarray->n;
+        end = ndarray->n;
+        N = n;
+    } else if((mp_obj_get_int(args[1].u_obj) == -1) || 
+              (mp_obj_get_int(args[1].u_obj) == 1)) { // sort along the horizontal axis
+        m = ndarray->m;
+        n = ndarray->n;
+        increment = 1;
+        start_inc = n;
+        end = ndarray->array->len;
+        N = n;
+    } else if(mp_obj_get_int(args[1].u_obj) == 0) { // sort along vertical axis
+        m = ndarray->m;
+        n = ndarray->n;
+        increment = n;
+        start_inc = 1;
+        end = m;
+        N = m;
+    } else {
+        mp_raise_ValueError("axis must be -1, 0, None, or 1");
+    }
+
+    // at the expense of flash, we could save RAM by creating 
+    // an NDARRAY_UINT16 ndarray only, if needed, otherwise, NDARRAY_UINT8
+    ndarray_obj_t *indices = create_new_ndarray(m, n, NDARRAY_UINT16);
+    uint16_t *index_array = (uint16_t *)indices->array->items;
+    // initialise the index array
+    // if array is flat: 0 to indices->n
+    // if sorting vertically, identical indices are arranged row-wise
+    // if sorting horizontally, identical indices are arranged colunn-wise
+    for(uint16_t start=0; start < end; start+=start_inc) {
+        for(uint16_t s=0; s < N; s++) {
+            index_array[start+s*increment] = s;
+        }
+    }
+
+    size_t q, k, p, c;
+    for(size_t start=0; start < end; start+=start_inc) {
+        q = N; 
+        k = (q >> 1);
+        if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
+            HEAP_ARGSORT(uint8_t, ndarray, index_array);
+        } else if((ndarray->array->typecode == NDARRAY_INT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
+            HEAP_ARGSORT(uint16_t, ndarray, index_array);
+        } else {
+            HEAP_ARGSORT(mp_float_t, ndarray, index_array);
+        }
+    }
+    return MP_OBJ_FROM_PTR(indices);
 }

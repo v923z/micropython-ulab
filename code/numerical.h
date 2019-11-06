@@ -30,6 +30,8 @@ mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_flip(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_diff(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_sort(size_t , const mp_obj_t *, mp_map_t *);
+mp_obj_t numerical_sort_inplace(size_t , const mp_obj_t *, mp_map_t *);
+mp_obj_t numerical_argsort(size_t , const mp_obj_t *, mp_map_t *);
 
 // this macro could be tighter, if we moved the ifs to the argmin function, assigned <, as well as >
 #define ARG_MIN_LOOP(in, type, start, stop, stride, op) do {\
@@ -47,7 +49,6 @@ mp_obj_t numerical_sort(size_t , const mp_obj_t *, mp_map_t *);
     }\
 } while(0)
 
-    
 #define CALCULATE_DIFF(in, out, type, M, N, inn, increment) do {\
     type *source = (type *)(in)->array->items;\
     type *target = (type *)(out)->array->items;\
@@ -61,9 +62,9 @@ mp_obj_t numerical_sort(size_t , const mp_obj_t *, mp_map_t *);
 } while(0)
 
 #define HEAPSORT(type, ndarray) do {\
-    uint8_t *array = (uint8_t *)(ndarray)->array->items;\
-    uint8_t tmp;\
-    for (; q > 0;) {\
+    type *array = (type *)(ndarray)->array->items;\
+    type tmp;\
+    for (;;) {\
         if (k > 0) {\
             tmp = array[start+(--k)*increment];\
         } else {\
@@ -89,6 +90,45 @@ mp_obj_t numerical_sort(size_t , const mp_obj_t *, mp_map_t *);
             }\
         }\
         array[start+p*increment] = tmp;\
+    }\
+} while(0)
+
+// This is pretty similar to HEAPSORT above; perhaps, the two could be combined somehow
+// On the other hand, since this is a macro, it doesn't really matter
+// Keep in mind that initially, index_array[start+s*increment] = s
+#define HEAP_ARGSORT(type, ndarray, index_array) do {\
+    type *array = (type *)(ndarray)->array->items;\
+    type tmp;\
+    uint16_t itmp;\
+    for (;;) {\
+        if (k > 0) {\
+            k--;\
+            tmp = array[start+index_array[start+k*increment]*increment];\
+            itmp = index_array[start+k*increment];\
+        } else {\
+            q--;\
+            if(q == 0) {\
+                break;\
+            }\
+            tmp = array[start+index_array[start+q*increment]*increment];\
+            itmp = index_array[start+q*increment];\
+            index_array[start+q*increment] = index_array[start];\
+        }\
+        p = k;\
+        c = k + k + 1;\
+        while (c < q) {\
+            if((c + 1 < q)  &&  (array[start+index_array[start+(c+1)*increment]*increment] > array[start+index_array[start+c*increment]*increment])) {\
+                c++;\
+            }\
+            if(array[start+index_array[start+c*increment]*increment] > tmp) {\
+                index_array[start+p*increment] = index_array[start+c*increment];\
+                p = c;\
+                c = p + p + 1;\
+            } else {\
+                break;\
+            }\
+        }\
+        index_array[start+p*increment] = itmp;\
     }\
 } while(0)
 

@@ -60,27 +60,6 @@ mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     return mp_const_none;
 }
 
-// _degrees won't compile for the unix port
-/*
-mp_float_t _degreesf(mp_float_t x) {
-    return(180*x/MP_PI);
-}
-
-MATH_FUN_1(degrees, _degrees);
-
-// _radians won't compile for the unix port
-mp_float_t _radiansf(mp_float_t x) {
-    return(MP_PI*x/180.0);
-}
-
-MATH_FUN_1(radians, _radians);
-
-STATIC mp_float_t _fabsf(mp_float_t x) {
-    return fabsf(x);
-}
-
-MATH_FUN_1(fabs, _fabs);
-*/
 MATH_FUN_1(acos, acos);
 MATH_FUN_1(acosh, acosh);
 MATH_FUN_1(asin, asin);

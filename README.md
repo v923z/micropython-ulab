@@ -8,9 +8,16 @@ Documentation can be found under https://micropython-ulab.readthedocs.io/en/late
 The source for the manual is in https://github.com/v923z/micropython-ulab/blob/master/docs/ulab-manual.ipynb,
 while developer help is in https://github.com/v923z/micropython-ulab/blob/master/docs/ulab.ipynb.
 
+# Firmware
+
 Firmware for pyboard.v.1.1, and PYBD_SF6 is updated once in a while, and can be downloaded 
-from https://github.com/v923z/micropython-ulab/releases, otherwise, it can be 
-compiled from the source by following these steps:
+from https://github.com/v923z/micropython-ulab/releases.
+
+## Compiling
+
+If you want to try the latest version of `ulab`, or your hardware is 
+different to pyboard.v.1.1, or PYBD_SF6, the firmware can be compiled 
+from the source by following these steps:
 
 First, you have to clone the micropython repository by running 
 
@@ -38,7 +45,12 @@ If that was successful, you can try to run the make command in the port's direct
 ```
 make BOARD=PYBV11 USER_C_MODULES=../../../ulab all
 ```
-which will prepare the firmware for pyboard.v.11. Provided that you managed to compile the firmware, you would upload that either by running 
+which will prepare the firmware for pyboard.v.11. Similarly, 
+```
+make BOARD=PYBD_SF6 USER_C_MODULES=../../../ulab all
+```
+will compile for the SF6 member of the PYBD series. Provided that you managed to compile the firmware, you would upload that by running
+either
 ```
 dfu-util --alt 0 -D firmware.dfu
 ```
