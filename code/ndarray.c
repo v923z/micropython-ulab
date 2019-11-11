@@ -580,7 +580,7 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
     // TODO: in numpy, ndarrays are iterated with respect to the first axis. 
     size_t iter_end = 0;
-    if((ndarray->m == 1)) {
+    if(ndarray->m == 1) {
         iter_end = ndarray->array->len;
     } else {
         iter_end = ndarray->m;
@@ -888,12 +888,12 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 return ndarray_copy(self_in);
             }
             ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
-            if((self->array->typecode == NDARRAY_INT8)) {
+            if(self->array->typecode == NDARRAY_INT8) {
                 int8_t *array = (int8_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) {
                     if(array[i] < 0) array[i] = -array[i];
                 }
-            } else if((self->array->typecode == NDARRAY_INT16)) {
+            } else if(self->array->typecode == NDARRAY_INT16) {
                 int16_t *array = (int16_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) {
                     if(array[i] < 0) array[i] = -array[i];
