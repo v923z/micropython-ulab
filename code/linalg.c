@@ -124,7 +124,7 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     }
     for(size_t m=0; m < N; m++){
         // this could be faster with ((c < epsilon) && (c > -epsilon))
-        if(abs(data[m*(N+1)]) < epsilon) {
+        if(MICROPY_FLOAT_C_FUN(fabs)(data[m*(N+1)]) < epsilon) {
             m_del(mp_float_t, unit, N*N);
             return false;
         }
@@ -307,7 +307,7 @@ mp_obj_t linalg_det(mp_obj_t oin) {
     }
     mp_float_t c;
     for(size_t m=0; m < in->m-1; m++){
-        if(abs(tmp[m*(in->n+1)]) < epsilon) {
+        if(MICROPY_FLOAT_C_FUN(fabs)(tmp[m*(in->n+1)]) < epsilon) {
             m_del(mp_float_t, tmp, in->n*in->n);
             return mp_obj_new_float(0.0);
         }
@@ -346,7 +346,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
         for(size_t n=m+1; n < in->n; n++) {
             // compare entry (m, n) to (n, m)
             // TODO: this must probably be scaled!
-            if(epsilon < abs(array[m*in->n + n] - array[n*in->n + m])) {
+            if(epsilon < MICROPY_FLOAT_C_FUN(fabs)(array[m*in->n + n] - array[n*in->n + m])) {
                 mp_raise_ValueError("input matrix is asymmetric");
             }
         }
@@ -371,7 +371,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
         largest = 0.0;
         for(size_t m=0; m < in->m-1; m++) { // -1: no need to inspect last row
             for(size_t n=m+1; n < in->n; n++) {
-                w = fabs(array[m*in->n + n]);
+                w = MICROPY_FLOAT_C_FUN(fabs)(array[m*in->n + n]);
                 if((largest < w) && (epsilon < w)) {
                     M = m;
                     N = n;
