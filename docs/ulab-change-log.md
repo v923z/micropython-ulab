@@ -1,4 +1,10 @@
 
+Thu, 28 Nov 2019
+
+version 0.261
+
+    fixed bad indexing error in linalg.dot
+
 Tue, 6 Nov 2019
 
 version 0.26
