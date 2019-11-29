@@ -1,4 +1,10 @@
 
+Fri, 29 Nov 2019
+
+version 0.262
+
+    fixed error in macro in vectorise.h
+
 Thu, 28 Nov 2019
 
 version 0.261
