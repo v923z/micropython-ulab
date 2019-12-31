@@ -1,4 +1,10 @@
 
+Tue, 31 Dec 2019
+
+version 0.263
+
+    changed declaration of ulab_ndarray_type to extern
+
 Fri, 29 Nov 2019
 
 version 0.262
