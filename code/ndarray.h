@@ -24,7 +24,7 @@
 #define FLOAT_TYPECODE 'd'
 #endif
 
-const mp_obj_type_t ulab_ndarray_type;
+extern const mp_obj_type_t ulab_ndarray_type;
 
 enum NDARRAY_TYPE {
     NDARRAY_UINT8 = 'B',
