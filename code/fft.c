@@ -76,18 +76,18 @@ void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
 
 mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, uint8_t type) {
     if(!MP_OBJ_IS_TYPE(arg_re, &ulab_ndarray_type)) {
-        mp_raise_NotImplementedError("FFT is defined for ndarrays only");
+        mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
     } 
     if(n_args == 2) {
         if(!MP_OBJ_IS_TYPE(arg_im, &ulab_ndarray_type)) {
-            mp_raise_NotImplementedError("FFT is defined for ndarrays only");
+            mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
         }
     }
     // Check if input is of length of power of 2
     ndarray_obj_t *re = MP_OBJ_TO_PTR(arg_re);
     uint16_t len = re->array->len;
     if((len & (len-1)) != 0) {
-        mp_raise_ValueError("input array length must be power of 2");
+        mp_raise_ValueError(translate("input array length must be power of 2"));
     }
     
     ndarray_obj_t *out_re = create_new_ndarray(1, len, NDARRAY_FLOAT);
@@ -108,7 +108,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     if(n_args == 2) {
         ndarray_obj_t *im = MP_OBJ_TO_PTR(arg_im);
         if (re->array->len != im->array->len) {
-            mp_raise_ValueError("real and imaginary parts must be of equal length");
+            mp_raise_ValueError(translate("real and imaginary parts must be of equal length"));
         }
         if(im->array->typecode == NDARRAY_FLOAT) {
             memcpy((mp_float_t *)out_im->array->items, (mp_float_t *)im->array->items, im->bytes);

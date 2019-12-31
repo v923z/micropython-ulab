@@ -51,7 +51,7 @@ mp_obj_t linalg_transpose(mp_obj_t self_in) {
 mp_obj_t linalg_reshape(mp_obj_t self_in, mp_obj_t shape) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if(!MP_OBJ_IS_TYPE(shape, &mp_type_tuple) || (MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(shape)) != 2)) {
-        mp_raise_ValueError("shape must be a 2-tuple");
+        mp_raise_ValueError(translate("shape must be a 2-tuple"));
     }
 
     mp_obj_iter_buf_t iter_buf;
@@ -63,7 +63,7 @@ mp_obj_t linalg_reshape(mp_obj_t self_in, mp_obj_t shape) {
     n = mp_obj_get_int(item);
     if(m*n != self->m*self->n) {
         // TODO: the proper error message would be "cannot reshape array of size %d into shape (%d, %d)"
-        mp_raise_ValueError("cannot reshape array (incompatible input/output shape)");
+        mp_raise_ValueError(translate("cannot reshape array (incompatible input/output shape)"));
     }
     self->m = m;
     self->n = n;
@@ -79,13 +79,13 @@ mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError("size is defined for ndarrays only");
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("size is defined for ndarrays only"));
     } else {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
         if(args[1].u_obj == mp_const_none) {
             return mp_obj_new_int(ndarray->array->len);
-        } else if(mp_obj_is_int(args[1].u_obj)) {
+        } else if(MP_OBJ_IS_INT(args[1].u_obj)) {
             uint8_t ax = mp_obj_get_int(args[1].u_obj);
             if(ax == 0) {
                 if(ndarray->m == 1) {
@@ -95,15 +95,15 @@ mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
                 }
             } else if(ax == 1) {
                 if(ndarray->m == 1) {
-                    mp_raise_ValueError("tuple index out of range");
+                    mp_raise_ValueError(translate("tuple index out of range"));
                 } else {
                     return mp_obj_new_int(ndarray->n);
                 }
             } else {
-                    mp_raise_ValueError("tuple index out of range");                
+                    mp_raise_ValueError(translate("tuple index out of range"));                
             }
         } else {
-            mp_raise_TypeError("wrong argument type");
+            mp_raise_TypeError(translate("wrong argument type"));
         }
     }
 }
@@ -153,14 +153,14 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
 mp_obj_t linalg_inv(mp_obj_t o_in) {
     // since inv is not a class method, we have to inspect the input argument first
     if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
-        mp_raise_TypeError("only ndarrays can be inverted");
+        mp_raise_TypeError(translate("only ndarrays can be inverted"));
     }
     ndarray_obj_t *o = MP_OBJ_TO_PTR(o_in);
     if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
-        mp_raise_TypeError("only ndarray objects can be inverted");
+        mp_raise_TypeError(translate("only ndarray objects can be inverted"));
     }
     if(o->m != o->n) {
-        mp_raise_ValueError("only square matrices can be inverted");
+        mp_raise_ValueError(translate("only square matrices can be inverted"));
     }
     ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
     mp_float_t *data = (mp_float_t *)inverted->array->items;
@@ -178,7 +178,7 @@ mp_obj_t linalg_inv(mp_obj_t o_in) {
         // TODO: I am not sure this is needed here. Otherwise, 
         // how should we free up the unused RAM of inverted?
         m_del(mp_float_t, inverted->array->items, o->n*o->n);
-        mp_raise_ValueError("input matrix is singular");
+        mp_raise_ValueError(translate("input matrix is singular"));
     }
     return MP_OBJ_FROM_PTR(inverted);
 }
@@ -188,7 +188,7 @@ mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     ndarray_obj_t *m1 = MP_OBJ_TO_PTR(_m1);
     ndarray_obj_t *m2 = MP_OBJ_TO_PTR(_m2);    
     if(m1->n != m2->m) {
-        mp_raise_ValueError("matrix dimensions do not match");
+        mp_raise_ValueError(translate("matrix dimensions do not match"));
     }
     // TODO: numpy uses upcasting here
     ndarray_obj_t *out = create_new_ndarray(m1->m, m2->n, NDARRAY_FLOAT);
@@ -219,17 +219,17 @@ mp_obj_t linalg_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
     uint8_t dtype = args[1].u_int;
-    if(!mp_obj_is_int(args[0].u_obj) && !mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
-        mp_raise_TypeError("input argument must be an integer or a 2-tuple");
+    if(!MP_OBJ_IS_INT(args[0].u_obj) && !MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
+        mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
     }
     ndarray_obj_t *ndarray = NULL;
-    if(mp_obj_is_int(args[0].u_obj)) {
+    if(MP_OBJ_IS_INT(args[0].u_obj)) {
         size_t n = mp_obj_get_int(args[0].u_obj);
         ndarray = create_new_ndarray(1, n, dtype);
-    } else if(mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
+    } else if(MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
         mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0].u_obj);
         if(tuple->len != 2) {
-            mp_raise_TypeError("input argument must be an integer or a 2-tuple");            
+            mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));            
         }
         ndarray = create_new_ndarray(mp_obj_get_int(tuple->items[0]), 
                                                   mp_obj_get_int(tuple->items[1]), dtype);
@@ -274,16 +274,16 @@ mp_obj_t linalg_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     ndarray_obj_t *ndarray = create_new_ndarray(m, n, dtype);
     mp_obj_t one = mp_obj_new_int(1);
     size_t i = 0;
-    if((k >= 0) && (k < n)) {
-        while(k < n) {
+    if((k >= 0) && (abs(k) < n)) {
+        while(abs(k) < n) {
             mp_binary_set_val_array(dtype, ndarray->array->items, i*n+k, one);
             k++;
             i++;
         }
-    } else if((k < 0) && (-k < m)) {
+    } else if((k < 0) && (abs(k) < m)) {
         k = -k;
         i = 0;
-        while(k < m) {
+        while(abs(k) < m) {
             mp_binary_set_val_array(dtype, ndarray->array->items, k*n+i, one);
             k++;
             i++;
@@ -293,12 +293,12 @@ mp_obj_t linalg_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 }
 
 mp_obj_t linalg_det(mp_obj_t oin) {
-    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
-        mp_raise_TypeError("function defined for ndarrays only");
+    if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("function defined for ndarrays only"));
     }
     ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
     if(in->m != in->n) {
-        mp_raise_ValueError("input must be square matrix");
+        mp_raise_ValueError(translate("input must be square matrix"));
     }
     
     mp_float_t *tmp = m_new(mp_float_t, in->n*in->n);
@@ -330,12 +330,12 @@ mp_obj_t linalg_det(mp_obj_t oin) {
 }
 
 mp_obj_t linalg_eig(mp_obj_t oin) {
-    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
-        mp_raise_TypeError("function defined for ndarrays only");
+    if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("function defined for ndarrays only"));
     }
     ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
     if(in->m != in->n) {
-        mp_raise_ValueError("input must be square matrix");
+        mp_raise_ValueError(translate("input must be square matrix"));
     }
     mp_float_t *array = m_new(mp_float_t, in->array->len);
     for(size_t i=0; i < in->array->len; i++) {
@@ -347,7 +347,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
             // compare entry (m, n) to (n, m)
             // TODO: this must probably be scaled!
             if(epsilon < MICROPY_FLOAT_C_FUN(fabs)(array[m*in->n + n] - array[n*in->n + m])) {
-                mp_raise_ValueError("input matrix is asymmetric");
+                mp_raise_ValueError(translate("input matrix is asymmetric"));
             }
         }
     }
@@ -440,7 +440,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
     if(iterations == 0) { 
         // the computation did not converge; numpy raises LinAlgError
         m_del(mp_float_t, array, in->array->len);
-        mp_raise_ValueError("iterations did not converge");
+        mp_raise_ValueError(translate("iterations did not converge")) ;
     }
     ndarray_obj_t *eigenvalues = create_new_ndarray(1, in->n, NDARRAY_FLOAT);
     mp_float_t *eigvalues = (mp_float_t *)eigenvalues->array->items;
