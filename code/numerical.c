@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Zoltán Vörös
+ * Copyright (c) 2019-2020 Zoltán Vörös
 */
     
 #include <math.h>
@@ -188,8 +188,8 @@ void copy_value_into_ndarray(ndarray_obj_t *target, ndarray_obj_t *source, size_
 }
  
 STATIC mp_obj_t numerical_argmin_argmax(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
-    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || 
-        MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
+    if(mp_obj_is_type(oin, &mp_type_tuple) || mp_obj_is_type(oin, &mp_type_list) || 
+        mp_obj_is_type(oin, &mp_type_range)) {
         // This case will work for single iterables only 
         size_t idx = 0, best_idx = 0;
         mp_obj_iter_buf_t iter_buf;
@@ -281,8 +281,8 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
         mp_raise_ValueError("axis must be None, 0, or 1");
     }
     
-    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || 
-        MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
+    if(mp_obj_is_type(oin, &mp_type_tuple) || mp_obj_is_type(oin, &mp_type_list) || 
+        mp_obj_is_type(oin, &mp_type_range)) {
         switch(type) {
             case NUMERICAL_MIN:
             case NUMERICAL_ARGMIN:
@@ -296,7 +296,7 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             default: // we should never reach this point, but whatever
                 return mp_const_none;
         }
-    } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         switch(type) {
             case NUMERICAL_MIN:
             case NUMERICAL_MAX:

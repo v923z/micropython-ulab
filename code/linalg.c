@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Zoltán Vörös
+ * Copyright (c) 2019-2020 Zoltán Vörös
 */
     
 #include <stdlib.h>
@@ -50,7 +50,7 @@ mp_obj_t linalg_transpose(mp_obj_t self_in) {
 
 mp_obj_t linalg_reshape(mp_obj_t self_in, mp_obj_t shape) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if(!MP_OBJ_IS_TYPE(shape, &mp_type_tuple) || (MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(shape)) != 2)) {
+    if(!mp_obj_is_type(shape, &mp_type_tuple) || (MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(shape)) != 2)) {
         mp_raise_ValueError("shape must be a 2-tuple");
     }
 
@@ -152,11 +152,11 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
 
 mp_obj_t linalg_inv(mp_obj_t o_in) {
     // since inv is not a class method, we have to inspect the input argument first
-    if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         mp_raise_TypeError("only ndarrays can be inverted");
     }
     ndarray_obj_t *o = MP_OBJ_TO_PTR(o_in);
-    if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         mp_raise_TypeError("only ndarray objects can be inverted");
     }
     if(o->m != o->n) {

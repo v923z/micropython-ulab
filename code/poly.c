@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Zoltán Vörös
+ * Copyright (c) 2019-2020 Zoltán Vörös
 */
     
 #include "py/obj.h"
@@ -40,7 +40,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: there is a bug here: matrices won't work, 
     // because there is a single iteration loop
     size_t m, n;
-    if(MP_OBJ_IS_TYPE(o_x, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(o_x, &ulab_ndarray_type)) {
         ndarray_obj_t *ndx = MP_OBJ_TO_PTR(o_x);
         m = ndx->m;
         n = ndx->n;
@@ -89,8 +89,8 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     if(!object_is_nditerable(args[0])) {
         mp_raise_ValueError("input data must be an iterable");
     }
-    uint16_t lenx = 0, leny = 0;
-    uint8_t deg = 0;
+    uint16_t lenx, leny;
+    uint8_t deg;
     mp_float_t *x, *XT, *y, *prod;
 
     if(n_args == 2) { // only the y values are supplied

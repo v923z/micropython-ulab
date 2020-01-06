@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Zoltán Vörös
+ * Copyright (c) 2019-2020 Zoltán Vörös
 */
     
 #include <math.h>
@@ -75,11 +75,11 @@ void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
 }
 
 mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, uint8_t type) {
-    if(!MP_OBJ_IS_TYPE(arg_re, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(arg_re, &ulab_ndarray_type)) {
         mp_raise_NotImplementedError("FFT is defined for ndarrays only");
     } 
     if(n_args == 2) {
-        if(!MP_OBJ_IS_TYPE(arg_im, &ulab_ndarray_type)) {
+        if(!mp_obj_is_type(arg_im, &ulab_ndarray_type)) {
             mp_raise_NotImplementedError("FFT is defined for ndarrays only");
         }
     }
