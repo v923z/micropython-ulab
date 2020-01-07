@@ -1,4 +1,9 @@
 
+
+version 0.26.4
+
+    switched version constant to string
+
 Tue, 31 Dec 2019
 
 version 0.263
