@@ -1,4 +1,11 @@
 
+Tue, 7 Jan 2020
+
+version 0.26.5
+
+    fixed glitch in numerical.c, numerical.h
+
+Mon, 6 Jan 2020
 
 version 0.26.4
 

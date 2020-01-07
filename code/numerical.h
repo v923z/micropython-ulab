@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Zoltán Vörös
+ * Copyright (c) 2019-2020 Zoltán Vörös
 */
     
 #ifndef _NUMERICAL_
@@ -33,19 +33,44 @@ mp_obj_t numerical_sort(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_sort_inplace(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t numerical_argsort(size_t , const mp_obj_t *, mp_map_t *);
 
-// this macro could be tighter, if we moved the ifs to the argmin function, assigned <, as well as >
-#define ARG_MIN_LOOP(in, type, start, stop, stride, op) do {\
-    type *array = (type *)(in)->array->items;\
+#define RUN_ARGMIN(in, out, typein, typeout, len, start, increment, op, pos) do {\
+    typein *array = (typein *)(in)->array->items;\
+    typeout *outarray = (typeout *)(out)->array->items;\
+    size_t best_index = 0;\
     if(((op) == NUMERICAL_MAX) || ((op) == NUMERICAL_ARGMAX)) {\
-        for(size_t i=(start)+(stride); i < (stop); i+=(stride)) {\
-            if((array)[i] > (array)[best_idx]) {\
-                best_idx = i;\
-            }\
+        for(size_t i=1; i < (len); i++) {\
+            if(array[(start)+i*(increment)] > array[(start)+best_index*(increment)]) best_index = i;\
         }\
+        if((op) == NUMERICAL_MAX) outarray[(pos)] = array[(start)+best_index*(increment)];\
+        else outarray[(pos)] = best_index;\
     } else{\
-        for(size_t i=(start)+(stride); i < (stop); i+=(stride)) {\
-            if((array)[i] < (array)[best_idx]) best_idx = i;\
+        for(size_t i=1; i < (len); i++) {\
+            if(array[(start)+i*(increment)] < array[(start)+best_index*(increment)]) best_index = i;\
         }\
+        if((op) == NUMERICAL_MIN) outarray[(pos)] = array[(start)+best_index*(increment)];\
+        else outarray[(pos)] = best_index;\
+    }\
+} while(0)
+
+#define RUN_SUM(ndarray, type, optype, len, start, increment) do {\
+    type *array = (type *)(ndarray)->array->items;\
+    type value;\
+    for(size_t j=0; j < (len); j++) {\
+        value = array[(start)+j*(increment)];\
+        sum += value;\
+    }\
+} while(0)
+
+#define RUN_STD(ndarray, type, len, start, increment) do {\
+    type *array = (type *)(ndarray)->array->items;\
+    mp_float_t value;\
+    for(size_t j=0; j < (len); j++) {\
+        sum += array[(start)+j*(increment)];\
+    }\
+    sum /= (len);\
+    for(size_t j=0; j < (len); j++) {\
+        value = (array[(start)+j*(increment)] - sum);\
+        sum_sq += value * value;\
     }\
 } while(0)
 
