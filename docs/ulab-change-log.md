@@ -1,4 +1,10 @@
 
+Mon, 20 Jan 2020
+
+version 0.26.6
+
+    replaced MP_ROM_PTR(&mp_const_none_obj), so that module can be compiled for the nucleo board
+
 Tue, 7 Jan 2020
 
 version 0.26.5
