@@ -1,4 +1,10 @@
 
+Wed, 29 Jan 2020
+
+version 0.26.7
+
+    fixed indexing error in linalg.dot
+
 Mon, 20 Jan 2020
 
 version 0.26.6

@@ -203,7 +203,7 @@ mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
                 v2 = ndarray_get_float_value(m2->array->items, m2->array->typecode, k*m2->n+j);
                 sum += v1 * v2;
             }
-            outdata[i*m1->m+j] = sum;
+            outdata[j*m1->m+i] = sum;
         }
     }
     return MP_OBJ_FROM_PTR(out);
