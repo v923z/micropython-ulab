@@ -239,6 +239,11 @@ FFT routines
 
 `spectrum\*\* <#spectrum>`__
 
+Filter routines
+---------------
+
+`convolve\* <#convolve>`__
+
 ndarray, the basic container
 ============================
 
@@ -2911,6 +2916,33 @@ As such, ``spectrum`` is really just a shorthand for
     spectrum calculated the lazy way:	 array([187.8641, 315.3125, 347.8804, ..., 84.4587, 347.8803, 315.3124], dtype=float)
     
 
+Filter routines
+===============
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.convolve.html
+
+convolve
+--------
+Returns the discrete, linear convolution of two one-dimensional sequences.
+
+Only the ``full`` mode is supported, and the ``mode`` named parameter is not accepted.
+Note that all other modes can be had by slicing a ``full`` result.
+
+.. code::
+
+    # code to be run in micropython
+
+    import ulab as np
+
+    x = np.array((1,2,3))
+    y = np.array((1,10,100,1000))
+
+    print(np.convolve(x, y))
+
+.. parsed-literal::
+
+    array([1.0, 12.0, 123.0, 1230.0, 2300.0, 3000.0], dtype=float)
 
 Computation and storage costs
 -----------------------------
