@@ -12,10 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "py/obj.h"
-#include "py/objint.h"
 #include "py/runtime.h"
-#include "py/builtin.h"
-#include "py/misc.h"
 #include "filter.h"
 
 mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

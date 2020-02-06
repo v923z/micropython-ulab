@@ -25,7 +25,7 @@
 #include "filter.h"
 #include "numerical.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.26.7");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.27.0");
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_shape_obj, ndarray_shape);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_rawsize_obj, ndarray_rawsize);
