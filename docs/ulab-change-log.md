@@ -1,3 +1,8 @@
+Thu, 06 Feb 2020
+
+version 0.27.0
+
+    add convolve, the start of a 'filter' functionality group
 
 Wed, 29 Jan 2020
 

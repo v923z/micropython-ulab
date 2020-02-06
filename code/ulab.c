@@ -22,9 +22,10 @@
 #include "vectorise.h"
 #include "poly.h"
 #include "fft.h"
+#include "filter.h"
 #include "numerical.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.26.7");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.27.0");
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_shape_obj, ndarray_shape);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_rawsize_obj, ndarray_rawsize);
@@ -87,6 +88,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj, 2, 3, poly_polyfit)
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrum_obj, 1, 2, fft_spectrum);
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(filter_convolve_obj, 2, filter_convolve);
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
@@ -165,6 +168,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_spectrum), (mp_obj_t)&fft_spectrum_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
     // class constants
     { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },
     { MP_ROM_QSTR(MP_QSTR_int8), MP_ROM_INT(NDARRAY_INT8) },
