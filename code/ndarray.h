@@ -1,3 +1,4 @@
+
 /*
  * This file is part of the micropython-ulab project, 
  *
@@ -5,9 +6,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Zoltán Vörös
+ * Copyright (c) 2019-2020 Zoltán Vörös
 */
-    
+
 #ifndef _NDARRAY_
 #define _NDARRAY_
 
@@ -22,6 +23,10 @@
 #define FLOAT_TYPECODE 'f'
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define FLOAT_TYPECODE 'd'
+#endif
+
+#if !CIRCUITPY
+#define translate(x) x
 #endif
 
 extern const mp_obj_type_t ulab_ndarray_type;

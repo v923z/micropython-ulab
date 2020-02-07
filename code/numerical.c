@@ -1,3 +1,4 @@
+
 /*
  * This file is part of the micropython-ulab project, 
  *
@@ -7,7 +8,7 @@
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
 */
-        
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +29,7 @@ enum NUMERICAL_FUNCTION_TYPE {
     NUMERICAL_STD,
 };
 
+#if ULAB_NUMERICAL_LINSPACE
 mp_obj_t numerical_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
@@ -43,7 +45,7 @@ mp_obj_t numerical_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     uint16_t len = args[2].u_int;
     if(len < 2) {
-        mp_raise_ValueError("number of points must be at least 2");
+        mp_raise_ValueError(translate("number of points must be at least 2"));
     }
     mp_float_t value, step;
     value = mp_obj_get_float(args[0].u_obj);
@@ -76,6 +78,9 @@ mp_obj_t numerical_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         return mp_obj_new_tuple(2, tuple);
     }
 }
+
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_linspace_obj, 2, numerical_linspace);
+#endif
 
 void axis_sorter(ndarray_obj_t *ndarray, mp_obj_t axis, size_t *m, size_t *n, size_t *N, 
                  size_t *increment, size_t *len, size_t *start_inc) {
@@ -167,7 +172,7 @@ mp_obj_t numerical_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, size_t ddo
     
     axis_sorter(ndarray, axis, &m, &n, &N, &increment, &len, &start_inc);
     if(ddof > len) {
-        mp_raise_ValueError("ddof must be smaller than length of data set");
+        mp_raise_ValueError(translate("ddof must be smaller than length of data set"));
     }
     ndarray_obj_t *results = create_new_ndarray(m, n, NDARRAY_FLOAT);
     mp_float_t *farray = (mp_float_t *)results->array->items;
@@ -250,6 +255,7 @@ mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, 
     return MP_OBJ_FROM_PTR(results);
 }
 
+
 STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t optype) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} } ,
@@ -263,7 +269,7 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_obj_t axis = args[1].u_obj;
     if((axis != mp_const_none) && (mp_obj_get_int(axis) != 0) && (mp_obj_get_int(axis) != 1)) {
         // this seems to pass with False, and True...
-        mp_raise_ValueError("axis must be None, 0, or 1");
+        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
     }
     
     if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || 
@@ -292,10 +298,10 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_MEAN:
                 return numerical_sum_mean_ndarray(ndarray, axis, optype);
             default:
-                mp_raise_NotImplementedError("operation is not implemented on ndarrays");
+                mp_raise_NotImplementedError(translate("operation is not implemented on ndarrays"));
         }
     } else {
-        mp_raise_TypeError("input must be tuple, list, range, or ndarray");
+        mp_raise_TypeError(translate("input must be tuple, list, range, or ndarray"));
     }
     return mp_const_none;
 }
@@ -304,25 +310,37 @@ mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MIN);
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
+
 mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MAX);
 }
+
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_max_obj, 1, numerical_max);
 
 mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMIN);
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
+
 mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMAX);
 }
+
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmax_obj, 1, numerical_argmax);
 
 mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_SUM);
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sum_obj, 1, numerical_sum);
+
 mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MEAN);
 }
+
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 
 mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -339,7 +357,7 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     size_t ddof = args[2].u_int;
     if((axis != mp_const_none) && (mp_obj_get_int(axis) != 0) && (mp_obj_get_int(axis) != 1)) {
         // this seems to pass with False, and True...
-        mp_raise_ValueError("axis must be None, 0, or 1");
+        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
     }
     if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
         return numerical_sum_mean_std_iterable(oin, NUMERICAL_STD, ddof);
@@ -347,11 +365,14 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         return numerical_std_ndarray(ndarray, axis, ddof);
     } else {
-        mp_raise_TypeError("input must be tuple, list, range, or ndarray");
+        mp_raise_TypeError(translate("input must be tuple, list, range, or ndarray"));
     }
     return mp_const_none;
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
+
+#if ULAB_NUMERICAL_ROLL
 mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE  } },
@@ -367,7 +388,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     if((args[2].u_obj != mp_const_none) && 
            (mp_obj_get_int(args[2].u_obj) != 0) && 
            (mp_obj_get_int(args[2].u_obj) != 1)) {
-        mp_raise_ValueError("axis must be None, 0, or 1");
+        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
     }
 
     ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
@@ -432,6 +453,10 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
+#endif
+
+#if ULAB_NUMERICAL_FLIP
 mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
@@ -442,12 +467,12 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError("flip argument must be an ndarray");
+        mp_raise_TypeError(translate("flip argument must be an ndarray"));
     }
     if((args[1].u_obj != mp_const_none) && 
            (mp_obj_get_int(args[1].u_obj) != 0) && 
            (mp_obj_get_int(args[1].u_obj) != 1)) {
-        mp_raise_ValueError("axis must be None, 0, or 1");
+        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
     }
 
     ndarray_obj_t *in = MP_OBJ_TO_PTR(args[0].u_obj);
@@ -479,6 +504,10 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     return out;
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_flip_obj, 1, numerical_flip);
+#endif
+
+#if ULAB_NUMERICAL_DIFF
 mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
@@ -490,7 +519,7 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError("diff argument must be an ndarray");
+        mp_raise_TypeError(translate("diff argument must be an ndarray"));
     }
     
     ndarray_obj_t *in = MP_OBJ_TO_PTR(args[0].u_obj);
@@ -500,10 +529,10 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     } else if(args[2].u_int == 0) { // differtiate along vertical axis
         increment = in->n;
     } else {
-        mp_raise_ValueError("axis must be -1, 0, or 1");        
+        mp_raise_ValueError(translate("axis must be -1, 0, or 1"));
     }
     if((args[1].u_int < 0) || (args[1].u_int > 9)) {
-        mp_raise_ValueError("n must be between 0, and 9");
+        mp_raise_ValueError(translate("n must be between 0, and 9"));
     }
     uint8_t n = args[1].u_int;
     int8_t *stencil = m_new(int8_t, n+1);
@@ -547,9 +576,13 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     return MP_OBJ_FROM_PTR(out);
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
+#endif
+
+#if ULAB_NUMERICAL_SORT
 mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
     if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
-        mp_raise_TypeError("sort argument must be an ndarray");
+        mp_raise_TypeError(translate("sort argument must be an ndarray"));
     }
 
     ndarray_obj_t *ndarray;
@@ -580,7 +613,7 @@ mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
         end = ndarray->m;
         N = ndarray->m;
     } else {
-        mp_raise_ValueError("axis must be -1, 0, None, or 1");        
+        mp_raise_ValueError(translate("axis must be -1, 0, None, or 1"));
     }
     
     size_t q, k, p, c;
@@ -615,6 +648,9 @@ mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     return numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
 }
+
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_obj, 1, numerical_sort);
+
 // method of an ndarray
 mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -628,6 +664,10 @@ mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, mp_map_
     return numerical_sort_helper(args[0].u_obj, args[1].u_obj, 1);
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace);
+#endif
+
+#if ULAB_NUMERICAL_ARGSORT
 mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
@@ -636,7 +676,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError("argsort argument must be an ndarray");
+        mp_raise_TypeError(translate("argsort argument must be an ndarray"));
     }
 
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
@@ -666,7 +706,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         end = m;
         N = m;
     } else {
-        mp_raise_ValueError("axis must be -1, 0, None, or 1");
+        mp_raise_ValueError(translate("axis must be -1, 0, None, or 1"));
     }
 
     // at the expense of flash, we could save RAM by creating 
@@ -697,3 +737,6 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     }
     return MP_OBJ_FROM_PTR(indices);
 }
+
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
+#endif

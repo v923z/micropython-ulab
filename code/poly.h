@@ -1,3 +1,4 @@
+
 /*
  * This file is part of the micropython-ulab project, 
  *
@@ -5,13 +6,22 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Zoltán Vörös
+ * Copyright (c) 2019-2020 Zoltán Vörös
 */
-    
+
 #ifndef _POLY_
 #define _POLY_
 
+#include "ulab.h"
+
+#if ULAB_POLY_POLYVAL
 mp_obj_t poly_polyval(mp_obj_t , mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_2(poly_polyval_obj);
+#endif
+
+#if ULAB_POLY_POLYFIT
 mp_obj_t poly_polyfit(size_t  , const mp_obj_t *);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj);
+#endif
 
 #endif

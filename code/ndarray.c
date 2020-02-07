@@ -1,3 +1,4 @@
+
 /*
  * This file is part of the micropython-ulab project, 
  *
@@ -7,7 +8,7 @@
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
 */
-    
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -173,7 +174,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     size_t len1, len2=0, i=0;
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
     if (len_in == MP_OBJ_NULL) {
-        mp_raise_ValueError("first argument must be an iterable");
+        mp_raise_ValueError(translate("first argument must be an iterable"));
     } else {
         // len1 is either the number of rows (for matrices), or the number of elements (row vectors)
         len1 = MP_OBJ_SMALL_INT_VALUE(len_in);
@@ -189,7 +190,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
             // Next, we have to check, whether all elements in the outer loop have the same length
             if(i > 0) {
                 if(len2 != MP_OBJ_SMALL_INT_VALUE(len_in)) {
-                    mp_raise_ValueError("iterables are not of the same length");
+                    mp_raise_ValueError(translate("iterables are not of the same length"));
                 }
             }
             len2 = MP_OBJ_SMALL_INT_VALUE(len_in);
@@ -254,13 +255,13 @@ mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
             _index += n;
         } 
         if((_index >= n) || (_index < 0)) {
-            mp_raise_msg(&mp_type_IndexError, "index is out of bounds");
+            mp_raise_msg(&mp_type_IndexError, translate("index is out of bounds"));
         }
         slice.start = _index;
         slice.stop = _index + 1;
         slice.step = 1;
     } else {
-        mp_raise_msg(&mp_type_IndexError, "indices must be integers, slices, or Boolean lists");
+        mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
     }
     return slice;
 }
@@ -290,7 +291,7 @@ mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
                             ndarray_obj_t *values) {
     if((m != values->m) && (n != values->n)) {
         if((values->array->len != 1)) { // not a single item
-            mp_raise_ValueError("could not broadast input array from shape");
+            mp_raise_ValueError(translate("could not broadast input array from shape"));
         }
     }
     size_t cindex, rindex;
@@ -377,7 +378,7 @@ mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
                             mp_obj_t row_list, mp_obj_t column_list, 
                             ndarray_obj_t *values) {
     if((m == 0) || (n == 0)) {
-        mp_raise_msg(&mp_type_IndexError, "empty index range");
+        mp_raise_msg(&mp_type_IndexError, translate("empty index range"));
     }
 
     if(values != NULL) {
@@ -495,7 +496,7 @@ mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t
     else { // we certainly have a tuple, so let us deal with it
         mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(index);
         if(tuple->len != 2) {
-            mp_raise_msg(&mp_type_IndexError, "too many indices");
+            mp_raise_msg(&mp_type_IndexError, translate("too many indices"));
         }
         if(!(mp_obj_is_type(tuple->items[0], &mp_type_list) || 
             mp_obj_is_type(tuple->items[0], &mp_type_slice) || 
@@ -503,7 +504,7 @@ mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t
            !(mp_obj_is_type(tuple->items[1], &mp_type_list) || 
             mp_obj_is_type(tuple->items[1], &mp_type_slice) || 
             mp_obj_is_int(tuple->items[1]))) {
-                mp_raise_msg(&mp_type_IndexError, "indices must be integers, slices, or Boolean lists");
+                mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
         }
         if(mp_obj_is_type(tuple->items[0], &mp_type_list)) { // rows are indexed by Boolean list
             m = true_length(tuple->items[0]);
@@ -544,7 +545,7 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else { // assignment to slices; the value must be an ndarray, or a scalar
         if(!mp_obj_is_type(value, &ulab_ndarray_type) && 
           !mp_obj_is_int(value) && !mp_obj_is_float(value)) {
-            mp_raise_ValueError("right hand side must be an ndarray, or a scalar");
+            mp_raise_ValueError(translate("right hand side must be an ndarray, or a scalar"));
         } else {
             ndarray_obj_t *values = NULL;
             if(mp_obj_is_int(value)) {
@@ -655,7 +656,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     
     GET_STR_DATA_LEN(args[0].u_obj, order, len);    
     if((len != 1) || ((memcmp(order, "C", 1) != 0) && (memcmp(order, "F", 1) != 0))) {
-        mp_raise_ValueError("flattening order must be either 'C', or 'F'");        
+        mp_raise_ValueError(translate("flattening order must be either 'C', or 'F'"));
     }
 
     // if order == 'C', we simply have to set m, and n, there is nothing else to do
@@ -720,7 +721,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
         ndarray_obj_t *ol = MP_OBJ_TO_PTR(lhs);
         ndarray_obj_t *or = MP_OBJ_TO_PTR(RHS);
         if(!rhs_is_scalar && ((ol->m != or->m) || (ol->n != or->n))) {
-            mp_raise_ValueError("operands could not be broadcast together");
+            mp_raise_ValueError(translate("operands could not be broadcast together"));
         }
         // At this point, the operands should have the same shape
         switch(op) {
@@ -823,7 +824,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                         RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, mp_float_t, ol, or, op);
                     }
                 } else { // this should never happen
-                    mp_raise_TypeError("wrong input type");
+                    mp_raise_TypeError(translate("wrong input type"));
                 }
                 // this instruction should never be reached, but we have to make the compiler happy
                 return MP_OBJ_NULL; 
@@ -831,7 +832,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 return MP_OBJ_NULL; // op not supported                                                        
         }
     } else {
-        mp_raise_TypeError("wrong operand type on the right hand side");
+        mp_raise_TypeError(translate("wrong operand type on the right hand side"));
     }
 }
 
@@ -849,7 +850,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         
         case MP_UNARY_OP_INVERT:
             if(self->array->typecode == NDARRAY_FLOAT) {
-                mp_raise_ValueError("operation is not supported for given type");
+                mp_raise_ValueError(translate("operation is not supported for given type"));
             }
             // we can invert the content byte by byte, there is no need to distinguish 
             // between different typecodes

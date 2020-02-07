@@ -1,3 +1,4 @@
+
 /*
  * This file is part of the micropython-ulab project, 
  *
@@ -7,7 +8,7 @@
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
 */
-    
+
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objarray.h"
@@ -15,7 +16,7 @@
 #include "linalg.h"
 #include "poly.h"
 
-
+#if ULAB_POLY_POLYVAL || ULAB_POLY_POLYFIT
 bool object_is_nditerable(mp_obj_t o_in) {
     if(mp_obj_is_type(o_in, &ulab_ndarray_type) || 
       mp_obj_is_type(o_in, &mp_type_tuple) || 
@@ -34,7 +35,9 @@ size_t get_nditerable_len(mp_obj_t o_in) {
         return (size_t)mp_obj_get_int(mp_obj_len_maybe(o_in));
     }
 }
+#endif
 
+#if ULAB_POLY_POLYVAL
 mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: return immediately, if o_p is not an iterable
     // TODO: there is a bug here: matrices won't work, 
@@ -82,12 +85,16 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     return MP_OBJ_FROM_PTR(out);
 }
 
+MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
+#endif
+
+#if ULAB_POLY_POLYFIT
 mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     if((n_args != 2) && (n_args != 3)) {
-        mp_raise_ValueError("number of arguments must be 2, or 3");
+        mp_raise_ValueError(translate("number of arguments must be 2, or 3"));
     }
     if(!object_is_nditerable(args[0])) {
-        mp_raise_ValueError("input data must be an iterable");
+        mp_raise_ValueError(translate("input data must be an iterable"));
     }
     uint16_t lenx, leny;
     uint8_t deg;
@@ -99,7 +106,7 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         leny = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
         deg = (uint8_t)mp_obj_get_int(args[1]);
         if(leny < deg) {
-            mp_raise_ValueError("more degrees of freedom than data points");
+            mp_raise_ValueError(translate("more degrees of freedom than data points"));
         }
         lenx = leny;
         x = m_new(mp_float_t, lenx); // assume uniformly spaced data points
@@ -112,11 +119,11 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         lenx = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
         leny = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
         if(lenx != leny) {
-            mp_raise_ValueError("input vectors must be of equal length");
+            mp_raise_ValueError(translate("input vectors must be of equal length"));
         }
         deg = (uint8_t)mp_obj_get_int(args[2]);
         if(leny < deg) {
-            mp_raise_ValueError("more degrees of freedom than data points");
+            mp_raise_ValueError(translate("more degrees of freedom than data points"));
         }
         x = m_new(mp_float_t, lenx);
         fill_array_iterable(x, args[0]);
@@ -156,7 +163,7 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         m_del(mp_float_t, x, lenx);
         m_del(mp_float_t, y, lenx);
         m_del(mp_float_t, prod, (deg+1)*(deg+1));
-        mp_raise_ValueError("could not invert Vandermonde matrix");
+        mp_raise_ValueError(translate("could not invert Vandermonde matrix"));
     } 
     // at this point, we have the inverse of X^T * X
     // y is a column vector; x is free now, we can use it for storing intermediate values
@@ -191,3 +198,6 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_FROM_PTR(beta);
 }
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj, 2, 3, poly_polyfit);
+#endif

@@ -1,3 +1,4 @@
+
 /*
  * This file is part of the micropython-ulab project, 
  *
@@ -7,7 +8,7 @@
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
 */
-    
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,26 +61,118 @@ mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     return mp_const_none;
 }
 
+
+#if ULAB_VECTORISE_ACOS
 MATH_FUN_1(acos, acos);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acos_obj, vectorise_acos);
+#endif
+
+#if ULAB_VECTORISE_ACOSH
 MATH_FUN_1(acosh, acosh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acosh_obj, vectorise_acosh);
+#endif
+
+#if ULAB_VECTORISE_ASIN
 MATH_FUN_1(asin, asin);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asin_obj, vectorise_asin);
+#endif
+
+#if ULAB_VECTORISE_ASINH
 MATH_FUN_1(asinh, asinh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asinh_obj, vectorise_asinh);
+#endif
+
+#if ULAB_VECTORISE_ATAN
 MATH_FUN_1(atan, atan);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
+#endif
+
+#if ULAB_VECTORISE_ATANH
 MATH_FUN_1(atanh, atanh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atanh_obj, vectorise_atanh);
+#endif
+
+#if ULAB_VECTORISE_CEIL
 MATH_FUN_1(ceil, ceil);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_ceil_obj, vectorise_ceil);
+#endif
+
+#if ULAB_VECTORISE_COS
 MATH_FUN_1(cos, cos);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cos_obj, vectorise_cos);
+#endif
+
+#if ULAB_VECTORISE_ERF
 MATH_FUN_1(erf, erf);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erf_obj, vectorise_erf);
+#endif
+
+#if ULAB_VECTORISE_ERFC
 MATH_FUN_1(erfc, erfc);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erfc_obj, vectorise_erfc);
+#endif
+
+#if ULAB_VECTORISE_EXP
 MATH_FUN_1(exp, exp);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_exp_obj, vectorise_exp);
+#endif
+
+#if ULAB_VECTORISE_EXPM1
 MATH_FUN_1(expm1, expm1);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_expm1_obj, vectorise_expm1);
+#endif
+
+#if ULAB_VECTORISE_FLOOR
 MATH_FUN_1(floor, floor);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_floor_obj, vectorise_floor);
+#endif
+
+#if ULAB_VECTORISE_GAMMA
 MATH_FUN_1(gamma, tgamma);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_gamma_obj, vectorise_gamma);
+#endif
+
+#if ULAB_VECTORISE_LGAMMA
 MATH_FUN_1(lgamma, lgamma);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_lgamma_obj, vectorise_lgamma);
+#endif
+
+#if ULAB_VECTORISE_LOG
 MATH_FUN_1(log, log);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log_obj, vectorise_log);
+#endif
+
+#if ULAB_VECTORISE_LOG10
 MATH_FUN_1(log10, log10);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log10_obj, vectorise_log10);
+#endif
+
+#if ULAB_VECTORISE_LOG2
 MATH_FUN_1(log2, log2);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log2_obj, vectorise_log2);
+#endif
+
+#if ULAB_VECTORISE_SIN
 MATH_FUN_1(sin, sin);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sin_obj, vectorise_sin);
+#endif
+
+#if ULAB_VECTORISE_SINH
 MATH_FUN_1(sinh, sinh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sinh_obj, vectorise_sinh);
+#endif
+
+#if ULAB_VECTORISE_SQRT
 MATH_FUN_1(sqrt, sqrt);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sqrt_obj, vectorise_sqrt);
+#endif
+
+#if ULAB_VECTORISE_TAN
 MATH_FUN_1(tan, tan);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tan_obj, vectorise_tan);
+#endif
+
+#if ULAB_VECTORISE_TANH
 MATH_FUN_1(tanh, tanh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tanh_obj, vectorise_tanh);
+#endif

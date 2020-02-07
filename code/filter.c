@@ -1,3 +1,4 @@
+
 /*
  * This file is part of the micropython-ulab project,
  *
@@ -15,6 +16,7 @@
 #include "py/runtime.h"
 #include "filter.h"
 
+#if ULAB_FILTER_CONVOLVE
 mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
@@ -25,7 +27,7 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_parse_all(2, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type) || !mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError("convolve arguments must be ndarrays");
+        mp_raise_TypeError(translate("convolve arguments must be ndarrays"));
     }
 
     ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
@@ -33,7 +35,7 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     int len_a = a->array->len;
     int len_c = c->array->len;
     if(len_a == 0 || len_c == 0) {
-        mp_raise_TypeError("convolve arguments must not be empty");
+        mp_raise_TypeError(translate("convolve arguments must not be empty"));
     }
 
     int len = len_a + len_c - 1; // convolve mode "full"
@@ -56,3 +58,6 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 
     return out;
 }
+
+MP_DEFINE_CONST_FUN_OBJ_KW(filter_convolve_obj, 2, filter_convolve);
+#endif
