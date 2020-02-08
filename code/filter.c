@@ -14,6 +14,7 @@
 #include <string.h>
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/misc.h"
 #include "filter.h"
 
 #if ULAB_FILTER_CONVOLVE
@@ -34,6 +35,10 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     ndarray_obj_t *c = MP_OBJ_TO_PTR(args[1].u_obj);
     int len_a = a->array->len;
     int len_c = c->array->len;
+    // deal with linear arrays only
+    if(a->m*a->n != len_a || a->m*a->n != len_c) {
+        mp_raise_TypeError(translate("convolve arguments must be linear arrays"));
+    }
     if(len_a == 0 || len_c == 0) {
         mp_raise_TypeError(translate("convolve arguments must not be empty"));
     }
@@ -49,8 +54,13 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         for(int n=bot_n; n<top_n; n++) {
             int idx_c = len_c - n - 1;
             int idx_a = n+k;
-            mp_float_t ai = idx_a >= 0 && idx_a < len_a ? ndarray_get_float_value(a->array->items, c->array->typecode, idx_a) : (mp_float_t)0;
-            mp_float_t ci = idx_c >= 0 && idx_c < len_c ? ndarray_get_float_value(c->array->items, c->array->typecode, idx_c) : (mp_float_t)0;
+            mp_float_t ai = (mp_float_t)0, ci = (mp_float_t)0;
+            if(idx_a >= 0 && idx_a < len_a) {
+                ndarray_get_float_value(a->array->items, a->array->typecode, idx_a);
+            }
+            if(idx_c >= 0 && idx_c < len_c) {
+                ndarray_get_float_value(c->array->items, c->array->typecode, idx_c);
+            }
             accum += ai * ci;
         }
         *outptr++ = accum;

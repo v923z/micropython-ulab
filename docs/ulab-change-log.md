@@ -1,4 +1,16 @@
 
+Sat, 08 Feb 2020
+
+version 0.30.1
+
+    fixed typecode error, added variable inspection, and replaced ternary operators in filter.c
+    
+Fri, 07 Feb 2020
+
+version 0.30.0
+
+    ulab functions can arbitrarily be excluded from the firmware via the ulab.h configuration file
+    
 Thu, 06 Feb 2020
 
 version 0.27.0
