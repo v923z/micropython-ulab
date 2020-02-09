@@ -1,4 +1,10 @@
 
+Sun, 09 Feb 2020
+
+version 0.30.2
+
+    fixed slice_length in ndarray.c
+
 Sat, 08 Feb 2020
 
 version 0.30.1

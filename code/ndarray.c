@@ -216,13 +216,11 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
 }
 
 size_t slice_length(mp_bound_slice_t slice) {
-    // TODO: check, whether this is true!
-    if(slice.step < 0) {
-        slice.step = -slice.step;
-        return (slice.start - slice.stop) / slice.step;
-    } else {
-        return (slice.stop - slice.start) / slice.step;        
-    }
+    int32_t len, correction = 1;
+    if(slice.step > 0) correction = -1;
+    len = (slice.stop - slice.start + (slice.step + correction)) / slice.step;
+    if(len < 0) return 0;
+    return (size_t)len;
 }
 
 size_t true_length(mp_obj_t bool_list) {
