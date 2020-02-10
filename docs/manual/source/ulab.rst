@@ -172,8 +172,6 @@ Methods of ndarrays
 
 `.flatten\*\* <#.flatten>`__
 
-`.asbytearray <#.asbytearray>`__
-
 Matrix methods
 --------------
 
@@ -239,10 +237,10 @@ FFT routines
 
 `spectrum\*\* <#spectrum>`__
 
-Filter routines
----------------
+Filter functions
+----------------
 
-`convolve\* <#convolve>`__
+`convolve <#convolve>`__
 
 ndarray, the basic container
 ============================
@@ -539,83 +537,6 @@ verbatim copy of the contents.
     
     
 
-
-.asbytearray
-~~~~~~~~~~~~
-
-The contents of an ``ndarray`` can be accessed directly by calling the
-``.asbytearray`` method. This will simply return a pointer to the
-underlying flat ``array`` object, which can then be manipulated
-directly.
-
-**WARNING:** ``asbytearray`` is a ``ulab``-only method; it has no
-equivalent in ``numpy``.
-
-In the example below, note the difference between ``a``, and ``buffer``:
-while both are designated as an array, you recognise the micropython
-array from the fact that it prints the typecode (``b`` in this
-particular case). The ``ndarray``, on the other hand, prints out the
-``dtype`` (``int8`` here).
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    a = np.array([1, 2, 3, 4], dtype=np.int8)
-    print('a: ', a)
-    buffer = a.asbytearray()
-    print("array content:", buffer)
-    buffer[1] = 123
-    print("array content:", buffer)
-
-.. parsed-literal::
-
-    a:  array([1, 2, 3, 4], dtype=int8)
-    array content: array('b', [1, 2, 3, 4])
-    array content: array('b', [1, 123, 3, 4])
-    
-    
-
-
-This in itself wouldn’t be very interesting, but since ``buffer`` is a
-proper micropython ``array``, we can pass it to functions that can
-employ the buffer protocol. E.g., all the ``ndarray`` facilities can be
-applied to the results of timed ADC conversions.
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import pyb
-    import ulab as np
-    
-    n = 100
-    
-    adc = pyb.ADC(pyb.Pin.board.X19)
-    tim = pyb.Timer(6, freq=10)
-    
-    a = np.array([0]*n, dtype=np.uint8)
-    buffer = a.asbytearray()
-    adc.read_timed(buffer, tim)
-    
-    print("ADC results:\t", a)
-    print("mean of results:\t", np.mean(a))
-    print("std of results:\t", np.std(a))
-
-.. parsed-literal::
-
-    ADC results:	 array([48, 2, 2, ..., 0, 0, 0], dtype=uint8)
-    mean of results:	 1.22
-    std of results:	 4.744639
-    
-
-
-Likewise, data can be read directly into ``ndarray``\ s from other
-interfaces, e.g., SPI, I2C etc, and also, by laying bare the
-``ndarray``, we can pass results of ``ulab`` computations to anything
-that can read from a buffer.
 
 .transpose
 ~~~~~~~~~~
@@ -2916,33 +2837,6 @@ As such, ``spectrum`` is really just a shorthand for
     spectrum calculated the lazy way:	 array([187.8641, 315.3125, 347.8804, ..., 84.4587, 347.8803, 315.3124], dtype=float)
     
 
-Filter routines
-===============
-
-numpy:
-https://docs.scipy.org/doc/numpy/reference/generated/numpy.convolve.html
-
-convolve
---------
-Returns the discrete, linear convolution of two one-dimensional sequences.
-
-Only the ``full`` mode is supported, and the ``mode`` named parameter is not accepted.
-Note that all other modes can be had by slicing a ``full`` result.
-
-.. code::
-
-    # code to be run in micropython
-
-    import ulab as np
-
-    x = np.array((1,2,3))
-    y = np.array((1,10,100,1000))
-
-    print(np.convolve(x, y))
-
-.. parsed-literal::
-
-    array([1.0, 12.0, 123.0, 1230.0, 2300.0, 3000.0], dtype=float)
 
 Computation and storage costs
 -----------------------------
@@ -3020,6 +2914,40 @@ Y_2(k) &=& -\frac{i}{2}\left(Y(k) - Y^*(N-k)\right)
 \end{eqnarray}` where :math:`N` is the length of :math:`y_1`, and
 :math:`Y_1, Y_2`, and :math:`Y`, respectively, are the Fourier
 transforms of :math:`y_1, y_2`, and :math:`y = y_1 + iy_2`.
+
+Filter routines
+===============
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.convolve.html
+
+convolve
+--------
+
+Returns the discrete, linear convolution of two one-dimensional
+sequences.
+
+Only the ``full`` mode is supported, and the ``mode`` named parameter is
+not accepted. Note that all other modes can be had by slicing a ``full``
+result.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    x = np.array((1,2,3))
+    y = np.array((1,10,100,1000))
+    
+    print(np.convolve(x, y))
+
+.. parsed-literal::
+
+    array([1.0, 12.0, 123.0, 1230.0, 2300.0, 3000.0], dtype=float)
+    
+    
+
 
 Extending ulab
 ==============

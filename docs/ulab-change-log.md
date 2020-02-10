@@ -1,4 +1,10 @@
 
+Mon, 10 Feb 2020
+
+version 0.31.0
+
+    removed asbytearray, and added buffer protocol to ndarrays, fixed bad error in filter.c
+    
 Sun, 09 Feb 2020
 
 version 0.30.2

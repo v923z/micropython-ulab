@@ -677,11 +677,6 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     return self_copy;
 }
 
-mp_obj_t ndarray_asbytearray(mp_obj_t self_in) {
-    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_FROM_PTR(self->array);
-}
-
 // Binary operations
 
 mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
@@ -907,4 +902,10 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             break;
         default: return MP_OBJ_NULL; // operator not supported
     }
+}
+
+mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // buffer_p.get_buffer() returns zero for success, while mp_get_buffer returns true for success
+    return !mp_get_buffer(self->array, bufinfo, flags);
 }

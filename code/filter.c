@@ -36,7 +36,7 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     int len_a = a->array->len;
     int len_c = c->array->len;
     // deal with linear arrays only
-    if(a->m*a->n != len_a || a->m*a->n != len_c) {
+    if(a->m*a->n != len_a || c->m*c->n != len_c) {
         mp_raise_TypeError(translate("convolve arguments must be linear arrays"));
     }
     if(len_a == 0 || len_c == 0) {
@@ -56,10 +56,10 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
             int idx_a = n+k;
             mp_float_t ai = (mp_float_t)0, ci = (mp_float_t)0;
             if(idx_a >= 0 && idx_a < len_a) {
-                ndarray_get_float_value(a->array->items, a->array->typecode, idx_a);
+                ai = ndarray_get_float_value(a->array->items, a->array->typecode, idx_a);
             }
             if(idx_c >= 0 && idx_c < len_c) {
-                ndarray_get_float_value(c->array->items, c->array->typecode, idx_c);
+                ci = ndarray_get_float_value(c->array->items, c->array->typecode, idx_c);
             }
             accum += ai * ci;
         }

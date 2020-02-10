@@ -27,18 +27,16 @@
 #include "filter.h"
 #include "numerical.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.30.2");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.31.0");
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_shape_obj, ndarray_shape);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_rawsize_obj, ndarray_rawsize);
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
-MP_DEFINE_CONST_FUN_OBJ_1(ndarray_asbytearray_obj, ndarray_asbytearray);
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
     { MP_ROM_QSTR(MP_QSTR_rawsize), MP_ROM_PTR(&ndarray_rawsize_obj) },
     { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },    
-    { MP_ROM_QSTR(MP_QSTR_asbytearray), MP_ROM_PTR(&ndarray_asbytearray_obj) },
     #if ULAB_LINALG_TRANSPOSE
     { MP_ROM_QSTR(MP_QSTR_transpose), MP_ROM_PTR(&linalg_transpose_obj) },
     #endif
@@ -59,6 +57,7 @@ const mp_obj_type_t ulab_ndarray_type = {
     .getiter = ndarray_getiter,
     .unary_op = ndarray_unary_op,
     .binary_op = ndarray_binary_op,
+    .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 
