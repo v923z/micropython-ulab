@@ -908,3 +908,9 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         default: return MP_OBJ_NULL; // operator not supported
     }
 }
+
+mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // buffer_p.get_buffer() returns zero for success, while mp_get_buffer returns true for success
+    return !mp_get_buffer(self->array, bufinfo, flags);
+}
