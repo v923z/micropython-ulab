@@ -146,7 +146,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_VECTORISE_SIN
     { MP_OBJ_NEW_QSTR(MP_QSTR_sin), (mp_obj_t)&vectorise_sin_obj },
     #endif
-    #if ULAB_VECTORISE_
+    #if ULAB_VECTORISE_SINH
     { MP_OBJ_NEW_QSTR(MP_QSTR_sinh), (mp_obj_t)&vectorise_sinh_obj },
     #endif
     #if ULAB_VECTORISE_SQRT
@@ -155,7 +155,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_VECTORISE_TAN
     { MP_OBJ_NEW_QSTR(MP_QSTR_tan), (mp_obj_t)&vectorise_tan_obj },
     #endif
-    #if ULAB_VECTORISE_TAHN
+    #if ULAB_VECTORISE_TANH
     { MP_OBJ_NEW_QSTR(MP_QSTR_tanh), (mp_obj_t)&vectorise_tanh_obj },
     #endif
     #if ULAB_NUMERICAL_LINSPACE
