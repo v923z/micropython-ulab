@@ -166,8 +166,6 @@ Methods of ndarrays
 
 `.reshape <#.reshape>`__
 
-`.rawsize\*\* <#.rawsize>`__
-
 `.transpose <#.transpose>`__
 
 `.flatten\*\* <#.flatten>`__
@@ -395,8 +393,8 @@ Methods of ndarrays
 .shape
 ~~~~~~
 
-The ``.shape`` method returns a 2-tuple with the number of rows, and
-columns.
+The ``.shape`` method (property) returns a 2-tuple with the number of
+rows, and columns.
 
 .. code::
         
@@ -406,11 +404,11 @@ columns.
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     print("a:\n", a)
-    print("shape of a:", a.shape())
+    print("shape of a:", a.shape)
     
     b= np.array([[1, 2], [3, 4]], dtype=np.int8)
     print("\nb:\n", b)
-    print("shape of b:", b.shape())
+    print("shape of b:", b.shape)
 
 .. parsed-literal::
 
@@ -422,6 +420,74 @@ columns.
      array([[1, 2],
     	 [3, 4]], dtype=int8)
     shape of b: (2, 2)
+    
+    
+
+
+.size
+~~~~~
+
+The ``.size`` method (property) returns an integer with the number of
+elements in the array.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3], dtype=np.int8)
+    print("a:\n", a)
+    print("size of a:", a.size)
+    
+    b= np.array([[1, 2], [3, 4]], dtype=np.int8)
+    print("\nb:\n", b)
+    print("size of b:", b.size)
+
+.. parsed-literal::
+
+    a:
+     array([1, 2, 3], dtype=int8)
+    size of a: 3
+    
+    b:
+     array([[1, 2],
+    	 [3, 4]], dtype=int8)
+    size of b: 4
+    
+    
+
+
+.itemsize
+~~~~~~~~~
+
+The ``.itemsize`` method (property) returns an integer with the siz
+enumber of elements in the array.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3], dtype=np.int8)
+    print("a:\n", a)
+    print("itemsize of a:", a.itemsize)
+    
+    b= np.array([[1, 2], [3, 4]], dtype=np.float)
+    print("\nb:\n", b)
+    print("itemsize of b:", b.itemsize)
+
+.. parsed-literal::
+
+    a:
+     array([1, 2, 3], dtype=int8)
+    itemsize of a: 1
+    
+    b:
+     array([[1.0, 2.0],
+    	 [3.0, 4.0]], dtype=float)
+    itemsize of b: 8
     
     
 
@@ -458,41 +524,6 @@ consistent with the old, a ``ValueError`` exception will be raised.
     a (2 by 8): array([[1, 2, 3, 4, 5, 6, 7, 8],
     	 [9, 10, 11, 12, 13, 14, 15, 16]], dtype=uint8)
     a (1 by 16): array([1, 2, 3, ..., 14, 15, 16], dtype=uint8)
-    
-    
-
-
-.rawsize
-~~~~~~~~
-
-The ``rawsize`` method of the ``ndarray`` returns a 5-tuple with the
-following data
-
-1. number of rows
-2. number of columns
-3. length of the storage (should be equal to the product of 1. and 2.)
-4. length of the data storage in bytes
-5. datum size in bytes (1 for ``uint8``/``int8``, 2 for
-   ``uint16``/``int16``, and 4, or 8 for ``floats``, see `ndarray, the
-   basic container <#ndarray,-the-basic-container>`__)
-
-**WARNING:** ``rawsize`` is a ``ulab``-only method; it has no equivalent
-in ``numpy``.
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    a = np.array([1, 2, 3, 4], dtype=np.float)
-    print("a: \t\t", a)
-    print("rawsize of a: \t", a.rawsize())
-
-.. parsed-literal::
-
-    a: 		 array([1.0, 2.0, 3.0, 4.0], dtype=float)
-    rawsize of a: 	 (1, 4, 4, 16, 4)
     
     
 

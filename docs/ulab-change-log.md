@@ -1,4 +1,10 @@
 
+Tue, 11 Feb 2020
+
+version 0.32.0
+
+    added itemsize, size and shape attributes to ndarrays, and removed rawsize
+
 Mon, 10 Feb 2020
 
 version 0.31.0

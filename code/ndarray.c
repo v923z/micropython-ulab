@@ -624,22 +624,14 @@ mp_obj_t ndarray_shape(mp_obj_t self_in) {
     return mp_obj_new_tuple(2, tuple);
 }
 
-mp_obj_t ndarray_rawsize(mp_obj_t self_in) {
-    // returns a 5-tuple with the 
-    // 
-    // 0. number of rows
-    // 1. number of columns
-    // 2. length of the storage (should be equal to the product of 1. and 2.)
-    // 3. length of the data storage in bytes
-    // 4. datum size in bytes
+mp_obj_t ndarray_size(mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
-    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(self->m);
-    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(self->n);
-    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(self->array->len);
-    tuple->items[3] = MP_OBJ_NEW_SMALL_INT(self->bytes);
-    tuple->items[4] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->array->typecode, NULL));
-    return tuple;
+    return mp_obj_new_int(self->array->len);
+}
+
+mp_obj_t ndarray_itemsize(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->array->typecode, NULL));
 }
 
 mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -908,4 +900,14 @@ mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // buffer_p.get_buffer() returns zero for success, while mp_get_buffer returns true for success
     return !mp_get_buffer(self->array, bufinfo, flags);
+}
+
+void ndarray_attributes(mp_obj_t self_in, qstr attribute, mp_obj_t *destination) {
+    if(attribute == MP_QSTR_size) {
+        destination[0] = ndarray_size(self_in);
+    } else if(attribute == MP_QSTR_itemsize) {
+        destination[0] = ndarray_itemsize(self_in);
+    } else if(attribute == MP_QSTR_shape) {
+        destination[0] = ndarray_shape(self_in);
+    }
 }
