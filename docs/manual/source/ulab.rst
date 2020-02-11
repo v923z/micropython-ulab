@@ -1,10 +1,10 @@
 Introduction
 ============
 
-In
-https://micropython-usermod.readthedocs.io/en/latest/usermods_14.html, I
-mentioned that I have another story, for another day. The day has come,
-so here is my story.
+In the `last
+chapter <https://micropython-usermod.readthedocs.io/en/latest/usermods_15.html>`__
+of the usermod documentation, I mentioned that I have another story, for
+another day. The day has come, so here is my story.
 
 Enter ulab
 ----------
@@ -68,9 +68,11 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.26), the library adds
+At the time of writing this manual (for version 0.32), the library adds
 approximately 30 kB of extra compiled code to the micropython
-(pyboard.v.11) firmware.
+(pyboard.v.11) firmware. However, if you are tight with flash space, you
+can easily shave off a couple of kB. See the section on `customising
+ulab <#Custom_builds>`__.
 
 Resources and legal matters
 ---------------------------
@@ -142,6 +144,35 @@ can always be queried as
 
 
 If you find a bug, please, include this number in your report!
+
+Customising ``ulab``
+--------------------
+
+``ulab`` implements a great number of functions, and it is quite
+possible that you do not need all of them in a particular application.
+If you want to save some flash space, you can easily exclude arbitrary
+functions from the firmware. The
+`https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h <ulab.h>`__
+header file contains a pre-processor flag for all functions in ``ulab``.
+The default setting is 1 for each of them, but if you change that to 0,
+the corresponding function will not be part of the compiled firmware.
+
+The first couple of lines of the file look like this
+
+.. code:: c
+
+   // vectorise (all functions) takes approx. 3 kB of flash space
+   #define ULAB_VECTORISE_ACOS (1)
+   #define ULAB_VECTORISE_ACOSH (1)
+   #define ULAB_VECTORISE_ASIN (1)
+   #define ULAB_VECTORISE_ASINH (1)
+   #define ULAB_VECTORISE_ATAN (1)
+   #define ULAB_VECTORISE_ATANH (1)
+
+In order to simplify navigation in the file, each flag begins with
+``ULAB_``, continues with the sub-module, where the function itself is
+implemented, and ends with the function’s name. Each section displays a
+hint as to how much space you can save by un-setting the flag.
 
 Basic ndarray operations
 ------------------------
