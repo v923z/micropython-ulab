@@ -47,23 +47,41 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     ndarray_obj_t *out = create_new_ndarray(1, len, NDARRAY_FLOAT);
     mp_float_t *outptr = out->array->items;
     int off = len_c-1;
-    for(int k=-off; k<len-off; k++) {
-        mp_float_t accum = (mp_float_t)0;
-        int top_n = MIN(len_c, len_a - k);
-        int bot_n = MAX(-k, 0);
-        for(int n=bot_n; n<top_n; n++) {
-            int idx_c = len_c - n - 1;
-            int idx_a = n+k;
-            mp_float_t ai = (mp_float_t)0, ci = (mp_float_t)0;
-            if(idx_a >= 0 && idx_a < len_a) {
-                ai = ndarray_get_float_value(a->array->items, a->array->typecode, idx_a);
+
+    if(a->array->typecode == NDARRAY_FLOAT && c->array->typecode == NDARRAY_FLOAT) {
+        mp_float_t* a_items = (mp_float_t*)a->array->items;
+        mp_float_t* c_items = (mp_float_t*)c->array->items;
+        for(int k=-off; k<len-off; k++) {
+            mp_float_t accum = (mp_float_t)0;
+            int top_n = MIN(len_c, len_a - k);
+            int bot_n = MAX(-k, 0);
+            mp_float_t* a_ptr = a_items + bot_n + k;
+            mp_float_t* a_end = a_ptr + (top_n - bot_n);
+            mp_float_t* c_ptr = c_items + len_c - bot_n - 1;
+            for(; a_ptr != a_end;) {
+                accum += *a_ptr++ * *c_ptr--;
             }
-            if(idx_c >= 0 && idx_c < len_c) {
-                ci = ndarray_get_float_value(c->array->items, c->array->typecode, idx_c);
-            }
-            accum += ai * ci;
+            *outptr++ = accum;
         }
-        *outptr++ = accum;
+    } else {
+        for(int k=-off; k<len-off; k++) {
+            mp_float_t accum = (mp_float_t)0;
+            int top_n = MIN(len_c, len_a - k);
+            int bot_n = MAX(-k, 0);
+            for(int n=bot_n; n<top_n; n++) {
+            mp_float_t* a_ptr = a_items + bot_n + k;
+            mp_float_t* a_end = a_ptr + (top_n - bot_n);
+            mp_float_t* c_ptr = c_items + len_c - bot_n - 1;
+            for(; a_ptr != a_end;) {
+                int idx_c = len_c - n - 1;
+                int idx_a = n+k;
+                mp_float_t ai = ndarray_get_float_value(a->array->items, a->array->typecode, idx_a);
+                mp_float_t ci = ndarray_get_float_value(c->array->items, c->array->typecode, idx_c);
+                }
+                accum += ai * ci;
+            }
+            *outptr++ = accum;
+        }
     }
 
     return out;
