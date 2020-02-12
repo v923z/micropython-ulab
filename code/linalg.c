@@ -56,7 +56,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_transpose_obj, linalg_transpose);
 #if ULAB_LINALG_RESHAPE
 mp_obj_t linalg_reshape(mp_obj_t self_in, mp_obj_t shape) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if(!mp_obj_is_type(shape, &mp_type_tuple) || (MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(shape)) != 2)) {
+    if(!MP_OBJ_IS_TYPE(shape, &mp_type_tuple) || (MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(shape)) != 2)) {
         mp_raise_ValueError(translate("shape must be a 2-tuple"));
     }
 
@@ -82,20 +82,20 @@ MP_DEFINE_CONST_FUN_OBJ_2(linalg_reshape_obj, linalg_reshape);
 #if ULAB_LINALG_SIZE
 mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("size is defined for ndarrays only"));
     } else {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
         if(args[1].u_obj == mp_const_none) {
             return mp_obj_new_int(ndarray->array->len);
-        } else if(mp_obj_is_int(args[1].u_obj)) {
+        } else if(MP_OBJ_IS_INT(args[1].u_obj)) {
             uint8_t ax = mp_obj_get_int(args[1].u_obj);
             if(ax == 0) {
                 if(ndarray->m == 1) {
@@ -168,11 +168,11 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
 #if ULAB_LINALG_INV
 mp_obj_t linalg_inv(mp_obj_t o_in) {
     // since inv is not a class method, we have to inspect the input argument first
-    if(!mp_obj_is_type(o_in, &ulab_ndarray_type)) {
+    if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("only ndarrays can be inverted"));
     }
     ndarray_obj_t *o = MP_OBJ_TO_PTR(o_in);
-    if(!mp_obj_is_type(o_in, &ulab_ndarray_type)) {
+    if(!MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("only ndarray objects can be inverted"));
     }
     if(o->m != o->n) {
@@ -205,7 +205,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 #if ULAB_LINALG_DOT
 mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     // TODO: should the results be upcast?
-    if(!mp_obj_is_type(_m1, &ulab_ndarray_type) || !mp_obj_is_type(_m2, &ulab_ndarray_type)) {
+    if(!MP_OBJ_IS_TYPE(_m1, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_m2, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("arguments must be ndarrays"));
     }
     ndarray_obj_t *m1 = MP_OBJ_TO_PTR(_m1);
@@ -246,14 +246,14 @@ mp_obj_t linalg_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
     uint8_t dtype = args[1].u_int;
-    if(!mp_obj_is_int(args[0].u_obj) && !mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
+    if(!MP_OBJ_IS_INT(args[0].u_obj) && !MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
         mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
     }
     ndarray_obj_t *ndarray = NULL;
-    if(mp_obj_is_int(args[0].u_obj)) {
+    if(MP_OBJ_IS_INT(args[0].u_obj)) {
         size_t n = mp_obj_get_int(args[0].u_obj);
         ndarray = create_new_ndarray(1, n, dtype);
-    } else if(mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
+    } else if(MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
         mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0].u_obj);
         if(tuple->len != 2) {
             mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
@@ -291,7 +291,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_ones_obj, 0, linalg_ones);
 mp_obj_t linalg_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_M, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_M, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_k, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },        
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
     };
@@ -334,7 +334,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_eye_obj, 0, linalg_eye);
 
 #if ULAB_LINALG_DET
 mp_obj_t linalg_det(mp_obj_t oin) {
-    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
+    if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("function defined for ndarrays only"));
     }
     ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
@@ -375,7 +375,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 
 #if ULAB_LINALG_EIG
 mp_obj_t linalg_eig(mp_obj_t oin) {
-    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
+    if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("function defined for ndarrays only"));
     }
     ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);

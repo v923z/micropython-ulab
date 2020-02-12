@@ -154,7 +154,7 @@ mp_obj_t ndarray_copy(mp_obj_t self_in) {
 
 STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT } },
     };
     
@@ -165,11 +165,8 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
     return dtype;
 }
 
-mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    uint8_t dtype = ndarray_init_helper(n_args, args, &kw_args);
+STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
+    uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
 
     size_t len1, len2=0, i=0;
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
@@ -215,6 +212,25 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     return MP_OBJ_FROM_PTR(self);
 }
 
+#ifdef CIRCUITPY
+mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 2, true);
+    size_t n_kw = 0;
+    if (kw_args != 0) {
+        n_kw = kw_args->used;
+    }
+    mp_map_init_fixed_table(kw_args, n_kw, args + n_args);
+    return ndarray_make_new_core(type, n_args, n_kw, args, kw_args);
+}
+#else
+mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 2, true);
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    return ndarray_make_new_core(type, n_args, n_kw, args, &kw_args);
+}
+#endif
+
 size_t slice_length(mp_bound_slice_t slice) {
     int32_t len, correction = 1;
     if(slice.step > 0) correction = -1;
@@ -230,7 +246,7 @@ size_t true_length(mp_obj_t bool_list) {
     mp_obj_t item, iterable = mp_getiter(bool_list, &iter_buf);
     size_t trues = 0;
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        if(!mp_obj_is_type(item, &mp_type_bool)) {
+        if(!MP_OBJ_IS_TYPE(item, &mp_type_bool)) {
             // numpy seems to be a little bit inconsistent in when an index is considered
             // to be True/False. Bail out immediately, if the items are not True/False
             return 0;
@@ -245,9 +261,9 @@ size_t true_length(mp_obj_t bool_list) {
 mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
     // micropython seems to have difficulties with negative steps
     mp_bound_slice_t slice;
-    if(mp_obj_is_type(index, &mp_type_slice)) {
+    if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
         mp_seq_get_fast_slice_indexes(n, index, &slice);
-    } else if(mp_obj_is_int(index)) {
+    } else if(MP_OBJ_IS_INT(index)) {
         int32_t _index = mp_obj_get_int(index);
         if(_index < 0) {
             _index += n;
@@ -461,7 +477,7 @@ mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t
     mp_bound_slice_t row_slice = simple_slice(0, 0, 1), column_slice = simple_slice(0, 0, 1);
 
     size_t m = 0, n = 0;
-    if(mp_obj_is_int(index) && (ndarray->m == 1) && (values == NULL)) { 
+    if(MP_OBJ_IS_INT(index) && (ndarray->m == 1) && (values == NULL)) { 
         // we have a row vector, and don't want to assign
         column_slice = generate_slice(ndarray->n, index);
         if(slice_length(column_slice) == 1) { // we were asked for a single item
@@ -470,7 +486,7 @@ mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t
         }
     }
     
-    if(mp_obj_is_int(index) || mp_obj_is_type(index, &mp_type_slice)) {
+    if(MP_OBJ_IS_INT(index) || MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
         if(ndarray->m == 1) { // we have a row vector
             column_slice = generate_slice(ndarray->n, index);
             row_slice = simple_slice(0, 1, 1);
@@ -481,7 +497,7 @@ mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t
         m = slice_length(row_slice);
         n = slice_length(column_slice);
         return iterate_slice_list(ndarray, m, n, row_slice, column_slice, mp_const_none, mp_const_none, values);
-    } else if(mp_obj_is_type(index, &mp_type_list)) {
+    } else if(MP_OBJ_IS_TYPE(index, &mp_type_list)) {
         n = true_length(index);
         if(ndarray->m == 1) { // we have a flat array
             // we might have to separate the n == 1 case
@@ -496,17 +512,17 @@ mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t
         if(tuple->len != 2) {
             mp_raise_msg(&mp_type_IndexError, translate("too many indices"));
         }
-        if(!(mp_obj_is_type(tuple->items[0], &mp_type_list) || 
-            mp_obj_is_type(tuple->items[0], &mp_type_slice) || 
-            mp_obj_is_int(tuple->items[0])) || 
-           !(mp_obj_is_type(tuple->items[1], &mp_type_list) || 
-            mp_obj_is_type(tuple->items[1], &mp_type_slice) || 
-            mp_obj_is_int(tuple->items[1]))) {
+        if(!(MP_OBJ_IS_TYPE(tuple->items[0], &mp_type_list) || 
+            MP_OBJ_IS_TYPE(tuple->items[0], &mp_type_slice) || 
+            MP_OBJ_IS_INT(tuple->items[0])) || 
+           !(MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_list) || 
+            MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_slice) || 
+            MP_OBJ_IS_INT(tuple->items[1]))) {
                 mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
         }
-        if(mp_obj_is_type(tuple->items[0], &mp_type_list)) { // rows are indexed by Boolean list
+        if(MP_OBJ_IS_TYPE(tuple->items[0], &mp_type_list)) { // rows are indexed by Boolean list
             m = true_length(tuple->items[0]);
-            if(mp_obj_is_type(tuple->items[1], &mp_type_list)) {
+            if(MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_list)) {
                 n = true_length(tuple->items[1]);
                 return iterate_slice_list(ndarray, m, n, row_slice, column_slice, 
                                           tuple->items[0], tuple->items[1], values);
@@ -520,7 +536,7 @@ mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t
         } else { // rows are indexed by a slice, or an integer
             row_slice = generate_slice(ndarray->m, tuple->items[0]);
             m = slice_length(row_slice);
-            if(mp_obj_is_type(tuple->items[1], &mp_type_list)) { // columns are indexed by a Boolean list
+            if(MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_list)) { // columns are indexed by a Boolean list
                 n = true_length(tuple->items[1]);
                 return iterate_slice_list(ndarray, m, n, row_slice, column_slice, 
                                          mp_const_none, tuple->items[1], values);
@@ -541,12 +557,12 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) { // return value(s)
         return ndarray_get_slice(self, index, NULL);    
     } else { // assignment to slices; the value must be an ndarray, or a scalar
-        if(!mp_obj_is_type(value, &ulab_ndarray_type) && 
-          !mp_obj_is_int(value) && !mp_obj_is_float(value)) {
+        if(!MP_OBJ_IS_TYPE(value, &ulab_ndarray_type) && 
+          !MP_OBJ_IS_INT(value) && !mp_obj_is_float(value)) {
             mp_raise_ValueError(translate("right hand side must be an ndarray, or a scalar"));
         } else {
             ndarray_obj_t *values = NULL;
-            if(mp_obj_is_int(value)) {
+            if(MP_OBJ_IS_INT(value)) {
                 values = create_new_ndarray(1, 1, self->array->typecode);
                 mp_binary_set_val_array(values->array->typecode, values->array->items, 0, value);   
             } else if(mp_obj_is_float(value)) {
@@ -680,7 +696,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     // TODO: implement in-place operators
     mp_obj_t RHS = MP_OBJ_NULL;
     bool rhs_is_scalar = true;
-    if(mp_obj_is_int(rhs)) {
+    if(MP_OBJ_IS_INT(rhs)) {
         int32_t ivalue = mp_obj_get_int(rhs);
         if((ivalue > 0) && (ivalue < 256)) {
             CREATE_SINGLE_ITEM(RHS, uint8_t, NDARRAY_UINT8, ivalue);
@@ -701,7 +717,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
         rhs_is_scalar = false;
     }
     //else 
-    if(mp_obj_is_type(lhs, &ulab_ndarray_type) && mp_obj_is_type(RHS, &ulab_ndarray_type)) { 
+    if(MP_OBJ_IS_TYPE(lhs, &ulab_ndarray_type) && MP_OBJ_IS_TYPE(RHS, &ulab_ndarray_type)) { 
         // next, the ndarray stuff
         ndarray_obj_t *ol = MP_OBJ_TO_PTR(lhs);
         ndarray_obj_t *or = MP_OBJ_TO_PTR(RHS);

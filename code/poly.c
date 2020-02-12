@@ -18,17 +18,17 @@
 
 #if ULAB_POLY_POLYVAL || ULAB_POLY_POLYFIT
 bool object_is_nditerable(mp_obj_t o_in) {
-    if(mp_obj_is_type(o_in, &ulab_ndarray_type) || 
-      mp_obj_is_type(o_in, &mp_type_tuple) || 
-      mp_obj_is_type(o_in, &mp_type_list) || 
-      mp_obj_is_type(o_in, &mp_type_range)) {
+    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) || 
+      MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || 
+      MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
+      MP_OBJ_IS_TYPE(o_in, &mp_type_range)) {
         return true;
     }
     return false;
 }
 
 size_t get_nditerable_len(mp_obj_t o_in) {
-    if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
+    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *in = MP_OBJ_TO_PTR(o_in);
         return in->array->len;
     } else {
@@ -43,7 +43,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: there is a bug here: matrices won't work, 
     // because there is a single iteration loop
     size_t m, n;
-    if(mp_obj_is_type(o_x, &ulab_ndarray_type)) {
+    if(MP_OBJ_IS_TYPE(o_x, &ulab_ndarray_type)) {
         ndarray_obj_t *ndx = MP_OBJ_TO_PTR(o_x);
         m = ndx->m;
         n = ndx->n;

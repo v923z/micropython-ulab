@@ -78,11 +78,11 @@ void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
 }
 
 mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, uint8_t type) {
-    if(!mp_obj_is_type(arg_re, &ulab_ndarray_type)) {
+    if(!MP_OBJ_IS_TYPE(arg_re, &ulab_ndarray_type)) {
         mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
     } 
     if(n_args == 2) {
-        if(!mp_obj_is_type(arg_im, &ulab_ndarray_type)) {
+        if(!MP_OBJ_IS_TYPE(arg_im, &ulab_ndarray_type)) {
             mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
         }
     }
