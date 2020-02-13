@@ -15,77 +15,14 @@
 #include "ulab.h"
 #include "ndarray.h"
 
-#if ULAB_NUMERICAL_LINSPACE
-mp_obj_t numerical_linspace(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_linspace_obj);
-#endif
+#if ULAB_NUMERICAL_MODULE
 
-#if ULAB_NUMERICAL_SUM
-mp_obj_t numerical_sum(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sum_obj);
-#endif
-
-#if ULAB_NUMERICAL_MEAN
-mp_obj_t numerical_mean(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_mean_obj);
-#endif
-
-#if ULAB_NUMERICAL_STD
-mp_obj_t numerical_std(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_std_obj);
-#endif
-
-#if ULAB_NUMERICAL_MIN
-mp_obj_t numerical_min(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_min_obj);
-#endif
-
-#if ULAB_NUMERICAL_MAX
-mp_obj_t numerical_max(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_max_obj);
-#endif
-
-#if ULAB_NUMERICAL_ARGMIN
-mp_obj_t numerical_argmin(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmin_obj);
-#endif
-
-#if ULAB_NUMERICAL_ARGMAX
-mp_obj_t numerical_argmax(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmax_obj);
-#endif
-
-#if ULAB_NUMERICAL_ROLL
-mp_obj_t numerical_roll(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_roll_obj);
-#endif
-
+mp_obj_module_t ulab_numerical_module;
 
 // TODO: implement minimum/maximum, and cumsum
 //mp_obj_t numerical_minimum(mp_obj_t , mp_obj_t );
 //mp_obj_t numerical_maximum(mp_obj_t , mp_obj_t );
 //mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);
-
-#if ULAB_NUMERICAL_FLIP
-mp_obj_t numerical_flip(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_flip_obj);
-#endif
-
-#if ULAB_NUMERICAL_DIFF
-mp_obj_t numerical_diff(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_diff_obj);
-#endif
-
-#if ULAB_NUMERICAL_SORT
-mp_obj_t numerical_sort(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sort_obj);
-
-mp_obj_t numerical_sort_inplace(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj);
-
-mp_obj_t numerical_argsort(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argsort_obj);
-#endif
 
 #define RUN_ARGMIN(in, out, typein, typeout, len, start, increment, op, pos) do {\
     typein *array = (typein *)(in)->array->items;\
@@ -211,4 +148,5 @@ MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argsort_obj);
     }\
 } while(0)
 
+#endif
 #endif

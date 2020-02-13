@@ -16,7 +16,7 @@
 #include "linalg.h"
 #include "poly.h"
 
-#if ULAB_POLY_POLYVAL || ULAB_POLY_POLYFIT
+#if ULAB_POLY_MODULE
 bool object_is_nditerable(mp_obj_t o_in) {
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) || 
       MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || 
@@ -35,9 +35,7 @@ size_t get_nditerable_len(mp_obj_t o_in) {
         return (size_t)mp_obj_get_int(mp_obj_len_maybe(o_in));
     }
 }
-#endif
 
-#if ULAB_POLY_POLYVAL
 mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: return immediately, if o_p is not an iterable
     // TODO: there is a bug here: matrices won't work, 
@@ -86,9 +84,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
-#endif
 
-#if ULAB_POLY_POLYFIT
 mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     if((n_args != 2) && (n_args != 3)) {
         mp_raise_ValueError(translate("number of arguments must be 2, or 3"));
@@ -200,4 +196,17 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj, 2, 3, poly_polyfit);
+
+STATIC const mp_rom_map_elem_t ulab_poly_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_polyfit), (mp_obj_t)&poly_polyfit_obj },
+};
+
+STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_poly_globals, ulab_poly_globals_table);
+
+mp_obj_module_t ulab_poly_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&mp_module_ulab_poly_globals,
+};
+
 #endif

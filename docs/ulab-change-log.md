@@ -1,4 +1,10 @@
 
+Thu, 13 Feb 2020
+
+version 0.33.0
+
+    sub-modules are now proper sub-modules of ulab
+    
 Tue, 11 Feb 2020
 
 version 0.32.0

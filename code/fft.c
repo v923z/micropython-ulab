@@ -14,13 +14,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "py/runtime.h"
+#include "py/builtin.h"
 #include "py/binary.h"
 #include "py/obj.h"
 #include "py/objarray.h"
 #include "ndarray.h"
 #include "fft.h"
 
-#if ULAB_FFT_FFT || ULAB_FFT_IFFT || ULAB_FFT_SPECTRUM
+#if ULAB_FFT_MODULE
 
 enum FFT_TYPE {
     FFT_FFT,
@@ -146,7 +147,6 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     }
 }
 
-#if ULAB_FFT_FFT
 mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_FFT);
@@ -156,9 +156,7 @@ mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
-#endif
 
-#if ULAB_FFT_IFFT
 mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_IFFT);
@@ -168,9 +166,7 @@ mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
-#endif
 
-#if ULAB_FFT_SPECTRUM
 mp_obj_t fft_spectrum(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_SPECTRUM);
@@ -180,6 +176,18 @@ mp_obj_t fft_spectrum(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrum_obj, 1, 2, fft_spectrum);
-#endif
+
+STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_spectrum), (mp_obj_t)&fft_spectrum_obj },
+};
+
+STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_fft_globals, ulab_fft_globals_table);
+
+mp_obj_module_t ulab_fft_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&mp_module_ulab_fft_globals,
+};
 
 #endif
