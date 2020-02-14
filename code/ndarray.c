@@ -912,6 +912,60 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
+mp_obj_t ndarray_transpose(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // the size of a single item in the array
+    uint8_t _sizeof = mp_binary_get_size('@', self->array->typecode, NULL);
+    
+    // NOTE: 
+    // if the matrices are square, we can simply swap items, but 
+    // generic matrices can't be transposed in place, so we have to 
+    // declare a temporary variable
+    
+    // NOTE: 
+    //  In the old matrix, the coordinate (m, n) is m*self->n + n
+    //  We have to assign this to the coordinate (n, m) in the new 
+    //  matrix, i.e., to n*self->m + m (since the new matrix has self->m columns)
+    
+    // one-dimensional arrays can be transposed by simply swapping the dimensions
+    if((self->m != 1) && (self->n != 1)) {
+        uint8_t *c = (uint8_t *)self->array->items;
+        // self->bytes is the size of the bytearray, irrespective of the typecode
+        uint8_t *tmp = m_new(uint8_t, self->bytes);
+        for(size_t m=0; m < self->m; m++) {
+            for(size_t n=0; n < self->n; n++) {
+                memcpy(tmp+_sizeof*(n*self->m + m), c+_sizeof*(m*self->n + n), _sizeof);
+            }
+        }
+        memcpy(self->array->items, tmp, self->bytes);
+        m_del(uint8_t, tmp, self->bytes);
+    } 
+    SWAP(size_t, self->m, self->n);
+    return mp_const_none;
+}
+
+mp_obj_t ndarray_reshape(mp_obj_t self_in, mp_obj_t shape) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if(!MP_OBJ_IS_TYPE(shape, &mp_type_tuple) || (MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(shape)) != 2)) {
+        mp_raise_ValueError(translate("shape must be a 2-tuple"));
+    }
+
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t item, iterable = mp_getiter(shape, &iter_buf);
+    uint16_t m, n;
+    item = mp_iternext(iterable);
+    m = mp_obj_get_int(item);
+    item = mp_iternext(iterable);
+    n = mp_obj_get_int(item);
+    if(m*n != self->m*self->n) {
+        // TODO: the proper error message would be "cannot reshape array of size %d into shape (%d, %d)"
+        mp_raise_ValueError(translate("cannot reshape array (incompatible input/output shape)"));
+    }
+    self->m = m;
+    self->n = n;
+    return MP_OBJ_FROM_PTR(self);
+}
+
 mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // buffer_p.get_buffer() returns zero for success, while mp_get_buffer returns true for success
@@ -919,6 +973,9 @@ mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint
 }
 
 void ndarray_attributes(mp_obj_t self_in, qstr attribute, mp_obj_t *destination) {
+    if(destination[0] != MP_OBJ_NULL) {
+        return;
+    }
     if(attribute == MP_QSTR_size) {
         destination[0] = ndarray_size(self_in);
     } else if(attribute == MP_QSTR_itemsize) {

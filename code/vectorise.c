@@ -87,6 +87,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_ceil_obj, vectorise_ceil);
 MATH_FUN_1(cos, cos);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cos_obj, vectorise_cos);
 
+MATH_FUN_1(cosh, cosh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cosh_obj, vectorise_cosh);
+
 MATH_FUN_1(erf, erf);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erf_obj, vectorise_erf);
 
@@ -133,6 +136,7 @@ MATH_FUN_1(tanh, tanh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tanh_obj, vectorise_tanh);
 
 STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_vector) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },

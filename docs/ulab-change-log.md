@@ -1,4 +1,10 @@
 
+Fri, 14 Feb 2020
+
+version 0.33.1
+
+    added the __name__attribute to all sub-modules
+
 Thu, 13 Feb 2020
 
 version 0.33.0

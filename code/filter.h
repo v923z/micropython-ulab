@@ -15,7 +15,7 @@
 #include "ulab.h"
 #include "ndarray.h"
 
-#if ULAB_FILTER_CONVOLVE
+#if ULAB_FILTER_MODULE
 
 mp_obj_module_t ulab_filter_module;
 

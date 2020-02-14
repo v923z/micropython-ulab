@@ -15,8 +15,6 @@
 #include "ulab.h"
 #include "ndarray.h"
 
-#define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
-
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define epsilon        1.2e-7
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
@@ -29,7 +27,6 @@
 bool linalg_invert_matrix(mp_float_t *, size_t );
 #endif
 
-// TODO: transpose, reshape and size should probably be part of ndarray.c
 #if ULAB_LINALG_MODULE
 
 mp_obj_module_t ulab_linalg_module;
