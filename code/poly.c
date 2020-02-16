@@ -92,8 +92,8 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     if(!object_is_nditerable(args[0])) {
         mp_raise_ValueError(translate("input data must be an iterable"));
     }
-    uint16_t lenx, leny;
-    uint8_t deg;
+    uint16_t lenx = 0, leny = 0;
+    uint8_t deg = 0;
     mp_float_t *x, *XT, *y, *prod;
 
     if(n_args == 2) { // only the y values are supplied

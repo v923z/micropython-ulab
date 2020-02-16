@@ -20,23 +20,24 @@
 
 #include "ulab.h"
 #include "ndarray.h"
+#include "ndarray_properties.h"
 #include "linalg.h"
 #include "vectorise.h"
 #include "poly.h"
 #include "fft.h"
 #include "filter.h"
 #include "numerical.h"
+#include "extras.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.33.1");
-
-MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
-MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
-MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.33.2");
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },
     { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },
     { MP_ROM_QSTR(MP_QSTR_transpose), MP_ROM_PTR(&ndarray_transpose_obj) },
+    { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
+    { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&ndarray_size_obj) },
+    { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&ndarray_itemsize_obj) },
 //    { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&numerical_sort_inplace_obj) },
 };
 
@@ -53,7 +54,6 @@ const mp_obj_type_t ulab_ndarray_type = {
     .binary_op = ndarray_binary_op,
     .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
-    .attr = ndarray_attributes,
 };
 
 STATIC const mp_map_elem_t ulab_globals_table[] = {
@@ -64,7 +64,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
     #endif
     #if ULAB_VECTORISE_MODULE
-    { MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vector_module) },
+    { MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vectorise_module) },
     #endif
     #if ULAB_NUMERICAL_MODULE
     { MP_ROM_QSTR(MP_QSTR_numerical), MP_ROM_PTR(&ulab_numerical_module) },
@@ -77,6 +77,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #endif
     #if ULAB_FILTER_MODULE
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&ulab_filter_module) },
+    #endif
+    #if ULAB_EXTRAS_MODULE
+    { MP_ROM_QSTR(MP_QSTR_extras), MP_ROM_PTR(&ulab_extras_module) },
     #endif
     // class constants
     { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },

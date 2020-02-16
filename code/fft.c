@@ -103,8 +103,9 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
         memcpy((mp_float_t *)out_re->array->items, (mp_float_t *)re->array->items, re->bytes);
     } else {
         for(size_t i=0; i < len; i++) {
-            data_re[i] = ndarray_get_float_value(re->array->items, re->array->typecode, i);
+            *data_re++ = ndarray_get_float_value(re->array->items, re->array->typecode, i);
         }
+        data_re -= len;
     }
     ndarray_obj_t *out_im = create_new_ndarray(1, len, NDARRAY_FLOAT);
     mp_float_t *data_im = (mp_float_t *)out_im->array->items;
@@ -118,23 +119,27 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
             memcpy((mp_float_t *)out_im->array->items, (mp_float_t *)im->array->items, im->bytes);
         } else {
             for(size_t i=0; i < len; i++) {
-                data_im[i] = ndarray_get_float_value(im->array->items, im->array->typecode, i);
+               *data_im++ = ndarray_get_float_value(im->array->items, im->array->typecode, i);
             }
+            data_im -= len;
         }
     }
+
     if((type == FFT_FFT) || (type == FFT_SPECTRUM)) {
         fft_kernel(data_re, data_im, len, 1);
         if(type == FFT_SPECTRUM) {
             for(size_t i=0; i < len; i++) {
-                data_re[i] = MICROPY_FLOAT_C_FUN(sqrt)(data_re[i]*data_re[i] + data_im[i]*data_im[i]);
+                *data_re = MICROPY_FLOAT_C_FUN(sqrt)(*data_re * *data_re + *data_im * *data_im);
+                data_re++;
+                data_im++;
             }
         }
     } else { // inverse transform
         fft_kernel(data_re, data_im, len, -1);
         // TODO: numpy accepts the norm keyword argument
         for(size_t i=0; i < len; i++) {
-            data_re[i] /= len;
-            data_im[i] /= len;
+            *data_re++ /= len;
+            *data_im++ /= len;
         }
     }
     if(type == FFT_SPECTRUM) {

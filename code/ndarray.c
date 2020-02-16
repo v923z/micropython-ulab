@@ -304,7 +304,7 @@ mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
                             mp_obj_t row_list, mp_obj_t column_list, 
                             ndarray_obj_t *values) {
     if((m != values->m) && (n != values->n)) {
-        if((values->array->len != 1)) { // not a single item
+        if(values->array->len != 1) { // not a single item
             mp_raise_ValueError(translate("could not broadast input array from shape"));
         }
     }
@@ -595,7 +595,7 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
     // TODO: in numpy, ndarrays are iterated with respect to the first axis. 
     size_t iter_end = 0;
-    if((ndarray->m == 1)) {
+    if(ndarray->m == 1) {
         iter_end = ndarray->array->len;
     } else {
         iter_end = ndarray->m;
@@ -890,12 +890,12 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 return ndarray_copy(self_in);
             }
             ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
-            if((self->array->typecode == NDARRAY_INT8)) {
+            if(self->array->typecode == NDARRAY_INT8) {
                 int8_t *array = (int8_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) {
                     if(array[i] < 0) array[i] = -array[i];
                 }
-            } else if((self->array->typecode == NDARRAY_INT16)) {
+            } else if(self->array->typecode == NDARRAY_INT16) {
                 int16_t *array = (int16_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) {
                     if(array[i] < 0) array[i] = -array[i];
@@ -944,6 +944,8 @@ mp_obj_t ndarray_transpose(mp_obj_t self_in) {
     return mp_const_none;
 }
 
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
+
 mp_obj_t ndarray_reshape(mp_obj_t self_in, mp_obj_t shape) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if(!MP_OBJ_IS_TYPE(shape, &mp_type_tuple) || (MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(shape)) != 2)) {
@@ -966,21 +968,10 @@ mp_obj_t ndarray_reshape(mp_obj_t self_in, mp_obj_t shape) {
     return MP_OBJ_FROM_PTR(self);
 }
 
+MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
+
 mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // buffer_p.get_buffer() returns zero for success, while mp_get_buffer returns true for success
     return !mp_get_buffer(self->array, bufinfo, flags);
-}
-
-void ndarray_attributes(mp_obj_t self_in, qstr attribute, mp_obj_t *destination) {
-    if(destination[0] != MP_OBJ_NULL) {
-        return;
-    }
-    if(attribute == MP_QSTR_size) {
-        destination[0] = ndarray_size(self_in);
-    } else if(attribute == MP_QSTR_itemsize) {
-        destination[0] = ndarray_itemsize(self_in);
-    } else if(attribute == MP_QSTR_shape) {
-        destination[0] = ndarray_shape(self_in);
-    }
 }

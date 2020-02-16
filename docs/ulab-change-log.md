@@ -1,4 +1,10 @@
 
+Sun, 16 Feb 2020
+
+version 0.33.2
+
+    moved properties into ndarray_properties.h, implemented pointer arithmetic in fft.c to save some time
+
 Fri, 14 Feb 2020
 
 version 0.33.1

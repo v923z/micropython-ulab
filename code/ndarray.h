@@ -70,15 +70,20 @@ mp_obj_t ndarray_getiter(mp_obj_t , mp_obj_iter_buf_t *);
 mp_obj_t ndarray_binary_op(mp_binary_op_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_unary_op(mp_unary_op_t , mp_obj_t );
 
-//mp_obj_t ndarray_shape(mp_obj_t );
-//mp_obj_t ndarray_size(mp_obj_t );
+mp_obj_t ndarray_shape(mp_obj_t );
+mp_obj_t ndarray_size(mp_obj_t );
+mp_obj_t ndarray_itemsize(mp_obj_t );
 mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
+
 mp_obj_t ndarray_reshape(mp_obj_t , mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_2(ndarray_reshape_obj);
+
 mp_obj_t ndarray_transpose(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
 
 mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+//void ndarray_attributes(mp_obj_t , qstr , mp_obj_t *);
 
-void ndarray_attributes(mp_obj_t , qstr , mp_obj_t *);
 
 #define CREATE_SINGLE_ITEM(outarray, type, typecode, value) do {\
     ndarray_obj_t *tmp = create_new_ndarray(1, 1, (typecode));\

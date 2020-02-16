@@ -17,7 +17,7 @@
 
 #if ULAB_VECTORISE_MODULE
 
-mp_obj_module_t ulab_vector_module;
+mp_obj_module_t ulab_vectorise_module;
 
 #define ITERATE_VECTOR(type, source, out) do {\
     type *input = (type *)(source)->array->items;\

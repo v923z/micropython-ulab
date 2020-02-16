@@ -30,4 +30,7 @@
 // the filter module takes about 1 kB of flash space
 #define ULAB_FILTER_MODULE (1)
 
+// user-defined modules
+#define ULAB_EXTRAS_MODULE (0)
+
 #endif
