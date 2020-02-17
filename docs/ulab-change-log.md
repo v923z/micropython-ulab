@@ -1,4 +1,10 @@
 
+Mon, 17 Feb 2020
+
+version 0.32.1
+
+    temporary fix for issue #40
+    
 Tue, 11 Feb 2020
 
 version 0.32.0
