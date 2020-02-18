@@ -730,6 +730,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 
+#if !CIRCUITPY
 STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_linspace), (mp_obj_t)&numerical_linspace_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
@@ -748,9 +749,10 @@ STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_numerical_globals, ulab_numerical_globals_table);
 
-mp_obj_module_t ulab_numerical_module = {
+const mp_obj_module_t ulab_numerical_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_numerical_globals,
 };
+#endif
 
 #endif
