@@ -21,7 +21,7 @@
 
 #if ULAB_FFT_MODULE
 
-mp_obj_module_t ulab_fft_module;
+extern const mp_obj_module_t ulab_fft_module;
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj);
