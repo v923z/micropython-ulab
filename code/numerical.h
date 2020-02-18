@@ -148,5 +148,20 @@ mp_obj_module_t ulab_numerical_module;
     }\
 } while(0)
 
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_linspace_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_min_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_max_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmin_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmax_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sum_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_mean_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_std_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_roll_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_flip_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_diff_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sort_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argsort_obj);
+
 #endif
 #endif
