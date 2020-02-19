@@ -29,7 +29,7 @@
 #include "numerical.h"
 #include "extras.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.33.2");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.34.0");
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },
