@@ -54,6 +54,5 @@ jobs:
         echo -e "\nFAILURE $testbase";
         diff -u $testbase.exp $testbase.out;
         done
-      working-directory: tests
       if: failure()
 
