@@ -95,7 +95,7 @@ STATIC MP_DEFINE_CONST_DICT (
     ulab_globals_table
 );
 
-const mp_obj_module_t ulab_user_cmodule = {
+mp_obj_module_t ulab_user_cmodule = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_globals,
 };

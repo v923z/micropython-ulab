@@ -192,7 +192,7 @@ STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_fft_globals, ulab_fft_globals_table);
 
-const mp_obj_module_t ulab_fft_module = {
+mp_obj_module_t ulab_fft_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_fft_globals,
 };

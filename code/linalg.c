@@ -439,7 +439,7 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_linalg_globals, ulab_linalg_globals_table);
 
-const mp_obj_module_t ulab_linalg_module = {
+mp_obj_module_t ulab_linalg_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_linalg_globals,
 };

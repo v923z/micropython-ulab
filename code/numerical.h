@@ -17,7 +17,7 @@
 
 #if ULAB_NUMERICAL_MODULE
 
-extern const mp_obj_module_t ulab_numerical_module;
+extern mp_obj_module_t ulab_numerical_module;
 
 // TODO: implement minimum/maximum, and cumsum
 //mp_obj_t numerical_minimum(mp_obj_t , mp_obj_t );
