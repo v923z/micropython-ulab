@@ -9,11 +9,11 @@ another day. The day has come, so here is my story.
 Enter ulab
 ----------
 
-``ulab`` is a numpy-like module for micropython, meant to simplify and
-speed up common mathematical operations on arrays. The primary goal was
-to implement a small subset of numpy that might be useful in the context
-of a microcontroller. This means low-level data processing of linear
-(array) and two-dimensional (matrix) data.
+``ulab`` is a numpy-like module for ``micropython``, meant to simplify
+and speed up common mathematical operations on arrays. The primary goal
+was to implement a small subset of numpy that might be useful in the
+context of a microcontroller. This means low-level data processing of
+linear (array) and two-dimensional (matrix) data.
 
 Purpose
 -------
@@ -27,8 +27,9 @@ microcontroller, the data volume is probably small, but it might lead to
 catastrophic system failure, if these data are not processed in time,
 because the microcontroller is supposed to interact with the outside
 world in a timely fashion. In fact, this latter objective was the
-initiator of this project: I needed the Fourier transform of the ADC
-signal, and all the available options were simply too slow.
+initiator of this project: I needed the Fourier transform of a signal
+coming from the ADC of the pyboard, and all available options were
+simply too slow.
 
 In addition to speed, another issue that one has to keep in mind when
 working with embedded systems is the amount of available RAM: I believe,
@@ -42,15 +43,15 @@ matter, whether they are all smaller than 100, or larger than one
 hundred million. This is obviously a waste of resources in an
 environment, where resources are scarce.
 
-Finally, there is a reason for using micropython in the first place.
+Finally, there is a reason for using ``micropython`` in the first place.
 Namely, that a microcontroller can be programmed in a very elegant, and
 *pythonic* way. But if it is so, why should we not extend this idea to
 other tasks and concepts that might come up in this context? If there
 was no other reason than this *elegance*, I would find that convincing
 enough.
 
-Based on the above-mentioned considerations, all functions are
-implemented in a way that
+Based on the above-mentioned considerations, all functions in ``ulab``
+are implemented in a way that
 
 1. conforms to ``numpy`` as much as possible
 2. is so frugal with RAM as possible,
@@ -62,14 +63,14 @@ The main points of ``ulab`` are
    2 dimensions (arrays and matrices). These containers support all the
    relevant unary and binary operators (e.g., ``len``, ==, +, \*, etc.)
 -  vectorised computations on micropython iterables and numerical
-   arrays/matrices (in numpy-speak, universal functions)
+   arrays/matrices (in ``numpy``-speak, universal functions)
 -  basic linear algebra routines (matrix inversion, multiplication,
    reshaping, transposition, determinant, and eigenvalues)
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.32), the library adds
-approximately 30 kB of extra compiled code to the micropython
+At the time of writing this manual (for version 0.33.2), the library
+adds approximately 30 kB of extra compiled code to the micropython
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
 can easily shave off a couple of kB. See the section on `customising
 ulab <#Custom_builds>`__.
@@ -97,8 +98,9 @@ Friendly request
 
 If you use ``ulab``, and bump into a bug, or think that a particular
 function is missing, or its behaviour does not conform to ``numpy``,
-please, raise an issue on github, so that the community can profit from
-your experiences.
+please, raise a `ulab
+issue <#https://github.com/v923z/micropython-ulab/issues>`__ on github,
+so that the community can profit from your experiences.
 
 Even better, if you find the project useful, and think that it could be
 made better, faster, tighter, and shinier, please, consider
@@ -109,6 +111,89 @@ it offers what the community needs.
 These last comments apply to the documentation, too. If, in your
 opinion, the documentation is obscure, misleading, or not detailed
 enough, please, let me know, so that *we* can fix it.
+
+Differences between micropython-ulab and circuitpython-ulab
+-----------------------------------------------------------
+
+``ulab`` has originally been developed for ``micropython``, but has
+since been integrated into a number of its flavours. Most of these
+flavours are simply forks of ``micropython`` itself, with some
+additional functionality. One of the notable exceptions is
+``circuitpython``, which has slightly diverged at the core level, and
+this has some minor consequences. Some of these concern the C
+implementation details only, which all have been sorted out with the
+generous and enthusiastic support of Jeff Epler from `Adafruit
+Industries <http://www.adafruit.com>`__.
+
+There are, however, a couple of instances, where the usage in the two
+environments is slightly different at the python level. These are how
+the packges can be imported, and how the class properties can be
+accessed. In both cases, the ``circuitpython`` implementation results in
+``numpy``-conform code. ``numpy``-compatibility in ``micropython`` will
+be implemented as soon as ``micropython`` itself has the required tools.
+Till then we have to live with a workaround, which I will point out at
+the relevant places.
+
+Customising ``ulab``
+====================
+
+``ulab`` implements a great number of functions, which are organised in
+sub-modules. E.g., functions related to Fourier transforms are located
+in the ``ulab.fft`` sub-module, so you would import ``fft`` as
+
+.. code:: python
+
+   import ulab
+   from ulab import fft
+
+by which point you can get the FFT of your data by calling
+``fft.fft(...)``.
+
+The idea of such grouping of functions and methods is to provide a means
+for granularity: It is quite possible that you do not need all functions
+in a particular application. If you want to save some flash space, you
+can easily exclude arbitrary sub-modules from the firmware. The
+`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__
+header file contains a pre-processor flag for each sub-module. The
+default setting is 1 for each of them. Setting them to 0 removes the
+module from the compiled firmware.
+
+The first couple of lines of the file look like this
+
+.. code:: c
+
+   // vectorise (all functions) takes approx. 3 kB of flash space
+   #define ULAB_VECTORISE_MODULE (1)
+
+   // linalg adds around 6 kB
+   #define ULAB_LINALG_MODULE (1)
+
+   // poly is approx. 2.5 kB
+   #define ULAB_POLY_MODULE (1)
+
+In order to simplify navigation in the header, each flag begins with
+``ULAB_``, and continues with the name of the sub-module. This name is
+also the ``.c`` file, where the sub-module is implemented. So, e.g., the
+linear algebra routines can be found in ``linalg.c``, and the
+corresponding compiler flag is ``ULAB_LINALG_MODULE``. Each section
+displays a hint as to how much space you can save by un-setting the
+flag.
+
+At first, having to import everything in this way might appear to be
+overly complicated, but there is a very good reason behind all this: you
+can find out at the time of importing, whether a function or sub-module
+is part of your ``ulab`` firmware, or not. The alternative, namely, that
+you do not have to import anything beyond ``ulab``, could prove
+catastrophic: you would learn only at run time (at the moment of calling
+the function in your code) that a particular function is not in the
+firmware, and that is most probably too late.
+
+Except for ``fft``, the standard sub-modules, ``vector``, ``linalg``,
+``numerical``, ``and poly``\ all ``numpy``-compatible. User-defined
+functions that accept ``ndarray``\ s as their argument should be
+implemented in the ``extra`` sub-module, or its sub-modules. Hints as to
+how to do that can be found in the section `Extending
+ulab <#Extending-ulab>`__.
 
 Supported functions and methods
 ===============================
@@ -145,35 +230,6 @@ can always be queried as
 
 If you find a bug, please, include this number in your report!
 
-Customising ``ulab``
---------------------
-
-``ulab`` implements a great number of functions, and it is quite
-possible that you do not need all of them in a particular application.
-If you want to save some flash space, you can easily exclude arbitrary
-functions from the firmware. The
-`https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h <ulab.h>`__
-header file contains a pre-processor flag for all functions in ``ulab``.
-The default setting is 1 for each of them, but if you change that to 0,
-the corresponding function will not be part of the compiled firmware.
-
-The first couple of lines of the file look like this
-
-.. code:: c
-
-   // vectorise (all functions) takes approx. 3 kB of flash space
-   #define ULAB_VECTORISE_ACOS (1)
-   #define ULAB_VECTORISE_ACOSH (1)
-   #define ULAB_VECTORISE_ASIN (1)
-   #define ULAB_VECTORISE_ASINH (1)
-   #define ULAB_VECTORISE_ATAN (1)
-   #define ULAB_VECTORISE_ATANH (1)
-
-In order to simplify navigation in the file, each flag begins with
-``ULAB_``, continues with the sub-module, where the function itself is
-implemented, and ends with the function’s name. Each section displays a
-hint as to how much space you can save by un-setting the flag.
-
 Basic ndarray operations
 ------------------------
 
@@ -193,7 +249,11 @@ calls on general iterables)
 Methods of ndarrays
 -------------------
 
-`.shape <#.shape>`__
+`.shape\* <#.shape>`__
+
+`size\* <#size>`__
+
+`itemsize\* <#itemsize>`__
 
 `.reshape <#.reshape>`__
 
@@ -203,8 +263,6 @@ Methods of ndarrays
 
 Matrix methods
 --------------
-
-`size <#size>`__
 
 `inv <#inv>`__
 
@@ -276,9 +334,10 @@ ndarray, the basic container
 
 The ``ndarray`` is the underlying container of numerical data. It is
 derived from micropython’s own ``array`` object, but has a great number
-of extra features starting with how it can be initialised, how
+of extra features starting with how it can be initialised, which
 operations can be done on it, and which functions can accept it as an
-argument.
+argument. One important property of an ``ndarray`` is that it is also a
+proper ``micropython`` iterable.
 
 Since the ``ndarray`` is a binary container, it is also compact, meaning
 that it takes only a couple of bytes of extra RAM in addition to what is
@@ -292,7 +351,7 @@ precision/size of the ``float`` type depends on the definition of
 ``mp_float_t``. Some platforms, e.g., the PYBD, implement ``double``\ s,
 but some, e.g., the pyboard.v.11, don’t. You can find out, what type of
 float your particular platform implements by looking at the output of
-the `.rawsize <#.rawsize>`__ class method.
+the `.itemsize <#.itemsize>`__ class property.
 
 On the following pages, we will see how one can work with
 ``ndarray``\ s. Those familiar with ``numpy`` should find that the
@@ -300,7 +359,7 @@ nomenclature and naming conventions of ``numpy`` are adhered to as
 closely as possible. I will point out the few differences, where
 necessary.
 
-For the sake of comparison, in addition to ``ulab`` code snippets,
+For the sake of comparison, in addition to the ``ulab`` code snippets,
 sometimes the equivalent ``numpy`` code is also presented. You can find
 out, where the snippet is supposed to run by looking at its first line,
 the header.
@@ -427,6 +486,9 @@ Methods of ndarrays
 The ``.shape`` method (property) returns a 2-tuple with the number of
 rows, and columns.
 
+**WARNING:** In ``circuitpython``, you can call the method as a
+property, i.e.,
+
 .. code::
         
     # code to be run in micropython
@@ -455,11 +517,45 @@ rows, and columns.
     
 
 
+**WARNING:** On the other hand, since properties are not implemented in
+``micropython``, there you would call the method as a function, i.e.,
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    print("a:\n", a)
+    print("shape of a:", a.shape)
+    
+    b= np.array([[1, 2], [3, 4]], dtype=np.int8)
+    print("\nb:\n", b)
+    print("shape of b:", b.shape())
+
+.. parsed-literal::
+
+    a:
+     array([1, 2, 3, 4], dtype=int8)
+    shape of a: (1, 4)
+    
+    b:
+     array([[1, 2],
+    	 [3, 4]], dtype=int8)
+    shape of b: (2, 2)
+    
+    
+
+
 .size
 ~~~~~
 
 The ``.size`` method (property) returns an integer with the number of
 elements in the array.
+
+**WARNING:** In ``circuitpython``, the ``numpy`` nomenclature applies,
+i.e.,
 
 .. code::
         
@@ -489,11 +585,43 @@ elements in the array.
     
 
 
+**WARNING:** In ``micropython``, ``size`` is a method, i.e.,
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3], dtype=np.int8)
+    print("a:\n", a)
+    print("size of a:", a.size)
+    
+    b= np.array([[1, 2], [3, 4]], dtype=np.int8)
+    print("\nb:\n", b)
+    print("size of b:", b.size())
+
+.. parsed-literal::
+
+    a:
+     array([1, 2, 3], dtype=int8)
+    size of a: 3
+    
+    b:
+     array([[1, 2],
+    	 [3, 4]], dtype=int8)
+    size of b: 4
+    
+    
+
+
 .itemsize
 ~~~~~~~~~
 
 The ``.itemsize`` method (property) returns an integer with the siz
 enumber of elements in the array.
+
+**WARNING:** In ``circuitpython``:
 
 .. code::
         
@@ -508,6 +636,36 @@ enumber of elements in the array.
     b= np.array([[1, 2], [3, 4]], dtype=np.float)
     print("\nb:\n", b)
     print("itemsize of b:", b.itemsize)
+
+.. parsed-literal::
+
+    a:
+     array([1, 2, 3], dtype=int8)
+    itemsize of a: 1
+    
+    b:
+     array([[1.0, 2.0],
+    	 [3.0, 4.0]], dtype=float)
+    itemsize of b: 8
+    
+    
+
+
+**WARNING:** In ``micropython``:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3], dtype=np.int8)
+    print("a:\n", a)
+    print("itemsize of a:", a.itemsize)
+    
+    b= np.array([[1, 2], [3, 4]], dtype=np.float)
+    print("\nb:\n", b)
+    print("itemsize of b:", b.itemsize())
 
 .. parsed-literal::
 
@@ -2774,16 +2932,20 @@ parts of the transform separately.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
+    from ulab import vector
+    from ulab import fft
+    from ulab import linalg
     
-    x = np.linspace(0, 10, num=1024)
-    y = np.sin(x)
-    z = np.zeros(len(x))
+    x = numerical.linspace(0, 10, num=1024)
+    y = vector.sin(x)
+    z = linalg.zeros(len(x))
     
-    a, b = np.fft(x)
+    a, b = fft.fft(x)
     print('real part:\t', a)
     print('\nimaginary part:\t', b)
     
-    c, d = np.fft(x, z)
+    c, d = fft.fft(x, z)
     print('\nreal part:\t', c)
     print('\nimaginary part:\t', d)
 
@@ -3014,7 +3176,11 @@ result.
 Extending ulab
 ==============
 
-New functions can easily be added to ``ulab`` in a couple of simple
+As mentioned at the beginning, ``ulab`` is a set of sub-modules, out of
+which one, ``extra`` is explicitly reserved for user code. You should
+implement your functions in this sub-module, or sub-modules thereof.
+
+The new functions can easily be added to ``extra`` in a couple of simple
 steps. At the C level, the type definition of an ``ndarray`` is as
 follows:
 
@@ -3064,7 +3230,7 @@ or
 The ambiguity is caused by the fact that not all platforms implement
 ``double``, and there one has to take ``float``\ s. But you haven’t
 actually got to be concerned by this, because at the very beginning of
-``ndarray.h``, this is already taken care of: the preprocessor figures
+``ndarray.h``, this is already taken care of: the pre-processor figures
 out, what the ``float`` implementation of the hardware platform is, and
 defines the ``NDARRAY_FLOAT`` typecode accordingly. All you have to keep
 in mind is that wherever you would use ``float`` or ``double``, you have
@@ -3241,47 +3407,15 @@ and return that, you could work along the following lines:
        return MP_PTR_TO_OBJ(ndarray);
    }
 
-In the boilerplate above, we cast the pointer to ``array->items`` to the
-required type. There are certain operations, however, when you do not
-need the casting. If you do not want to change the array’s values, only
-their position within the array, you can get away with copying the
-memory content, regardless the type. A good example for such a scenario
-is the transpose function in
-https://github.com/v923z/micropython-ulab/blob/master/code/linalg.c.
-
-Compiling your module
----------------------
-
-Once you have implemented the functionality you wanted, you have to
-include the source code in the make file by adding it to
-``micropython.mk``:
-
-.. code:: makefile
-
-   USERMODULES_DIR := $(USERMOD_DIR)
-
-   # Add all C files to SRC_USERMOD.
-   SRC_USERMOD += $(USERMODULES_DIR)/ndarray.c
-   SRC_USERMOD += $(USERMODULES_DIR)/linalg.c
-   SRC_USERMOD += $(USERMODULES_DIR)/vectorise.c
-   SRC_USERMOD += $(USERMODULES_DIR)/poly.c
-   SRC_USERMOD += $(USERMODULES_DIR)/fft.c
-   SRC_USERMOD += $(USERMODULES_DIR)/numerical.c
-   SRC_USERMOD += $(USERMODULES_DIR)/ulab.c
-
-   SRC_USERMOD += $(USERMODULES_DIR)/your_module.c
-
-   CFLAGS_USERMOD += -I$(USERMODULES_DIR)
-
-In addition, you also have to add the function objects to ``ulab.c``,
-and create a ``QString`` for the function name:
+Once the function implementation is done, you should add the function
+object to the globals dictionary of the ``extra`` sub-module as
 
 .. code:: c
 
    ...
        MP_DEFINE_CONST_FUN_OBJ_1(useless_function_obj, userless_function);
    ...
-       STATIC const mp_map_elem_t ulab_globals_table[] = {
+       STATIC const mp_map_elem_t extra_globals_table[] = {
    ...
        { MP_OBJ_NEW_QSTR(MP_QSTR_useless), (mp_obj_t)&useless_function_obj },
    ...
@@ -3299,24 +3433,18 @@ and so on. For a thorough discussion on how function objects have to be
 defined, see, e.g., the `user module programming
 manual <#https://micropython-usermod.readthedocs.io/en/latest/>`__.
 
-At this point, you should be able to compile the module with your
-extension by running ``make`` on the command line
+And with that, you are done. You can simply call the compiler as
 
 .. code:: bash
 
-   make USER_C_MODULES=../../../ulab all
+   make BOARD=PYBV11 USER_C_MODULES=../../../ulab all
 
-for the unix port, and
+and the rest is taken care of.
 
-.. code:: bash
-
-   make BOARD=PYBV11 CROSS_COMPILE=<arm_tools_path>/bin/arm-none-eabi- USER_C_MODULES=../../../ulab all
-
-for the ``pyboard``, provided that the you have defined
-
-.. code:: makefile
-
-   #define MODULE_ULAB_ENABLED (1)
-
-somewhere in ``micropython/port/unix/mpconfigport.h``, or
-``micropython/stm32/mpconfigport.h``, respectively.
+In the boilerplate above, we cast the pointer to ``array->items`` to the
+required type. There are certain operations, however, when you do not
+need the casting. If you do not want to change the array’s values, only
+their position within the array, you can get away with copying the
+memory content, regardless the type. A good example for such a scenario
+is the transpose function in
+https://github.com/v923z/micropython-ulab/blob/master/code/linalg.c.
