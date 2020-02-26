@@ -29,7 +29,7 @@ bool linalg_invert_matrix(mp_float_t *, size_t );
 
 #if ULAB_LINALG_MODULE
 
-mp_obj_module_t ulab_linalg_module;
+extern mp_obj_module_t ulab_linalg_module;
 
 #endif
 #endif

@@ -424,6 +424,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 
+#if !CIRCUITPY
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
     { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
@@ -442,5 +443,6 @@ mp_obj_module_t ulab_linalg_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_linalg_globals,
 };
+#endif
 
 #endif

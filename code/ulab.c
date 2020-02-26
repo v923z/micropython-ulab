@@ -29,7 +29,7 @@
 #include "numerical.h"
 #include "extras.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.33.2");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.34.0");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
@@ -60,6 +60,7 @@ const mp_obj_type_t ulab_ndarray_type = {
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 
+#if !CIRCUITPY
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
@@ -98,9 +99,10 @@ STATIC MP_DEFINE_CONST_DICT (
     ulab_globals_table
 );
 
-const mp_obj_module_t ulab_user_cmodule = {
+mp_obj_module_t ulab_user_cmodule = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_globals,
 };
 
 MP_REGISTER_MODULE(MP_QSTR_ulab, ulab_user_cmodule, MODULE_ULAB_ENABLED);
+#endif
