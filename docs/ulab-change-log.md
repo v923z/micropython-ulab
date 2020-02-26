@@ -1,4 +1,28 @@
 
+Tue, 18 Feb 2020
+
+version 0.34.0
+
+    split ulab into multiple modules
+
+Sun, 16 Feb 2020
+
+version 0.33.2
+
+    moved properties into ndarray_properties.h, implemented pointer arithmetic in fft.c to save some time
+
+Fri, 14 Feb 2020
+
+version 0.33.1
+
+    added the __name__attribute to all sub-modules
+
+Thu, 13 Feb 2020
+
+version 0.33.0
+
+    sub-modules are now proper sub-modules of ulab
+
 Mon, 17 Feb 2020
 
 version 0.32.1

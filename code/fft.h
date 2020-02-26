@@ -19,19 +19,13 @@
 
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
-#if ULAB_FFT_FFT
-mp_obj_t fft_fft(size_t , const mp_obj_t *);
+#if ULAB_FFT_MODULE
+
+extern mp_obj_module_t ulab_fft_module;
+
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj);
-#endif
-
-#if ULAB_FFT_IFFT
-mp_obj_t fft_ifft(size_t , const mp_obj_t *);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj);
-#endif
-
-#if ULAB_FFT_SPECTRUM
-mp_obj_t fft_spectrum(size_t , const mp_obj_t *);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrum_obj);
-#endif
 
+#endif
 #endif

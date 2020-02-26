@@ -1,6 +1,2 @@
-try:
-    import ulab
-except ImportError:
-    raise SystemExit
-
-print(ulab.eye(3))
+from ulab import linalg
+print(linalg.eye(3))

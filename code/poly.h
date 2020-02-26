@@ -14,14 +14,12 @@
 
 #include "ulab.h"
 
-#if ULAB_POLY_POLYVAL
-mp_obj_t poly_polyval(mp_obj_t , mp_obj_t );
+#if ULAB_POLY_MODULE
+
+extern mp_obj_module_t ulab_poly_module;
+
 MP_DECLARE_CONST_FUN_OBJ_2(poly_polyval_obj);
-#endif
-
-#if ULAB_POLY_POLYFIT
-mp_obj_t poly_polyfit(size_t  , const mp_obj_t *);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj);
-#endif
 
+#endif
 #endif

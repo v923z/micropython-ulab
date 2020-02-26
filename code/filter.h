@@ -15,9 +15,11 @@
 #include "ulab.h"
 #include "ndarray.h"
 
-#if ULAB_FILTER_CONVOLVE
-mp_obj_t filter_convolve(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(filter_convolve_obj);
-#endif
+#if ULAB_FILTER_MODULE
 
+extern mp_obj_module_t ulab_filter_module;
+
+MP_DECLARE_CONST_FUN_OBJ_KW(filter_convolve_obj);
+
+#endif
 #endif

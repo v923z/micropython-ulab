@@ -40,9 +40,6 @@ jobs:
     - name: Build mpy-cross
       run: make -C micropython/mpy-cross -j2
 
-    - name: Enable ulab in micropython unix port
-      run: echo '#define MODULE_ULAB_ENABLED (1)' >> micropython/ports/unix/mpconfigport.h
-
     - name: Build micropython unix port
       run: |
         make -C micropython/ports/unix -j2 deplibs
@@ -57,6 +54,5 @@ jobs:
         echo -e "\nFAILURE $testbase";
         diff -u $testbase.exp $testbase.out;
         done
-      working-directory: tests
       if: failure()
 

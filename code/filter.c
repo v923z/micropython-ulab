@@ -17,7 +17,7 @@
 #include "py/misc.h"
 #include "filter.h"
 
-#if ULAB_FILTER_CONVOLVE
+#if ULAB_FILTER_MODULE
 mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -83,4 +83,19 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(filter_convolve_obj, 2, filter_convolve);
+
+#if !CIRCUITPY
+STATIC const mp_rom_map_elem_t ulab_filter_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_filter) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
+};
+
+STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_filter_globals, ulab_filter_globals_table);
+
+mp_obj_module_t ulab_filter_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&mp_module_ulab_filter_globals,
+};
+#endif
+
 #endif
