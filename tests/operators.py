@@ -1,5 +1,5 @@
-from ulab import linalg
-a = linalg.ones(3)
+import ulab
+a = ulab.ones(3)
 print(a+a)
 print(a-a)
 print(a*a)

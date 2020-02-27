@@ -429,8 +429,6 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
     { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
     { MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
-    { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&linalg_zeros_obj },
-    { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&linalg_ones_obj },
     { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&linalg_eye_obj },
     { MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
     { MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },    

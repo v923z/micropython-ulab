@@ -1,3 +1,8 @@
+Thu, 27 Feb 2020
+
+version 0.35.0
+
+    Move zeros, ones back into top level ulab module
 
 Tue, 18 Feb 2020
 
