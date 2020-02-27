@@ -33,22 +33,22 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_get_itemsize_obj, ndarray_itemsize);
 STATIC const mp_obj_property_t ndarray_shape_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&ndarray_get_shape_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE },
+              mp_const_none,
+              mp_const_none },
 };
 
 STATIC const mp_obj_property_t ndarray_size_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&ndarray_get_size_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE },
+              mp_const_none,
+              mp_const_none },
 };
 
 STATIC const mp_obj_property_t ndarray_itemsize_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&ndarray_get_itemsize_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE },
+              mp_const_none,
+              mp_const_none },
 };
 #else
 
