@@ -23,9 +23,6 @@
 
 #define JACOBI_MAX     20
 
-MP_DECLARE_CONST_FUN_OBJ_KW(linalg_ones_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(linalg_zeros_obj);
-
 #if ULAB_LINALG_MODULE || ULAB_POLY_MODULE
 bool linalg_invert_matrix(mp_float_t *, size_t );
 #endif

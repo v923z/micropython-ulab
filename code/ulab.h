@@ -12,6 +12,9 @@
 #ifndef __ULAB__
 #define __ULAB__
 
+// create
+#define ULAB_CREATE_MODULE (1)
+
 // vectorise (all functions) takes approx. 3 kB of flash space
 #define ULAB_VECTORISE_MODULE (1)
 

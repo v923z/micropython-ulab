@@ -1,5 +1,11 @@
 Thu, 27 Feb 2020
 
+version 0.36.0
+
+	moved zeros, ones, eye and linspace into separate module (they are still bound at the top level)
+	
+Thu, 27 Feb 2020
+
 version 0.35.0
 
     Move zeros, ones back into top level ulab module

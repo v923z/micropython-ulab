@@ -1,2 +1,2 @@
-from ulab import linalg
-print(linalg.eye(3))
+import ulab
+print(ulab.eye(3))

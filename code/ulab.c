@@ -21,6 +21,7 @@
 #include "ulab.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
+#include "create.h"
 #include "linalg.h"
 #include "vectorise.h"
 #include "poly.h"
@@ -29,7 +30,7 @@
 #include "numerical.h"
 #include "extras.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.35.0");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.36.0");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
@@ -64,8 +65,12 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
-    { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&linalg_zeros_obj },
-    { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&linalg_ones_obj },
+    #if ULAB_CREATE_MODULE
+    { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },
+    { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&create_ones_obj },
+    { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
+    { MP_ROM_QSTR(MP_QSTR_linspace), (mp_obj_t)&create_linspace_obj },
+    #endif
     #if ULAB_LINALG_MODULE
     { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
     #endif
