@@ -182,7 +182,6 @@ mp_obj_t fft_spectrum(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrum_obj, 1, 2, fft_spectrum);
 
-#if !CIRCUITPY
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
@@ -196,6 +195,5 @@ mp_obj_module_t ulab_fft_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_fft_globals,
 };
-#endif
 
 #endif

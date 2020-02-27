@@ -60,7 +60,6 @@ const mp_obj_type_t ulab_ndarray_type = {
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 
-#if !CIRCUITPY
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
@@ -105,4 +104,3 @@ mp_obj_module_t ulab_user_cmodule = {
 };
 
 MP_REGISTER_MODULE(MP_QSTR_ulab, ulab_user_cmodule, MODULE_ULAB_ENABLED);
-#endif

@@ -197,7 +197,6 @@ mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj, 2, 3, poly_polyfit);
 
-#if !CIRCUITPY
 STATIC const mp_rom_map_elem_t ulab_poly_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_poly) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
@@ -210,6 +209,5 @@ mp_obj_module_t ulab_poly_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_poly_globals,
 };
-#endif
 
 #endif
