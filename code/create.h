@@ -15,8 +15,6 @@
 #include "ulab.h"
 #include "ndarray.h"
 
-#if ULAB_CREATE_MODULE
-
 /*
 mp_obj_t create_zeros(size_t , const mp_obj_t *, mp_map_t *);
 mp_obj_t create_ones(size_t , const mp_obj_t *, mp_map_t *);
@@ -28,5 +26,4 @@ MP_DECLARE_CONST_FUN_OBJ_KW(create_zeros_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_eye_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_linspace_obj);
 
-#endif
 #endif
