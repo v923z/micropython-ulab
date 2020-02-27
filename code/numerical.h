@@ -148,7 +148,6 @@ extern mp_obj_module_t ulab_numerical_module;
     }\
 } while(0)
 
-MP_DECLARE_CONST_FUN_OBJ_KW(numerical_linspace_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_min_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_max_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmin_obj);
