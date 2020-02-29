@@ -391,10 +391,6 @@ mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
                             mp_bound_slice_t row, mp_bound_slice_t column, 
                             mp_obj_t row_list, mp_obj_t column_list, 
                             ndarray_obj_t *values) {
-    if((m == 0) || (n == 0)) {
-        mp_raise_msg(&mp_type_IndexError, translate("empty index range"));
-    }
-
     if(values != NULL) {
         return insert_slice_list(ndarray, m, n, row, column, row_list, column_list, values);
     }
