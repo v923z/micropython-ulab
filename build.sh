@@ -6,7 +6,7 @@ HERE="$(dirname -- "$(readlink -f -- "${0}")" )"
 #git clone https://github.com/micropython/micropython
 make -C micropython/mpy-cross -j$(nproc)
 make -C micropython/ports/unix -j$(nproc) deplibs
-make -C micropython/ports/unix -j$(nproc) USER_C_MODULES="${HERE}"
+make -C micropython/ports/unix -j$(nproc) USER_C_MODULES="${HERE}" DEBUG=1 STRIP=:
 
 if ! env MICROPY_MICROPYTHON=micropython/ports/unix/micropython micropython/tests/run-tests -d tests; then
     for exp in *.exp; do
