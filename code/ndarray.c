@@ -262,7 +262,7 @@ mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
     // micropython seems to have difficulties with negative steps
     mp_bound_slice_t slice;
     if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-        mp_seq_get_fast_slice_indexes(n, index, &slice);
+        mp_obj_slice_indices(index, n, &slice);
     } else if(MP_OBJ_IS_INT(index)) {
         int32_t _index = mp_obj_get_int(index);
         if(_index < 0) {
