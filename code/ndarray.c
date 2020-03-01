@@ -262,7 +262,7 @@ mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
     // micropython seems to have difficulties with negative steps
     mp_bound_slice_t slice;
     if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-        mp_seq_get_fast_slice_indexes(n, index, &slice);
+        mp_obj_slice_indices(index, n, &slice);
     } else if(MP_OBJ_IS_INT(index)) {
         int32_t _index = mp_obj_get_int(index);
         if(_index < 0) {
@@ -391,10 +391,6 @@ mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
                             mp_bound_slice_t row, mp_bound_slice_t column, 
                             mp_obj_t row_list, mp_obj_t column_list, 
                             ndarray_obj_t *values) {
-    if((m == 0) || (n == 0)) {
-        mp_raise_msg(&mp_type_IndexError, translate("empty index range"));
-    }
-
     if(values != NULL) {
         return insert_slice_list(ndarray, m, n, row, column, row_list, column_list, values);
     }
