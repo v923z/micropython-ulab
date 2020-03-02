@@ -30,17 +30,12 @@ on the command line. This will create a new repository with the name `micropytho
 git clone https://github.com/v923z/micropython-ulab.git ulab
 ```
 
-Then you have to include `ulab` in the compilation process by editing `mpconfigport.h` of the directory of the port for which you want to compile, so, still on the command line, navigate to `micropython/ports/unix`, or `micropython/ports/stm32`, or whichever port is your favourite, and edit the `mpconfigport.h` file there. All you have to do is add a single line at the end: 
-
-```
-#define MODULE_ULAB_ENABLED (1)
-```
-
-This line will inform the compiler that you want `ulab` in the resulting firmware. If you don't have the cross-compiler installed, your might want to do that now, for instance on Linux by executing 
+If you don't have the cross-compiler installed, your might want to do that now, for instance on Linux by executing 
 
 ```
 sudo apt-get install gcc-arm-none-eabi
 ```
+
 If that was successful, you can try to run the make command in the port's directory as 
 ```
 make BOARD=PYBV11 USER_C_MODULES=../../../ulab all
