@@ -1,6 +1,6 @@
 # micropython-ulab
 
-ulab is a numpy-like array manipulation library for micropython. 
+ulab is a numpy-like array manipulation library for micropython and circuitpython. 
 The module is written in C, defines compact containers for numerical 
 data, and is fast. 
 
@@ -13,9 +13,11 @@ while developer help is in https://github.com/v923z/micropython-ulab/blob/master
 Firmware for pyboard.v.1.1, and PYBD_SF6 is updated once in a while, and can be downloaded 
 from https://github.com/v923z/micropython-ulab/releases.
 
+It is also included in most development builds of CircuitPython for SAMD51 and nRF microcontrollers.
+
 ## Compiling
 
-If you want to try the latest version of `ulab`, or your hardware is 
+If you want to try the latest version of `ulab` on micropython, or your hardware is 
 different to pyboard.v.1.1, or PYBD_SF6, the firmware can be compiled 
 from the source by following these steps:
 
