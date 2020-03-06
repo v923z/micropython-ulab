@@ -10,10 +10,15 @@ Documentation can be found under https://micropython-ulab.readthedocs.io/en/late
 
 # Firmware
 
-Firmware for pyboard.v.1.1, and PYBD_SF6 is updated once in a while, and can be downloaded 
-from https://github.com/v923z/micropython-ulab/releases.
+Firmware for pyboard.v.1.1, and PYBD_SF6 is released once in a while, and can be downloaded
+from https://github.com/v923z/micropython-ulab/releases. Since a number of features can be
+set in the firmware (threading, support for SD card, LEDs, user switch etc.), and it is
+impossible to create something that suits everyone, these releases should only be used for
+quick testing of `ulab`. Otherwise, compilation from the source is required with
+the appropriate settings, which are usually defined in the `mpconfigboard.h` file of the port
+in question.
 
-It is also included in most development builds of CircuitPython for SAMD51 and nRF microcontrollers.
+Firmware is also included in most development builds of CircuitPython for SAMD51 and nRF microcontrollers.
 
 ## Compiling
 
@@ -21,7 +26,7 @@ If you want to try the latest version of `ulab` on micropython, or your hardware
 different to pyboard.v.1.1, or PYBD_SF6, the firmware can be compiled 
 from the source by following these steps:
 
-First, you have to clone the micropython repository by running 
+First, you have to clone the `micropython` repository by running
 
 ```
 git clone https://github.com/micropython/micropython.git
