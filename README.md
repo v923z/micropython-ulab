@@ -1,12 +1,12 @@
 # micropython-ulab
 
-ulab is a numpy-like array manipulation library for micropython and circuitpython. 
-The module is written in C, defines compact containers for numerical 
-data, and is fast. 
+`ulab` is a `numpy`-like array manipulation library for micropython and circuitpython.
+The module is written in C, defines compact containers for numerical
+data, and is fast. The library is a software-only standard `micropython` user module,
+i.e., it has no hardware dependencies, and can be compiled for any platform.
+The `float` implementation of `micropython` (`float`, or `double`) is automatically detected.
 
-Documentation can be found under https://micropython-ulab.readthedocs.io/en/latest/
-The source for the manual is in https://github.com/v923z/micropython-ulab/blob/master/docs/ulab-manual.ipynb,
-while developer help is in https://github.com/v923z/micropython-ulab/blob/master/docs/ulab.ipynb.
+Documentation can be found under https://micropython-ulab.readthedocs.io/en/latest/.
 
 # Firmware
 
@@ -32,13 +32,13 @@ on the command line. This will create a new repository with the name `micropytho
 git clone https://github.com/v923z/micropython-ulab.git ulab
 ```
 
-If you don't have the cross-compiler installed, your might want to do that now, for instance on Linux by executing 
+If you don't have the cross-compiler installed, your might want to do that now, for instance on Linux by executing
 
 ```
 sudo apt-get install gcc-arm-none-eabi
 ```
 
-If that was successful, you can try to run the make command in the port's directory as 
+If this step was successful, you can try to run the `make` command in the port's directory as
 ```
 make BOARD=PYBV11 USER_C_MODULES=../../../ulab all
 ```
@@ -46,8 +46,9 @@ which will prepare the firmware for pyboard.v.11. Similarly,
 ```
 make BOARD=PYBD_SF6 USER_C_MODULES=../../../ulab all
 ```
-will compile for the SF6 member of the PYBD series. Provided that you managed to compile the firmware, you would upload that by running
-either
+will compile for the SF6 member of the PYBD series. If your target is `unix`, you don't need to specify the `BOARD` parameter.
+
+Provided that you managed to compile the firmware, you would upload that by running either
 ```
 dfu-util --alt 0 -D firmware.dfu
 ```
