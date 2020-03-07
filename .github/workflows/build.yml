@@ -2,10 +2,10 @@ name: Build CI
 
 on:
   push:
-	paths:
-	- 'code/'
-	- 'tests/'
-	- '.github/workflows/'
+    paths:
+    - 'code/'
+    - 'tests/'
+    - '.github/workflows/'
 
   pull_request:
   release:
