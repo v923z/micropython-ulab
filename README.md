@@ -1,6 +1,6 @@
 # micropython-ulab
 
-`ulab` is a `numpy`-like array manipulation library for micropython and circuitpython.
+`ulab` is a `numpy`-like array manipulation library for `micropython` and `CircuitPython`.
 The module is written in C, defines compact containers for numerical
 data, and is fast. The library is a software-only standard `micropython` user module,
 i.e., it has no hardware dependencies, and can be compiled for any platform.
@@ -18,7 +18,7 @@ quick testing of `ulab`. Otherwise, compilation from the source is required with
 the appropriate settings, which are usually defined in the `mpconfigboard.h` file of the port
 in question.
 
-Firmware is also included in most development builds of CircuitPython for SAMD51 and nRF microcontrollers.
+`ulab` is also included in most development builds of `CircuitPython` for SAMD51 and nRF microcontrollers.
 
 ## Compiling
 
