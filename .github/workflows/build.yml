@@ -3,6 +3,10 @@ name: Build CI
 on:
   push:
   pull_request:
+    paths:
+    - 'code/'
+    - 'tests/'
+    - '.github/workflows/'
   release:
     types: [published]
   check_suite:
