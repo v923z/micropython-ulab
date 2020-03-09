@@ -14,6 +14,7 @@
 
 #include "ulab.h"
 #include "ndarray.h"
+#include "fft.h"
 
 #if ULAB_EXTRAS_MODULE
 
