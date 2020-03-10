@@ -335,13 +335,73 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 
+mp_obj_t linalg_cholesky(mp_obj_t oin) {
+	if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+		mp_raise_TypeError(translate("function is defined for ndarrays only"));
+	}
+	
+	ndarray_obj_t *in = MP_OBJ_TO_PTR(oin); 
+	if(in->m != in->n) {
+		mp_raise_ValueError(translate("input must be square matrix"));
+	}
+
+	ndarray_obj_t *L = create_new_ndarray(in->n, in->n, NDARRAY_FLOAT);
+    mp_float_t *array = (mp_float_t *)L->array->items;
+
+	size_t pos = 0;
+    for(size_t m=0; m < in->m; m++) { // rows
+		for(size_t n=0; n < in->n; n++) { // columns
+			array[m*in->m+n] = ndarray_get_float_value(in->array->items, in->array->typecode, pos++);
+		}
+	}
+
+	// make sure the matrix is symmetric
+    for(size_t m=0; m < in->m; m++) { // rows
+        for(size_t n=m+1; n < in->n; n++) { // columns
+            // compare entry (m, n) to (n, m)
+            if(epsilon < MICROPY_FLOAT_C_FUN(fabs)(array[m*in->n + n] - array[n*in->n + m])) {
+                mp_raise_ValueError(translate("input matrix is asymmetric"));
+            }
+        }
+    }
+	
+	// this is actually not needed, but Cholesky in numpy returns the lower triangular matrix
+	for(size_t i=0; i < in->m; i++) { // rows
+		for(size_t j=i+1; j < in->n; j++) { // columns
+			array[i*in->m + j] = 0.0;
+		}
+	}	
+	mp_float_t sum = 0.0;
+	for(size_t i=0; i < in->m; i++) { // rows
+		for(size_t j=0; j <= i; j++) { // columns
+			sum = array[i*in->m + j];
+			for(size_t k=0; k < j; k++) {
+				sum -= array[i*in->n + k] * array[j*in->n + k];
+			}
+			if(i == j) {
+				if(sum <= 0.0) {
+					mp_raise_ValueError(translate("matrix is not positive definite"));
+				} else {
+					array[i*in->m+i] = MICROPY_FLOAT_C_FUN(sqrt)(sum);
+				}
+			} else {
+				array[i*in->m + j] = sum / array[j*in->m+j];
+			}
+		}
+	}
+	return MP_OBJ_FROM_PTR(L);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
+
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
-    { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
-    { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
-    { MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
-    { MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
-    { MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },    
+	{ MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
+	{ MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
+	{ MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
+	{ MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
+	{ MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
+	{ MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },
+	{ MP_ROM_QSTR(MP_QSTR_cholesky), (mp_obj_t)&linalg_cholesky_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_linalg_globals, ulab_linalg_globals_table);

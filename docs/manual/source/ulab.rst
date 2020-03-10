@@ -69,7 +69,7 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.33.2), the library
+At the time of writing this manual (for version 0.36.0), the library
 adds approximately 30 kB of extra compiled code to the micropython
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
 can easily shave off a couple of kB. See the section on `customising
@@ -189,10 +189,10 @@ the function in your code) that a particular function is not in the
 firmware, and that is most probably too late.
 
 Except for ``fft``, the standard sub-modules, ``vector``, ``linalg``,
-``numerical``, ``and poly``\ all ``numpy``-compatible. User-defined
+``numerical``, and ``poly`` are all ``numpy``-compatible. User-defined
 functions that accept ``ndarray``\ s as their argument should be
-implemented in the ``extra`` sub-module, or its sub-modules. Hints as to
-how to do that can be found in the section `Extending
+implemented in the ``extras`` sub-module, or its sub-modules. Hints as
+to how to do that can be found in the section `Extending
 ulab <#Extending-ulab>`__.
 
 Supported functions and methods
@@ -307,6 +307,15 @@ Statistical and other properties of arrays
 `sort <#sort>`__
 
 `argsort <#argsort>`__
+
+Linear algebra functions
+------------------------
+
+`size <#size>`__
+
+`eig <#eig>`__
+
+`cholesky <#cholesky>`__
 
 Manipulation of polynomials
 ---------------------------
@@ -473,6 +482,186 @@ inspection, iteration etc.
     b:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
     
     c:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
+    
+    
+
+
+Array initialisation functions
+------------------------------
+
+There are four functions that can be used for initialising an array.
+These are bound to ``ulab`` itself at the top level, i.e., no module has
+to be imported for the function invocations.
+
+ones, zeros
+~~~~~~~~~~~
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.zeros.html
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.ones.html
+
+A couple of special arrays and matrices can easily be initialised by
+calling one of the ``ones``, or ``zeros`` functions. ``ones`` and
+``zeros`` follow the same pattern, and have the call signature
+
+.. code:: python
+
+   ones(shape, dtype=float)
+   zeros(shape, dtype=float)
+
+where shape is either an integer, or a 2-tuple.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    print(np.ones(6, dtype=np.uint8))
+    print(np.zeros((6, 4)))
+
+.. parsed-literal::
+
+    array([1, 1, 1, 1, 1, 1], dtype=uint8)
+    array([[0.0, 0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0, 0.0]], dtype=float)
+    
+    
+
+
+eye
+~~~
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.eye.html
+
+Another special array method is the ``eye`` function, whose call
+signature is
+
+.. code:: python
+
+   eye(N, M, k=0, dtype=float)
+
+where ``N`` (``M``) specify the dimensions of the matrix (if only ``N``
+is supplied, then we get a square matrix, otherwise one with ``M`` rows,
+and ``N`` columns), and ``k`` is the shift of the ones (the main
+diagonal corresponds to ``k=0``). Here are a couple of examples.
+
+With a single argument
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    print(np.eye(5))
+
+.. parsed-literal::
+
+    array([[1.0, 0.0, 0.0, 0.0, 0.0],
+    	 [0.0, 1.0, 0.0, 0.0, 0.0],
+    	 [0.0, 0.0, 1.0, 0.0, 0.0],
+    	 [0.0, 0.0, 0.0, 1.0, 0.0],
+    	 [0.0, 0.0, 0.0, 0.0, 1.0]], dtype=float)
+    
+    
+
+
+Specifying the dimensions of the matrix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code::
+
+    # code to be run in CPython
+    
+    ### Shifting the diagonal
+    
+    %%micropython -unix 1
+    
+    import ulab as np
+    
+    print(np.eye(4, M=6, k=-1, dtype=np.int16))
+
+.. parsed-literal::
+
+    array([[0, 0, 0, 0],
+    	 [1, 0, 0, 0],
+    	 [0, 1, 0, 0],
+    	 [0, 0, 1, 0],
+    	 [0, 0, 0, 1],
+    	 [0, 0, 0, 0]], dtype=int16)
+    
+    
+
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    print(np.eye(4, M=6, dtype=np.int8))
+
+.. parsed-literal::
+
+    array([[1, 0, 0, 0],
+    	 [0, 1, 0, 0],
+    	 [0, 0, 1, 0],
+    	 [0, 0, 0, 1],
+    	 [0, 0, 0, 0],
+    	 [0, 0, 0, 0]], dtype=int8)
+    
+    
+
+
+linspace
+~~~~~~~~
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.linspace.html
+
+This function returns an array, whose elements are uniformly spaced
+between the ``start``, and ``stop`` points. The number of intervals is
+determined by the ``num`` keyword argument, whose default value is 50.
+With the ``endpoint`` keyword argument (defaults to ``True``) one can
+include ``stop`` in the sequence. In addition, the ``dtype`` keyword can
+be supplied to force type conversion of the output. The default is
+``float``. Note that, when ``dtype`` is of integer type, the sequence is
+not necessarily evenly spaced. This is not an error, rather a
+consequence of rounding. (This is also the ``numpy`` behaviour.)
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    # generate a sequence with defaults
+    print('default sequence:\t', np.linspace(0, 10))
+    
+    # num=5
+    print('num=5:\t\t\t', np.linspace(0, 10, num=5))
+    
+    # num=5, endpoint=False
+    print('num=5:\t\t\t', np.linspace(0, 10, num=5, endpoint=False))
+    
+    # num=5, endpoint=False, dtype=uint8
+    print('num=5:\t\t\t', np.linspace(0, 5, num=7, endpoint=False, dtype=np.uint8))
+
+.. parsed-literal::
+
+    default sequence:	 array([0.0, 0.2040816396474838, 0.4081632792949677, ..., 9.591833114624023, 9.795914649963379, 9.999996185302734], dtype=float)
+    num=5:			 array([0.0, 2.5, 5.0, 7.5, 10.0], dtype=float)
+    num=5:			 array([0.0, 2.0, 4.0, 6.0, 8.0], dtype=float)
+    num=5:			 array([0, 0, 1, 2, 2, 3, 4], dtype=uint8)
     
     
 
@@ -1075,21 +1264,16 @@ conventions.
 
 4. 
 
-+----------------+-----------------+-------------+--------------+
-| left hand side | right hand side | ulab result | numpy result |
-+================+=================+=============+==============+
-| ``uint8``      | ``int8``        | ``int16``   | ``int16``    |
-+----------------+-----------------+-------------+--------------+
-| ``uint8``      | ``int16``       | ``int16``   | ``int16``    |
-+----------------+-----------------+-------------+--------------+
-| ``uint8``      | ``uint16``      | ``uint16``  | ``uint16``   |
-+----------------+-----------------+-------------+--------------+
-| ``int8``       | ``int16``       | ``int16``   | ``int16``    |
-+----------------+-----------------+-------------+--------------+
-| ``int8``       | ``uint16``      | ``uint16``  | ``int32``    |
-+----------------+-----------------+-------------+--------------+
-| ``uint16``     | ``int16``       | ``float``   | ``int32``    |
-+----------------+-----------------+-------------+--------------+
+============== =============== =========== ============
+left hand side right hand side ulab result numpy result
+============== =============== =========== ============
+``uint8``      ``int8``        ``int16``   ``int16``
+``uint8``      ``int16``       ``int16``   ``int16``
+``uint8``      ``uint16``      ``uint16``  ``uint16``
+``int8``       ``int16``       ``int16``   ``int16``
+``int8``       ``uint16``      ``uint16``  ``int32``
+``uint16``     ``int16``       ``float``   ``int32``
+============== =============== =========== ============
 
 Note that the last two operations are promoted to ``int32`` in
 ``numpy``.
@@ -1582,13 +1766,14 @@ column. A couple of examples should make these statements clearer:
 Universal functions
 ===================
 
-Standard mathematical functions can be calculated on any scalar-valued
-iterable (ranges, lists, tuples containing numbers), and on
-``ndarray``\ s without having to change the call signature. In all cases
-the functions return a new ``ndarray`` of typecode ``float`` (since
-these functions usually generate float values, anyway). The functions
-execute faster with ``ndarray`` arguments than with iterables, because
-the values of the input vector can be extracted faster.
+Standard mathematical functions defined in the ``vector`` sub-module,
+and can be calculated on any scalar-valued iterable (ranges, lists,
+tuples containing numbers), and on ``ndarray``\ s without having to
+change the call signature. In all cases the functions return a new
+``ndarray`` of typecode ``float`` (since these functions usually
+generate float values, anyway). The functions execute faster with
+``ndarray`` arguments than with iterables, because the values of the
+input vector can be extracted faster.
 
 At present, the following functions are supported:
 
@@ -1598,29 +1783,31 @@ At present, the following functions are supported:
 ``tan``, ``tanh``.
 
 These functions are applied element-wise to the arguments, thus, e.g.,
-the exponential of a matrix cannot be calculated in this way.
+the exponential of a matrix cannot be calculated in this way. The
+functions can be invoked by importing the ``vector`` sub-module first.
 
 .. code::
         
     # code to be run in micropython
     
     import ulab as np
+    from ulab import vector
     
     a = range(9)
     b = np.array(a)
     
     # works with ranges, lists, tuples etc.
     print('a:\t', a)
-    print('exp(a):\t', np.exp(a))
+    print('exp(a):\t', vector.exp(a))
     
     # with 1D arrays
     print('\nb:\t', b)
-    print('exp(b):\t', np.exp(b))
+    print('exp(b):\t', vector.exp(b))
     
     # as well as with matrices
     c = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     print('\nc:\t', c)
-    print('exp(c):\t', np.exp(c))
+    print('exp(c):\t', vector.exp(c))
 
 .. parsed-literal::
 
@@ -1654,13 +1841,14 @@ type, and then convert them to floats. All these steps are skipped for
     # code to be run in micropython
     
     import ulab as np
+    from ulab import vector
     
     a = [0]*1000
     b = np.array(a)
     
     @timeit
     def measure_run_time(x):
-        return np.exp(x)
+        return vector.exp(x)
     
     measure_run_time(a)
     
@@ -1681,49 +1869,8 @@ was simply pushed into the initialisation function.
 Numerical
 =========
 
-linspace
---------
-
-numpy:
-https://docs.scipy.org/doc/numpy/reference/generated/numpy.linspace.html
-
-This function returns an array, whose elements are uniformly spaced
-between the ``start``, and ``stop`` points. The number of intervals is
-determined by the ``num`` keyword argument, whose default value is 50.
-With the ``endpoint`` keyword argument (defaults to ``True``) one can
-include ``stop`` in the sequence. In addition, the ``dtype`` keyword can
-be supplied to force type conversion of the output. The default is
-``float``. Note that, when ``dtype`` is of integer type, the sequence is
-not necessarily evenly spaced. This is not an error, rather a
-consequence of rounding. (This is also the ``numpy`` behaviour.)
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    # generate a sequence with defaults
-    print('default sequence:\t', np.linspace(0, 10))
-    
-    # num=5
-    print('num=5:\t\t\t', np.linspace(0, 10, num=5))
-    
-    # num=5, endpoint=False
-    print('num=5:\t\t\t', np.linspace(0, 10, num=5, endpoint=False))
-    
-    # num=5, endpoint=False, dtype=uint8
-    print('num=5:\t\t\t', np.linspace(0, 5, num=7, endpoint=False, dtype=np.uint8))
-
-.. parsed-literal::
-
-    default sequence:	 array([0.0, 0.2040816396474838, 0.4081632792949677, ..., 9.591833114624023, 9.795914649963379, 9.999996185302734], dtype=float)
-    num=5:			 array([0.0, 2.5, 5.0, 7.5, 10.0], dtype=float)
-    num=5:			 array([0.0, 2.0, 4.0, 6.0, 8.0], dtype=float)
-    num=5:			 array([0, 0, 1, 2, 2, 3, 4], dtype=uint8)
-    
-    
-
+Function in the ``numerical`` sub-module can be called by importing the
+sub-module first.
 
 min, argmin, max, argmax
 ------------------------
@@ -1759,17 +1906,18 @@ the sequence.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array([1, 2, 0, 1, 10])
     print('a:', a)
-    print('min of a:', np.min(a))
-    print('argmin of a:', np.argmin(a))
+    print('min of a:', numerical.min(a))
+    print('argmin of a:', numerical.argmin(a))
     
     b = np.array([[1, 2, 0], [1, 10, -1]])
     print('\nb:\n', b)
-    print('min of b (flattened):', np.min(b))
-    print('min of b (axis=0):', np.min(b, axis=0))
-    print('min of b (axis=1):', np.min(b, axis=1))
+    print('min of b (flattened):', numerical.min(b))
+    print('min of b (axis=0):', numerical.min(b, axis=0))
+    print('min of b (axis=1):', numerical.min(b, axis=1))
 
 .. parsed-literal::
 
@@ -1809,15 +1957,16 @@ calculation is along the given axis.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     print('a: \n', a)
     
-    print('sum, flat array: ', np.sum(a))
+    print('sum, flat array: ', numerical.sum(a))
     
-    print('mean, horizontal: ', np.mean(a, axis=1))
+    print('mean, horizontal: ', numerical.mean(a, axis=1))
     
-    print('std, vertical: ', np.std(a, axis=0))
+    print('std, vertical: ', numerical.std(a, axis=0))
 
 .. parsed-literal::
 
@@ -1846,15 +1995,16 @@ is applied to the given axis.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array([1, 2, 3, 4, 5, 6, 7, 8])
     print("a:\t\t\t", a)
     
-    np.roll(a, 2)
+    numerical.roll(a, 2)
     print("a rolled to the left:\t", a)
     
     # this should be the original vector
-    np.roll(a, -2)
+    numerical.roll(a, -2)
     print("a rolled to the right:\t", a)
 
 .. parsed-literal::
@@ -1882,17 +2032,18 @@ Vertical rolls require two internal copies of single columns.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
     print("a:\n", a)
     
-    np.roll(a, 2)
+    numerical.roll(a, 2)
     print("\na rolled to the left:\n", a)
     
-    np.roll(a, -1, axis=1)
+    numerical.roll(a, -1, axis=1)
     print("\na rolled up:\n", a)
     
-    np.roll(a, 1, axis=None)
+    numerical.roll(a, 1, axis=None)
     print("\na rolled with None:\n", a)
 
 .. parsed-literal::
@@ -1930,6 +2081,8 @@ applications.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
+    from ulab import vector
     
     def dummy_adc():
         # dummy adc function, so that the results are reproducible
@@ -1937,8 +2090,8 @@ applications.
         
     n = 10
     # These are the normalised weights; the last entry is the most dominant
-    weight = np.exp([1, 2, 3, 4, 5])
-    weight = weight/np.sum(weight)
+    weight = vector.exp([1, 2, 3, 4, 5])
+    weight = weight/numerical.sum(weight)
     
     print(weight)
     # initial array of samples
@@ -1947,10 +2100,10 @@ applications.
     for i in range(n):
         # a new datum is inserted on the right hand side. This simply overwrites whatever was in the last slot
         samples[-1] = dummy_adc()
-        print(np.mean(samples[-5:]*weight))
+        print(numerical.mean(samples[-5:]*weight))
         print(samples[-5:])
         # the data are shifted by one position to the left
-        np.roll(samples, 1)
+        numerical.roll(samples, 1)
 
 .. parsed-literal::
 
@@ -1996,15 +2149,16 @@ array.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array([1, 2, 3, 4, 5])
     print("a: \t", a)
     print("a flipped:\t", np.flip(a))
     
     a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
-    print("\na flipped horizontally\n", np.flip(a, axis=1))
-    print("\na flipped vertically\n", np.flip(a, axis=0))
-    print("\na flipped horizontally+vertically\n", np.flip(a))
+    print("\na flipped horizontally\n", numerical.flip(a, axis=1))
+    print("\na flipped vertically\n", numerical.flip(a, axis=0))
+    print("\na flipped horizontally+vertically\n", numerical.flip(a))
 
 .. parsed-literal::
 
@@ -2062,17 +2216,18 @@ and ``append`` keywords that can be found in ``numpy``.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array(range(9), dtype=np.uint8)
     print('a:\n', a)
     
-    print('\nfirst derivative:\n', np.diff(a, n=1))
-    print('\nsecond derivative:\n', np.diff(a, n=2))
+    print('\nfirst derivative:\n', numerical.diff(a, n=1))
+    print('\nsecond derivative:\n', numerical.diff(a, n=2))
     
     c = np.array([[1, 2, 3, 4], [4, 3, 2, 1], [1, 4, 9, 16], [0, 0, 0, 0]])
     print('\nc:\n', c)
-    print('\nfirst derivative, first axis:\n', np.diff(c, axis=0))
-    print('\nfirst derivative, second axis:\n', np.diff(c, axis=1))
+    print('\nfirst derivative, first axis:\n', numerical.diff(c, axis=0))
+    print('\nfirst derivative, second axis:\n', numerical.diff(c, axis=1))
 
 .. parsed-literal::
 
@@ -2135,16 +2290,17 @@ fields, the ``order`` keyword argument would have no meaning.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.float)
     print('\na:\n', a)
-    b = np.sort(a, axis=0)
+    b = numerical.sort(a, axis=0)
     print('\na sorted along vertical axis:\n', b)
     
-    c = np.sort(a, axis=1)
+    c = numerical.sort(a, axis=1)
     print('\na sorted along horizontal axis:\n', c)
     
-    c = np.sort(a, axis=None)
+    c = numerical.sort(a, axis=None)
     print('\nflattened a sorted:\n', c)
 
 .. parsed-literal::
@@ -2184,12 +2340,14 @@ spaced numbers between 0, and two pi, and sort them:
     # code to be run in micropython
     
     import ulab as np
+    from ulab import vector
+    from ulab import numerical
     
     @timeit
     def sort_time(array):
-        return np.sort(array)
+        return numerical.sort(array)
     
-    b = np.sin(np.linspace(0, 6.28, num=1000))
+    b = vector.sin(np.linspace(0, 6.28, num=1000))
     print('b: ', b)
     sort_time(b)
     print('\nb sorted:\n', b)
@@ -2218,16 +2376,17 @@ Since the underlying container of the output array is of type
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.float)
     print('\na:\n', a)
-    b = np.argsort(a, axis=0)
+    b = numerical.argsort(a, axis=0)
     print('\na sorted along vertical axis:\n', b)
     
-    c = np.argsort(a, axis=1)
+    c = numerical.argsort(a, axis=1)
     print('\na sorted along horizontal axis:\n', c)
     
-    c = np.argsort(a, axis=None)
+    c = numerical.argsort(a, axis=None)
     print('\nflattened a sorted:\n', c)
 
 .. parsed-literal::
@@ -2266,10 +2425,11 @@ example:
     # code to be run in micropython
     
     import ulab as np
+    from ulab import numerical
     
     a = np.array([0, 5, 1, 3, 2, 4], dtype=np.uint8)
     print('\na:\n', a)
-    b = np.argsort(a, axis=1)
+    b = numerical.argsort(a, axis=1)
     print('\nsorting indices:\n', b)
     print('\nthe original array:\n', a)
 
@@ -2291,6 +2451,9 @@ example:
 Linalg
 ======
 
+Functions in the ``linalg`` module can be called by importing the
+sub-module first.
+
 size
 ----
 
@@ -2307,14 +2470,15 @@ information will be returned:
     # code to be run in micropython
     
     import ulab as np
+    from ulab import linalg
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     print("a:\n", a)
-    print("size of a:", np.size(a, axis=None), ",", np.size(a, axis=0))
+    print("size of a:", linalg.size(a, axis=None), ",", linalg.size(a, axis=0))
     
     b= np.array([[1, 2], [3, 4]], dtype=np.int8)
     print("\nb:\n", b)
-    print("size of b:", np.size(b, axis=None), ",", np.size(b, axis=0), ",", np.size(b, axis=1))
+    print("size of b:", linalg.size(b, axis=None), ",", linalg.size(b, axis=0), ",", linalg.size(b, axis=1))
 
 .. parsed-literal::
 
@@ -2326,134 +2490,6 @@ information will be returned:
      array([[1, 2],
     	 [3, 4]], dtype=int8)
     size of b: 4 , 2 , 2
-    
-    
-
-
-ones, zeros
------------
-
-numpy:
-https://docs.scipy.org/doc/numpy/reference/generated/numpy.zeros.html
-
-numpy:
-https://docs.scipy.org/doc/numpy/reference/generated/numpy.ones.html
-
-A couple of special arrays and matrices can easily be initialised by
-calling one of the ``ones``, or ``zeros`` functions. ``ones`` and
-``zeros`` follow the same pattern, and have the call signature
-
-.. code:: python
-
-   ones(shape, dtype=float)
-   zeros(shape, dtype=float)
-
-where shape is either an integer, or a 2-tuple.
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    print(np.ones(6, dtype=np.uint8))
-    print(np.zeros((6, 4)))
-
-.. parsed-literal::
-
-    array([1, 1, 1, 1, 1, 1], dtype=uint8)
-    array([[0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0]], dtype=float)
-    
-    
-
-
-eye
----
-
-numpy:
-https://docs.scipy.org/doc/numpy/reference/generated/numpy.eye.html
-
-Another special array method is the ``eye`` function, whose call
-signature is
-
-.. code:: python
-
-   eye(N, M, k=0, dtype=float)
-
-where ``N`` (``M``) specify the dimensions of the matrix (if only ``N``
-is supplied, then we get a square matrix, otherwise one with ``M`` rows,
-and ``N`` columns), and ``k`` is the shift of the ones (the main
-diagonal corresponds to ``k=0``). Here are a couple of examples.
-
-With a single argument
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    print(np.eye(5))
-
-.. parsed-literal::
-
-    array([[1.0, 0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 1.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 1.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 1.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0, 1.0]], dtype=float)
-    
-    
-
-
-Specifying the dimensions of the matrix
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    print(np.eye(4, M=6, dtype=np.int8))
-
-.. parsed-literal::
-
-    array([[1, 0, 0, 0],
-    	 [0, 1, 0, 0],
-    	 [0, 0, 1, 0],
-    	 [0, 0, 0, 1],
-    	 [0, 0, 0, 0],
-    	 [0, 0, 0, 0]], dtype=int8)
-    
-    
-
-
-Shifting the diagonal
-~~~~~~~~~~~~~~~~~~~~~
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    print(np.eye(4, M=6, k=-1, dtype=np.int16))
-
-.. parsed-literal::
-
-    array([[0, 0, 0, 0],
-    	 [1, 0, 0, 0],
-    	 [0, 1, 0, 0],
-    	 [0, 0, 1, 0],
-    	 [0, 0, 0, 1],
-    	 [0, 0, 0, 0]], dtype=int16)
     
     
 
@@ -2472,10 +2508,11 @@ to be singular (i.e., one of the diagonal entries is zero).
     # code to be run in micropython
     
     import ulab as np
+    from ulab import linalg
     
     m = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
     
-    print(np.inv(m))
+    print(linalg.inv(m))
 
 .. parsed-literal::
 
@@ -2499,10 +2536,11 @@ couple of numbers:
     # code to be run in micropython
     
     import ulab as np
+    from ulab import linalg
     
     @timeit
     def invert_matrix(m):
-        return np.inv(m)
+        return linalg.inv(m)
     
     m = np.array([[1, 2,], [4, 5]])
     print('2 by 2 matrix:')
@@ -2559,13 +2597,14 @@ below.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import linalg
     
     m = np.array([[1, 2, 3], [4, 5, 6], [7, 10, 9]], dtype=np.uint8)
-    n = np.inv(m)
+    n = linalg.inv(m)
     print("m:\n", m)
     print("\nm^-1:\n", n)
     # this should be the unit matrix
-    print("\nm*m^-1:\n", np.dot(m, n))
+    print("\nm*m^-1:\n", linalg.dot(m, n))
 
 .. parsed-literal::
 
@@ -2596,12 +2635,13 @@ right-hand-side matrix rows):
     # code to be run in micropython
     
     import ulab as np
+    from ulab import linalg
     
     m = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.uint8)
     n = np.array([[1, 2], [3, 4], [5, 6], [7, 8]], dtype=np.uint8)
     print(m)
     print(n)
-    print(np.dot(m, n))
+    print(linalg.dot(m, n))
 
 .. parsed-literal::
 
@@ -2633,9 +2673,10 @@ even if the input array was of integer type.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import linalg
     
     a = np.array([[1, 2], [3, 4]], dtype=np.uint8)
-    print(np.det(a))
+    print(linalg.det(a))
 
 .. parsed-literal::
 
@@ -2689,9 +2730,10 @@ stabilisation routines for robots.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import linalg
     
     a = np.array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
-    x, y = np.eig(a)
+    x, y = linalg.eig(a)
     print('eigenvectors of a:\n', x)
     print('\neigenvalues of a:\n', y)
 
@@ -2756,10 +2798,11 @@ least, be guessed based on the measurement below:
     # code to be run in micropython
     
     import ulab as np
+    from ulab import linalg
     
     @timeit
     def matrix_eig(a):
-        return np.eig(a)
+        return linalg.eig(a)
     
     a = np.array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
     
@@ -2768,6 +2811,43 @@ least, be guessed based on the measurement below:
 .. parsed-literal::
 
     execution time:  111  us
+    
+
+
+Cholesky decomposition
+----------------------
+
+numpy:
+https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.linalg.cholesky.html
+
+``cholesky`` takes a positive definite, symmetric square matrix as its
+single argument, and returns *square root matrix* in the lower
+triangular form. If the input argument does not fulfill the positivity
+or symmetry condition, a ``ValueError`` is raised.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    from ulab import linalg
+    
+    a = ulab.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]])
+    print('a: ', a)
+    print('\n' + '='*20 + '\nCholesky decomposition\n', linalg.cholesky(a))
+
+.. parsed-literal::
+
+    a:  array([[25.0, 15.0, -5.0],
+    	 [15.0, 18.0, 0.0],
+    	 [-5.0, 0.0, 11.0]], dtype=float)
+    
+    ====================
+    Cholesky decomposition
+     array([[5.0, 0.0, 0.0],
+    	 [3.0, 3.0, 0.0],
+    	 [-1.0, 1.0, 3.0]], dtype=float)
+    
     
 
 
@@ -2787,17 +2867,18 @@ polyval takes two arguments, both arrays or other iterables.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import poly
     
     p = [1, 1, 1, 0]
     x = [0, 1, 2, 3, 4]
     print('coefficients: ', p)
     print('independent values: ', x)
-    print('\nvalues of p(x): ', np.polyval(p, x))
+    print('\nvalues of p(x): ', poly.polyval(p, x))
     
     # the same works with one-dimensional ndarrays
     a = np.array(x)
     print('\nndarray (a): ', a)
-    print('value of p(a): ', np.polyval(p, a))
+    print('value of p(a): ', poly.polyval(p, a))
 
 .. parsed-literal::
 
@@ -2833,16 +2914,17 @@ a ``ValueError``.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import poly
     
     x = np.array([0, 1, 2, 3, 4, 5, 6])
     y = np.array([9, 4, 1, 0, 1, 4, 9])
     print('independent values:\t', x)
     print('dependent values:\t', y)
-    print('fitted values:\t\t', np.polyfit(x, y, 2))
+    print('fitted values:\t\t', poly.polyfit(x, y, 2))
     
     # the same with missing x
     print('\ndependent values:\t', y)
-    print('fitted values:\t\t', np.polyfit(y, 2))
+    print('fitted values:\t\t', poly.polyfit(y, 2))
 
 .. parsed-literal::
 
@@ -2872,10 +2954,11 @@ around 150 microseconds to return:
     # code to be run in micropython
     
     import ulab as np
+    from ulab import poly
     
     @timeit
     def time_polyfit(x, y, n):
-        return np.polyfit(x, y, n)
+        return poly.polyfit(x, y, n)
     
     x = np.array([0, 1, 2, 3, 4, 5, 6])
     y = np.array([9, 4, 1, 0, 1, 4, 9])
@@ -2932,14 +3015,12 @@ parts of the transform separately.
     # code to be run in micropython
     
     import ulab as np
-    from ulab import numerical
     from ulab import vector
     from ulab import fft
-    from ulab import linalg
     
-    x = numerical.linspace(0, 10, num=1024)
+    x = np.linspace(0, 10, num=1024)
     y = vector.sin(x)
-    z = linalg.zeros(len(x))
+    z = np.zeros(len(x))
     
     a, b = fft.fft(x)
     print('real part:\t', a)
@@ -2974,15 +3055,17 @@ the inverse of the transform is equal to the original array.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import vector
+    from ulab import fft
     
     x = np.linspace(0, 10, num=1024)
-    y = np.sin(x)
+    y = vector.sin(x)
     
-    a, b = np.fft(y)
+    a, b = fft.fft(y)
     
     print('original vector:\t', y)
     
-    y, z = np.ifft(a, b)
+    y, z = fft.ifft(a, b)
     # the real part should be equal to y
     print('\nreal part of inverse:\t', y)
     # the imaginary part should be equal to zero
@@ -3009,18 +3092,21 @@ In addition to the Fourier transform and its inverse, ``ulab`` also
 sports a function called ``spectrum``, which returns the absolute value
 of the Fourier transform. This could be used to find the dominant
 spectral component in a time series. The arguments are treated in the
-same way as in ``fft``, and ``ifft``.
+same way as in ``fft``, and ``ifft``. In order to keep compatibility
+with ``numpy``, this function is defined in the ``extras`` sub-module.
 
 .. code::
         
     # code to be run in micropython
     
     import ulab as np
+    from ulab import vector
+    from ulab import extras
     
     x = np.linspace(0, 10, num=1024)
-    y = np.sin(x)
+    y = vector.sin(x)
     
-    a = np.spectrum(y)
+    a = extras.spectrum(y)
     
     print('original vector:\t', y)
     print('\nspectrum:\t', a)
@@ -3041,15 +3127,18 @@ As such, ``spectrum`` is really just a shorthand for
     # code to be run in micropython
     
     import ulab as np
+    from ulab import fft
+    from ulab import vector
+    from ulab import extras
     
     x = np.linspace(0, 10, num=1024)
-    y = np.sin(x)
+    y = vector.sin(x)
     
-    a, b = np.fft(y)
+    a, b = fft.fft(y)
     
     print('\nspectrum calculated the hard way:\t', np.sqrt(a*a + b*b))
     
-    a = np.spectrum(y)
+    a = extras.spectrum(y)
     
     print('\nspectrum calculated the lazy way:\t', a)
 
@@ -3087,11 +3176,11 @@ https://github.com/peterhinch/micropython-fourier/blob/master/README.md#8-perfor
     # code to be run in micropython
     
     import ulab as np
+    from ulab import vector
+    from ulab import fft
     
     x = np.linspace(0, 10, num=1024)
-    y = np.sin(x)
-    
-    np.fft(y)
+    y = vector.sin(x)
     
     @timeit
     def np_fft(y):
@@ -3109,38 +3198,11 @@ The C implementation runs in less than 2 ms on the pyboard (we have just
 measured that), and has been reported to run in under 0.8 ms on the D
 series board. That is an improvement of at least a factor of four.
 
-Calculating FFTs of real signals
---------------------------------
-
-Now, if you have real signals, and you are really pressed for time, you
-can still gain a bit on speed without sacrificing anything at all.
-
-If you take the FFT of a real-valued signal, the real part of the
-transform will be symmetric, while the imaginary part will be
-anti-symmetric in frequency.
-
-If, on the other hand, the signal is imaginary-valued, then the real
-part of the transform will be anti-symmetric, and the imaginary part
-will be symmetric in frequency. These two statements follow from the
-definition of the Fourier transform.
-
-By combining the two observations above, if you place the first signal,
-:math:`y_1(t)`, into the real part, and the second signal,
-:math:`y_2(t)`, into the imaginary part of your input vector, i.e.,
-:math:`y(t) = y_1(t) + iy_2(t)`, and take the Fourier transform of the
-combined signal, then the Fourier transforms of the two components can
-be recovered as
-
-:raw-latex:`\begin{eqnarray}
-Y_1(k) &=& \frac{1}{2}\left(Y(k) + Y^*(N-k)\right)
-\\
-Y_2(k) &=& -\frac{i}{2}\left(Y(k) - Y^*(N-k)\right)
-\end{eqnarray}` where :math:`N` is the length of :math:`y_1`, and
-:math:`Y_1, Y_2`, and :math:`Y`, respectively, are the Fourier
-transforms of :math:`y_1, y_2`, and :math:`y = y_1 + iy_2`.
-
 Filter routines
 ===============
+
+Functions in the ``filter`` module can be called by importing the
+sub-module first.
 
 numpy:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.convolve.html
@@ -3160,11 +3222,12 @@ result.
     # code to be run in micropython
     
     import ulab as np
+    from ulab import filter
     
     x = np.array((1,2,3))
     y = np.array((1,10,100,1000))
     
-    print(np.convolve(x, y))
+    print(filter.convolve(x, y))
 
 .. parsed-literal::
 

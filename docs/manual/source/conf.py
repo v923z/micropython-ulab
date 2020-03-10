@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = 'micropython-ulab'
-copyright = '2019, Zoltán Vörös'
+copyright = '2019-2020, Zoltán Vörös'
 author = 'Zoltán Vörös'
 
 # The full version, including alpha/beta/rc tags
-release = '0.32.2'
+release = '0.36.0'
 
 
 # -- General configuration ---------------------------------------------------
