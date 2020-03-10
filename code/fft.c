@@ -23,12 +23,6 @@
 
 #if ULAB_FFT_MODULE
 
-enum FFT_TYPE {
-    FFT_FFT,
-    FFT_IFFT,
-    FFT_SPECTRUM,
-};
-
 void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     // This is basically a modification of four1 from Numerical Recipes
     // The main difference is that this function takes two arrays, one 
@@ -172,21 +166,10 @@ mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 
-mp_obj_t fft_spectrum(size_t n_args, const mp_obj_t *args) {
-    if(n_args == 2) {
-        return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_SPECTRUM);
-    } else {
-        return fft_fft_ifft_spectrum(n_args, args[0], mp_const_none, FFT_SPECTRUM);
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrum_obj, 1, 2, fft_spectrum);
-
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_spectrum), (mp_obj_t)&fft_spectrum_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_fft_globals, ulab_fft_globals_table);
