@@ -3085,12 +3085,12 @@ Note that unlike in ``numpy``, the length of the array on which the
 Fourier transform is carried out must be a power of 2. If this is not
 the case, the function raises a ``ValueError`` exception.
 
-spectrum
---------
+spectrogram
+-----------
 
 In addition to the Fourier transform and its inverse, ``ulab`` also
-sports a function called ``spectrum``, which returns the absolute value
-of the Fourier transform. This could be used to find the dominant
+sports a function called ``spectrogram``, which returns the absolute
+value of the Fourier transform. This could be used to find the dominant
 spectral component in a time series. The arguments are treated in the
 same way as in ``fft``, and ``ifft``. In order to keep compatibility
 with ``numpy``, this function is defined in the ``extras`` sub-module.
@@ -3106,20 +3106,21 @@ with ``numpy``, this function is defined in the ``extras`` sub-module.
     x = np.linspace(0, 10, num=1024)
     y = vector.sin(x)
     
-    a = extras.spectrum(y)
+    a = extras.spectrogram(y)
     
     print('original vector:\t', y)
     print('\nspectrum:\t', a)
 
 .. parsed-literal::
 
-    original vector:	 array([0.0, 0.009775016, 0.0195491, ..., -0.5275068, -0.5357859, -0.5440139], dtype=float)
+    original vector:	 array([0.0, 0.009775015390171337, 0.01954909674625918, ..., -0.5275140569487312, -0.5357931822978732, -0.5440211108893639], dtype=float)
     
-    spectrum:	 array([187.8641, 315.3125, 347.8804, ..., 84.4587, 347.8803, 315.3124], dtype=float)
+    spectrum:	 array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float)
+    
     
 
 
-As such, ``spectrum`` is really just a shorthand for
+As such, ``spectrogram`` is really just a shorthand for
 ``np.sqrt(a*a + b*b)``:
 
 .. code::
@@ -3136,9 +3137,9 @@ As such, ``spectrum`` is really just a shorthand for
     
     a, b = fft.fft(y)
     
-    print('\nspectrum calculated the hard way:\t', np.sqrt(a*a + b*b))
+    print('\nspectrum calculated the hard way:\t', vector.sqrt(a*a + b*b))
     
-    a = extras.spectrum(y)
+    a = extras.spectrogram(y)
     
     print('\nspectrum calculated the lazy way:\t', a)
 

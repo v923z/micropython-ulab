@@ -1,3 +1,9 @@
+Tue, 10 Mar 2020
+
+version 0.37.0
+
+	added Cholesky decomposition to linalg.c
+	
 Thu, 27 Feb 2020
 
 version 0.36.0
