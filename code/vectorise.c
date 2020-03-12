@@ -135,10 +135,36 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tan_obj, vectorise_tan);
 MATH_FUN_1(tanh, tanh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tanh_obj, vectorise_tanh);
 
+mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_decimals, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 } }
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+	if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+		mp_raise_TypeError(translate("first argument must be an ndarray"));
+	}
+    int8_t n = args[1].u_int;
+	mp_float_t mul = MICROPY_FLOAT_C_FUN(pow)(10.0, n);
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    ndarray_obj_t *result = create_new_ndarray(ndarray->m, ndarray->n, NDARRAY_FLOAT);
+    mp_float_t *array = (mp_float_t *)result->array->items;
+    for(size_t i=0; i < ndarray->array->len; i++) {
+		mp_float_t f = ndarray_get_float_value(ndarray->array->items, ndarray->array->typecode, i);
+		*array++ = MICROPY_FLOAT_C_FUN(round)(f * mul) / mul;
+	}
+    return MP_OBJ_FROM_PTR(result);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_around_obj, 1, vectorise_around);
+
 STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_vector) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_around), (mp_obj_t)&vectorise_around_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_asinh), (mp_obj_t)&vectorise_asinh_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_atan), (mp_obj_t)&vectorise_atan_obj },

@@ -1,3 +1,9 @@
+Thu, 12 Mar 2020
+
+version 0.38.0
+
+	added initialisation from ndarray, and the around function
+
 Tue, 10 Mar 2020
 
 version 0.37.0
