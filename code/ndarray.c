@@ -167,8 +167,27 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
 
 STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
+    
+	if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+		ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0]);
+		ndarray_obj_t *ndarray_new = create_new_ndarray(ndarray->m, ndarray->n, dtype);
+		mp_obj_t item;
+		if((ndarray->array->typecode == NDARRAY_FLOAT) &&(dtype != NDARRAY_FLOAT)) {
+			for(size_t i=0; i < ndarray->array->len; i++) {
+				mp_float_t f = ndarray_get_float_value(ndarray->array->items, ndarray->array->typecode, i);
+				item = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(floor)(f));
+				mp_binary_set_val_array(dtype, ndarray_new->array->items, i, item);
+			}
+		} else {
+			for(size_t i=0; i < ndarray->array->len; i++) {
+				item = mp_binary_get_val_array(ndarray->array->typecode, ndarray->array->items, i);
+				mp_binary_set_val_array(dtype, ndarray_new->array->items, i, item);
+			}
+		}
+		return MP_OBJ_FROM_PTR(ndarray_new);
+	}
 
-    size_t len1, len2=0, i=0;
+    size_t len1, len2 = 0, i = 0;
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
     if (len_in == MP_OBJ_NULL) {
         mp_raise_ValueError(translate("first argument must be an iterable"));
