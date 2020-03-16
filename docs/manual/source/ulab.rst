@@ -459,8 +459,9 @@ Initialising by passing arrays
 An ``ndarray`` can be initialised by supplying another array. This
 statement is almost trivial, since ``ndarray``\ s are iterables
 themselves, though it should be pointed out that initialising through
-arrays should be faster, because simply a new copy is created, without
-inspection, iteration etc.
+arrays is faster, because simply a new copy is created, without
+inspection, iteration etc. It is also possible to coerce type conversion
+of the output:
 
 .. code::
         
@@ -471,17 +472,22 @@ inspection, iteration etc.
     a = [1, 2, 3, 4, 5, 6, 7, 8]
     b = np.array(a)
     c = np.array(b)
+    d = np.array(b, dtype=np.uint8)
     
     print("a:\t", a)
-    print("b:\t", b)
+    print("\nb:\t", b)
     print("\nc:\t", c)
+    print("\nd:\t", d)
 
 .. parsed-literal::
 
     a:	 [1, 2, 3, 4, 5, 6, 7, 8]
+    
     b:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
     
     c:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
+    
+    d:	 array([1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
     
     
 
@@ -1093,10 +1099,10 @@ when the array supplies the elements for an iteration (see later).
 invert
 ~~~~~~
 
-The function function is defined for integer data types (``uint8``,
-``int8``, ``uint16``, and ``int16``) only, takes a single argument, and
-returns the element-by-element, bit-wise inverse of the array. If a
-``float`` is supplied, the function raises a ``ValueError`` exception.
+The function is defined for integer data types (``uint8``, ``int8``,
+``uint16``, and ``int16``) only, takes a single argument, and returns
+the element-by-element, bit-wise inverse of the array. If a ``float`` is
+supplied, the function raises a ``ValueError`` exception.
 
 With signed integers (``int8``, and ``int16``), the results might be
 unexpected, as in the example below:
@@ -1865,6 +1871,78 @@ Of course, such a time saving is reasonable only, if the data are
 already available as an ``ndarray``. If one has to initialise the
 ``ndarray`` from the list, then there is no gain, because the iterator
 was simply pushed into the initialisation function.
+
+``around``
+----------
+
+``numpy``\ ’s ``around`` function can also be found in the ``vector``
+sub-module. The function implements the ``decimals`` keyword argument
+with default value ``0``. The first argument must be an ``ndarray``. If
+this is not the case, the function raises a ``TypeError`` exception.
+Note that ``numpy`` accepts general iterables. The ``out`` keyword
+argument known from ``numpy`` is not accepted. The function always
+returns an ndarray of type ``mp_float_t``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    from ulab import vector
+    
+    a = np.array([1, 2.2, 33.33, 444.444])
+    print('a:\t\t', a)
+    print('\ndecimals = 0\t', vector.around(a, decimals=0))
+    print('\ndecimals = 1\t', vector.around(a, decimals=1))
+    print('\ndecimals = -1\t', vector.around(a, decimals=-1))
+
+.. parsed-literal::
+
+    a:		 array([1.0, 2.2, 33.33, 444.444], dtype=float)
+    
+    decimals = 0	 array([1.0, 2.0, 33.0, 444.0], dtype=float)
+    
+    decimals = 1	 array([1.0, 2.2, 33.3, 444.4], dtype=float)
+    
+    decimals = -1	 array([0.0, 0.0, 30.0, 440.0], dtype=float)
+    
+    
+
+
+``arctan2``
+-----------
+
+The two-argument inverse tangent function is also part of the ``vector``
+sub-module. The function implements only partial broadcasting, i.e., its
+two arguments either have the same shape, or at least one of them must
+be a single-element array. Scalars (``micropython`` integers or floats)
+are also allowed.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    from ulab import vector
+    
+    a = np.array([1, 2.2, 33.33, 444.444])
+    print('a:\t\t', a)
+    print('\narctan2(a, 1.0)\t', vector.arctan2(a, 1.0))
+    print('\narctan2(1.0, a)\t', vector.arctan2(1.0, a))
+    print('\narctan2(a, a): \t', vector.arctan2(a, a))
+
+.. parsed-literal::
+
+    a:		 array([1.0, 2.2, 33.33, 444.444], dtype=float)
+    
+    arctan2(a, 1.0)	 array([0.7853981633974483, 1.14416883366802, 1.5408023243361, 1.568546328341769], dtype=float)
+    
+    arctan2(1.0, a)	 array([0.7853981633974483, 0.426627493126876, 0.02999400245879636, 0.002249998453127392], dtype=float)
+    
+    arctan2(a, a): 	 array([0.7853981633974483, 0.7853981633974483, 0.7853981633974483, 0.7853981633974483], dtype=float)
+    
+    
+
 
 Numerical
 =========
@@ -2697,7 +2775,7 @@ times are similar:
     
     @timeit
     def matrix_det(m):
-        return np.inv(m)
+        return linalg.inv(m)
     
     m = np.array([[1, 2, 3, 4, 5, 6, 7, 8], [0, 5, 6, 4, 5, 6, 4, 5], 
                   [0, 0, 9, 7, 8, 9, 7, 8], [0, 0, 0, 10, 11, 12, 11, 12], 
@@ -3092,8 +3170,9 @@ In addition to the Fourier transform and its inverse, ``ulab`` also
 sports a function called ``spectrogram``, which returns the absolute
 value of the Fourier transform. This could be used to find the dominant
 spectral component in a time series. The arguments are treated in the
-same way as in ``fft``, and ``ifft``. In order to keep compatibility
-with ``numpy``, this function is defined in the ``extras`` sub-module.
+same way as in ``fft``, and ``ifft``. In order to keep compatibility of
+the core modules with ``numpy``, this function is defined in the
+``extras`` sub-module.
 
 .. code::
         
@@ -3185,7 +3264,7 @@ https://github.com/peterhinch/micropython-fourier/blob/master/README.md#8-perfor
     
     @timeit
     def np_fft(y):
-        return np.fft(y)
+        return fft.fft(y)
     
     a, b = np_fft(y)
 
@@ -3205,11 +3284,11 @@ Filter routines
 Functions in the ``filter`` module can be called by importing the
 sub-module first.
 
-numpy:
-https://docs.scipy.org/doc/numpy/reference/generated/numpy.convolve.html
-
 convolve
 --------
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.convolve.html
 
 Returns the discrete, linear convolution of two one-dimensional
 sequences.
