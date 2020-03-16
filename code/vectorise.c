@@ -160,10 +160,64 @@ mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
 MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_around_obj, 1, vectorise_around);
 
+mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
+	// the function is implemented for scalars and ndarrays only, with partial 
+	// broadcasting: arguments must be either scalars, or ndarrays of equal size/shape
+	if(!(MP_OBJ_IS_INT(x) || mp_obj_is_float(x) || MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) &&
+		!(MP_OBJ_IS_INT(y) || mp_obj_is_float(y) || MP_OBJ_IS_TYPE(y, &ulab_ndarray_type))) {
+		mp_raise_TypeError(translate("arctan2 is implemented for scalars and ndarrays only"));
+	}
+	ndarray_obj_t *ndarray_x, *ndarray_y;
+	if(MP_OBJ_IS_INT(x) || mp_obj_is_float(x)) {
+		ndarray_x = create_new_ndarray(1, 1, NDARRAY_FLOAT);
+		mp_float_t *array_x = (mp_float_t *)ndarray_x->array->items;
+		*array_x = mp_obj_get_float(x);
+	} else {
+		ndarray_x = MP_OBJ_TO_PTR(x);
+	}
+	if(MP_OBJ_IS_INT(y) || mp_obj_is_float(y)) {
+		ndarray_y = create_new_ndarray(1, 1, NDARRAY_FLOAT);
+		mp_float_t *array_y = (mp_float_t *)ndarray_y->array->items;
+		*array_y = mp_obj_get_float(y);
+	} else {
+		ndarray_y = MP_OBJ_TO_PTR(y);
+	}
+	// check, whether partial broadcasting is possible here
+	if((ndarray_x->m != ndarray_y->m) || (ndarray_x->n != ndarray_y->n)) {
+		if((ndarray_x->array->len != 1) && (ndarray_y->array->len != 1)) {
+            mp_raise_ValueError(translate("operands could not be broadcast together"));
+		}
+	}
+	size_t xinc = 0, yinc = 0;
+	size_t m = MAX(ndarray_x->m, ndarray_y->m);
+	size_t n = MAX(ndarray_x->n, ndarray_y->n);
+	size_t len = MAX(ndarray_x->array->len, ndarray_y->array->len);
+	if(ndarray_x->array->len != 1) {
+		xinc = 1;
+	}
+	if(ndarray_y->array->len != 1) {
+		yinc = 1;
+	}
+	size_t posx = 0, posy = 0;
+	ndarray_obj_t *result = create_new_ndarray(m, n, NDARRAY_FLOAT);
+	mp_float_t *array_r = (mp_float_t *)result->array->items;
+	for(size_t i=0; i < len; i++) {
+		mp_float_t value_x = ndarray_get_float_value(ndarray_x->array->items, ndarray_x->array->typecode, posx);
+		mp_float_t value_y = ndarray_get_float_value(ndarray_y->array->items, ndarray_y->array->typecode, posy);
+		*array_r++ = MICROPY_FLOAT_C_FUN(atan2)(value_x, value_y);
+		posx += xinc;
+		posy += yinc;
+	}
+    return MP_OBJ_FROM_PTR(result);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
+
 STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_vector) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_arctan2), (mp_obj_t)&vectorise_arctan2_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_around), (mp_obj_t)&vectorise_around_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_asinh), (mp_obj_t)&vectorise_asinh_obj },

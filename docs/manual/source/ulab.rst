@@ -1909,6 +1909,41 @@ returns an ndarray of type ``mp_float_t``.
     
 
 
+``arctan2``
+-----------
+
+The two-argument inverse tangent function is also part of the ``vector``
+sub-module. The function implements only partial broadcasting, i.e., its
+two arguments either have the same shape, or at least one of them must
+be a single-element array. Scalars (``micropython`` integers or floats)
+are also allowed.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    from ulab import vector
+    
+    a = np.array([1, 2.2, 33.33, 444.444])
+    print('a:\t\t', a)
+    print('\narctan2(a, 1.0)\t', vector.arctan2(a, 1.0))
+    print('\narctan2(1.0, a)\t', vector.arctan2(1.0, a))
+    print('\narctan2(a, a): \t', vector.arctan2(a, a))
+
+.. parsed-literal::
+
+    a:		 array([1.0, 2.2, 33.33, 444.444], dtype=float)
+    
+    arctan2(a, 1.0)	 array([0.7853981633974483, 1.14416883366802, 1.5408023243361, 1.568546328341769], dtype=float)
+    
+    arctan2(1.0, a)	 array([0.7853981633974483, 0.426627493126876, 0.02999400245879636, 0.002249998453127392], dtype=float)
+    
+    arctan2(a, a): 	 array([0.7853981633974483, 0.7853981633974483, 0.7853981633974483, 0.7853981633974483], dtype=float)
+    
+    
+
+
 Numerical
 =========
 
