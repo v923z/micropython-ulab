@@ -22,6 +22,9 @@ in question.
 
 ## Compiling
 
+**IMPORTANT**
+Due to a missing entry in the `Makefile` of `micropython`, `ulab` won't compile on some hardware platforms. Till a permanent upstream fix is implemented, a workaround can be found in https://github.com/v923z/micropython-ulab/issues/66 . 
+
 If you want to try the latest version of `ulab` on micropython, or your hardware is 
 different to pyboard.v.1.1, or PYBD_SF6, the firmware can be compiled 
 from the source by following these steps:
