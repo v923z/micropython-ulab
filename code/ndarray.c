@@ -265,11 +265,11 @@ size_t true_length(mp_obj_t bool_list) {
     mp_obj_t item, iterable = mp_getiter(bool_list, &iter_buf);
     size_t trues = 0;
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-		if(!mp_obj_is_bool(item)) {
-			// numpy seems to be a little bit inconsistent in when an index is considered
-			// to be True/False. Bail out immediately, if the items are not True/False
-			mp_raise_TypeError("wrong index type");
-		}
+        if(!mp_obj_is_bool(item)) {
+                // numpy seems to be a little bit inconsistent in when an index is considered
+                // to be True/False. Bail out immediately, if the items are not True/False
+                mp_raise_TypeError(translate("wrong index type"));
+        }
         if(mp_obj_is_true(item)) {
             trues++;
         }
