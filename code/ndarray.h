@@ -25,7 +25,9 @@
 #define FLOAT_TYPECODE 'd'
 #endif
 
-#if !CIRCUITPY
+#if CIRCUITPY
+#define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
+#else
 #define translate(x) x
 #endif
 
