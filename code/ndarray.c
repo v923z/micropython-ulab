@@ -705,25 +705,25 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
 	// creates an ndarray from an micropython int or float
 	// if the input is an ndarray, it is returned
 	ndarray_obj_t *ndarray;
-    if(MP_OBJ_IS_INT(obj)) {
-        int32_t ivalue = mp_obj_get_int(obj);
-        if((ivalue > 0) && (ivalue < 256)) {
-            CREATE_SINGLE_ITEM(ndarray, uint8_t, NDARRAY_UINT8, ivalue);
-        } else if((ivalue > 255) && (ivalue < 65535)) {
-            CREATE_SINGLE_ITEM(ndarray, uint16_t, NDARRAY_UINT16, ivalue);
-        } else if((ivalue < 0) && (ivalue > -128)) {
-            CREATE_SINGLE_ITEM(ndarray, int8_t, NDARRAY_INT8, ivalue);
-        } else if((ivalue < -127) && (ivalue > -32767)) {
-            CREATE_SINGLE_ITEM(ndarray, int16_t, NDARRAY_INT16, ivalue);
-        } else { // the integer value clearly does not fit the ulab types, so move on to float
-            CREATE_SINGLE_ITEM(ndarray, mp_float_t, NDARRAY_FLOAT, ivalue);
-        }
-    } else if(mp_obj_is_float(obj)) {
-        mp_float_t fvalue = mp_obj_get_float(obj);
-        CREATE_SINGLE_ITEM(ndarray, mp_float_t, NDARRAY_FLOAT, fvalue);
-    } else if(MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)){
-        ndarray = MP_OBJ_TO_PTR(obj);
-    } else {
+	if(MP_OBJ_IS_INT(obj)) {
+		int32_t ivalue = mp_obj_get_int(obj);
+		if((ivalue > 0) && (ivalue < 256)) {
+			CREATE_SINGLE_ITEM(ndarray, uint8_t, NDARRAY_UINT8, ivalue);
+		} else if((ivalue > 255) && (ivalue < 65535)) {
+			CREATE_SINGLE_ITEM(ndarray, uint16_t, NDARRAY_UINT16, ivalue);
+		} else if((ivalue < 0) && (ivalue > -128)) {
+			CREATE_SINGLE_ITEM(ndarray, int8_t, NDARRAY_INT8, ivalue);
+		} else if((ivalue < -127) && (ivalue > -32767)) {
+			CREATE_SINGLE_ITEM(ndarray, int16_t, NDARRAY_INT16, ivalue);
+		} else { // the integer value clearly does not fit the ulab types, so move on to float
+			CREATE_SINGLE_ITEM(ndarray, mp_float_t, NDARRAY_FLOAT, ivalue);
+		}
+	} else if(mp_obj_is_float(obj)) {
+		mp_float_t fvalue = mp_obj_get_float(obj);
+		CREATE_SINGLE_ITEM(ndarray, mp_float_t, NDARRAY_FLOAT, fvalue);
+	} else if(MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)){
+		ndarray = MP_OBJ_TO_PTR(obj);
+	} else {
 		mp_raise_TypeError(translate("wrong operand type"));
 	}
 	return ndarray;
@@ -769,7 +769,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 	size_t m = MAX(ol->m, or->m);
 	size_t n = MAX(ol->n, or->n);
 	size_t len = MAX(ol->array->len, or->array->len);
-	if((ol->array->len == 0) || (or->array->len)) {
+	if((ol->array->len == 0) || (or->array->len == 0)) {
 		len = 0;
 	}
 	// At this point, the operands should have the same shape
