@@ -769,6 +769,9 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 	size_t m = MAX(ol->m, or->m);
 	size_t n = MAX(ol->n, or->n);
 	size_t len = MAX(ol->array->len, or->array->len);
+	if((ol->array->len == 0) || (or->array->len)) {
+		len = 0;
+	}
 	// At this point, the operands should have the same shape
 	switch(op) {
 		case MP_BINARY_OP_EQUAL:
