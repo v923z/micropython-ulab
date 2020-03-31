@@ -1,3 +1,9 @@
+Tue, 31 Mar 2020
+
+version 0.39.0
+
+	added the ** operator, and operand swapping in binary operators
+
 Thu, 12 Mar 2020
 
 version 0.38.0
