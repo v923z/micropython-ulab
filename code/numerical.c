@@ -201,6 +201,9 @@ mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, 
             }
         }
     }
+	if(results->array->len == 1) {
+		return mp_binary_get_val_array(results->array->typecode, results->array->items, 0);
+	}
     return MP_OBJ_FROM_PTR(results);
 }
 
