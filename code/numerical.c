@@ -549,9 +549,9 @@ mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
         end = ndarray->array->len;
         N = ndarray->n;
     } else if(mp_obj_get_int(axis) == 0) { // sort along vertical axis
-        increment = ndarray->n;
+        increment = ndarray->m;
         start_inc = 1;
-        end = ndarray->m;
+        end = ndarray->n;
         N = ndarray->m;
     } else {
         mp_raise_ValueError(translate("axis must be -1, 0, None, or 1"));
@@ -560,7 +560,7 @@ mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
     size_t q, k, p, c;
 
     for(size_t start=0; start < end; start+=start_inc) {
-        q = N; 
+        q = N - 1; 
         k = (q >> 1);
         if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
             HEAPSORT(uint8_t, ndarray);
