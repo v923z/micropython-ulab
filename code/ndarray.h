@@ -101,40 +101,38 @@ mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t f
     should work outside the loop, but it doesn't. Go figure! 
 */
 
-#define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op) do {\
+#define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op, m, n, len, linc, rinc) do {\
     type_left *left = (type_left *)(ol)->array->items;\
     type_right *right = (type_right *)(or)->array->items;\
-    uint8_t inc = 0;\
-    if((or)->array->len > 1) inc = 1;\
-    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
-        ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, typecode);\
+    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY) || ((op) == MP_BINARY_OP_POWER)) {\
+        ndarray_obj_t *out = create_new_ndarray((m), (n), (typecode));\
         type_out *(odata) = (type_out *)out->array->items;\
-        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = left[i] + right[j];}\
-        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = left[i] - right[j];}\
-        if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = left[i] * right[j];}\
+        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left + *right;}\
+		if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left * *right;}\
+        if((op) == MP_BINARY_OP_POWER) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = MICROPY_FLOAT_C_FUN(pow)(*left, *right);}\
+        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left - *right;}\
         return MP_OBJ_FROM_PTR(out);\
-    } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
-        ndarray_obj_t *out = create_new_ndarray(ol->m, ol->n, NDARRAY_FLOAT);\
+	} else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
+        ndarray_obj_t *out = create_new_ndarray((m), (n), NDARRAY_FLOAT);\
         mp_float_t *odata = (mp_float_t *)out->array->items;\
-        for(size_t i=0, j=0; i < (ol)->array->len; i++, j+=inc) odata[i] = (mp_float_t)left[i]/(mp_float_t)right[j];\
+        for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) {*odata++ = (mp_float_t)(*left)/(mp_float_t)(*right);}\
         return MP_OBJ_FROM_PTR(out);\
-    } else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
+	} else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
              ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\
         mp_obj_t out_list = mp_obj_new_list(0, NULL);\
-        size_t m = (ol)->m, n = (ol)->n;\
-        for(size_t i=0, r=0; i < m; i++, r+=inc) {\
+        for(size_t i=0; i < m; i++) {\
             mp_obj_t row = mp_obj_new_list(n, NULL);\
             mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
-            for(size_t j=0, s=0; j < n; j++, s+=inc) {\
+            for(size_t j=0; j < n; j++, left+=linc, right+=rinc) {\
                 row_ptr->items[j] = mp_const_false;\
                 if((op) == MP_BINARY_OP_LESS) {\
-                    if(left[i*n+j] < right[r*n+s]) row_ptr->items[j] = mp_const_true;\
+                    if(*left < *right) row_ptr->items[j] = mp_const_true;\
                 } else if((op) == MP_BINARY_OP_LESS_EQUAL) {\
-                    if(left[i*n+j] <= right[r*n+s]) row_ptr->items[j] = mp_const_true;\
+                    if(*left <= *right) row_ptr->items[j] = mp_const_true;\
                 } else if((op) == MP_BINARY_OP_MORE) {\
-                    if(left[i*n+j] > right[r*n+s]) row_ptr->items[j] = mp_const_true;\
+                    if(*left > *right) row_ptr->items[j] = mp_const_true;\
                 } else if((op) == MP_BINARY_OP_MORE_EQUAL) {\
-                    if(left[i*n+j] >= right[r*n+s]) row_ptr->items[j] = mp_const_true;\
+                    if(*left >= *right) row_ptr->items[j] = mp_const_true;\
                 }\
             }\
             if(m == 1) return row;\
