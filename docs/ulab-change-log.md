@@ -1,3 +1,9 @@
+Thu, 2 Apr 2020
+
+version 0.38.1
+
+	added fast option, when initialising from ndarray_properties
+	
 Thu, 12 Mar 2020
 
 version 0.38.0
