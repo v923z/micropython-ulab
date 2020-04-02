@@ -79,33 +79,34 @@ extern mp_obj_module_t ulab_numerical_module;
 
 #define HEAPSORT(type, ndarray) do {\
     type *array = (type *)(ndarray)->array->items;\
+    array += start;\
     type tmp;\
     for (;;) {\
         if (k > 0) {\
-            tmp = array[start+(--k)*increment];\
+            tmp = array[(--k)*increment];\
         } else {\
             q--;\
             if(q == 0) {\
                 break;\
             }\
-            tmp = array[start+q*increment];\
-            array[start+q*increment] = array[start];\
+            tmp = array[q*increment];\
+            array[q*increment] = array[0];\
         }\
         p = k;\
         c = k + k + 1;\
         while (c < q) {\
-            if((c + 1 < q)  &&  (array[start+(c+1)*increment] > array[start+c*increment])) {\
+            if((c + 1 < q)  &&  (array[(c+1)*increment] > array[c*increment])) {\
                 c++;\
             }\
-            if(array[start+c*increment] > tmp) {\
-                array[start+p*increment] = array[start+c*increment];\
+            if(array[c*increment] > tmp) {\
+                array[p*increment] = array[c*increment];\
                 p = c;\
                 c = p + p + 1;\
             } else {\
                 break;\
             }\
         }\
-        array[start+p*increment] = tmp;\
+        array[p*increment] = tmp;\
     }\
 } while(0)
 
