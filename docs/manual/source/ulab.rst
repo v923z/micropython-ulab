@@ -461,7 +461,8 @@ statement is almost trivial, since ``ndarray``\ s are iterables
 themselves, though it should be pointed out that initialising through
 arrays is faster, because simply a new copy is created, without
 inspection, iteration etc. It is also possible to coerce type conversion
-of the output:
+of the output (with type conversion, the iteration cannot be avoided,
+therefore, this case will always be slower than straight copying):
 
 .. code::
         
@@ -491,6 +492,58 @@ of the output:
     
     
 
+
+Note that the default type of the ``ndarray`` is ``float``. Hence, if
+the array is initialised from another array, type conversion will always
+take place, except, when the output type is specifically supplied. I.e.,
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(5), dtype=np.uint8)
+    b = np.array(a)
+    print("a:\t", a)
+    print("\nb:\t", b)
+
+.. parsed-literal::
+
+    a:	 array([0, 1, 2, 3, 4], dtype=uint8)
+    
+    b:	 array([0.0, 1.0, 2.0, 3.0, 4.0], dtype=float)
+    
+    
+
+
+will iterate over the elements in ``a``, since in the assignment
+``b = np.array(a)`` no output type was given, therefore, ``float`` was
+assumed. On the other hand,
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(5), dtype=np.uint8)
+    b = np.array(a, dtype=np.uint8)
+    print("a:\t", a)
+    print("\nb:\t", b)
+
+.. parsed-literal::
+
+    a:	 array([0, 1, 2, 3, 4], dtype=uint8)
+    
+    b:	 array([0, 1, 2, 3, 4], dtype=uint8)
+    
+    
+
+
+will simply copy the content of ``a`` into ``b`` without any iteration,
+and will, therefore, be faster. Keep this in mind, whenever the output
+type, or performance is important.
 
 Array initialisation functions
 ------------------------------

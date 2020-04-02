@@ -9,6 +9,7 @@
  * Copyright (c) 2019-2020 Zoltán Vörös
 */
 
+#include <unistd.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -170,6 +171,9 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
     
 	if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
 		ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0]);
+		if(dtype == ndarray->array->typecode) {
+			return ndarray_copy(args[0]);
+		}
 		ndarray_obj_t *ndarray_new = create_new_ndarray(ndarray->m, ndarray->n, dtype);
 		mp_obj_t item;
 		if((ndarray->array->typecode == NDARRAY_FLOAT) &&(dtype != NDARRAY_FLOAT)) {
