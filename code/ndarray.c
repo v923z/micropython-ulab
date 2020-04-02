@@ -9,6 +9,7 @@
  * Copyright (c) 2019-2020 Zoltán Vörös
 */
 
+#include <unistd.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
