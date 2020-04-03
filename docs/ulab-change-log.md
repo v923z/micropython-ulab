@@ -1,3 +1,9 @@
+Fri, 3 Apr 2020
+
+version 0.40.0
+
+	added trace to linalg
+
 Thu, 2 Apr 2020
 
 version 0.39.0
