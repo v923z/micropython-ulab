@@ -9,11 +9,11 @@ another day. The day has come, so here is my story.
 Enter ulab
 ----------
 
-``ulab`` is a numpy-like module for ``micropython``, meant to simplify
-and speed up common mathematical operations on arrays. The primary goal
-was to implement a small subset of numpy that might be useful in the
-context of a microcontroller. This means low-level data processing of
-linear (array) and two-dimensional (matrix) data.
+``ulab`` is a ``numpy``-like module for ``micropython``, meant to
+simplify and speed up common mathematical operations on arrays. The
+primary goal was to implement a small subset of ``numpy`` that might be
+useful in the context of a microcontroller. This means low-level data
+processing of linear (array) and two-dimensional (matrix) data.
 
 Purpose
 -------
@@ -69,8 +69,8 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.36.0), the library
-adds approximately 30 kB of extra compiled code to the micropython
+At the time of writing this manual (for version 0.40.0), the library
+adds approximately 35 kB of extra compiled code to the micropython
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
 can easily shave off a couple of kB. See the section on `customising
 ulab <#Custom_builds>`__.
@@ -127,7 +127,7 @@ Industries <http://www.adafruit.com>`__.
 
 There are, however, a couple of instances, where the usage in the two
 environments is slightly different at the python level. These are how
-the packges can be imported, and how the class properties can be
+the packages can be imported, and how the class properties can be
 accessed. In both cases, the ``circuitpython`` implementation results in
 ``numpy``-conform code. ``numpy``-compatibility in ``micropython`` will
 be implemented as soon as ``micropython`` itself has the required tools.
@@ -223,7 +223,7 @@ can always be queried as
 
 .. parsed-literal::
 
-    you are running ulab version 0.24
+    you are running ulab version 0.40.0
     
     
 
@@ -313,9 +313,17 @@ Linear algebra functions
 
 `size <#size>`__
 
+`inv <#inv>`__
+
+`dot <#dot>`__
+
+`det <#det>`__
+
 `eig <#eig>`__
 
 `cholesky <#cholesky>`__
+
+`trace <#trace>`__
 
 Manipulation of polynomials
 ---------------------------
@@ -555,10 +563,10 @@ to be imported for the function invocations.
 ones, zeros
 ~~~~~~~~~~~
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.zeros.html
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.ones.html
 
 A couple of special arrays and matrices can easily be initialised by
@@ -597,7 +605,7 @@ where shape is either an integer, or a 2-tuple.
 eye
 ~~~
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.eye.html
 
 Another special array method is the ``eye`` function, whose call
@@ -684,7 +692,7 @@ Specifying the dimensions of the matrix
 linspace
 ~~~~~~~~
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.linspace.html
 
 This function returns an array, whose elements are uniformly spaced
@@ -932,7 +940,7 @@ enumber of elements in the array.
 .reshape
 ~~~~~~~~
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html
 
 ``reshape`` re-writes the shape properties of an ``ndarray``, but the
@@ -968,7 +976,7 @@ consistent with the old, a ``ValueError`` exception will be raised.
 .flatten
 ~~~~~~~~
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.htm
 
 ``.flatten`` returns the flattened array. The array can be flattened in
@@ -1009,7 +1017,7 @@ verbatim copy of the contents.
 .transpose
 ~~~~~~~~~~
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html
 
 Note that only square matrices can be transposed in place, and in
@@ -1050,7 +1058,7 @@ concern, plan accordingly!
 .sort
 ~~~~~
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.sort.html
 
 In-place sorting of an ``ndarray``. For a more detailed exposition, see
@@ -1269,9 +1277,10 @@ array.
 Binary operators
 ----------------
 
-All binary operators work element-wise. This also means that the
-operands either must have the same shape, or one of them must be a
-scalar.
+``ulab`` implements the ``+``, ``-``, ``*``, ``/``, ``**``, ``<``,
+``>``, ``<=``, ``>=`` binary operators that work element-wise. Partial
+broadcasting is available, meaning that the operands either must have
+the same shape, or one of them must be a scalar.
 
 **WARNING:** ``numpy`` also allows operations between a matrix, and a
 row vector, if the row vector has exactly as many elements, as many
@@ -1341,6 +1350,11 @@ Note that the last two operations are promoted to ``int32`` in
 upcasting rules of ``ulab`` are slightly different to those of
 ``numpy``. Watch out for this, when porting code!
 
+When one of the operands is a scalar, it will internally be turned into
+a single-element ``ndarray`` with the *smallest* possible ``dtype``.
+Thus, e.g., if the scalar is 123, it will be converted to an array of
+``dtype`` ``uint8``.
+
 Upcasting can be seen in action in the following snippet:
 
 .. code::
@@ -1372,43 +1386,6 @@ Upcasting can be seen in action in the following snippet:
     
     
 
-
-**WARNING:** If a binary operation involves an ``ndarray`` and a
-micropython type (integer, or float), then the array must be on the left
-hand side.
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    # this is going to work
-    a = np.array([1, 2, 3, 4], dtype=np.uint8)
-    b = 12
-    print("a:\t", a)
-    print("b:\t", b)
-    print("a+b:\t", a+b)
-    
-    # but this will spectacularly fail
-    print("b+a:\t", b+a)
-
-.. parsed-literal::
-
-    a:	 array([1, 2, 3, 4], dtype=uint8)
-    b:	 12
-    a+b:	 array([13, 14, 15, 16], dtype=uint8)
-    
-    Traceback (most recent call last):
-      File "/dev/shm/micropython.py", line 12, in <module>
-    TypeError: unsupported types for __add__: 'int', 'ndarray'
-    
-
-
-The reason for this lies in how micropython resolves binary operators,
-and this means that a fix can only be implemented, if micropython itself
-changes the corresponding function(s). Till then, keep ``ndarray``\ s on
-the left hand side.
 
 Benchmarks
 ~~~~~~~~~~
@@ -1521,6 +1498,31 @@ operators return a vector of Booleans indicating the positions
 
     [True, True, True, True, False, False, False, False]
     
+    
+
+
+**WARNING**: at the moment, due to implementation details, the
+``ndarray`` must be on the left hand side of the relational operators.
+This will change in a future version of ``ulab``.
+
+That is, while ``a < 5`` and ``5 > a`` have the same meaning, the
+following code will not work:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4, 5, 6, 7, 8], dtype=np.uint8)
+    print(5 > a)
+
+.. parsed-literal::
+
+    
+    Traceback (most recent call last):
+      File "/dev/shm/micropython.py", line 5, in <module>
+    TypeError: unsupported types for __gt__: 'int', 'ndarray'
     
 
 
@@ -1836,10 +1838,10 @@ input vector can be extracted faster.
 
 At present, the following functions are supported:
 
-``acos``, ``acosh``, ``asin``, ``asinh``, ``atan``, ``atanh``, ``ceil``,
-``cos``, ``erf``, ``erfc``, ``exp``, ``expm1``, ``floor``, ``tgamma``,
-``lgamma``, ``log``, ``log10``, ``log2``, ``sin``, ``sinh``, ``sqrt``,
-``tan``, ``tanh``.
+``acos``, ``acosh``, ``arctan2``, ``around``, ``asin``, ``asinh``,
+``atan``, ``atanh``, ``ceil``, ``cos``, ``erf``, ``erfc``, ``exp``,
+``expm1``, ``floor``, ``tgamma``, ``lgamma``, ``log``, ``log10``,
+``log2``, ``sin``, ``sinh``, ``sqrt``, ``tan``, ``tanh``.
 
 These functions are applied element-wise to the arguments, thus, e.g.,
 the exponential of a matrix cannot be calculated in this way. The
@@ -1925,8 +1927,11 @@ already available as an ``ndarray``. If one has to initialise the
 ``ndarray`` from the list, then there is no gain, because the iterator
 was simply pushed into the initialisation function.
 
-``around``
-----------
+around
+------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.around.html
 
 ``numpy``\ ’s ``around`` function can also be found in the ``vector``
 sub-module. The function implements the ``decimals`` keyword argument
@@ -1962,8 +1967,11 @@ returns an ndarray of type ``mp_float_t``.
     
 
 
-``arctan2``
------------
+arctan2
+-------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.arctan2.html
 
 The two-argument inverse tangent function is also part of the ``vector``
 sub-module. The function implements only partial broadcasting, i.e., its
@@ -2006,16 +2014,16 @@ sub-module first.
 min, argmin, max, argmax
 ------------------------
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.min.html
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.argmax.html
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.max.html
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.argmax.html
 
 **WARNING:** Difference to ``numpy``: the ``out`` keyword argument is
@@ -2069,13 +2077,13 @@ the sequence.
 sum, std, mean
 --------------
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.sum.html
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.std.html
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.mean.html
 
 These three functions follow the same pattern: if the axis keyword is
@@ -2114,7 +2122,7 @@ calculation is along the given axis.
 roll
 ----
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.roll.html
 
 The roll function shifts the content of a vector by the positions given
@@ -2266,7 +2274,7 @@ applications.
 flip
 ----
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.flip.html
 
 The ``flip`` function takes one positional, an ``ndarray``, and one
@@ -2317,7 +2325,7 @@ array.
 diff
 ----
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.diff.html
 
 The ``diff`` function returns the numerical derivative of the forward
@@ -2394,7 +2402,7 @@ and ``append`` keywords that can be found in ``numpy``.
 sort
 ----
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.sort.html
 
 The sort function takes an ndarray, and sorts its elements in ascending
@@ -2485,7 +2493,7 @@ spaced numbers between 0, and two pi, and sort them:
 argsort
 -------
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html
 
 Similarly to `sort <#sort>`__, ``argsort`` takes a positional, and a
@@ -2628,6 +2636,9 @@ information will be returned:
 inv
 ---
 
+``numpy``:
+https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.linalg.inv.html
+
 A square matrix, provided that it is not singular, can be inverted by
 calling the ``inv`` function that takes a single argument. The inversion
 is based on successive elimination of elements in the lower left
@@ -2709,7 +2720,7 @@ and so on.
 dot
 ---
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.dot.html
 
 **WARNING:** numpy applies upcasting rules for the multiplication of
@@ -2791,7 +2802,7 @@ right-hand-side matrix rows):
 det
 ---
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.det.html
 
 The ``det`` function takes a square matrix as its single argument, and
@@ -2846,7 +2857,7 @@ times are similar:
 eig
 ---
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.eig.html
 
 The ``eig`` function calculates the eigenvalues and the eigenvectors of
@@ -2948,7 +2959,7 @@ least, be guessed based on the measurement below:
 Cholesky decomposition
 ----------------------
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.linalg.cholesky.html
 
 ``cholesky`` takes a positive definite, symmetric square matrix as its
@@ -2982,16 +2993,66 @@ or symmetry condition, a ``ValueError`` is raised.
     
 
 
+trace
+-----
+
+``numpy``:
+https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.linalg.trace.html
+
+The ``trace`` function returns the sum of the diagonal elements of a
+square matrix. If the input argument is not a square matrix, an
+exception will be raised.
+
+The scalar so returned will inherit the type of the input array, i.e.,
+integer arrays have integer trace, and floating point arrays a floating
+point trace.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    from ulab import linalg
+    
+    a = ulab.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]], dtype=ulab.int8)
+    print('a: ', a)
+    print('\ntrace of a: ', linalg.trace(a))
+    
+    b = ulab.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]], dtype=ulab.float)
+    
+    print('='*20 + '\nb: ', b)
+    print('\ntrace of b: ', linalg.trace(b))
+
+.. parsed-literal::
+
+    a:  array([[25, 15, -5],
+    	 [15, 18, 0],
+    	 [-5, 0, 11]], dtype=int8)
+    
+    trace of a:  54
+    ====================
+    b:  array([[25.0, 15.0, -5.0],
+    	 [15.0, 18.0, 0.0],
+    	 [-5.0, 0.0, 11.0]], dtype=float)
+    
+    trace of b:  54.0
+    
+    
+
+
 Polynomials
 ===========
+
+Functions in the polynomial sub-module can be invoked by importing the
+module first.
 
 polyval
 -------
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.polyval.html
 
-polyval takes two arguments, both arrays or other iterables.
+``polyval`` takes two arguments, both arrays or other iterables.
 
 .. code::
         
@@ -3027,7 +3088,7 @@ polyval takes two arguments, both arrays or other iterables.
 polyfit
 -------
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.polyfit.html
 
 polyfit takes two, or three arguments. The last one is the degree of the
@@ -3105,7 +3166,10 @@ around 150 microseconds to return:
 Fourier transforms
 ==================
 
-numpy:
+Functions related to Fourier transforms can be called by importing the
+``fft`` sub-module first.
+
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.fft.ifft.html
 
 fft
@@ -3340,7 +3404,7 @@ sub-module first.
 convolve
 --------
 
-numpy:
+``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.convolve.html
 
 Returns the discrete, linear convolution of two one-dimensional
