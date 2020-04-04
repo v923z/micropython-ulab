@@ -764,6 +764,11 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 	// are of the same shape, or one of them is of length 1
 	if(((ol->m != or->m) || (ol->n != or->n))) {
 		if((ol->array->len != 1) && (or->array->len != 1)) {
+			if(op == MP_BINARY_OP_EQUAL) {
+				return mp_const_false;
+			} else if(op == MP_BINARY_OP_NOT_EQUAL) {
+				return mp_const_true;
+			}
             mp_raise_ValueError(translate("operands could not be broadcast together"));
 		}
 	}
@@ -776,11 +781,9 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 	if((ol->array->len == 0) || (or->array->len == 0)) {
 		len = 0;
 	}
-	// At this point, the operands should have the same shape
 	switch(op) {
 		case MP_BINARY_OP_EQUAL:
-			return lhs == rhs ? mp_const_true : mp_const_false;
-			break;
+		case MP_BINARY_OP_NOT_EQUAL:
 		case MP_BINARY_OP_LESS:
 		case MP_BINARY_OP_LESS_EQUAL:
 		case MP_BINARY_OP_MORE:

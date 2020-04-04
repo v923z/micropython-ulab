@@ -107,10 +107,10 @@ mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t f
     if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY) || ((op) == MP_BINARY_OP_POWER)) {\
         ndarray_obj_t *out = create_new_ndarray((m), (n), (typecode));\
         type_out *(odata) = (type_out *)out->array->items;\
-        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left + *right;}\
-		if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left * *right;}\
-        if((op) == MP_BINARY_OP_POWER) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = MICROPY_FLOAT_C_FUN(pow)(*left, *right);}\
-        if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left - *right;}\
+        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left + *right; }\
+		else if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left * *right; }\
+        else if((op) == MP_BINARY_OP_POWER) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = MICROPY_FLOAT_C_FUN(pow)(*left, *right); }\
+        else if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left - *right; }\
         return MP_OBJ_FROM_PTR(out);\
 	} else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
         ndarray_obj_t *out = create_new_ndarray((m), (n), NDARRAY_FLOAT);\
@@ -118,26 +118,21 @@ mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t f
         for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) {*odata++ = (mp_float_t)(*left)/(mp_float_t)(*right);}\
         return MP_OBJ_FROM_PTR(out);\
 	} else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
-             ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\
+             ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL) || \
+             ((op) == MP_BINARY_OP_EQUAL) || ((op) == MP_BINARY_OP_NOT_EQUAL)) {\
         mp_obj_t out_list = mp_obj_new_list(0, NULL);\
         for(size_t i=0; i < m; i++) {\
             mp_obj_t row = mp_obj_new_list(n, NULL);\
             mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
-            for(size_t j=0; j < n; j++, left+=linc, right+=rinc) {\
-                row_ptr->items[j] = mp_const_false;\
-                if((op) == MP_BINARY_OP_LESS) {\
-                    if(*left < *right) row_ptr->items[j] = mp_const_true;\
-                } else if((op) == MP_BINARY_OP_LESS_EQUAL) {\
-                    if(*left <= *right) row_ptr->items[j] = mp_const_true;\
-                } else if((op) == MP_BINARY_OP_MORE) {\
-                    if(*left > *right) row_ptr->items[j] = mp_const_true;\
-                } else if((op) == MP_BINARY_OP_MORE_EQUAL) {\
-                    if(*left >= *right) row_ptr->items[j] = mp_const_true;\
-                }\
-            }\
+			if((op) == MP_BINARY_OP_LESS) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left < *right ? mp_const_true : mp_const_false; }\
+			else if((op) == MP_BINARY_OP_LESS_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left <= *right ? mp_const_true : mp_const_false; }\
+			else if((op) == MP_BINARY_OP_MORE) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left > *right ? mp_const_true : mp_const_false; }\
+			else if((op) == MP_BINARY_OP_MORE_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left >= *right ? mp_const_true : mp_const_false; }\
+			else if((op) == MP_BINARY_OP_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left == *right ? mp_const_true : mp_const_false; }\
+			else if((op) == MP_BINARY_OP_NOT_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left != *right ? mp_const_true : mp_const_false; }\
             if(m == 1) return row;\
             mp_obj_list_append(out_list, row);\
-        }\
+		}\
         return out_list;\
     }\
 } while(0)

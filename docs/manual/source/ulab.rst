@@ -1278,9 +1278,53 @@ Binary operators
 ----------------
 
 ``ulab`` implements the ``+``, ``-``, ``*``, ``/``, ``**``, ``<``,
-``>``, ``<=``, ``>=`` binary operators that work element-wise. Partial
-broadcasting is available, meaning that the operands either must have
-the same shape, or one of them must be a scalar.
+``>``, ``<=``, ``>=``, ``==``, ``!=`` binary operators that work
+element-wise. Partial broadcasting is available, meaning that the
+operands either must have the same shape, or one of them must be a
+scalar.
+
+The operators raise a ``ValueError`` exception, if partial broadcasting
+is not possible. The only exceptions are the ``==`` and ``!=`` operators
+that will return ``False`` in this case.
+
+**WARNING**: note that relational operators (``<``, ``>``, ``<=``,
+``>=``, ``==``, ``!=``) should have the ``ndarray`` on their left hand
+side, when compared to scalars. This means that the following works
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    a = ulab.array([1, 2, 3])
+    print(a > 2)
+
+.. parsed-literal::
+
+    [False, False, True]
+    
+    
+
+
+while the equivalent statement, ``2 < a``, will raise a ``TypeError``
+exception:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    a = ulab.array([1, 2, 3])
+    print(2 < a)
+
+.. parsed-literal::
+
+    
+    Traceback (most recent call last):
+      File "/dev/shm/micropython.py", line 4, in <module>
+    TypeError: unsupported types for __lt__: 'int', 'ndarray'
+    
+
 
 **WARNING:** ``numpy`` also allows operations between a matrix, and a
 row vector, if the row vector has exactly as many elements, as many
