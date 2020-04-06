@@ -19,7 +19,7 @@
 
 #if ULAB_LINALG_MODULE
 
-ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
+static ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
 	// Returns an ndarray, if the object is a square ndarray, 
 	// raises the appropriate exception otherwise
 	if(!MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)) {
@@ -32,14 +32,14 @@ ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
 	return ndarray;
 }
 
-mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("size is defined for ndarrays only"));
@@ -114,7 +114,7 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     return true;
 }
 
-mp_obj_t linalg_inv(mp_obj_t o_in) {
+static mp_obj_t linalg_inv(mp_obj_t o_in) {
 	ndarray_obj_t *o = linalg_object_is_square(o_in);
     ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
     mp_float_t *data = (mp_float_t *)inverted->array->items;
@@ -139,7 +139,7 @@ mp_obj_t linalg_inv(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 
-mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
+static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     // TODO: should the results be upcast?
     if(!MP_OBJ_IS_TYPE(_m1, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_m2, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("arguments must be ndarrays"));
@@ -170,7 +170,7 @@ mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
 
-mp_obj_t linalg_det(mp_obj_t oin) {
+static mp_obj_t linalg_det(mp_obj_t oin) {
     ndarray_obj_t *in = linalg_object_is_square(oin);  
     mp_float_t *tmp = m_new(mp_float_t, in->n*in->n);
     for(size_t i=0; i < in->array->len; i++){
@@ -202,7 +202,7 @@ mp_obj_t linalg_det(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 
-mp_obj_t linalg_eig(mp_obj_t oin) {
+static mp_obj_t linalg_eig(mp_obj_t oin) {
 	ndarray_obj_t *in = linalg_object_is_square(oin);
     mp_float_t *array = m_new(mp_float_t, in->array->len);
     for(size_t i=0; i < in->array->len; i++) {
@@ -325,7 +325,7 @@ mp_obj_t linalg_eig(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 
-mp_obj_t linalg_cholesky(mp_obj_t oin) {
+static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 	ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
 	ndarray_obj_t *L = create_new_ndarray(in->n, in->n, NDARRAY_FLOAT);
     mp_float_t *array = (mp_float_t *)L->array->items;
@@ -376,7 +376,7 @@ mp_obj_t linalg_cholesky(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
 
-mp_obj_t linalg_trace(mp_obj_t oin) {
+static mp_obj_t linalg_trace(mp_obj_t oin) {
 	ndarray_obj_t *ndarray = linalg_object_is_square(oin);
 	mp_float_t trace = 0.0;
 	for(size_t pos=0; pos < ndarray->array->len; pos+=(ndarray->m+1)) {

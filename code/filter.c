@@ -18,14 +18,14 @@
 #include "filter.h"
 
 #if ULAB_FILTER_MODULE
-mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_v, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(2, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("convolve arguments must be ndarrays"));
@@ -33,8 +33,8 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 
     ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
     ndarray_obj_t *c = MP_OBJ_TO_PTR(args[1].u_obj);
-    int len_a = a->array->len;
-    int len_c = c->array->len;
+    size_t len_a = a->array->len;
+    size_t len_c = c->array->len;
     // deal with linear arrays only
     if(a->m*a->n != len_a || c->m*c->n != len_c) {
         mp_raise_TypeError(translate("convolve arguments must be linear arrays"));

@@ -46,8 +46,8 @@ extern mp_obj_module_t ulab_numerical_module;
 #define RUN_SUM(ndarray, type, optype, len, start, increment) do {\
     type *array = (type *)(ndarray)->array->items;\
     type value;\
-    for(size_t j=0; j < (len); j++) {\
-        value = array[(start)+j*(increment)];\
+    for(size_t k=0; k < (len); k++) {\
+        value = array[(start)+k*(increment)];\
         sum += value;\
     }\
 } while(0)
@@ -55,12 +55,12 @@ extern mp_obj_module_t ulab_numerical_module;
 #define RUN_STD(ndarray, type, len, start, increment) do {\
     type *array = (type *)(ndarray)->array->items;\
     mp_float_t value;\
-    for(size_t j=0; j < (len); j++) {\
-        sum += array[(start)+j*(increment)];\
+    for(size_t k=0; k < (len); k++) {\
+        sum += array[(start)+k*(increment)];\
     }\
     sum /= (len);\
-    for(size_t j=0; j < (len); j++) {\
-        value = (array[(start)+j*(increment)] - sum);\
+    for(size_t k=0; k < (len); k++) {\
+        value = (array[(start)+k*(increment)] - sum);\
         sum_sq += value * value;\
     }\
 } while(0)

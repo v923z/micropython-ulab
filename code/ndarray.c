@@ -65,16 +65,15 @@ void fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
 
 void ndarray_print_row(const mp_print_t *print, mp_obj_array_t *data, size_t n0, size_t n) {
     mp_print_str(print, "[");
-    size_t i;
     if(n < PRINT_MAX) { // if the array is short, print everything
         mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0), PRINT_REPR);
-        for(i=1; i<n; i++) {
+        for(size_t i=1; i<n; i++) {
             mp_print_str(print, ", ");
             mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+i), PRINT_REPR);
         }
     } else {
         mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0), PRINT_REPR);
-        for(i=1; i<3; i++) {
+        for(size_t i=1; i<3; i++) {
             mp_print_str(print, ", ");
             mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+i), PRINT_REPR);
         }
@@ -160,13 +159,13 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
     };
     
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
     uint8_t dtype = args[1].u_int;
     return dtype;
 }
 
-STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t ndarray_make_new_core(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
     
 	if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
@@ -209,7 +208,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
         if(len_in != MP_OBJ_NULL) { // indeed, this seems to be an iterable
             // Next, we have to check, whether all elements in the outer loop have the same length
             if(i > 0) {
-                if(len2 != MP_OBJ_SMALL_INT_VALUE(len_in)) {
+                if(len2 != (size_t)MP_OBJ_SMALL_INT_VALUE(len_in)) {
                     mp_raise_ValueError(translate("iterables are not of the same length"));
                 }
             }
@@ -237,24 +236,26 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
 
 #ifdef CIRCUITPY
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    (void) type;
     mp_arg_check_num(n_args, kw_args, 1, 2, true);
     size_t n_kw = 0;
     if (kw_args != 0) {
         n_kw = kw_args->used;
     }
     mp_map_init_fixed_table(kw_args, n_kw, args + n_args);
-    return ndarray_make_new_core(type, n_args, n_kw, args, kw_args);
+    return ndarray_make_new_core(n_args, args, kw_args);
 }
 #else
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void) type;
     mp_arg_check_num(n_args, n_kw, 1, 2, true);
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    return ndarray_make_new_core(type, n_args, n_kw, args, &kw_args);
+    return ndarray_make_new_core(n_args, args, &kw_args);
 }
 #endif
 
-size_t slice_length(mp_bound_slice_t slice) {
+static size_t slice_length(mp_bound_slice_t slice) {
     ssize_t len, correction = 1;
     if(slice.step > 0) correction = -1;
     len = (ssize_t)(slice.stop - slice.start + (slice.step + correction)) / slice.step;
@@ -262,7 +263,7 @@ size_t slice_length(mp_bound_slice_t slice) {
     return (size_t)len;
 }
 
-size_t true_length(mp_obj_t bool_list) {
+static size_t true_length(mp_obj_t bool_list) {
     // returns the number of Trues in a Boolean list
     // I wonder, wouldn't this be faster, if we looped through bool_list->items instead?
     mp_obj_iter_buf_t iter_buf;
@@ -281,13 +282,13 @@ size_t true_length(mp_obj_t bool_list) {
     return trues;
 }
 
-mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
+static mp_bound_slice_t generate_slice(mp_int_t n, mp_obj_t index) {
     // micropython seems to have difficulties with negative steps
     mp_bound_slice_t slice;
     if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
         mp_obj_slice_indices(index, n, &slice);
     } else if(MP_OBJ_IS_INT(index)) {
-        int32_t _index = mp_obj_get_int(index);
+        mp_int_t _index = mp_obj_get_int(index);
         if(_index < 0) {
             _index += n;
         } 
@@ -303,7 +304,7 @@ mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
     return slice;
 }
 
-mp_bound_slice_t simple_slice(int16_t start, int16_t stop, int16_t step) {
+static mp_bound_slice_t simple_slice(int16_t start, int16_t stop, int16_t step) {
     mp_bound_slice_t slice;
     slice.start = start;
     slice.stop = stop;
@@ -311,7 +312,7 @@ mp_bound_slice_t simple_slice(int16_t start, int16_t stop, int16_t step) {
     return slice;
 }
 
-void insert_binary_value(ndarray_obj_t *ndarray, size_t nd_index, ndarray_obj_t *values, size_t value_index) {
+static void insert_binary_value(ndarray_obj_t *ndarray, size_t nd_index, ndarray_obj_t *values, size_t value_index) {
     // there is probably a more elegant implementation...
     mp_obj_t tmp = mp_binary_get_val_array(values->array->typecode, values->array->items, value_index);
     if((values->array->typecode == NDARRAY_FLOAT) && (ndarray->array->typecode != NDARRAY_FLOAT)) {
@@ -322,7 +323,7 @@ void insert_binary_value(ndarray_obj_t *ndarray, size_t nd_index, ndarray_obj_t 
     mp_binary_set_val_array(ndarray->array->typecode, ndarray->array->items, nd_index, tmp); 
 }
 
-mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
+static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
                             mp_bound_slice_t row, mp_bound_slice_t column, 
                             mp_obj_t row_list, mp_obj_t column_list, 
                             ndarray_obj_t *values) {
@@ -390,7 +391,8 @@ mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
         } else { // columns are indexed by a list
             mp_obj_iter_buf_t column_iter_buf;
             mp_obj_t column_item, column_iterable;
-            size_t j = 0, cindex = 0;
+            size_t j = 0;
+            cindex = 0;
             while((row_item = mp_iternext(row_iterable)) != MP_OBJ_STOP_ITERATION) {
                 if(mp_obj_is_true(row_item)) {
                     column_iterable = mp_getiter(column_list, &column_iter_buf);                   
@@ -410,7 +412,7 @@ mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
     return mp_const_none;
 }
 
-mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
+static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
                             mp_bound_slice_t row, mp_bound_slice_t column, 
                             mp_obj_t row_list, mp_obj_t column_list, 
                             ndarray_obj_t *values) {
@@ -472,7 +474,8 @@ mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
         } else { // columns are indexed by a list
             mp_obj_iter_buf_t column_iter_buf;
             mp_obj_t column_item, column_iterable;
-            size_t j = 0, cindex = 0;
+            size_t j = 0;
+            cindex = 0;
             while((row_item = mp_iternext(row_iterable)) != MP_OBJ_STOP_ITERATION) {
                 if(mp_obj_is_true(row_item)) {
                     column_iterable = mp_getiter(column_list, &column_iter_buf);                   
@@ -492,7 +495,7 @@ mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
     return MP_OBJ_FROM_PTR(out);
 }
 
-mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t *values) {
+static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t *values) {
     mp_bound_slice_t row_slice = simple_slice(0, 0, 1), column_slice = simple_slice(0, 0, 1);
 
     size_t m = 0, n = 0;
@@ -609,7 +612,7 @@ typedef struct _mp_obj_ndarray_it_t {
     size_t cur;
 } mp_obj_ndarray_it_t;
 
-mp_obj_t ndarray_iternext(mp_obj_t self_in) {
+static mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     mp_obj_ndarray_it_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
     // TODO: in numpy, ndarrays are iterated with respect to the first axis. 
@@ -705,7 +708,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 
 // Binary operations
-ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
+static ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
 	// creates an ndarray from an micropython int or float
 	// if the input is an ndarray, it is returned
 	ndarray_obj_t *ndarray;
@@ -896,9 +899,11 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             // we can invert the content byte by byte, there is no need to distinguish 
             // between different typecodes
             ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
-            uint8_t *array = (uint8_t *)ndarray->array->items;
-            for(size_t i=0; i < self->bytes; i++) array[i] = ~array[i];
-            return MP_OBJ_FROM_PTR(ndarray);
+            {
+                uint8_t *array = (uint8_t *)ndarray->array->items;
+                for(size_t i=0; i < self->bytes; i++) array[i] = ~array[i];
+                return MP_OBJ_FROM_PTR(ndarray);
+            }
             break;
         
         case MP_UNARY_OP_NEGATIVE:
