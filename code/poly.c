@@ -27,15 +27,6 @@ static bool object_is_nditerable(mp_obj_t o_in) {
     return false;
 }
 
-static size_t get_nditerable_len(mp_obj_t o_in) {
-    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
-        ndarray_obj_t *in = MP_OBJ_TO_PTR(o_in);
-        return in->array->len;
-    } else {
-        return (size_t)mp_obj_get_int(mp_obj_len_maybe(o_in));
-    }
-}
-
 static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: return immediately, if o_p is not an iterable
     // TODO: there is a bug here: matrices won't work, 
