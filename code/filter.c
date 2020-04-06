@@ -33,8 +33,8 @@ static mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
     ndarray_obj_t *c = MP_OBJ_TO_PTR(args[1].u_obj);
-    int len_a = a->array->len;
-    int len_c = c->array->len;
+    size_t len_a = a->array->len;
+    size_t len_c = c->array->len;
     // deal with linear arrays only
     if(a->m*a->n != len_a || c->m*c->n != len_c) {
         mp_raise_TypeError(translate("convolve arguments must be linear arrays"));

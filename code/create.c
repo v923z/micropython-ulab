@@ -72,7 +72,7 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     size_t n = args[0].u_int, m;
-    int16_t k = args[2].u_int;
+    size_t k = args[2].u_int;
     uint8_t dtype = args[3].u_int;
     if(args[1].u_rom_obj == mp_const_none) {
         m = n;

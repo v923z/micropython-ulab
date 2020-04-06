@@ -208,7 +208,7 @@ STATIC mp_obj_t ndarray_make_new_core(size_t n_args, const mp_obj_t *args, mp_ma
         if(len_in != MP_OBJ_NULL) { // indeed, this seems to be an iterable
             // Next, we have to check, whether all elements in the outer loop have the same length
             if(i > 0) {
-                if(len2 != MP_OBJ_SMALL_INT_VALUE(len_in)) {
+                if(len2 != (size_t)MP_OBJ_SMALL_INT_VALUE(len_in)) {
                     mp_raise_ValueError(translate("iterables are not of the same length"));
                 }
             }
@@ -288,7 +288,7 @@ static mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
     if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
         mp_obj_slice_indices(index, n, &slice);
     } else if(MP_OBJ_IS_INT(index)) {
-        int32_t _index = mp_obj_get_int(index);
+        size_t _index = mp_obj_get_int(index);
         if(_index < 0) {
             _index += n;
         } 
