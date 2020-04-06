@@ -159,13 +159,13 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
     };
     
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(1, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
     uint8_t dtype = args[1].u_int;
     return dtype;
 }
 
-STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t ndarray_make_new_core(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
     
 	if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
@@ -236,20 +236,22 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
 
 #ifdef CIRCUITPY
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    (void) type;
     mp_arg_check_num(n_args, kw_args, 1, 2, true);
     size_t n_kw = 0;
     if (kw_args != 0) {
         n_kw = kw_args->used;
     }
     mp_map_init_fixed_table(kw_args, n_kw, args + n_args);
-    return ndarray_make_new_core(type, n_args, n_kw, args, kw_args);
+    return ndarray_make_new_core(n_args, args, kw_args);
 }
 #else
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void) type;
     mp_arg_check_num(n_args, n_kw, 1, 2, true);
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    return ndarray_make_new_core(type, n_args, n_kw, args, &kw_args);
+    return ndarray_make_new_core(n_args, args, &kw_args);
 }
 #endif
 
