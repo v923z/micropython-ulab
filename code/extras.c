@@ -19,7 +19,7 @@
 
 #if ULAB_EXTRAS_MODULE
 
-mp_obj_t extras_spectrogram(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t extras_spectrogram(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_SPECTRUM);
     } else {

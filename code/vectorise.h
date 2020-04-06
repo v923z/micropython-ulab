@@ -27,7 +27,7 @@ mp_obj_module_t ulab_vectorise_module;
 } while(0)
 
 #define MATH_FUN_1(py_name, c_name) \
-    mp_obj_t vectorise_ ## py_name(mp_obj_t x_obj) { \
+    static mp_obj_t vectorise_ ## py_name(mp_obj_t x_obj) { \
         return vectorise_generic_vector(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
 }
     

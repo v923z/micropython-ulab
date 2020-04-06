@@ -254,7 +254,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
 }
 #endif
 
-size_t slice_length(mp_bound_slice_t slice) {
+static size_t slice_length(mp_bound_slice_t slice) {
     ssize_t len, correction = 1;
     if(slice.step > 0) correction = -1;
     len = (ssize_t)(slice.stop - slice.start + (slice.step + correction)) / slice.step;
@@ -262,7 +262,7 @@ size_t slice_length(mp_bound_slice_t slice) {
     return (size_t)len;
 }
 
-size_t true_length(mp_obj_t bool_list) {
+static size_t true_length(mp_obj_t bool_list) {
     // returns the number of Trues in a Boolean list
     // I wonder, wouldn't this be faster, if we looped through bool_list->items instead?
     mp_obj_iter_buf_t iter_buf;
@@ -281,7 +281,7 @@ size_t true_length(mp_obj_t bool_list) {
     return trues;
 }
 
-mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
+static mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
     // micropython seems to have difficulties with negative steps
     mp_bound_slice_t slice;
     if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
@@ -303,7 +303,7 @@ mp_bound_slice_t generate_slice(mp_uint_t n, mp_obj_t index) {
     return slice;
 }
 
-mp_bound_slice_t simple_slice(int16_t start, int16_t stop, int16_t step) {
+static mp_bound_slice_t simple_slice(int16_t start, int16_t stop, int16_t step) {
     mp_bound_slice_t slice;
     slice.start = start;
     slice.stop = stop;
@@ -311,7 +311,7 @@ mp_bound_slice_t simple_slice(int16_t start, int16_t stop, int16_t step) {
     return slice;
 }
 
-void insert_binary_value(ndarray_obj_t *ndarray, size_t nd_index, ndarray_obj_t *values, size_t value_index) {
+static void insert_binary_value(ndarray_obj_t *ndarray, size_t nd_index, ndarray_obj_t *values, size_t value_index) {
     // there is probably a more elegant implementation...
     mp_obj_t tmp = mp_binary_get_val_array(values->array->typecode, values->array->items, value_index);
     if((values->array->typecode == NDARRAY_FLOAT) && (ndarray->array->typecode != NDARRAY_FLOAT)) {
@@ -322,7 +322,7 @@ void insert_binary_value(ndarray_obj_t *ndarray, size_t nd_index, ndarray_obj_t 
     mp_binary_set_val_array(ndarray->array->typecode, ndarray->array->items, nd_index, tmp); 
 }
 
-mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
+static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
                             mp_bound_slice_t row, mp_bound_slice_t column, 
                             mp_obj_t row_list, mp_obj_t column_list, 
                             ndarray_obj_t *values) {
@@ -410,7 +410,7 @@ mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
     return mp_const_none;
 }
 
-mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
+static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
                             mp_bound_slice_t row, mp_bound_slice_t column, 
                             mp_obj_t row_list, mp_obj_t column_list, 
                             ndarray_obj_t *values) {
@@ -492,7 +492,7 @@ mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
     return MP_OBJ_FROM_PTR(out);
 }
 
-mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t *values) {
+static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t *values) {
     mp_bound_slice_t row_slice = simple_slice(0, 0, 1), column_slice = simple_slice(0, 0, 1);
 
     size_t m = 0, n = 0;
@@ -609,7 +609,7 @@ typedef struct _mp_obj_ndarray_it_t {
     size_t cur;
 } mp_obj_ndarray_it_t;
 
-mp_obj_t ndarray_iternext(mp_obj_t self_in) {
+static mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     mp_obj_ndarray_it_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
     // TODO: in numpy, ndarrays are iterated with respect to the first axis. 
@@ -705,7 +705,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 
 // Binary operations
-ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
+static ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
 	// creates an ndarray from an micropython int or float
 	// if the input is an ndarray, it is returned
 	ndarray_obj_t *ndarray;

@@ -17,7 +17,7 @@
 #include "poly.h"
 
 #if ULAB_POLY_MODULE
-bool object_is_nditerable(mp_obj_t o_in) {
+static bool object_is_nditerable(mp_obj_t o_in) {
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) || 
       MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || 
       MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
@@ -27,7 +27,7 @@ bool object_is_nditerable(mp_obj_t o_in) {
     return false;
 }
 
-size_t get_nditerable_len(mp_obj_t o_in) {
+static size_t get_nditerable_len(mp_obj_t o_in) {
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *in = MP_OBJ_TO_PTR(o_in);
         return in->array->len;
@@ -36,7 +36,7 @@ size_t get_nditerable_len(mp_obj_t o_in) {
     }
 }
 
-mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
+static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: return immediately, if o_p is not an iterable
     // TODO: there is a bug here: matrices won't work, 
     // because there is a single iteration loop
@@ -85,7 +85,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
 
-mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
+static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     if((n_args != 2) && (n_args != 3)) {
         mp_raise_ValueError(translate("number of arguments must be 2, or 3"));
     }

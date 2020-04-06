@@ -23,7 +23,7 @@
 #endif
     
 #if ULAB_VECTORISE_MODULE
-mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
+static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     // Return a single value, if o_in is not iterable
     if(mp_obj_is_float(o_in) || MP_OBJ_IS_INT(o_in)) {
             return mp_obj_new_float(f(mp_obj_get_float(o_in)));
@@ -135,7 +135,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tan_obj, vectorise_tan);
 MATH_FUN_1(tanh, tanh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tanh_obj, vectorise_tanh);
 
-mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_decimals, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 } }
@@ -160,7 +160,7 @@ mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
 MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_around_obj, 1, vectorise_around);
 
-mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
+static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 	// the function is implemented for scalars and ndarrays only, with partial 
 	// broadcasting: arguments must be either scalars, or ndarrays of equal size/shape
 	if(!(MP_OBJ_IS_INT(x) || mp_obj_is_float(x) || MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) &&

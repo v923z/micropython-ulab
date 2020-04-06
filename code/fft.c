@@ -23,7 +23,7 @@
 
 #if ULAB_FFT_MODULE
 
-void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
+static void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     // This is basically a modification of four1 from Numerical Recipes
     // The main difference is that this function takes two arrays, one 
     // for the real, and one for the imaginary parts. 
@@ -146,7 +146,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     }
 }
 
-mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_FFT);
     } else {
@@ -156,7 +156,7 @@ mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 
-mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_IFFT);
     } else {
