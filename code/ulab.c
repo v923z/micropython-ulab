@@ -30,7 +30,7 @@
 #include "numerical.h"
 #include "extras.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.40.0");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.41.0");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
@@ -50,6 +50,7 @@ STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_t
 
 const mp_obj_type_t ulab_ndarray_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST,
     .name = MP_QSTR_ndarray,
     .print = ndarray_print,
     .make_new = ndarray_make_new,

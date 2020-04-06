@@ -1,3 +1,9 @@
+Sat, 4 Apr 2020
+
+version 0.41.0
+
+	implemented == and != binary operators
+
 Fri, 3 Apr 2020
 
 version 0.40.0
