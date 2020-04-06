@@ -65,16 +65,15 @@ void fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
 
 void ndarray_print_row(const mp_print_t *print, mp_obj_array_t *data, size_t n0, size_t n) {
     mp_print_str(print, "[");
-    size_t i;
     if(n < PRINT_MAX) { // if the array is short, print everything
         mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0), PRINT_REPR);
-        for(i=1; i<n; i++) {
+        for(size_t i=1; i<n; i++) {
             mp_print_str(print, ", ");
             mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+i), PRINT_REPR);
         }
     } else {
         mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0), PRINT_REPR);
-        for(i=1; i<3; i++) {
+        for(size_t i=1; i<3; i++) {
             mp_print_str(print, ", ");
             mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+i), PRINT_REPR);
         }
@@ -390,7 +389,8 @@ static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
         } else { // columns are indexed by a list
             mp_obj_iter_buf_t column_iter_buf;
             mp_obj_t column_item, column_iterable;
-            size_t j = 0, cindex = 0;
+            size_t j = 0;
+            cindex = 0;
             while((row_item = mp_iternext(row_iterable)) != MP_OBJ_STOP_ITERATION) {
                 if(mp_obj_is_true(row_item)) {
                     column_iterable = mp_getiter(column_list, &column_iter_buf);                   
@@ -472,7 +472,8 @@ static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
         } else { // columns are indexed by a list
             mp_obj_iter_buf_t column_iter_buf;
             mp_obj_t column_item, column_iterable;
-            size_t j = 0, cindex = 0;
+            size_t j = 0;
+            cindex = 0;
             while((row_item = mp_iternext(row_iterable)) != MP_OBJ_STOP_ITERATION) {
                 if(mp_obj_is_true(row_item)) {
                     column_iterable = mp_getiter(column_list, &column_iter_buf);                   
@@ -896,9 +897,11 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             // we can invert the content byte by byte, there is no need to distinguish 
             // between different typecodes
             ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
-            uint8_t *array = (uint8_t *)ndarray->array->items;
-            for(size_t i=0; i < self->bytes; i++) array[i] = ~array[i];
-            return MP_OBJ_FROM_PTR(ndarray);
+            {
+                uint8_t *array = (uint8_t *)ndarray->array->items;
+                for(size_t i=0; i < self->bytes; i++) array[i] = ~array[i];
+                return MP_OBJ_FROM_PTR(ndarray);
+            }
             break;
         
         case MP_UNARY_OP_NEGATIVE:
