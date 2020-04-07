@@ -149,18 +149,26 @@ static mp_obj_t numerical_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, siz
 }
 
 static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
-    size_t idx = 0, best_idx = 0;
+    size_t idx = 1, best_idx = 1;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(oin, &iter_buf);
-    mp_obj_t best_obj = MP_OBJ_NULL;
     mp_obj_t item;
-    mp_uint_t op = MP_BINARY_OP_LESS;
-    if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) op = MP_BINARY_OP_MORE;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        if ((best_obj == MP_OBJ_NULL) || (mp_binary_op(op, item, best_obj) == mp_const_true)) {
-            best_obj = item;
-            best_idx = idx;
-        }
+    uint8_t op = 0; // argmin, min
+    if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) op = 1;
+    item = mp_iternext(iterable);
+	mp_obj_t best_obj = item;
+    mp_float_t value, best_value = mp_obj_get_float(item);
+    while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+		value = mp_obj_get_float(item);
+		if((op == 0) && (value < best_value)) {
+			best_obj = item;
+			best_idx = idx;
+			best_value = value;
+		} else if((op == 1) && (value > best_value)) {
+			best_obj = item;
+			best_idx = idx;
+			best_value = value;
+		}
         idx++;
     }
     if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
@@ -230,7 +238,6 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_ARGMIN:
             case NUMERICAL_MAX:
             case NUMERICAL_ARGMAX:
-                mp_raise_ValueError(translate("axis must be None"));
                 return numerical_argmin_argmax_iterable(oin, optype);
             case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
