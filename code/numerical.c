@@ -627,8 +627,6 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
     if(args[1].u_obj == mp_const_none) { // flatten the array
         m = 1;
         n = ndarray->array->len;
-        ndarray->m = m;
-        ndarray->n = n;
         increment = 1;
         start_inc = ndarray->n;
         end = ndarray->n;

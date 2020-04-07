@@ -1,3 +1,9 @@
+Tue, 7 Apr 2020
+
+version 0.41.1
+
+	fix error in argsort
+
 Sat, 4 Apr 2020
 
 version 0.41.0
