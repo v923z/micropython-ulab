@@ -1020,10 +1020,6 @@ verbatim copy of the contents.
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html
 
-Note that only square matrices can be transposed in place, and in
-general, an internal copy of the matrix is required. If RAM is a
-concern, plan accordingly!
-
 .. code::
         
     # code to be run in micropython

@@ -959,34 +959,28 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 mp_obj_t ndarray_transpose(mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // the size of a single item in the array
-    uint8_t _sizeof = mp_binary_get_size('@', self->array->typecode, NULL);
     
-    // NOTE: 
-    // if the matrices are square, we can simply swap items, but 
-    // generic matrices can't be transposed in place, so we have to 
-    // declare a temporary variable
-    
-    // NOTE: 
     //  In the old matrix, the coordinate (m, n) is m*self->n + n
     //  We have to assign this to the coordinate (n, m) in the new 
     //  matrix, i.e., to n*self->m + m (since the new matrix has self->m columns)
-    
+
+	ndarray_obj_t *ndarray = create_new_ndarray(self->n,  self->m, self->array->typecode);
     // one-dimensional arrays can be transposed by simply swapping the dimensions
-    if((self->m != 1) && (self->n != 1)) {
-        uint8_t *c = (uint8_t *)self->array->items;
-        // self->bytes is the size of the bytearray, irrespective of the typecode
-        uint8_t *tmp = m_new(uint8_t, self->bytes);
+    if((self->m == 1) || (self->n == 1)) {
+        memcpy(ndarray->array->items, self->array->items, self->bytes);
+	} else {
+		// the size of a single item in the array
+		uint8_t itemsize = mp_binary_get_size('@', self->array->typecode, NULL);
+        uint8_t *sarray = (uint8_t *)self->array->items;
+        uint8_t *narray = (uint8_t *)ndarray->array->items;
         for(size_t m=0; m < self->m; m++) {
             for(size_t n=0; n < self->n; n++) {
-                memcpy(tmp+_sizeof*(n*self->m + m), c+_sizeof*(m*self->n + n), _sizeof);
+                memcpy(narray+itemsize*(n*self->m + m), sarray, itemsize);
+                sarray += itemsize;
             }
         }
-        memcpy(self->array->items, tmp, self->bytes);
-        m_del(uint8_t, tmp, self->bytes);
     } 
-    SWAP(size_t, self->m, self->n);
-    return mp_const_none;
+    return MP_OBJ_FROM_PTR(ndarray);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
