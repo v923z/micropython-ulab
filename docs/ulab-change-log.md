@@ -1,3 +1,9 @@
+Thu, 9 Apr 2020
+
+version 0.41.2
+
+	fix transpose function
+
 Tue, 7 Apr 2020
 
 version 0.41.1
