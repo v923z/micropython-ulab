@@ -1,12 +1,52 @@
-# micropython-ulab
+# ulab
 
 `ulab` is a `numpy`-like array manipulation library for `micropython` and `CircuitPython`.
 The module is written in C, defines compact containers for numerical
 data, and is fast. The library is a software-only standard `micropython` user module,
-i.e., it has no hardware dependencies, and can be compiled for any platform.
+i.e., it has no hardware dependencies, and can be compiled for any platform. 
 The `float` implementation of `micropython` (`float`, or `double`) is automatically detected.
 
-Documentation can be found under https://micropython-ulab.readthedocs.io/en/latest/.
+# Supported functions
+
+
+## ndarray
+
+`ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, and `**` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of iterables, or by means of the `ones`, `zeros`, `eye`, or `linspace` functions. 
+
+`ndarray`s can be iterated on, and have a number of their own methods, such as `shape`, `reshape`, `transpose`, `size`, and `itemsize`.
+
+## Modules
+
+In addition to the `ndarray`'s operators and methods, five additional modules define a great number of functions that can take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules can be excluded from the compiled firmware with a pre-processor switch. 
+
+### vector
+
+The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) of `micropython` for `ndarray`s and iterables.
+
+### linalg
+
+The `linalg` sub-module implements functions for matrix inversion, dot product, and the calculation of the determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace. 
+
+### poly
+
+The `poly` sub-module defines the `polyval`, and `polyfit` functions from `numpy`.
+
+### fft
+
+The `fft` sub-module implements the fast Fourier transform, and its inverse for one-dimensional `ndarray`s.
+
+### filter
+
+The `filter` sub-module implements one-dimensional convolution.
+
+### extras
+
+The `extras` sub-module is meant as a use-extendable module, and currently implements the `spectrogram` function of `scipy`. 
+
+# Finding help
+
+Documentation can be found on [readthedocs](readthedocs.org/) under [micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest), as well as at [circuitpython-ulab](
+https://circuitpython.readthedocs.io/en/latest/shared-bindings/ulab/__init__.html). A number of practical examples are listed in the excellent [circuitpython-ulab](https://learn.adafruit.com/ulab-crunch-numbers-fast-with-circuitpython/overview) overview.
 
 # Firmware
 
