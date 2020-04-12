@@ -149,6 +149,9 @@ static mp_obj_t numerical_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, siz
 }
 
 static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
+	if(MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(oin)) == 0) {
+		mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
+	}
     size_t idx = 1, best_idx = 1;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(oin, &iter_buf);
@@ -186,6 +189,9 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         // we could save some RAM by taking NDARRAY_UINT8, if the dimensions 
         // are smaller than 256, but the code would become more involving 
         // (we would also need extra flash space)
+        if(ndarray->array->len == 0) {
+			mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
+		}
         results = create_new_ndarray(m, n, NDARRAY_UINT16);
     } else {
         results = create_new_ndarray(m, n, ndarray->array->typecode);
