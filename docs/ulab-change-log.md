@@ -6,6 +6,12 @@ version 0.41.2
 
 Tue, 7 Apr 2020
 
+version 0.41.2
+
+	fix discrepancy in argmin/argmax behaviour
+
+Tue, 7 Apr 2020
+
 version 0.41.1
 
 	fix error in argsort
