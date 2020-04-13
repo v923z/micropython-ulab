@@ -152,7 +152,7 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
 	if(MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(oin)) == 0) {
 		mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
 	}
-    size_t idx = 1, best_idx = 1;
+    size_t idx = 0, best_idx = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(oin, &iter_buf);
     mp_obj_t item;
