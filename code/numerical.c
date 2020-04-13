@@ -161,7 +161,9 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
     item = mp_iternext(iterable);
 	mp_obj_t best_obj = item;
     mp_float_t value, best_value = mp_obj_get_float(item);
+    value = best_value;
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+		idx++;
 		value = mp_obj_get_float(item);
 		if((op == 0) && (value < best_value)) {
 			best_obj = item;
@@ -172,7 +174,6 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
 			best_idx = idx;
 			best_value = value;
 		}
-        idx++;
     }
     if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
         return MP_OBJ_NEW_SMALL_INT(best_idx);
