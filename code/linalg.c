@@ -152,17 +152,16 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     // TODO: numpy uses upcasting here
     ndarray_obj_t *out = create_new_ndarray(m1->m, m2->n, NDARRAY_FLOAT);
     mp_float_t *outdata = (mp_float_t *)out->array->items;
-    mp_float_t sum, v1, v2;
     for(size_t i=0; i < m1->m; i++) { // rows of m1
         for(size_t j=0; j < m2->n; j++) { // columns of m2
-            sum = 0.0;
+            mp_float_t sum = 0.0, v1, v2;
             for(size_t k=0; k < m2->m; k++) {
                 // (i, k) * (k, j)
                 v1 = ndarray_get_float_value(m1->array->items, m1->array->typecode, i*m1->n+k);
                 v2 = ndarray_get_float_value(m2->array->items, m2->array->typecode, k*m2->n+j);
                 sum += v1 * v2;
             }
-            outdata[j*m1->m+i] = sum;
+            outdata[i*m2->n+j] = sum;
         }
     }
     return MP_OBJ_FROM_PTR(out);
