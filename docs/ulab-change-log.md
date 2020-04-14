@@ -1,3 +1,9 @@
+Tue, 14 Apr 2020
+
+version 0.41.3
+
+	fix indexing error in dot function
+
 Thu, 9 Apr 2020
 
 version 0.41.2
