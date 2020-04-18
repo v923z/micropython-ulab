@@ -17,11 +17,15 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 
 ## Modules
 
-In addition to the `ndarray`'s operators and methods, five additional modules define a great number of functions that can take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules can be excluded from the compiled firmware with a pre-processor switch. 
+In addition to the `ndarray`'s operators and methods, seven modules define a great number of functions that can take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules can be excluded from the compiled firmware with a pre-processor switch. 
 
 ### vector
 
 The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) of `micropython` for `ndarray`s and iterables.
+
+### numerical
+
+The `numerical` sub-module defines the `roll`, `flip`, `diff`, `sort` and `argsort` functions for `ndarray`s, and, in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as well as generic one-dimensional iterables.
 
 ### linalg
 
@@ -41,7 +45,7 @@ The `filter` sub-module implements one-dimensional convolution.
 
 ### extras
 
-The `extras` sub-module is meant as a use-extendable module, and currently implements the `spectrogram` function of `scipy`. 
+The `extras` sub-module is meant as a user-extendable module, and currently implements the `spectrogram` function of `scipy`. 
 
 # Finding help
 
