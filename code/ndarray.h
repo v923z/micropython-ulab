@@ -28,7 +28,7 @@
 #if CIRCUITPY
 #define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
 #else
-#define translate(x) x
+#define translate(x) MP_ERROR_TEXT(x)
 #endif
 
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }

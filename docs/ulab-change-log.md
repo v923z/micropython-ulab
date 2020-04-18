@@ -1,3 +1,9 @@
+Sat, 18 Apr 2020
+
+version 0.41.4
+
+	fix compilation error on hardware ports
+
 Tue, 14 Apr 2020
 
 version 0.41.3
