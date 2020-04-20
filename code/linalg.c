@@ -384,7 +384,7 @@ static mp_obj_t linalg_trace(mp_obj_t oin) {
 	if(ndarray->array->typecode == NDARRAY_FLOAT) {
 		return mp_obj_new_float(trace);
 	}
-	return mp_obj_new_int(trace);	
+	return mp_obj_new_int_from_float(trace);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_trace_obj, linalg_trace);

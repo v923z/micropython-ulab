@@ -32,13 +32,13 @@ extern mp_obj_module_t ulab_numerical_module;
         for(size_t i=1; i < (len); i++) {\
             if(array[(start)+i*(increment)] > array[(start)+best_index*(increment)]) best_index = i;\
         }\
-        if((op) == NUMERICAL_MAX) outarray[(pos)] = array[(start)+best_index*(increment)];\
+        if((op) == NUMERICAL_MAX) outarray[(pos)] = (typeout)array[(start)+best_index*(increment)];\
         else outarray[(pos)] = best_index;\
     } else{\
         for(size_t i=1; i < (len); i++) {\
             if(array[(start)+i*(increment)] < array[(start)+best_index*(increment)]) best_index = i;\
         }\
-        if((op) == NUMERICAL_MIN) outarray[(pos)] = array[(start)+best_index*(increment)];\
+        if((op) == NUMERICAL_MIN) outarray[(pos)] = (typeout)array[(start)+best_index*(increment)];\
         else outarray[(pos)] = best_index;\
     }\
 } while(0)

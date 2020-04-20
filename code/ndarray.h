@@ -109,7 +109,7 @@ mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t f
         type_out *(odata) = (type_out *)out->array->items;\
         if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left + *right; }\
 		else if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left * *right; }\
-        else if((op) == MP_BINARY_OP_POWER) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = MICROPY_FLOAT_C_FUN(pow)(*left, *right); }\
+        else if((op) == MP_BINARY_OP_POWER) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = (type_out)MICROPY_FLOAT_C_FUN(pow)(*left, *right); }\
         else if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left - *right; }\
         return MP_OBJ_FROM_PTR(out);\
 	} else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
