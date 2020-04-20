@@ -102,12 +102,9 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         }
         y = m_new(mp_float_t, leny);
         fill_array_iterable(y, args[0]);
-    } else /* n_args == 3 */ {
-        if(!object_is_nditerable(args[1])) {
-            mp_raise_ValueError(translate("input data must be an iterable"));
-        }
+    } else if(n_args == 3) {
         lenx = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
-        leny = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[1]));
+        leny = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
         if(lenx != leny) {
             mp_raise_ValueError(translate("input vectors must be of equal length"));
         }
