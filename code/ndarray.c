@@ -317,7 +317,7 @@ static void insert_binary_value(ndarray_obj_t *ndarray, size_t nd_index, ndarray
     mp_obj_t tmp = mp_binary_get_val_array(values->array->typecode, values->array->items, value_index);
     if((values->array->typecode == NDARRAY_FLOAT) && (ndarray->array->typecode != NDARRAY_FLOAT)) {
         // workaround: rounding seems not to work in the arm compiler
-        int32_t x = (int32_t)floorf(mp_obj_get_float(tmp)+0.5);
+        int32_t x = (int32_t)MICROPY_FLOAT_C_FUN(floor)(mp_obj_get_float(tmp)+0.5);
         tmp = mp_obj_new_int(x);
     }
     mp_binary_set_val_array(ndarray->array->typecode, ndarray->array->items, nd_index, tmp); 

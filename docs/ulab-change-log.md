@@ -1,3 +1,9 @@
+Mon, 20 Apr 2020
+
+version 0.41.5
+
+	fix compilation errors due to https://github.com/micropython/micropython/commit/30840ebc9925bb8ef025dbc2d5982b1bfeb75f1b
+
 Sat, 18 Apr 2020
 
 version 0.41.4
