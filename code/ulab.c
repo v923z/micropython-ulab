@@ -28,6 +28,7 @@
 #include "fft.h"
 #include "filter.h"
 #include "numerical.h"
+#include "compare.h"
 #include "extras.h"
 
 STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.41.4");

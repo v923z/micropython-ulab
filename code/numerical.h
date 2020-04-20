@@ -19,9 +19,7 @@
 
 extern mp_obj_module_t ulab_numerical_module;
 
-// TODO: implement minimum/maximum, and cumsum
-//mp_obj_t numerical_minimum(mp_obj_t , mp_obj_t );
-//mp_obj_t numerical_maximum(mp_obj_t , mp_obj_t );
+// TODO: implement cumsum
 //mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);
 
 #define RUN_ARGMIN(in, out, typein, typeout, len, start, increment, op, pos) do {\

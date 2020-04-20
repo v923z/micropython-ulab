@@ -1,3 +1,9 @@
+Mon, 20 Apr 2020
+
+version 0.42.0
+
+	add minimum/maximum/clip functions
+
 Sat, 18 Apr 2020
 
 version 0.41.4

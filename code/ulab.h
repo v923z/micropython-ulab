@@ -12,7 +12,7 @@
 #ifndef __ULAB__
 #define __ULAB__
 
-// create
+// the create module is always included
 #define ULAB_CREATE_MODULE (1)
 
 // vectorise (all functions) takes approx. 3 kB of flash space
@@ -32,6 +32,9 @@
 
 // the filter module takes about 1 kB of flash space
 #define ULAB_FILTER_MODULE (1)
+
+// the compare module takes about XXX kB of flash space
+#define ULAB_COMPARE_MODULE (1)
 
 // user-defined modules
 #define ULAB_EXTRAS_MODULE (1)
