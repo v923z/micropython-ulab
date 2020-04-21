@@ -69,8 +69,8 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.40.0), the library
-adds approximately 35 kB of extra compiled code to the micropython
+At the time of writing this manual (for version 0.42.0), the library
+adds approximately 40 kB of extra compiled code to the micropython
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
 can easily shave off a couple of kB. See the section on `customising
 ulab <#Custom_builds>`__.
@@ -162,13 +162,13 @@ The first couple of lines of the file look like this
 
 .. code:: c
 
-   // vectorise (all functions) takes approx. 3 kB of flash space
+   // vectorise (all functions) takes approx. 4.5 kB of flash space
    #define ULAB_VECTORISE_MODULE (1)
 
    // linalg adds around 6 kB
    #define ULAB_LINALG_MODULE (1)
 
-   // poly is approx. 2.5 kB
+   // poly requires approx. 2.5 kB
    #define ULAB_POLY_MODULE (1)
 
 In order to simplify navigation in the header, each flag begins with
@@ -339,12 +339,21 @@ FFT routines
 
 `ifft\*\* <#ifft>`__
 
-`spectrum\*\* <#spectrum>`__
+`spectrogram\*\* <#spectrogram>`__
 
 Filter functions
 ----------------
 
 `convolve <#convolve>`__
+
+Comparison of arrays
+--------------------
+
+`minimum <#minimum>`__
+
+`maximum <#maximum>`__
+
+`clip <#clip>`__
 
 ndarray, the basic container
 ============================
@@ -3469,6 +3478,107 @@ result.
 .. parsed-literal::
 
     array([1.0, 12.0, 123.0, 1230.0, 2300.0, 3000.0], dtype=float)
+    
+    
+
+
+Comparison of arrays
+====================
+
+Functions in the ``compare`` module can be called by importing the
+sub-module first.
+
+minimum
+-------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.minimum.html
+
+Returns the minimum of two arrays, or two scalars, or an array, and a
+scalar. Partial broadcasting is implemented. If the arrays are of
+different ``dtype``, the output is upcast as in `Binary
+operators <#Binary-operators>`__. If both inputs are scalars, a scalar
+is returned.
+
+maximum
+-------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.maximum.html
+
+Returns the maximum of two arrays, or two scalars, or an array, and a
+scalar. Partial broadcasting is implemented. If the arrays are of
+different ``dtype``, the output is upcast as in `Binary
+operators <#Binary-operators>`__. If both inputs are scalars, a scalar
+is returned.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    
+    a = ulab.array([1, 2, 3, 4, 5], dtype=ulab.uint8)
+    b = ulab.array([5, 4, 3, 2, 1], dtype=ulab.float)
+    print('minimum of a, and b:')
+    print(ulab.compare.minimum(a, b))
+    
+    print('\nmaximum of a, and b:')
+    print(ulab.compare.maximum(a, b))
+    
+    print('\nmaximum of 1, and 5.5:')
+    print(ulab.compare.maximum(1, 5.5))
+
+.. parsed-literal::
+
+    minimum of a, and b:
+    array([1.0, 2.0, 3.0, 2.0, 1.0], dtype=float)
+    
+    maximum of a, and b:
+    array([5.0, 4.0, 3.0, 4.0, 5.0], dtype=float)
+    
+    maximum of 1, and 5.5:
+    5.5
+    
+    
+
+
+clip
+----
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.clip.html
+
+Clips an array, i.e., values that are outside of an interval are clipped
+to the interval edges. The function is equivalent to
+``maximum(a_min, minimum(a, a_max))``. or two scalars, hence partial
+broadcasting takes place exactly as in `minimum <#minimum>`__. If the
+arrays are of different ``dtype``, the output is upcast as in `Binary
+operators <#Binary-operators>`__.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    
+    a = ulab.array(range(9), dtype=ulab.uint8)
+    print('a:\t\t', a)
+    print('clipped:\t', ulab.compare.clip(a, 3, 7))
+    
+    b = 3 * ulab.ones(len(a), dtype=ulab.float)
+    print('\na:\t\t', a)
+    print('b:\t\t', b)
+    print('clipped:\t', ulab.compare.clip(a, b, 7))
+
+.. parsed-literal::
+
+    a:		 array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    clipped:	 array([3, 3, 3, 3, 4, 5, 6, 7, 7], dtype=uint8)
+    
+    a:		 array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    b:		 array([3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0], dtype=float)
+    clipped:	 array([3.0, 3.0, 3.0, 3.0, 4.0, 5.0, 6.0, 7.0, 7.0], dtype=float)
     
     
 
