@@ -28,9 +28,10 @@
 #include "fft.h"
 #include "filter.h"
 #include "numerical.h"
+#include "compare.h"
 #include "extras.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.41.6");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.42.0");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
@@ -89,6 +90,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #endif
     #if ULAB_FILTER_MODULE
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&ulab_filter_module) },
+    #endif
+	  #if ULAB_COMPARE_MODULE
+    { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&ulab_compare_module) },
     #endif
     #if ULAB_EXTRAS_MODULE
     { MP_ROM_QSTR(MP_QSTR_extras), MP_ROM_PTR(&ulab_extras_module) },

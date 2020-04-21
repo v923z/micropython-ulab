@@ -708,7 +708,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 
 // Binary operations
-static ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
+ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
 	// creates an ndarray from an micropython int or float
 	// if the input is an ndarray, it is returned
 	ndarray_obj_t *ndarray;

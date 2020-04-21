@@ -86,6 +86,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
 mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 //void ndarray_attributes(mp_obj_t , qstr , mp_obj_t *);
 
+ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 
 #define CREATE_SINGLE_ITEM(outarray, type, typecode, value) do {\
     ndarray_obj_t *tmp = create_new_ndarray(1, 1, (typecode));\
