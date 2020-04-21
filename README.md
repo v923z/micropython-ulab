@@ -43,6 +43,10 @@ The `fft` sub-module implements the fast Fourier transform, and its inverse for 
 
 The `filter` sub-module implements one-dimensional convolution.
 
+### compare
+
+The `compare` sub-module contains the implementation of the `minimum`, `maximum`, and `clip` functions.
+
 ### extras
 
 The `extras` sub-module is meant as a user-extendable module, and currently implements the `spectrogram` function of `scipy`. 

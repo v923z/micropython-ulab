@@ -3498,7 +3498,7 @@ Returns the minimum of two arrays, or two scalars, or an array, and a
 scalar. Partial broadcasting is implemented. If the arrays are of
 different ``dtype``, the output is upcast as in `Binary
 operators <#Binary-operators>`__. If both inputs are scalars, a scalar
-is returned.
+is returned. Only positional arguments are implemented.
 
 maximum
 -------
@@ -3510,7 +3510,7 @@ Returns the maximum of two arrays, or two scalars, or an array, and a
 scalar. Partial broadcasting is implemented. If the arrays are of
 different ``dtype``, the output is upcast as in `Binary
 operators <#Binary-operators>`__. If both inputs are scalars, a scalar
-is returned.
+is returned. Only positional arguments are implemented.
 
 .. code::
         
