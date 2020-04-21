@@ -91,7 +91,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_FILTER_MODULE
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&ulab_filter_module) },
     #endif
-	#if ULAB_COMPARE_MODULE
+	  #if ULAB_COMPARE_MODULE
     { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&ulab_compare_module) },
     #endif
     #if ULAB_EXTRAS_MODULE
