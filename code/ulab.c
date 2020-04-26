@@ -31,7 +31,7 @@
 #include "compare.h"
 #include "extras.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.42.0");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.43.0");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
