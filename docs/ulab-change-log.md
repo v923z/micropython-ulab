@@ -1,3 +1,9 @@
+Thu, 30 Apr 2020
+
+version 0.44.0
+
+	add approx sub-module with newton, fmin, and bisect functions
+
 Tue, 21 Apr 2020
 
 version 0.42.0
