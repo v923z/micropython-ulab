@@ -45,7 +45,7 @@ The `filter` sub-module implements one-dimensional convolution.
 
 ### compare
 
-The `compare` sub-module contains the implementation of the `minimum`, `maximum`, and `clip` functions.
+The `compare` sub-module contains the implementation of the `equal`, `not_equal`, `minimum`, `maximum`, and `clip` functions.
 
 ### extras
 
