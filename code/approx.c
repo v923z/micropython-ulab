@@ -21,6 +21,13 @@
 const mp_obj_float_t xtolerance = {{&mp_type_float}, 2.4e-7};
 const mp_obj_float_t rtolerance = {{&mp_type_float}, 0.0};
 
+mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs) {
+	// Helper function for calculating the value of f(x, a, b, c, ...), 
+	// where f is defined in python. Takes a float, returns a float.
+	fargs[0] = mp_obj_new_float(x);
+	return mp_obj_get_float(type->call(fun, 1, 0, fargs));	
+}
+
 mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	// Simple bisection routine
     static const mp_arg_t allowed_args[] = {
@@ -40,15 +47,13 @@ mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 		mp_raise_TypeError(translate("first argument must be a function"));
 	}
 	mp_float_t xtol = mp_obj_get_float(args[3].u_obj);
-	mp_obj_t fargs[1];
+	mp_obj_t *fargs = (mp_obj_t *)malloc(sizeof(mp_obj_t));
 	mp_float_t left, right;
 	mp_float_t x_mid;
 	mp_float_t a = mp_obj_get_float(args[1].u_obj);
 	mp_float_t b = mp_obj_get_float(args[2].u_obj);
-	fargs[0] = args[1].u_obj;
-	left = mp_obj_get_float(type->call(fun, 1, 0, fargs));
-	fargs[0] = args[2].u_obj;
-	right = mp_obj_get_float(type->call(fun, 1, 0, fargs));
+	left = approx_python_call(type, fun, a, fargs);
+	right = approx_python_call(type, fun, b, fargs);
 	if(left * right > 0) {
 		mp_raise_ValueError(translate("function has the same sign at the ends of interval"));
 	}
@@ -58,8 +63,7 @@ mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 	for(uint16_t i=0; i < args[4].u_int; i++) {
 		dx *= 0.5;
 		x_mid = rtb + dx;
-		fargs[0] = mp_obj_new_float(x_mid);
-		if(mp_obj_get_float(type->call(fun, 1, 0, fargs)) < 0.0) {
+		if(approx_python_call(type, fun, x_mid, fargs) < 0.0) {
 			rtb = x_mid;
 		}
 		if(MICROPY_FLOAT_C_FUN(fabs)(dx) < xtol) break;
@@ -94,12 +98,10 @@ mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 	mp_float_t rtol = mp_obj_get_float(args[3].u_obj);
 	mp_float_t dx, df, fx;
 	dx = x > 0.0 ? APPROX_EPS * x : -APPROX_EPS * x;
+	mp_obj_t *fargs = (mp_obj_t *)malloc(sizeof(mp_obj_t));
 	for(uint16_t i=0; i < args[4].u_int; i++) {
-		mp_obj_t fargs[1];
-		fargs[0] = mp_obj_new_float(x);
-		fx = mp_obj_get_float(type->call(fun, 1, 0, fargs));
-		fargs[0] = mp_obj_new_float(x + dx);
-		df = (mp_obj_get_float(type->call(fun, 1, 0, fargs)) - fx) / dx;
+		fx = approx_python_call(type, fun, x, fargs);
+		df = (approx_python_call(type, fun, x + dx, fargs) - fx) / dx;
 		dx = fx / df;
 		x -= dx;
 		if(MICROPY_FLOAT_C_FUN(fabs)(dx) < (tol + rtol * MICROPY_FLOAT_C_FUN(fabs)(x))) break;
@@ -135,30 +137,24 @@ mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 	
 	mp_float_t x0 = mp_obj_get_float(args[1].u_obj);
 	mp_float_t x1 = x0 != 0.0 ? (1.0 + APPROX_NONZDELTA) * x0 : APPROX_ZDELTA;
-	mp_obj_t fargs[1];
-	fargs[0] = mp_obj_new_float(x0);
-	mp_float_t f0 = mp_obj_get_float(type->call(fun, 1, 0, fargs));
-	fargs[0] = mp_obj_new_float(x1);
-	mp_float_t f1 = mp_obj_get_float(type->call(fun, 1, 0, fargs));
+	mp_obj_t *fargs = (mp_obj_t *)malloc(sizeof(mp_obj_t));
+	mp_float_t f0 = approx_python_call(type, fun, x0, fargs);
+	mp_float_t f1 = approx_python_call(type, fun, x1, fargs);
 	if(f1 < f0) {
 		SWAP(mp_float_t, x0, x1);
 		SWAP(mp_float_t, f0, f1);
 	}
 	for(uint16_t i=0; i < maxiter; i++) {
 		uint8_t shrink = 0;
-		fargs[0] = mp_obj_new_float(x0);
-		f0 = mp_obj_get_float(type->call(fun, 1, 0, fargs));
-		fargs[0] = mp_obj_new_float(x1);
-		mp_float_t f1 = mp_obj_get_float(type->call(fun, 1, 0, fargs));
+		f0 = approx_python_call(type, fun, x0, fargs);
+		f1 = approx_python_call(type, fun, x1, fargs);
 		
 		// reflection
 		mp_float_t xr = (1.0 + APPROX_ALPHA) * x0 - APPROX_ALPHA * x1;
-		fargs[0] = mp_obj_new_float(xr);
-		mp_float_t fr = mp_obj_get_float(type->call(fun, 1, 0, fargs));
+		mp_float_t fr = approx_python_call(type, fun, xr, fargs);
 		if(fr < f0) { // expansion
 			mp_float_t xe = (1 + APPROX_ALPHA * APPROX_BETA) * x0 - APPROX_ALPHA * APPROX_BETA * x1;
-			fargs[0] = mp_obj_new_float(xe);
-			mp_float_t fe = mp_obj_get_float(type->call(fun, 1, 0, fargs));
+			mp_float_t fe = approx_python_call(type, fun, xe, fargs);
 			if(fe < fr) {
 				x1 = xe;
 				f1 = fe;
@@ -169,8 +165,7 @@ mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 		} else {
 			if(fr < f1) { // contraction
 				mp_float_t xc = (1 + APPROX_GAMMA * APPROX_ALPHA) * x0 - APPROX_GAMMA * APPROX_ALPHA * x1;
-				fargs[0] = mp_obj_new_float(xc);
-				mp_float_t fc = mp_obj_get_float(type->call(fun, 1, 0, fargs));
+				mp_float_t fc = approx_python_call(type, fun, xc, fargs);
 				if(fc < fr) {
 					x1 = xc;
 					f1 = fc;
@@ -179,8 +174,7 @@ mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 				}
 			} else { // inside contraction
 				mp_float_t xc = (1.0 - APPROX_GAMMA) * x0 + APPROX_GAMMA * x1;
-				fargs[0] = mp_obj_new_float(xc);
-				mp_float_t fc = mp_obj_get_float(type->call(fun, 1, 0, fargs));
+				mp_float_t fc = approx_python_call(type, fun, xc, fargs);
 				if(fc < f1) {
 					x1 = xc;
 					f1 = fc;
@@ -190,8 +184,7 @@ mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 			}
 			if(shrink == 1) {
 				x1 = x0 + APPROX_DELTA * (x1 - x0);
-				fargs[0] = mp_obj_new_float(x1);
-				f1 = mp_obj_get_float(type->call(fun, 1, 0, fargs));
+				f1 = approx_python_call(type, fun, x1, fargs);
 			}
 			if((MICROPY_FLOAT_C_FUN(fabs)(f1 - f0) < fatol) || 
 				(MICROPY_FLOAT_C_FUN(fabs)(x1 - x0) < xatol)) {
@@ -199,7 +192,7 @@ mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 			}
 			if(f1 < f0) {
 				SWAP(mp_float_t, x0, x1);
-				SWAP(mp_float_t, f0, f1);				
+				SWAP(mp_float_t, f0, f1);
 			}
 		}
 	}
