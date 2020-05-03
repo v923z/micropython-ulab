@@ -20,11 +20,13 @@
 enum COMPARE_FUNCTION_TYPE {
     COMPARE_MINIMUM,
     COMPARE_MAXIMUM,
-    COMPARE_CLIP,    
+    COMPARE_CLIP,
 };
 
 extern mp_obj_module_t ulab_compare_module;
 
+MP_DECLARE_CONST_FUN_OBJ_2(compare_equal_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(compare_not_equal_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_minimum_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_maximum_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(compare_clip_obj);
