@@ -349,6 +349,10 @@ Filter functions
 Comparison of arrays
 --------------------
 
+`equal <#equal,-not_equal>`__
+
+`not_equal <#equal,-not_equal>`__
+
 `minimum <#minimum>`__
 
 `maximum <#maximum>`__
@@ -1353,6 +1357,10 @@ columns the matrix has. This feature will be added in future versions of
            [17, 28, 36]])
 
 
+
+**WARNING:** ``circuitpython`` users should use the ``equal``, and
+``not_equal`` operators instead of ``==``, and ``!=``. See the section
+on `array comparison <#Comparison-of-arrays>`__ for details.
 
 Upcasting
 ~~~~~~~~~
@@ -3487,6 +3495,55 @@ Comparison of arrays
 
 Functions in the ``compare`` module can be called by importing the
 sub-module first.
+
+equal, not_equal
+----------------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.equal.html
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.not_equal.html
+
+In ``micropython``, equality of arrays or scalars can be established by
+utilising the ``==``, ``!=``, ``<``, ``>``, ``<=``, or ``=>`` binary
+operators. In ``circuitpython``, ``==`` and ``!=`` will produce
+unexpected results. In order to avoid this discrepancy, and to maintain
+compatibility with ``numpy``, ``ulab`` implements the ``equal`` and
+``not_equal`` operators that return the same results, irrespective of
+the ``python`` implementation.
+
+These two functions take two ``ndarray``\ s, or scalars as their
+arguments. No keyword arguments are implemented.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(9))
+    b = np.zeros(9)
+    
+    print('a: ', a)
+    print('b: ', b)
+    print('\na == b: ', np.compare.equal(a, b))
+    print('a != b: ', np.compare.not_equal(a, b))
+    
+    # comparison with scalars
+    print('a == 2: ', np.compare.equal(a, 2))
+
+.. parsed-literal::
+
+    a:  array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
+    b:  array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float)
+    
+    a == b:  [True, False, False, False, False, False, False, False, False]
+    a != b:  [False, True, True, True, True, True, True, True, True]
+    a == 2:  [False, False, True, False, False, False, False, False, False]
+    
+    
+
 
 minimum
 -------

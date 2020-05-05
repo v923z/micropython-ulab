@@ -1,3 +1,9 @@
+Sat, 3 May 2020
+
+version 0.45.0
+
+	add equal/not_equal to the compare module
+	
 Tue, 21 Apr 2020
 
 version 0.42.0
