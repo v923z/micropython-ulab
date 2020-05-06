@@ -1,3 +1,13 @@
+Wed, 06 May 2020
+
+version 0.46.0
+
+    add curve_fit to the approx sub-module
+
+version 0.44.0
+
+	add approx sub-module with newton, fmin, and bisect functions
+
 Thu, 30 Apr 2020
 
 version 0.44.0

@@ -53,6 +53,16 @@ mp_float_t ndarray_get_float_value(void *data, uint8_t typecode, size_t index) {
     }
 }
 
+bool ndarray_object_is_nditerable(mp_obj_t o_in) {
+    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) || 
+      MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || 
+      MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
+      MP_OBJ_IS_TYPE(o_in, &mp_type_range)) {
+        return true;
+    }
+    return false;
+}
+
 void fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     mp_obj_iter_buf_t x_buf;
     mp_obj_t x_item, x_iterable = mp_getiter(iterable, &x_buf);
