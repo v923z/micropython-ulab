@@ -213,6 +213,80 @@ static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
 
+static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    vectorized_function_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+        ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0]);
+        ndarray_obj_t *target = create_new_ndarray(source->m, source->n, self->otypes);
+        for(size_t i=0; i < source->array->len; i++) {
+            mp_obj_t avalue[1];
+            avalue[0] = mp_binary_get_val_array(source->array->typecode, source->array->items, i);
+            mp_obj_t fvalue = self->type->call(self->fun, 1, 0, avalue);
+            mp_binary_set_val_array(self->otypes, target->array->items, i, fvalue);
+        }
+        return MP_OBJ_FROM_PTR(target);
+    } else if(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || MP_OBJ_IS_TYPE(args[0], &mp_type_list) ||
+        MP_OBJ_IS_TYPE(args[0], &mp_type_range)) { // i.e., the input is a generic iterable
+        size_t len = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
+        ndarray_obj_t *target = create_new_ndarray(1, len, self->otypes);
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
+        mp_obj_t avalue[1];
+        size_t i=0;
+        while ((avalue[0] = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            mp_obj_t fvalue = self->type->call(self->fun, 1, 0, avalue);
+            mp_binary_set_val_array(self->otypes, target->array->items, i, fvalue);
+            i++;
+        }
+        return MP_OBJ_FROM_PTR(target);
+    } else {
+        mp_raise_ValueError(translate("wrong input type"));
+    }
+    return mp_const_none;
+}
+
+const mp_obj_type_t vectorise_function_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_,
+    .call = vectorise_vectorized_function_call,
+};
+
+static mp_obj_t vectorise_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_otypes, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} }
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    const mp_obj_type_t *type = mp_obj_get_type(args[0].u_obj);
+    if(type->call == NULL) {
+        mp_raise_TypeError(translate("first argument must be a callable"));
+    }
+    mp_obj_t _otypes = args[1].u_obj;
+    uint8_t otypes = NDARRAY_FLOAT;
+    if(_otypes == mp_const_none) {
+        // TODO: is this what numpy does?
+        otypes = NDARRAY_FLOAT;
+    } else if(mp_obj_is_int(_otypes)) {
+        otypes = mp_obj_get_int(_otypes);
+        if(otypes != NDARRAY_FLOAT && otypes != NDARRAY_UINT8 && otypes != NDARRAY_INT8 &&
+            otypes != NDARRAY_UINT16 && otypes != NDARRAY_INT16) {
+                mp_raise_ValueError(translate("wrong output type"));
+        }
+    }
+    else {
+        mp_raise_ValueError(translate("wrong output type"));
+    }
+    vectorized_function_obj_t *function = m_new_obj(vectorized_function_obj_t);
+    function->base.type = &vectorise_function_type;
+    function->otypes = otypes;
+    function->fun = args[0].u_obj;
+    function->type = type;
+    return MP_OBJ_FROM_PTR(function);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_vectorize_obj, 1, vectorise_vectorize);
+
 STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_vector) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
@@ -240,6 +314,7 @@ STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&vectorise_sqrt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_tan), (mp_obj_t)&vectorise_tan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_tanh), (mp_obj_t)&vectorise_tanh_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vectorise_vectorize_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_vectorise_globals, ulab_vectorise_globals_table);
