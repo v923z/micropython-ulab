@@ -215,13 +215,14 @@ MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
 
 static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     vectorized_function_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t avalue[1];
+    mp_obj_t fvalue;
     if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0]);
         ndarray_obj_t *target = create_new_ndarray(source->m, source->n, self->otypes);
         for(size_t i=0; i < source->array->len; i++) {
-            mp_obj_t avalue[1];
             avalue[0] = mp_binary_get_val_array(source->array->typecode, source->array->items, i);
-            mp_obj_t fvalue = self->type->call(self->fun, 1, 0, avalue);
+            fvalue = self->type->call(self->fun, 1, 0, avalue);
             mp_binary_set_val_array(self->otypes, target->array->items, i, fvalue);
         }
         return MP_OBJ_FROM_PTR(target);
@@ -231,13 +232,17 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
         ndarray_obj_t *target = create_new_ndarray(1, len, self->otypes);
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
-        mp_obj_t avalue[1];
         size_t i=0;
         while ((avalue[0] = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            mp_obj_t fvalue = self->type->call(self->fun, 1, 0, avalue);
+            fvalue = self->type->call(self->fun, 1, 0, avalue);
             mp_binary_set_val_array(self->otypes, target->array->items, i, fvalue);
             i++;
         }
+        return MP_OBJ_FROM_PTR(target);
+    } else if(mp_obj_is_int(args[0]) || mp_obj_is_float(args[0])) {
+        ndarray_obj_t *target = create_new_ndarray(1, 1, self->otypes);
+        fvalue = self->type->call(self->fun, 1, 0, args);
+        mp_binary_set_val_array(self->otypes, target->array->items, 0, fvalue);
         return MP_OBJ_FROM_PTR(target);
     } else {
         mp_raise_ValueError(translate("wrong input type"));
