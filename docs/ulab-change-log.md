@@ -1,4 +1,10 @@
-Sat, 3 May 2020
+Wed, 6 May 2020
+
+version 0.46
+
+    added vectorisation of python functions
+
+Sat, 2 May 2020
 
 version 0.45.0
 
