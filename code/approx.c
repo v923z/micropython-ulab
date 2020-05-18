@@ -49,7 +49,7 @@ mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 		mp_raise_TypeError(translate("first argument must be a function"));
 	}
 	mp_float_t xtol = mp_obj_get_float(args[3].u_obj);
-	mp_obj_t *fargs = (mp_obj_t *)malloc(sizeof(mp_obj_t));
+	mp_obj_t *fargs = m_new(mp_obj_t, 1);
 	mp_float_t left, right;
 	mp_float_t x_mid;
 	mp_float_t a = mp_obj_get_float(args[1].u_obj);
@@ -100,7 +100,7 @@ mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 	mp_float_t rtol = mp_obj_get_float(args[3].u_obj);
 	mp_float_t dx, df, fx;
 	dx = x > 0.0 ? APPROX_EPS * x : -APPROX_EPS * x;
-	mp_obj_t *fargs = (mp_obj_t *)malloc(sizeof(mp_obj_t));
+	mp_obj_t *fargs = m_new(mp_obj_t, 1);
 	for(uint16_t i=0; i < args[4].u_int; i++) {
 		fx = approx_python_call(type, fun, x, fargs, 0);
 		df = (approx_python_call(type, fun, x + dx, fargs, 0) - fx) / dx;
@@ -139,7 +139,7 @@ mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 	
 	mp_float_t x0 = mp_obj_get_float(args[1].u_obj);
 	mp_float_t x1 = x0 != 0.0 ? (1.0 + APPROX_NONZDELTA) * x0 : APPROX_ZDELTA;
-	mp_obj_t *fargs = (mp_obj_t *)malloc(sizeof(mp_obj_t));
+	mp_obj_t *fargs = m_new(mp_obj_t, 1);
 	mp_float_t f0 = approx_python_call(type, fun, x0, fargs, 0);
 	mp_float_t f1 = approx_python_call(type, fun, x1, fargs, 0);
 	if(f1 < f0) {
@@ -203,6 +203,7 @@ mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_fmin_obj, 2, approx_fmin);
 
+#if 0
 static void approx_jacobi(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t *x, mp_float_t *y, uint16_t len, mp_float_t *params, uint8_t nparams, mp_float_t *jacobi, mp_float_t *grad) {
     /* Calculates the Jacobian and the gradient of the cost function
      * 
@@ -308,12 +309,80 @@ mp_obj_t approx_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_curve_fit_obj, 2, approx_curve_fit);
 
+#endif
+
+mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_left, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_right, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+    };
+	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+	
+	ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj);
+	ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj); // xp must hold an increasing sequence of independent values
+	ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj);
+	// TODO: check if the shape is (1, n), or (m, 1)
+	if(((xp->m != 1) && (xp->n != 1)) || ((fp->m != 1) && (fp->n != 1)) || 
+		(xp->array->len < 2) || (fp->array->len < 2) || (xp->array->len != fp->array->len)) {
+		mp_raise_ValueError(translate("interp is defined for 1D arrays of equal length"));
+	}
+	ndarray_obj_t *y = create_new_ndarray(x->m, x->n, NDARRAY_FLOAT);
+	mp_float_t left_value, right_value;
+	mp_float_t xp_left = ndarray_get_float_value(xp->array->items, xp->array->typecode, 0);
+	mp_float_t xp_right = ndarray_get_float_value(xp->array->items, xp->array->typecode, xp->array->len-1);
+	if(args[3].u_obj == mp_const_none) {
+		left_value = ndarray_get_float_value(fp->array->items, fp->array->typecode, 0);
+	} else {
+		left_value = mp_obj_get_float(args[3].u_obj);
+	}
+	if(args[4].u_obj == mp_const_none) {
+		right_value = ndarray_get_float_value(fp->array->items, fp->array->typecode, fp->array->len-1);
+	} else {
+		right_value = mp_obj_get_float(args[4].u_obj);
+	}
+	mp_float_t *yarray = (mp_float_t *)y->array->items;
+	for(size_t i=0; i < x->array->len; i++, yarray++) {
+		mp_float_t x_value = ndarray_get_float_value(x->array->items, x->array->typecode, i);
+		if(x_value <= xp_left) {
+			*yarray = left_value;
+		} else if(x_value >= xp_right) {
+			*yarray = right_value;
+		} else { // do the binary search here
+			mp_float_t xp_left_, xp_right_;
+			mp_float_t fp_left, fp_right;
+			size_t left_index = 0, right_index = xp->array->len - 1, middle_index;
+			while(right_index - left_index > 1) {
+				middle_index = left_index + (right_index - left_index) / 2;
+				mp_float_t xp_middle = ndarray_get_float_value(xp->array->items, xp->array->typecode, middle_index);
+				if(x_value <= xp_middle) {
+					right_index = middle_index;
+				} else {
+					left_index = middle_index;
+				}
+			}
+			xp_left_ = ndarray_get_float_value(xp->array->items, xp->array->typecode, left_index);
+			xp_right_ = ndarray_get_float_value(xp->array->items, xp->array->typecode, right_index);
+			fp_left = ndarray_get_float_value(fp->array->items, fp->array->typecode, left_index);
+			fp_right = ndarray_get_float_value(fp->array->items, fp->array->typecode, right_index);
+			*yarray = fp_left + (x_value - xp_left_) * (fp_right - fp_left) / (xp_right_ - xp_left_);
+		}
+	}
+	return MP_OBJ_FROM_PTR(y);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
+
 STATIC const mp_rom_map_elem_t ulab_approx_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_approx) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&approx_bisect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&approx_newton_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&approx_fmin_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_approx_globals, ulab_approx_globals_table);

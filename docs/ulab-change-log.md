@@ -1,3 +1,9 @@
+Mon, 18 May 2020
+
+version 0.50.0
+
+    move interp to the approx sub-module
+    
 Wed, 06 May 2020
 
 version 0.46.0
