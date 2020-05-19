@@ -17,6 +17,13 @@
 
 #if ULAB_VECTORISE_MODULE
 
+typedef struct _vectorized_function_obj_t {
+    mp_obj_base_t base;
+    uint8_t otypes;
+    mp_obj_t fun;
+    const mp_obj_type_t *type;
+} vectorized_function_obj_t;
+
 mp_obj_module_t ulab_vectorise_module;
 
 #define ITERATE_VECTOR(type, source, out) do {\

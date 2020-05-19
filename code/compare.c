@@ -34,6 +34,9 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t comptype) {
             mp_raise_ValueError(translate("operands could not be broadcast together"));
 		}
 	}
+	if((comptype == MP_BINARY_OP_EQUAL) || (comptype == MP_BINARY_OP_NOT_EQUAL)) {
+		return ndarray_binary_op(comptype, x1, x2);
+	}
 	size_t m = MAX(ndarray1->m, ndarray2->m);
 	size_t n = MAX(ndarray1->n, ndarray2->n);
 	size_t len = MAX(ndarray1->array->len, ndarray2->array->len);
@@ -114,6 +117,30 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t comptype) {
     return mp_const_none; // we should never reach this point
 }
 
+static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype) {
+	// scalar comparisons should return a single object of mp_obj_t type
+	mp_obj_t result = compare_function(x1, x2, comptype);
+	if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
+		mp_obj_iter_buf_t iter_buf;
+		mp_obj_t iterable = mp_getiter(result, &iter_buf);
+		mp_obj_t item = mp_iternext(iterable);
+		return item;
+	}
+	return result;	
+
+}
+static mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
+	return compare_equal_helper(x1, x2, MP_BINARY_OP_EQUAL);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(compare_equal_obj, compare_equal);
+
+static mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
+	return compare_equal_helper(x1, x2, MP_BINARY_OP_NOT_EQUAL);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
+
 static mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
 	// extra round, so that we can return minimum(3, 4) properly
 	mp_obj_t result = compare_function(x1, x2, COMPARE_MINIMUM);
@@ -150,6 +177,8 @@ MP_DEFINE_CONST_FUN_OBJ_3(compare_clip_obj, compare_clip);
 
 STATIC const mp_rom_map_elem_t ulab_compare_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_compare) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_equal), (mp_obj_t)&compare_equal_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_not_equal), (mp_obj_t)&compare_not_equal_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_maximum), (mp_obj_t)&compare_maximum_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_minimum), (mp_obj_t)&compare_minimum_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_clip), (mp_obj_t)&compare_clip_obj },
