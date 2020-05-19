@@ -20,6 +20,25 @@ version 0.44.0
 
 	add approx sub-module with newton, fmin, and bisect functions
 
+=======
+Tue, 19 May 2020
+
+version 0.46.1
+
+    fixed bad error in binary_op
+
+Wed, 6 May 2020
+
+version 0.46
+
+    added vectorisation of python functions
+
+Sat, 2 May 2020
+
+version 0.45.0
+
+	add equal/not_equal to the compare module
+	
 Tue, 21 Apr 2020
 
 version 0.42.0

@@ -21,7 +21,7 @@ In addition to the `ndarray`'s operators and methods, seven modules define a gre
 
 ### vector
 
-The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) of `micropython` for `ndarray`s and iterables.
+The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) of `micropython` for `ndarray`s and iterables. In addition, it also provided tools for vectorising generic, user-defined `python` functions. 
 
 ### numerical
 
@@ -45,7 +45,7 @@ The `filter` sub-module implements one-dimensional convolution.
 
 ### compare
 
-The `compare` sub-module contains the implementation of the `minimum`, `maximum`, and `clip` functions.
+The `compare` sub-module contains the implementation of the `equal`, `not_equal`, `minimum`, `maximum`, and `clip` functions.
 
 ### extras
 

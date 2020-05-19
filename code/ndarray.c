@@ -20,6 +20,9 @@
 #include "py/objtuple.h"
 #include "ndarray.h"
 
+mp_uint_t ndarray_print_threshold = NDARRAY_PRINT_THRESHOLD;
+mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
+
 // This function is copied verbatim from objarray.c
 STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
@@ -73,25 +76,53 @@ void fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     }
 }
 
+mp_obj_t ndarray_set_printoptions(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+	static const mp_arg_t allowed_args[] = {
+		{ MP_QSTR_threshold, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+		{ MP_QSTR_edgeitems, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+	};
+
+	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+	mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+	if(args[0].u_rom_obj != mp_const_none) {
+		ndarray_print_threshold = mp_obj_get_int(args[0].u_rom_obj);
+	}
+	if(args[1].u_rom_obj != mp_const_none) {
+		ndarray_print_edgeitems = mp_obj_get_int(args[1].u_rom_obj);
+	}
+	return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_set_printoptions_obj, 0, ndarray_set_printoptions);
+
+mp_obj_t ndarray_get_printoptions(void) {
+	mp_obj_t dict = mp_obj_new_dict(2);
+	mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(MP_QSTR_threshold), mp_obj_new_int(ndarray_print_threshold));
+	mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(MP_QSTR_edgeitems), mp_obj_new_int(ndarray_print_edgeitems));
+    return dict;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj, ndarray_get_printoptions);
+
 void ndarray_print_row(const mp_print_t *print, mp_obj_array_t *data, size_t n0, size_t n) {
     mp_print_str(print, "[");
-    if(n < PRINT_MAX) { // if the array is short, print everything
+    if((n <= ndarray_print_threshold) || (n <= 2*ndarray_print_edgeitems)) { // if the array is short, print everything
         mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0), PRINT_REPR);
-        for(size_t i=1; i<n; i++) {
+        for(size_t i=1; i < n; i++) {
             mp_print_str(print, ", ");
             mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+i), PRINT_REPR);
         }
     } else {
         mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0), PRINT_REPR);
-        for(size_t i=1; i<3; i++) {
+        for(size_t i=1; i < ndarray_print_edgeitems; i++) {
             mp_print_str(print, ", ");
             mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+i), PRINT_REPR);
         }
         mp_printf(print, ", ..., ");
-        mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+n-3), PRINT_REPR);
-        for(size_t i=1; i<3; i++) {
+        mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+n-ndarray_print_edgeitems), PRINT_REPR);
+        for(size_t i=1; i < ndarray_print_edgeitems; i++) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+n-3+i), PRINT_REPR);
+            mp_obj_print_helper(print, mp_binary_get_val_array(data->typecode, data->items, n0+n-ndarray_print_edgeitems+i), PRINT_REPR);
         }
     }
     mp_print_str(print, "]");
@@ -108,7 +139,7 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         if((self->m == 1) || (self->n == 1)) {
             ndarray_print_row(print, self->array, 0, self->array->len);
         } else {
-            // TODO: add vertical ellipses for the case, when self->m > PRINT_MAX
+            // TODO: add vertical ellipses
             mp_print_str(print, "[");
             ndarray_print_row(print, self->array, 0, self->n);
             for(size_t i=1; i < self->m; i++) {
@@ -853,7 +884,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 				} else if(or->array->typecode == NDARRAY_INT16) {
 					RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, int16_t, ol, or, op, m, n, len, linc, rinc);
 				} else if(or->array->typecode == NDARRAY_FLOAT) {
-					RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint8_t, mp_float_t, ol, or, op, m, n, len, linc, rinc);
+					RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, ol, or, op, m, n, len, linc, rinc);
 				}
 			} else if(ol->array->typecode == NDARRAY_INT16) {
 				if(or->array->typecode == NDARRAY_UINT8) {

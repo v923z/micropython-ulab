@@ -15,7 +15,7 @@
 // the create module is always included
 #define ULAB_CREATE_MODULE (1)
 
-// vectorise (all functions) takes approx. 4.5 kB of flash space
+// vectorise (all functions) takes approx. 6 kB of flash space
 #ifndef ULAB_VECTORISE_MODULE
 #define ULAB_VECTORISE_MODULE (1)
 #endif
