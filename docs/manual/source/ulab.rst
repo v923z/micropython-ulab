@@ -455,27 +455,6 @@ default.
     
 
 
-``ndarray``\ s are pretty-printed, i.e., if the length is larger than
-10, then only the first and last three entries will be printed. Also
-note that, as opposed to ``numpy``, the printout always contains the
-``dtype``.
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    
-    a = np.array(range(200))
-    print("a:\t", a)
-
-.. parsed-literal::
-
-    a:	 array([0.0, 1.0, 2.0, ..., 197.0, 198.0, 199.0], dtype=float)
-    
-    
-
-
 Initialising by passing arrays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -744,6 +723,91 @@ consequence of rounding. (This is also the ``numpy`` behaviour.)
     num=5:			 array([0.0, 2.5, 5.0, 7.5, 10.0], dtype=float)
     num=5:			 array([0.0, 2.0, 4.0, 6.0, 8.0], dtype=float)
     num=5:			 array([0, 0, 1, 2, 2, 3, 4], dtype=uint8)
+    
+    
+
+
+Customising array printouts
+---------------------------
+
+``ndarray``\ s are pretty-printed, i.e., if the length is larger than 10
+(default value), then only the first and last three entries will be
+printed. Also note that, as opposed to ``numpy``, the printout always
+contains the ``dtype``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(200))
+    print("a:\t", a)
+
+.. parsed-literal::
+
+    a:	 array([0.0, 1.0, 2.0, ..., 197.0, 198.0, 199.0], dtype=float)
+    
+    
+
+
+set_printoptions
+~~~~~~~~~~~~~~~~
+
+The default values can be overwritten by means of the
+``set_printoptions`` function
+`numpy.set_printoptions <https://numpy.org/doc/1.18/reference/generated/numpy.set_printoptions.html>`__,
+which accepts two keywords arguments, the ``threshold``, and the
+``edgeitems``. The first of these arguments determines the length of the
+longest array that will be printed in full, while the second is the
+number of items that will be printed on the left and right hand side of
+the ellipsis, if the array is longer than ``threshold``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(20))
+    print("a printed with defaults:\t", a)
+    
+    np.set_printoptions(threshold=200)
+    print("\na printed in full:\t\t", a)
+    
+    np.set_printoptions(threshold=10, edgeitems=2)
+    print("\na truncated with 2 edgeitems:\t", a)
+
+.. parsed-literal::
+
+    a printed with defaults:	 array([0.0, 1.0, 2.0, ..., 17.0, 18.0, 19.0], dtype=float)
+    
+    a printed in full:		 array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0], dtype=float)
+    
+    a truncated with 2 edgeitems:	 array([0.0, 1.0, ..., 18.0, 19.0], dtype=float)
+    
+    
+
+
+get_printoptions
+~~~~~~~~~~~~~~~~
+
+The set value of the ``threshold`` and ``edgeitems`` can be retrieved by
+calling the ``get_printoptions`` function with no arguments. The
+function returns a dictionary with two keys.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    np.set_printoptions(threshold=100, edgeitems=20)
+    print(np.get_printoptions())
+
+.. parsed-literal::
+
+    {'threshold': 100, 'edgeitems': 20}
     
     
 

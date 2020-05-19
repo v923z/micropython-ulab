@@ -22,8 +22,7 @@ copyright = '2019-2020, Zoltán Vörös'
 author = 'Zoltán Vörös'
 
 # The full version, including alpha/beta/rc tags
-release = '0.46.0'
-
+release = '0.46.1'
 
 # -- General configuration ---------------------------------------------------
 

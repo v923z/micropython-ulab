@@ -17,7 +17,8 @@
 #include "py/objstr.h"
 #include "py/objlist.h"
 
-#define PRINT_MAX  10
+#define NDARRAY_PRINT_THRESHOLD  	10
+#define NDARRAY_PRINT_EDGEITEMS		3
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define FLOAT_TYPECODE 'f'
@@ -56,6 +57,10 @@ mp_obj_t mp_obj_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
 mp_float_t ndarray_get_float_value(void *, uint8_t , size_t );
 void fill_array_iterable(mp_float_t *, mp_obj_t );
 
+mp_obj_t ndarray_set_printoptions(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_set_printoptions_obj);
+mp_obj_t ndarray_get_printoptions(void);
+MP_DECLARE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj);
 void ndarray_print_row(const mp_print_t *, mp_obj_array_t *, size_t , size_t );
 void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
 void ndarray_assign_elements(mp_obj_array_t *, mp_obj_t , uint8_t , size_t *);
