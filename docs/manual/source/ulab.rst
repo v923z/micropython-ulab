@@ -70,7 +70,7 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.46.0), the library
+At the time of writing this manual (for version 0.50.0), the library
 adds approximately 40 kB of extra compiled code to the micropython
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
 can easily shave off a couple of kB. See the section on `customising
@@ -364,13 +364,13 @@ Comparison of arrays
 Interpolation, root finding, function minimasation
 --------------------------------------------------
 
+`interp <#interp>`__
+
 `newton <#newton>`__
 
 `fmin <#fmin>`__
 
 `bisect <#bisect>`__
-
-`interp <#interp>`__
 
 ndarray, the basic container
 ============================
