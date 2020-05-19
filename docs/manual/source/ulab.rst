@@ -55,7 +55,8 @@ are implemented in a way that
 
 1. conforms to ``numpy`` as much as possible
 2. is so frugal with RAM as possible,
-3. and yet, fast. Much faster than pure python.
+3. and yet, fast. Much faster than pure python. Think of a number
+   between 30 and 50!
 
 The main points of ``ulab`` are
 
@@ -69,7 +70,7 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.42.0), the library
+At the time of writing this manual (for version 0.46.0), the library
 adds approximately 40 kB of extra compiled code to the micropython
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
 can easily shave off a couple of kB. See the section on `customising
@@ -162,7 +163,7 @@ The first couple of lines of the file look like this
 
 .. code:: c
 
-   // vectorise (all functions) takes approx. 4.5 kB of flash space
+   // vectorise (all functions) takes approx. 6 kB of flash space
    #define ULAB_VECTORISE_MODULE (1)
 
    // linalg adds around 6 kB
@@ -244,7 +245,8 @@ Basic ndarray operations
 `Comparison operators\* <#Comparison-operators>`__
 
 `Universal functions <#Universal-functions>`__ (also support function
-calls on general iterables)
+calls on general iterables, and vectorisation of user-defined ``python``
+functions.)
 
 Methods of ndarrays
 -------------------
@@ -349,6 +351,10 @@ Filter functions
 Comparison of arrays
 --------------------
 
+`equal <#equal,-not_equal>`__
+
+`not_equal <#equal,-not_equal>`__
+
 `minimum <#minimum>`__
 
 `maximum <#maximum>`__
@@ -416,7 +422,7 @@ Initialising by passing iterables
 If the iterable is one-dimensional, i.e., one whose elements are
 numbers, then a row vector will be created and returned. If the iterable
 is two-dimensional, i.e., one whose elements are again iterables, a
-matrix will be created. If the lengths of the iterables is not
+matrix will be created. If the lengths of the iterables are not
 consistent, a ``ValueError`` will be raised. Iterables of different
 types can be mixed in the initialisation function.
 
@@ -1365,6 +1371,10 @@ columns the matrix has. This feature will be added in future versions of
 
 
 
+**WARNING:** ``circuitpython`` users should use the ``equal``, and
+``not_equal`` operators instead of ``==``, and ``!=``. See the section
+on `array comparison <#Comparison-of-arrays>`__ for details.
+
 Upcasting
 ~~~~~~~~~
 
@@ -1457,6 +1467,8 @@ take the following snippet from the micropython manual:
 .. code::
         
     # code to be run in micropython
+    
+    import utime
     
     def timeit(f, *args, **kwargs):
         func_name = str(f).split(' ')[1]
@@ -1887,14 +1899,14 @@ column. A couple of examples should make these statements clearer:
 Universal functions
 ===================
 
-Standard mathematical functions defined in the ``vector`` sub-module,
-and can be calculated on any scalar-valued iterable (ranges, lists,
-tuples containing numbers), and on ``ndarray``\ s without having to
-change the call signature. In all cases the functions return a new
-``ndarray`` of typecode ``float`` (since these functions usually
-generate float values, anyway). The functions execute faster with
-``ndarray`` arguments than with iterables, because the values of the
-input vector can be extracted faster.
+Standard mathematical functions are defined in the ``vector``
+sub-module, and can be calculated on any scalar, scalar-valued iterable
+(ranges, lists, tuples containing numbers), and on ``ndarray``\ s
+without having to change the call signature. In all cases the functions
+return a new ``ndarray`` of typecode ``float`` (since these functions
+usually generate float values, anyway). The functions execute faster
+with ``ndarray`` arguments than with iterables, because the values of
+the input vector can be extracted faster.
 
 At present, the following functions are supported:
 
@@ -1957,6 +1969,73 @@ microseconds, because internally the function has to create the
 type, and then convert them to floats. All these steps are skipped for
 ``ndarray``\ s, because these pieces of information are already known.
 
+Doing the same with ``list`` comprehension requires 30 times more time
+than with the ``ndarray``, which would become even more, if we converted
+the resulting list to an ``ndarray``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    from ulab import vector
+    import math
+    
+    a = [0]*1000
+    b = np.array(a)
+    
+    @timeit
+    def timed_vector(iterable):
+        return vector.exp(iterable)
+    
+    @timeit
+    def timed_list(iterable):
+        return [math.exp(i) for i in iterable]
+    
+    print('iterating over ndarray in ulab')
+    timed_vector(b)
+    
+    print('\niterating over list in ulab')
+    timed_vector(a)
+    
+    print('\niterating over list in python')
+    timed_list(a)
+
+.. parsed-literal::
+
+    iterating over ndarray in ulab
+    execution time:  441  us
+    
+    iterating over list in ulab
+    execution time:  1266  us
+    
+    iterating over list in python
+    execution time:  11379  us
+    
+
+
+Vectorising generic python functions
+------------------------------------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.vectorize.html
+
+The examples above use factory functions. In fact, they are nothing but
+the vectorised versions of the standard mathematical functions.
+User-defined ``python`` functions can also be vectorised by help of
+``vectorize``. This function takes a positional argument, namely, the
+``python`` function that you want to vectorise, and a non-mandatory
+keyword argument, ``otypes``, which determines the ``dtype`` of the
+output array. The ``otypes`` must be ``None`` (default), or any of the
+``dtypes`` defined in ``ulab``. With ``None``, the output is
+automatically turned into a float array.
+
+The return value of ``vectorize`` is a ``micropython`` object that can
+be called as a standard function, but which now accepts either a scalar,
+an ``ndarray``, or a generic ``micropython`` iterable as its sole
+argument. Note that the function that is to be vectorised must have a
+single argument.
+
 .. code::
         
     # code to be run in micropython
@@ -1964,28 +2043,196 @@ type, and then convert them to floats. All these steps are skipped for
     import ulab as np
     from ulab import vector
     
-    a = [0]*1000
-    b = np.array(a)
+    def f(x):
+        return x*x
     
-    @timeit
-    def measure_run_time(x):
-        return vector.exp(x)
+    vf = vector.vectorize(f)
     
-    measure_run_time(a)
+    # calling with a scalar
+    print('{:20}'.format('f on a scalar: '), vf(44.0))
     
-    measure_run_time(b)
+    # calling with an ndarray
+    a = np.array([1, 2, 3, 4])
+    print('{:20}'.format('f on an ndarray: '), vf(a))
+    
+    # calling with a list
+    print('{:20}'.format('f on a list: '), vf([2, 3, 4]))
 
 .. parsed-literal::
 
-    execution time:  1259  us
-    execution time:  408  us
+    f on a scalar:       array([1936.0], dtype=float)
+    f on an ndarray:     array([1.0, 4.0, 9.0, 16.0], dtype=float)
+    f on a list:         array([4.0, 9.0, 16.0], dtype=float)
+    
     
 
 
-Of course, such a time saving is reasonable only, if the data are
-already available as an ``ndarray``. If one has to initialise the
-``ndarray`` from the list, then there is no gain, because the iterator
-was simply pushed into the initialisation function.
+As mentioned, the ``dtype`` of the resulting ``ndarray`` can be
+specified via the ``otypes`` keyword. The value is bound to the function
+object that ``vectorize`` returns, therefore, if the same function is to
+be vectorised with different output types, then for each type a new
+function object must be created.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    from ulab import vector
+    
+    l = [1, 2, 3, 4]
+    def f(x):
+        return x*x
+    
+    vf1 = vector.vectorize(f, otypes=np.uint8)
+    vf2 = vector.vectorize(f, otypes=np.float)
+    
+    print('{:20}'.format('output is uint8: '), vf1(l))
+    print('{:20}'.format('output is float: '), vf2(l))
+
+.. parsed-literal::
+
+    output is uint8:     array([1, 4, 9, 16], dtype=uint8)
+    output is float:     array([1.0, 4.0, 9.0, 16.0], dtype=float)
+    
+    
+
+
+The ``otypes`` keyword argument cannot be used for type coercion: if the
+function evaluates to a float, but ``otypes`` would dictate an integer
+type, an exception will be raised:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    from ulab import vector
+    
+    int_list = [1, 2, 3, 4]
+    float_list = [1.0, 2.0, 3.0, 4.0]
+    def f(x):
+        return x*x
+    
+    vf = vector.vectorize(f, otypes=np.uint8)
+    
+    print('{:20}'.format('integer list: '), vf(int_list))
+    # this will raise a TypeError exception
+    print(vf(float_list))
+
+.. parsed-literal::
+
+    integer list:        array([1, 4, 9, 16], dtype=uint8)
+    
+    Traceback (most recent call last):
+      File "/dev/shm/micropython.py", line 14, in <module>
+    TypeError: can't convert float to int
+    
+
+
+Benchmarks
+~~~~~~~~~~
+
+It should be pointed out that the ``vectorize`` function produces the
+pseudo-vectorised version of the ``python`` function that is fed into
+it, i.e., on the C level, the same ``python`` function is called, with
+the all-encompassing ``mp_obj_t`` type arguments, and all that happens
+is that the ``for`` loop in ``[f(i) for i in iterable]`` runs purely in
+C. Since type checking and type conversion in ``f()`` is expensive, the
+speed-up is not so spectacular as when iterating over an ``ndarray``
+with a factory function: a gain of approximately 30% can be expected,
+when a native ``python`` type (e.g., ``list``) is returned by the
+function, and this becomes around 50% (a factor of 2), if conversion to
+an ``ndarray`` is also counted.
+
+The following code snippet calculates the square of a 1000 numbers with
+the vectorised function (which returns an ``ndarray``), with ``list``
+comprehension, and with ``list`` comprehension followed by conversion to
+an ``ndarray``. For comparison, the execution time is measured also for
+the case, when the square is calculated entirely in ``ulab``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    from ulab import vector
+    
+    def f(x):
+        return x*x
+    
+    vf = vector.vectorize(f)
+    
+    @timeit
+    def timed_vectorised_square(iterable):
+        return vf(iterable)
+    
+    @timeit
+    def timed_python_square(iterable):
+        return [f(i) for i in iterable]
+    
+    @timeit
+    def timed_ndarray_square(iterable):
+        return np.array([f(i) for i in iterable])
+    
+    @timeit
+    def timed_ulab_square(ndarray):
+        return ndarray**2
+    
+    print('vectorised function')
+    squares = timed_vectorised_square(range(1000))
+    
+    print('\nlist comprehension')
+    squares = timed_python_square(range(1000))
+    
+    print('\nlist comprehension + ndarray conversion')
+    squares = timed_ndarray_square(range(1000))
+    
+    print('\nsquaring an ndarray entirely in ulab')
+    a = np.array(range(1000))
+    squares = timed_ulab_square(a)
+
+.. parsed-literal::
+
+    vectorised function
+    execution time:  7237  us
+    
+    list comprehension
+    execution time:  10248  us
+    
+    list comprehension + ndarray conversion
+    execution time:  12562  us
+    
+    squaring an ndarray entirely in ulab
+    execution time:  560  us
+    
+
+
+From the comparisons above, it is obvious that ``python`` functions
+should only be vectorised, when the same effect cannot be gotten in
+``ulab`` only. However, although the time savings are not significant,
+there is still a good reason for caring about vectorised functions.
+Namely, user-defined ``python`` functions become universal, i.e., they
+can accept generic iterables as well as ``ndarray``\ s as their
+arguments. A vectorised function is still a one-liner, resulting in
+transparent and elegant code.
+
+A final comment on this subject: the ``f(x)`` that we defined is a
+*generic* ``python`` function. This means that it is not required that
+it just crunches some numbers. It has to return a number object, but it
+can still access the hardware in the meantime. So, e.g.,
+
+.. code:: python
+
+
+   led = pyb.LED(2)
+
+   def f(x):
+       if x < 100:
+           led.toggle()
+       return x*x
+
+is perfectly valid code.
 
 around
 ------
@@ -3499,6 +3746,55 @@ Comparison of arrays
 Functions in the ``compare`` module can be called by importing the
 sub-module first.
 
+equal, not_equal
+----------------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.equal.html
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.not_equal.html
+
+In ``micropython``, equality of arrays or scalars can be established by
+utilising the ``==``, ``!=``, ``<``, ``>``, ``<=``, or ``=>`` binary
+operators. In ``circuitpython``, ``==`` and ``!=`` will produce
+unexpected results. In order to avoid this discrepancy, and to maintain
+compatibility with ``numpy``, ``ulab`` implements the ``equal`` and
+``not_equal`` operators that return the same results, irrespective of
+the ``python`` implementation.
+
+These two functions take two ``ndarray``\ s, or scalars as their
+arguments. No keyword arguments are implemented.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(9))
+    b = np.zeros(9)
+    
+    print('a: ', a)
+    print('b: ', b)
+    print('\na == b: ', np.compare.equal(a, b))
+    print('a != b: ', np.compare.not_equal(a, b))
+    
+    # comparison with scalars
+    print('a == 2: ', np.compare.equal(a, 2))
+
+.. parsed-literal::
+
+    a:  array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
+    b:  array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=float)
+    
+    a == b:  [True, False, False, False, False, False, False, False, False]
+    a != b:  [False, True, True, True, True, True, True, True, True]
+    a == 2:  [False, False, True, False, False, False, False, False, False]
+    
+    
+
+
 minimum
 -------
 
@@ -3611,11 +3907,11 @@ interp
 ``numpy``: https://docs.scipy.org/doc/numpy/numpy.interp
 
 The ``interp`` function returns the linearly interpolated values of a
-one-dimensional numerical array. It requires three positional arguments,
-``x``, at which the interpolated values are evaluated, ``xp``, the array
-of the independent variables of the data, and ``fp``, the array of the
-dependent values of the data. ``xp`` must be a monotonically increasing
-sequence of numbers.
+one-dimensional numerical array. It requires three positional
+arguments,\ ``x``, at which the interpolated values are evaluated,
+``xp``, the array of the independent variables of the data, and ``fp``,
+the array of the dependent values of the data. ``xp`` must be a
+monotonically increasing sequence of numbers.
 
 Two keyword arguments, ``left``, and ``right`` can also be supplied;
 these determine the return values, if ``x < xp[0]``, and ``x > xp[-1]``,
@@ -3651,8 +3947,7 @@ respectively. If these arguments are not supplied, ``left``, and
 newton
 ------
 
-``scipy``:
-https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.newton.html
+``scipy``:https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.newton.html
 
 ``newton`` finds a zero of a real, user-defined function using the
 Newton-Raphson (or secant or Halley’s) method. The routine requires two
@@ -3668,15 +3963,15 @@ retuns a single scalar, the position of the root.
     
     import ulab
     from ulab import approx
-    
+        
     def f(x):
         return x*x*x - 2.0
     
-    print(approx.newton(f, 3., tol=0.001, rtol=0.0))
+    print(approx.newton(f, 3., tol=0.001, rtol=0.01))
 
 .. parsed-literal::
 
-    1.259922046961565
+    1.260135727246117
     
     
 
@@ -3693,7 +3988,7 @@ itself, and two starting points. The function must have opposite signs
 at the starting points. Returned is the position of the root.
 
 Two keyword arguments, ``xtol``, and ``maxiter`` can be supplied to
-control the accuracy, and the number of bisections.
+control the accuracy, and the number of bisections, respectively.
 
 .. code::
         
@@ -3701,7 +3996,7 @@ control the accuracy, and the number of bisections.
     
     import ulab
     from ulab import approx
-    
+        
     def f(x):
         return x*x - 1
     
@@ -3740,7 +4035,7 @@ the speed gain is only about a factor of two, if compared to a purely
     def bisect(f, a, b, xtol=2.4e-7, maxiter=100):
         if f(a) * f(b) > 0:
             raise ValueError
-            
+    
         rtb = a if f(a) < 0.0 else b
         dx = b - a if f(a) < 0.0 else a - b
         for i in range(maxiter):
@@ -3751,7 +4046,7 @@ the speed gain is only about a factor of two, if compared to a purely
                 rtb = x_mid
             if abs(dx) < xtol:
                 break
-                
+    
         return rtb
     
     @timeit
@@ -3767,18 +4062,8 @@ the speed gain is only about a factor of two, if compared to a purely
     
     print('bisect running in C')
     bisect_approx(f, 3, 2)
-
-.. parsed-literal::
-
-    bisect running in python
-    execution time:  1271  us
-    bisect running in C
-    execution time:  648  us
-    
-
-
 fmin
-====
+----
 
 ``scipy``:
 https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fmin.html
@@ -3792,7 +4077,6 @@ for stopping.
 .. code::
         
     # code to be run in micropython
-    
     import ulab
     from ulab import approx
     
