@@ -1,3 +1,9 @@
+Tue, 19 May 2020
+
+version 0.46.1
+
+    fixed bad error in binary_op
+
 Wed, 6 May 2020
 
 version 0.46

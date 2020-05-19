@@ -843,7 +843,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 				} else if(or->array->typecode == NDARRAY_INT16) {
 					RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, int16_t, ol, or, op, m, n, len, linc, rinc);
 				} else if(or->array->typecode == NDARRAY_FLOAT) {
-					RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint8_t, mp_float_t, ol, or, op, m, n, len, linc, rinc);
+					RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, ol, or, op, m, n, len, linc, rinc);
 				}
 			} else if(ol->array->typecode == NDARRAY_INT16) {
 				if(or->array->typecode == NDARRAY_UINT8) {
