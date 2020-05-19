@@ -4126,6 +4126,16 @@ the speed gain is only about a factor of two, if compared to a purely
     
     print('bisect running in C')
     bisect_approx(f, 3, 2)
+
+.. parsed-literal::
+
+    bisect running in python
+    execution time:  1270  us
+    bisect running in C
+    execution time:  642  us
+    
+
+
 fmin
 ----
 
