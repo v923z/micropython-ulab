@@ -55,6 +55,7 @@ typedef struct _ndarray_obj_t {
 mp_obj_t mp_obj_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
 
 mp_float_t ndarray_get_float_value(void *, uint8_t , size_t );
+bool ndarray_object_is_nditerable(mp_obj_t );
 void fill_array_iterable(mp_float_t *, mp_obj_t );
 
 mp_obj_t ndarray_set_printoptions(size_t , const mp_obj_t *, mp_map_t *);

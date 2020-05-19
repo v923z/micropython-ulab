@@ -19,16 +19,6 @@
 #include "poly.h"
 
 #if ULAB_POLY_MODULE
-static bool object_is_nditerable(mp_obj_t o_in) {
-    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) || 
-      MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || 
-      MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
-      MP_OBJ_IS_TYPE(o_in, &mp_type_range)) {
-        return true;
-    }
-    return false;
-}
-
 static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: return immediately, if o_p is not an iterable
     // TODO: there is a bug here: matrices won't work, 
@@ -82,7 +72,7 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     if((n_args != 2) && (n_args != 3)) {
         mp_raise_ValueError(translate("number of arguments must be 2, or 3"));
     }
-    if(!object_is_nditerable(args[0])) {
+    if(!ndarray_object_is_nditerable(args[0])) {
         mp_raise_ValueError(translate("input data must be an iterable"));
     }
     uint16_t lenx = 0, leny = 0;
@@ -105,7 +95,7 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         y = m_new(mp_float_t, leny);
         fill_array_iterable(y, args[0]);
     } else /* n_args == 3 */ {
-        if(!object_is_nditerable(args[1])) {
+        if(!ndarray_object_is_nditerable(args[1])) {
             mp_raise_ValueError(translate("input data must be an iterable"));
         }
         lenx = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
