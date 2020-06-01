@@ -1,3 +1,9 @@
+Mon, 1 Jun 2020
+
+version 0.50.1
+
+    fixes error in numerical max/min
+    
 Mon, 18 May 2020
 
 version 0.50.0

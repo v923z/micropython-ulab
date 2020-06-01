@@ -200,19 +200,29 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
     
     for(size_t j=0; j < N; j++) { // result index
         start = j * start_inc;
-        if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
-            if((optype == NUMERICAL_MAX) || (optype == NUMERICAL_MIN)) {
+        if((optype == NUMERICAL_MAX) || (optype == NUMERICAL_MIN)) {
+            if((ndarray->array->typecode == NDARRAY_UINT8)) {
                 RUN_ARGMIN(ndarray, results, uint8_t, uint8_t, len, start, increment, optype, j);
+            } else if((ndarray->array->typecode == NDARRAY_INT8)) {
+                RUN_ARGMIN(ndarray, results, int8_t, int8_t, len, start, increment, optype, j);
+            } if((ndarray->array->typecode == NDARRAY_UINT16)) {
+                RUN_ARGMIN(ndarray, results, uint16_t, uint16_t, len, start, increment, optype, j);
+            } else if((ndarray->array->typecode == NDARRAY_INT16)) {
+                RUN_ARGMIN(ndarray, results, int16_t, int16_t, len, start, increment, optype, j);
             } else {
-                RUN_ARGMIN(ndarray, results, uint8_t, uint16_t, len, start, increment, optype, j);                
-            }
-        } else if((ndarray->array->typecode == NDARRAY_UINT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
-            RUN_ARGMIN(ndarray, results, uint16_t, uint16_t, len, start, increment, optype, j);
-        } else {
-            if((optype == NUMERICAL_MAX) || (optype == NUMERICAL_MIN)) {
                 RUN_ARGMIN(ndarray, results, mp_float_t, mp_float_t, len, start, increment, optype, j);
+            }
+        } else {
+            if((ndarray->array->typecode == NDARRAY_UINT8)) {
+                RUN_ARGMIN(ndarray, results, uint8_t, uint16_t, len, start, increment, optype, j);
+            } else if((ndarray->array->typecode == NDARRAY_INT8)) {
+                RUN_ARGMIN(ndarray, results, int8_t, uint16_t, len, start, increment, optype, j);
+            } if((ndarray->array->typecode == NDARRAY_UINT16)) {
+                RUN_ARGMIN(ndarray, results, uint16_t, uint16_t, len, start, increment, optype, j);
+            } else if((ndarray->array->typecode == NDARRAY_INT16)) {
+                RUN_ARGMIN(ndarray, results, int16_t, uint16_t, len, start, increment, optype, j);
             } else {
-                RUN_ARGMIN(ndarray, results, mp_float_t, uint16_t, len, start, increment, optype, j);                
+                RUN_ARGMIN(ndarray, results, mp_float_t, uint16_t, len, start, increment, optype, j);
             }
         }
     }
