@@ -214,6 +214,8 @@ static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
 
 static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void) n_args;
+    (void) n_kw;
     vectorized_function_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t avalue[1];
     mp_obj_t fvalue;
