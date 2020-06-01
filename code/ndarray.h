@@ -28,6 +28,7 @@
 
 #if CIRCUITPY
 #define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
+#define mp_obj_is_int(x) (MP_OBJ_IS_INT((x)))
 #else
 #define translate(x) MP_ERROR_TEXT(x)
 #endif

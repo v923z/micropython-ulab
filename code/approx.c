@@ -22,7 +22,7 @@
 const mp_obj_float_t xtolerance = {{&mp_type_float}, 2.4e-7};
 const mp_obj_float_t rtolerance = {{&mp_type_float}, 0.0};
 
-mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
+STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
 	// Helper function for calculating the value of f(x, a, b, c, ...), 
 	// where f is defined in python. Takes a float, returns a float.
     // The array of mp_obj_t type must be supplied, as must the number of parameters (a, b, c...) in nparams
@@ -30,7 +30,7 @@ mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_
 	return mp_obj_get_float(type->call(fun, nparams+1, 0, fargs));
 }
 
-mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	// Simple bisection routine
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -75,7 +75,7 @@ mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_bisect_obj, 3, approx_bisect);
 
-mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	// this is actually the secant method, as the first derivative of the function 
 	// is not accepted as an argument. The function whose root we want to solve for 
 	// must depend on a single variable without parameters, i.e., f(x)
@@ -113,7 +113,7 @@ mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_newton_obj, 2, approx_newton);
 
-mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	// downhill simplex method in 1D
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -311,7 +311,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_curve_fit_obj, 2, approx_curve_fit);
 
 #endif
 
-mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
