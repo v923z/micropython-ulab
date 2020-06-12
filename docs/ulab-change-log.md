@@ -1,3 +1,9 @@
+Fri, 12 Jun 2020
+
+version 0.50.2
+
+    fixes compilation error in openmv
+
 Mon, 1 Jun 2020
 
 version 0.50.1

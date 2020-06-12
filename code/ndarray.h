@@ -30,7 +30,11 @@
 #define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
 #define mp_obj_is_int(x) (MP_OBJ_IS_INT((x)))
 #else
+#ifdef MP_ERROR_TEXT
 #define translate(x) MP_ERROR_TEXT(x)
+#else
+#define translate(x) x
+#endif
 #endif
 
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
