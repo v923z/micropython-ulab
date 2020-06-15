@@ -26,14 +26,24 @@
 #define FLOAT_TYPECODE 'd'
 #endif
 
+#ifdef OPENMV
+#define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
+#define translate(x) x
+
+typedef struct _mp_obj_slice_t {
+    mp_obj_base_t base;
+    mp_obj_t start;
+    mp_obj_t stop;
+    mp_obj_t step;
+} mp_obj_slice_t;
+
+void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *, mp_obj_t *, mp_obj_t *);
+#else
 #if CIRCUITPY
 #define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
 #define mp_obj_is_int(x) (MP_OBJ_IS_INT((x)))
 #else
-#ifdef MP_ERROR_TEXT
 #define translate(x) MP_ERROR_TEXT(x)
-#else
-#define translate(x) x
 #endif
 #endif
 
