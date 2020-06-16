@@ -42,6 +42,70 @@ STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
     return o;
 }
 
+#ifdef OPENMV
+void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result) {
+    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t start, stop, step;
+
+    if (self->step == mp_const_none) {
+        step = 1;
+    } else {
+        step = mp_obj_get_int(self->step);
+        if (step == 0) {
+            mp_raise_ValueError(translate("slice step can't be zero"));
+        }
+    }
+
+    if (step > 0) {
+        // Positive step
+        if (self->start == mp_const_none) {
+            start = 0;
+        } else {
+            start = mp_obj_get_int(self->start);
+            if (start < 0) {
+                start += length;
+            }
+            start = MIN(length, MAX(start, 0));
+        }
+
+        if (self->stop == mp_const_none) {
+            stop = length;
+        } else {
+            stop = mp_obj_get_int(self->stop);
+            if (stop < 0) {
+                stop += length;
+            }
+            stop = MIN(length, MAX(stop, 0));
+        }
+    } else {
+        // Negative step
+        if (self->start == mp_const_none) {
+            start = length - 1;
+        } else {
+            start = mp_obj_get_int(self->start);
+            if (start < 0) {
+                start += length;
+            }
+            start = MIN(length - 1, MAX(start, -1));
+        }
+
+        if (self->stop == mp_const_none) {
+            stop = -1;
+        } else {
+            stop = mp_obj_get_int(self->stop);
+            if (stop < 0) {
+                stop += length;
+            }
+            stop = MIN(length - 1, MAX(stop, -1));
+        }
+    }
+
+    result->start = start;
+    result->stop = stop;
+    result->step = step;
+}
+#endif
+
 mp_float_t ndarray_get_float_value(void *data, uint8_t typecode, size_t index) {
     if(typecode == NDARRAY_UINT8) {
         return (mp_float_t)((uint8_t *)data)[index];
