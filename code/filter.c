@@ -7,6 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ *               2020 Zoltán Vörös
 */
 
 #include <math.h>
@@ -84,9 +85,76 @@ static mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
 MP_DEFINE_CONST_FUN_OBJ_KW(filter_convolve_obj, 2, filter_convolve);
 
+static void filter_sosfilt_array(const mp_float_t *x, mp_float_t *y, const mp_float_t *coeffs, const size_t len) {
+    for(size_t i=0; i < len; i++) {
+        mp_float_t sum = 0.0;
+        for(uint8_t j=0; j < 3; j++) {
+            if(i >= j) {
+                sum += coeffs[j] * x[i-j];
+            }
+		}
+		for(uint8_t j=0; j < 3; j++) {
+            if(i >= j) {
+                sum -= coeffs[j+3] * y[i-j];
+            }
+		}
+		y[i] = sum / coeffs[0];
+    }
+}
+
+static mp_obj_t filter_sosfilt(const mp_obj_t sos, const mp_obj_t x) {
+    if(!ndarray_object_is_nditerable(sos) || !ndarray_object_is_nditerable(x)) {
+        mp_raise_TypeError(translate("sosfilt requires iterable arguments"));
+    }
+    size_t lenx = (size_t)mp_obj_get_int(mp_obj_len_maybe(x));
+    mp_float_t *xarray;
+    xarray = m_new(mp_float_t, lenx);
+    ndarray_obj_t *out = create_new_ndarray(1, lenx, NDARRAY_FLOAT);
+    mp_float_t *yarray = (mp_float_t *)out->array->items;
+    mp_float_t coeffs[6];
+    if(MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) {
+        ndarray_obj_t *inarray = MP_OBJ_TO_PTR(x);
+        for(size_t i=0; i < lenx; i++) {
+            *xarray++ = ndarray_get_float_value(inarray->array->items, inarray->array->typecode, i);
+        }
+        xarray -= lenx;
+    } else {
+        fill_array_iterable(xarray, x);
+    }
+
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t item, iterable = mp_getiter(sos, &iter_buf);
+    size_t lensos = (size_t)mp_obj_get_int(mp_obj_len_maybe(sos));
+    while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if(mp_obj_get_int(mp_obj_len_maybe(item)) != 6) {
+            m_del(mp_float_t, xarray, lenx);
+            mp_raise_ValueError(translate("sos array must be of shape (n_section, 6)"));
+        } else {
+            fill_array_iterable(coeffs, item);
+            if(coeffs[3] != 1.0) {
+                m_del(mp_float_t, xarray, lenx);
+                mp_raise_ValueError(translate("sos[:, 3] should be all ones"));
+            }
+            filter_sosfilt_array(xarray, yarray, coeffs, lenx);
+            lensos--;
+            if(lensos > 0) {
+                for(size_t i=0; i < lenx; i++) {
+                    xarray[i] = yarray[i];
+                    yarray[i] = 0.0;
+                }
+            }
+        }
+    }
+    m_del(mp_float_t, xarray, lenx);
+    return MP_OBJ_FROM_PTR(out);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(filter_sosfilt_obj, filter_sosfilt);
+
 STATIC const mp_rom_map_elem_t ulab_filter_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_filter) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&filter_sosfilt_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_filter_globals, ulab_filter_globals_table);
