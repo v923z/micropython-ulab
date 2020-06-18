@@ -319,7 +319,6 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
     tuple->items[0] = MP_OBJ_FROM_PTR(eigenvalues);
     tuple->items[1] = MP_OBJ_FROM_PTR(eigenvectors);
     return tuple;
-    return MP_OBJ_FROM_PTR(eigenvalues);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
