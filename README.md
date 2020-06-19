@@ -42,7 +42,7 @@ The `fft` sub-module implements the fast Fourier transform, and its inverse for 
 ### filter
 
 The `filter` sub-module implements `convolve` for one-dimensional convolution,
-as well as the cascaded second order sections filter, `sosfilt` from `scipy`.
+as well as the cascaded second-order sections filter, `sosfilt` from `scipy`.
 
 ### compare
 
