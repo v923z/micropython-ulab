@@ -1,3 +1,9 @@
+Fri, 19 Jun 2020
+
+version 0.51.0
+
+    add sosfilt to the filter sub-module
+
 Fri, 12 Jun 2020
 
 version 0.50.2

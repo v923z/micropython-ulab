@@ -41,7 +41,8 @@ The `fft` sub-module implements the fast Fourier transform, and its inverse for 
 
 ### filter
 
-The `filter` sub-module implements one-dimensional convolution.
+The `filter` sub-module implements `convolve` for one-dimensional convolution,
+as well as the cascaded second order sections filter, `sosfilt` from `scipy`.
 
 ### compare
 
@@ -57,8 +58,11 @@ The `extras` sub-module is meant as a user-extendable module, and currently impl
 
 # Finding help
 
-Documentation can be found on [readthedocs](readthedocs.org/) under [micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest), as well as at [circuitpython-ulab](
-https://circuitpython.readthedocs.io/en/latest/shared-bindings/ulab/__init__.html). A number of practical examples are listed in the excellent [circuitpython-ulab](https://learn.adafruit.com/ulab-crunch-numbers-fast-with-circuitpython/overview) overview.
+Documentation can be found on [readthedocs](https://readthedocs.org/) under
+[micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest),
+as well as at [circuitpython-ulab](https://circuitpython.readthedocs.io/en/latest/shared-bindings/ulab/__init__.html).
+A number of practical examples are listed in the excellent
+[circuitpython-ulab](https://learn.adafruit.com/ulab-crunch-numbers-fast-with-circuitpython/overview) overview.
 
 # Firmware
 

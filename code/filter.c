@@ -139,7 +139,7 @@ static mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t
                 mp_raise_ValueError(translate("zi must be of shape (n_section, 2)"));
             }
             if(zi->array->typecode != NDARRAY_FLOAT) {
-                mp_raise_ValueError(translate("zi must float type"));
+                mp_raise_ValueError(translate("zi must be of float type"));
             }
             memcpy(zf_array, zi->array->items, 2*lensos*sizeof(mp_float_t));
         }
