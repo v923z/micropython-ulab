@@ -7,6 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ *               2020 Zoltán Vörös
 */
 
 #ifndef _FILTER_
@@ -20,6 +21,7 @@
 extern mp_obj_module_t ulab_filter_module;
 
 MP_DECLARE_CONST_FUN_OBJ_KW(filter_convolve_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(filter_sosfilt_obj);
 
 #endif
 #endif
