@@ -1,3 +1,9 @@
+Mon, 29 Jun 202
+
+version 0.51.1
+
+    fixed argmin/argmax issue
+
 Fri, 19 Jun 2020
 
 version 0.51.0
