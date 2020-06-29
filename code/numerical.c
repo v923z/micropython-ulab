@@ -187,9 +187,6 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
     axis_sorter(ndarray, axis, &m, &n, &N, &increment, &len, &start_inc);
     ndarray_obj_t *results;
     if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
-        // we could save some RAM by taking NDARRAY_UINT8, if the dimensions 
-        // are smaller than 256, but the code would become more involving 
-        // (we would also need extra flash space)
         if(ndarray->array->len == 0) {
 			mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
 		}
@@ -201,23 +198,23 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
     for(size_t j=0; j < N; j++) { // result index
         start = j * start_inc;
         if((optype == NUMERICAL_MAX) || (optype == NUMERICAL_MIN)) {
-            if((ndarray->array->typecode == NDARRAY_UINT8)) {
+            if(ndarray->array->typecode == NDARRAY_UINT8) {
                 RUN_ARGMIN(ndarray, results, uint8_t, uint8_t, len, start, increment, optype, j);
-            } else if((ndarray->array->typecode == NDARRAY_INT8)) {
+            } else if(ndarray->array->typecode == NDARRAY_INT8) {
                 RUN_ARGMIN(ndarray, results, int8_t, int8_t, len, start, increment, optype, j);
-            } if((ndarray->array->typecode == NDARRAY_UINT16)) {
+            } else if(ndarray->array->typecode == NDARRAY_UINT16) {
                 RUN_ARGMIN(ndarray, results, uint16_t, uint16_t, len, start, increment, optype, j);
-            } else if((ndarray->array->typecode == NDARRAY_INT16)) {
+            } else if(ndarray->array->typecode == NDARRAY_INT16) {
                 RUN_ARGMIN(ndarray, results, int16_t, int16_t, len, start, increment, optype, j);
             } else {
                 RUN_ARGMIN(ndarray, results, mp_float_t, mp_float_t, len, start, increment, optype, j);
             }
-        } else {
+        } else { // argmin/argmax
             if((ndarray->array->typecode == NDARRAY_UINT8)) {
                 RUN_ARGMIN(ndarray, results, uint8_t, uint16_t, len, start, increment, optype, j);
             } else if((ndarray->array->typecode == NDARRAY_INT8)) {
                 RUN_ARGMIN(ndarray, results, int8_t, uint16_t, len, start, increment, optype, j);
-            } if((ndarray->array->typecode == NDARRAY_UINT16)) {
+            } else if((ndarray->array->typecode == NDARRAY_UINT16)) {
                 RUN_ARGMIN(ndarray, results, uint16_t, uint16_t, len, start, increment, optype, j);
             } else if((ndarray->array->typecode == NDARRAY_INT16)) {
                 RUN_ARGMIN(ndarray, results, int16_t, uint16_t, len, start, increment, optype, j);
@@ -227,7 +224,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         }
     }
 	if(results->array->len == 1) {
-		return mp_binary_get_val_array(results->array->typecode, results->array->items, 0);
+        return mp_binary_get_val_array(results->array->typecode, results->array->items, 0);
 	}
     return MP_OBJ_FROM_PTR(results);
 }
