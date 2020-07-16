@@ -1,4 +1,10 @@
-Mon, 29 Jun 202
+Thu, 16 Jul 2020
+
+version 0.52.0
+
+    added trapz to approx
+
+Mon, 29 Jun 2020
 
 version 0.51.1
 

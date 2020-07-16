@@ -50,7 +50,7 @@
 #define ULAB_COMPARE_MODULE (1)
 #endif
 
-// the approx module consumes about ... kB of flash space
+// the approx module consumes about 4.5 kB of flash space
 #ifndef ULAB_APPROX_MODULE
 #define ULAB_APPROX_MODULE (1)
 #endif
