@@ -405,7 +405,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             sum += (x2 - x1) * (y2 + y1);
             x1 = x2;
             y1 = y2;
-		}
+        }
     }
     else {
         mp_float_t y1, y2;
@@ -415,7 +415,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             y2 = ndarray_get_float_value(y->array->items, y->array->typecode, i);
             sum += (y2 + y1);
             y1 = y2;
-		}
+        }
         sum *= dx;
 	}
 	return mp_obj_new_float(0.5*sum);
