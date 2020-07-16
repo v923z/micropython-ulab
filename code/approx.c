@@ -393,7 +393,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
     if(args[1].u_obj != mp_const_none) {
         x = ndarray_from_mp_obj(args[1].u_obj); // x must hold an increasing sequence of independent values
-        if(((y->m != 1) && (y->n != 1)) || ((x->m != 1) && (x->n != 1)) || (y->len != x->len)) {
+        if(((y->m != 1) && (y->n != 1)) || ((x->m != 1) && (x->n != 1)) || (y->array->len != x->array->len)) {
             mp_raise_ValueError(translate("trapz is defined for 1D arrays of equal length"));
         }
         mp_float_t x1, x2, y1, y2;
