@@ -37,7 +37,6 @@ MP_DECLARE_CONST_FUN_OBJ_KW(approx_bisect_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_newton_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_fmin_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_interp_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(approx_trapz_obj);
 
 #endif
 #endif

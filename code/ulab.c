@@ -32,7 +32,7 @@
 #include "approx.h"
 #include "extras.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.52.0");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.51.1");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
