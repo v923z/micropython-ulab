@@ -24,7 +24,7 @@ typedef struct _vectorized_function_obj_t {
     const mp_obj_type_t *type;
 } vectorized_function_obj_t;
 
-mp_obj_module_t ulab_vectorise_module;
+extern mp_obj_module_t ulab_vectorise_module;
 
 #define ITERATE_VECTOR(type, source, out) do {\
     type *input = (type *)(source)->array->items;\
