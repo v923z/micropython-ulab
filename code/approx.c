@@ -21,6 +21,7 @@
 
 const mp_obj_float_t xtolerance = {{&mp_type_float}, 2.4e-7};
 const mp_obj_float_t rtolerance = {{&mp_type_float}, 0.0};
+const mp_obj_float_t approx_trapz_dx = {{&mp_type_float}, 1.0};
 
 STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
 	// Helper function for calculating the value of f(x, a, b, c, ...), 
@@ -325,7 +326,6 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 	ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj);
 	ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj); // xp must hold an increasing sequence of independent values
 	ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj);
-	// TODO: check if the shape is (1, n), or (m, 1)
 	if(((xp->m != 1) && (xp->n != 1)) || ((fp->m != 1) && (fp->n != 1)) || 
 		(xp->array->len < 2) || (fp->array->len < 2) || (xp->array->len != fp->array->len)) {
 		mp_raise_ValueError(translate("interp is defined for 1D arrays of equal length"));
@@ -375,7 +375,6 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
-
 
 STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
