@@ -406,8 +406,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             x1 = x2;
             y1 = y2;
         }
-    }
-    else {
+    } else {
         mp_float_t y1, y2;
         mp_float_t dx = mp_obj_get_float(args[2].u_obj);
         y1 = ndarray_get_float_value(y->array->items, y->array->typecode, 0);
