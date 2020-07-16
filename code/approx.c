@@ -382,11 +382,11 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         { MP_QSTR_x, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_dx, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&approx_trapz_dx)} },
     };
-	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 	
-	ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj);
-	ndarray_obj_t *x;
+    ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj);
+    ndarray_obj_t *x;
     mp_float_t sum = 0.0;
     if(y->array->len < 2) {
         return mp_obj_new_float(sum);        
