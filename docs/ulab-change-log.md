@@ -1,4 +1,4 @@
-Thu, 16 Juli 2020
+Thu, 16 Jul 2020
 
 version 0.52.0
 
