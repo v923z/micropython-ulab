@@ -376,6 +376,54 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
 
+
+STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_x, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_dx, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&approx_trapz_dx)} },
+    };
+	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+	
+	ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj);
+	ndarray_obj_t *x;
+    mp_float_t sum = 0.0;
+    if(y->array->len < 2) {
+        return mp_obj_new_float(sum);        
+    }
+    if(args[1].u_obj != mp_const_none) {
+        x = ndarray_from_mp_obj(args[1].u_obj); // x must hold an increasing sequence of independent values
+        if(((y->m != 1) && (y->n != 1)) || ((x->m != 1) && (x->n != 1)) || (y->array->len != x->array->len)) {
+            mp_raise_ValueError(translate("trapz is defined for 1D arrays of equal length"));
+        }
+        mp_float_t x1, x2, y1, y2;
+        y1 = ndarray_get_float_value(y->array->items, y->array->typecode, 0);
+        x1 = ndarray_get_float_value(x->array->items, x->array->typecode, 0);
+        for(size_t i=1; i < y->array->len; i++) {
+            y2 = ndarray_get_float_value(y->array->items, y->array->typecode, i);
+            x2 = ndarray_get_float_value(x->array->items, x->array->typecode, i);
+            sum += (x2 - x1) * (y2 + y1);
+            x1 = x2;
+            y1 = y2;
+		}
+    }
+    else {
+        mp_float_t y1, y2;
+        mp_float_t dx = mp_obj_get_float(args[2].u_obj);
+        y1 = ndarray_get_float_value(y->array->items, y->array->typecode, 0);
+        for(size_t i=1; i < y->array->len; i++) {
+            y2 = ndarray_get_float_value(y->array->items, y->array->typecode, i);
+            sum += (y2 + y1);
+            y1 = y2;
+		}
+        sum *= dx;
+	}
+	return mp_obj_new_float(0.5*sum);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(approx_trapz_obj, 1, approx_trapz);
+
 STATIC const mp_rom_map_elem_t ulab_approx_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_approx) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&approx_bisect_obj },
@@ -383,6 +431,7 @@ STATIC const mp_rom_map_elem_t ulab_approx_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&approx_fmin_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_trapz), (mp_obj_t)&approx_trapz_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_approx_globals, ulab_approx_globals_table);

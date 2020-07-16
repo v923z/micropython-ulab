@@ -15,8 +15,6 @@ SRC_USERMOD += $(USERMODULES_DIR)/approx.c
 SRC_USERMOD += $(USERMODULES_DIR)/extras.c
 SRC_USERMOD += $(USERMODULES_DIR)/ulab.c
 
-# We can add our module folder to include paths if needed
-# This is not actually needed in this example.
 CFLAGS_USERMOD += -I$(USERMODULES_DIR)
 
 override CFLAGS_EXTRA += -DMODULE_ULAB_ENABLED=1
