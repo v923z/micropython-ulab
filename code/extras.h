@@ -18,7 +18,7 @@
 
 #if ULAB_EXTRAS_MODULE
 
-mp_obj_module_t ulab_extras_module;
+extern mp_obj_module_t ulab_extras_module;
 
 #endif
 #endif
