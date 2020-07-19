@@ -9,10 +9,12 @@
  * 				 2019-2020 Zoltán Vörös
 */
 
-
+#include <math.h>
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "create.h"
+
+const mp_obj_float_t create_const_one = {{&mp_type_float}, 1.0};
 
 static mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
     static const mp_arg_t allowed_args[] = {
@@ -103,28 +105,9 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 0, create_eye);
 
-mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_num, MP_ARG_INT, {.u_int = 50} },
-        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_true} },
-        { MP_QSTR_retstep, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_false} },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    uint16_t len = args[2].u_int;
-    if(len < 2) {
-        mp_raise_ValueError(translate("number of points must be at least 2"));
-    }
-    mp_float_t value, step;
-    value = mp_obj_get_float(args[0].u_obj);
-    uint8_t typecode = args[5].u_int;
-    if(args[3].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-value)/(len-1);
-    else step = (mp_obj_get_float(args[1].u_obj)-value)/len;
+ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t typecode) {
+    mp_float_t value = start;
+    
     ndarray_obj_t *ndarray = create_new_ndarray(1, len, typecode);
     if(typecode == NDARRAY_UINT8) {
         uint8_t *array = (uint8_t *)ndarray->array->items;
@@ -142,6 +125,32 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         mp_float_t *array = (mp_float_t *)ndarray->array->items;
         for(size_t i=0; i < len; i++, value += step) array[i] = value;
     }
+    return ndarray;
+}
+
+mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_num, MP_ARG_INT, {.u_int = 50} },
+        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_true} },
+        { MP_QSTR_retstep, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_false} },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint16_t len = args[2].u_int;
+    if(len < 2) {
+        mp_raise_ValueError(translate("number of points must be at least 2"));
+    }
+    mp_float_t start, step;
+    start = mp_obj_get_float(args[0].u_obj);
+    uint8_t typecode = args[5].u_int;
+    if(args[3].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-start)/(len-1);
+    else step = (mp_obj_get_float(args[1].u_obj)-start)/len;
+    ndarray_obj_t *ndarray = create_linspace_arange(start, step, len, typecode);
     if(args[4].u_obj == mp_const_false) {
         return MP_OBJ_FROM_PTR(ndarray);
     } else {
@@ -153,3 +162,40 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
+
+mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_start, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_stop, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_step, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&create_const_one)} },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    uint8_t typecode;
+    mp_float_t start, stop, step;
+    if(args[0].u_obj == mp_const_none) {
+        start = 0.0;
+    } else {
+        start = mp_obj_get_float(args[0].u_obj);
+    }
+    stop = mp_obj_get_float(args[1].u_obj);
+    step = mp_obj_get_float(args[2].u_obj);
+    size_t len = (size_t)(ceil((stop - start)/step));
+    if(args[3].u_obj == mp_const_none) {
+        typecode = NDARRAY_FLOAT;
+        if((mp_obj_is_int(args[0].u_obj) && mp_obj_is_int(args[1].u_obj) && mp_obj_is_int(args[2].u_obj)) || 
+        ((mp_obj_is_int(args[1].u_obj) && (args[0].u_obj) == mp_const_none) && (args[2].u_obj == mp_const_none))) {
+            if((MICROPY_FLOAT_C_FUN(fabs)(start) < 32768) && (MICROPY_FLOAT_C_FUN(fabs)(stop) < 32768) && (MICROPY_FLOAT_C_FUN(fabs)(step) < 32768)) {
+                typecode = NDARRAY_INT16;
+            }
+        }
+    } else {
+        typecode = (uint8_t)mp_obj_get_int(args[3].u_obj);
+    }
+    ndarray_obj_t *ndarray = create_linspace_arange(start, step, len, typecode);
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
