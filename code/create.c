@@ -173,7 +173,7 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    uint8_t typecode;
+    uint8_t typecode = NDARRAY_FLOAT;
     mp_float_t start, stop, step;
     if(n_args == 1) {
         start = 0.0;
