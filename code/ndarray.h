@@ -26,6 +26,12 @@
 #define FLOAT_TYPECODE 'd'
 #endif
 
+// this typedef is lifted from objfloat.c, because mp_obj_float_t is not exposed
+typedef struct _mp_obj_float_t {
+    mp_obj_base_t base;
+    mp_float_t value;
+} mp_obj_float_t;
+
 #ifdef OPENMV
 #define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
 #define translate(x) x

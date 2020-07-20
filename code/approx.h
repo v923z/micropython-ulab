@@ -17,12 +17,6 @@
 
 #if ULAB_APPROX_MODULE
 
-// this typedef is lifted from objfloat.c, because mp_obj_float_t is not exposed
-typedef struct _mp_obj_float_t {
-    mp_obj_base_t base;
-    mp_float_t value;
-} mp_obj_float_t;
-
 #define     APPROX_EPS          1.0e-4
 #define     APPROX_NONZDELTA    0.05
 #define     APPROX_ZDELTA       0.00025
