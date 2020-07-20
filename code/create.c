@@ -14,8 +14,6 @@
 #include "py/runtime.h"
 #include "create.h"
 
-const mp_obj_float_t create_const_one = {{&mp_type_float}, 1.0};
-
 static mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} } ,
