@@ -165,9 +165,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 
 mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_start, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_stop, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_step, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&create_const_one)} },
+        { MP_QSTR_, MP_ARG_REQUIRED| MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
     };
 
@@ -175,13 +175,21 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     uint8_t typecode;
     mp_float_t start, stop, step;
-    if(args[0].u_obj == mp_const_none) {
+    if(n_args == 1) {
         start = 0.0;
-    } else {
+        stop = mp_obj_get_float(args[0].u_obj);
+        step = 1.0;
+    } else if(n_args == 2) {
         start = mp_obj_get_float(args[0].u_obj);
+        stop = mp_obj_get_float(args[1].u_obj);
+        step = 1.0;
+    } else if(n_args == 3) {
+        start = mp_obj_get_float(args[0].u_obj);
+        stop = mp_obj_get_float(args[1].u_obj);
+        step = mp_obj_get_float(args[2].u_obj);
+    } else {
+        mp_raise_TypeError(translate("wrong number of arguments"));
     }
-    stop = mp_obj_get_float(args[1].u_obj);
-    step = mp_obj_get_float(args[2].u_obj);
     size_t len = (size_t)(ceil((stop - start)/step));
     if(args[3].u_obj == mp_const_none) {
         typecode = NDARRAY_FLOAT;
