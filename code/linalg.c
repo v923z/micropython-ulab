@@ -145,26 +145,40 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
         mp_raise_TypeError(translate("arguments must be ndarrays"));
     }
     ndarray_obj_t *m1 = MP_OBJ_TO_PTR(_m1);
-    ndarray_obj_t *m2 = MP_OBJ_TO_PTR(_m2);    
-    if(m1->n != m2->m) {
-        mp_raise_ValueError(translate("matrix dimensions do not match"));
-    }
-    // TODO: numpy uses upcasting here
-    ndarray_obj_t *out = create_new_ndarray(m1->m, m2->n, NDARRAY_FLOAT);
-    mp_float_t *outdata = (mp_float_t *)out->array->items;
-    for(size_t i=0; i < m1->m; i++) { // rows of m1
-        for(size_t j=0; j < m2->n; j++) { // columns of m2
-            mp_float_t sum = 0.0, v1, v2;
-            for(size_t k=0; k < m2->m; k++) {
-                // (i, k) * (k, j)
-                v1 = ndarray_get_float_value(m1->array->items, m1->array->typecode, i*m1->n+k);
-                v2 = ndarray_get_float_value(m2->array->items, m2->array->typecode, k*m2->n+j);
-                sum += v1 * v2;
-            }
-            outdata[i*m2->n+j] = sum;
+    ndarray_obj_t *m2 = MP_OBJ_TO_PTR(_m2); 
+
+    if ((m1->m == 1) && (m2->m == 1)) {
+        // 2 vectors
+        if (m1->array->len != m2->array->len) {
+            mp_raise_ValueError(translate("vectors must have same dimension"));
         }
+        mp_float_t dot = 0.0;
+        for (size_t pos=0; pos < m1->array->len; pos++) {
+            dot += ndarray_get_float_value(m1->array->items, m1->array->typecode, pos)*ndarray_get_float_value(m2->array->items, m2->array->typecode, pos);
+        }
+        return mp_obj_new_float(dot);        
+    } else {
+        // 2 matrices
+        if(m1->n != m2->m) {
+            mp_raise_ValueError(translate("matrix dimensions do not match"));
+        }
+        // TODO: numpy uses upcasting here
+        ndarray_obj_t *out = create_new_ndarray(m1->m, m2->n, NDARRAY_FLOAT);
+        mp_float_t *outdata = (mp_float_t *)out->array->items;
+        for(size_t i=0; i < m1->m; i++) { // rows of m1
+            for(size_t j=0; j < m2->n; j++) { // columns of m2
+                mp_float_t sum = 0.0, v1, v2;
+                for(size_t k=0; k < m2->m; k++) {
+                    // (i, k) * (k, j)
+                    v1 = ndarray_get_float_value(m1->array->items, m1->array->typecode, i*m1->n+k);
+                    v2 = ndarray_get_float_value(m2->array->items, m2->array->typecode, k*m2->n+j);
+                    sum += v1 * v2;
+                }
+                outdata[i*m2->n+j] = sum;
+            }
+        }
+        return MP_OBJ_FROM_PTR(out);
     }
-    return MP_OBJ_FROM_PTR(out);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
