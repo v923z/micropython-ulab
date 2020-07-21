@@ -194,7 +194,7 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     if((MICROPY_FLOAT_C_FUN(fabs)(stop) > 32768) || (MICROPY_FLOAT_C_FUN(fabs)(start) > 32768) || (MICROPY_FLOAT_C_FUN(fabs)(step) > 32768)) {
         typecode = NDARRAY_FLOAT;
     }
-    size_t len = (size_t)(ceil((stop - start)/step));
+    size_t len = (size_t) (MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
     if(args[3].u_obj != mp_const_none) {
         typecode = (uint8_t)mp_obj_get_int(args[3].u_obj);
     }
