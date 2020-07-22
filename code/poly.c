@@ -6,9 +6,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *               2019-2020 Zoltán Vörös
- *
+ * Copyright (c) 2019-2020 Zoltán Vörös
+ *               2020 Jeff Epler for Adafruit Industries
+ *               2020 Scott Shawcroft for Adafruit Industries
 */
 
 #include "py/obj.h"
