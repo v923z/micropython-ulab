@@ -12,8 +12,8 @@
 #ifndef _VECTORISE_
 #define _VECTORISE_
 
-#include "ulab.h"
-#include "ndarray.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 #if ULAB_VECTORISE_MODULE
 

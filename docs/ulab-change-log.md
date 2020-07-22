@@ -1,5 +1,11 @@
 Wed, 22 Jul 2020
 
+version 0.53.2
+
+    added circuitpython documentation stubs to the source files
+    
+Wed, 22 Jul 2020
+
 version 0.53.1
 
     fixed arange with negative steps

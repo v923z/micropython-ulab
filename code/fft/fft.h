@@ -11,7 +11,8 @@
 
 #ifndef _FFT_
 #define _FFT_
-#include "ulab.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 #ifndef MP_PI
 #define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
@@ -22,7 +23,7 @@
 enum FFT_TYPE {
     FFT_FFT,
     FFT_IFFT,
-    FFT_SPECTRUM,
+    FFT_SPECTROGRAM,
 };
 
 #if ULAB_FFT_MODULE

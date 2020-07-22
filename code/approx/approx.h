@@ -12,8 +12,8 @@
 #ifndef _APPROX_
 #define _APPROX_
 
-#include "ulab.h"
-#include "ndarray.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 #if ULAB_APPROX_MODULE
 

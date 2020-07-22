@@ -19,7 +19,6 @@
 #include "py/binary.h"
 #include "py/obj.h"
 #include "py/objarray.h"
-#include "ndarray.h"
 #include "fft.h"
 
 #if ULAB_FFT_MODULE
@@ -123,9 +122,9 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
         }
     }
 
-    if((type == FFT_FFT) || (type == FFT_SPECTRUM)) {
+    if((type == FFT_FFT) || (type == FFT_SPECTROGRAM)) {
         fft_kernel(data_re, data_im, len, 1);
-        if(type == FFT_SPECTRUM) {
+        if(type == FFT_SPECTROGRAM) {
             for(size_t i=0; i < len; i++) {
                 *data_re = MICROPY_FLOAT_C_FUN(sqrt)(*data_re * *data_re + *data_im * *data_im);
                 data_re++;
@@ -140,7 +139,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
             *data_im++ /= len;
         }
     }
-    if(type == FFT_SPECTRUM) {
+    if(type == FFT_SPECTROGRAM) {
         return MP_OBJ_TO_PTR(out_re);
     } else {
         mp_obj_t tuple[2];
@@ -155,6 +154,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
 //|    :param ulab.array r: A 1-dimension array of values whose size is a power of 2
 //|    :param ulab.array c: An optional 1-dimension array of values whose size is a power of 2, giving the complex part of the value
 //|    :return tuple (r, c): The real and complex parts of the FFT
+//|
 //|    Perform a Fast Fourier Transform from the time domain into the frequency domain
 //|    See also ~ulab.extras.spectrum, which computes the magnitude of the fft,
 //|    rather than separately returning its real and imaginary parts."""
@@ -176,6 +176,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 //|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
 //|     :param ulab.array c: An optional 1-dimension array of values whose size is a power of 2, giving the complex part of the value
 //|     :return tuple (r, c): The real and complex parts of the inverse FFT
+//|
 //|     Perform an Inverse Fast Fourier Transform from the frequeny domain into the time domain"""
 //|     ...
 //| 
@@ -190,10 +191,30 @@ static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 
+//| def spectrogram(r):
+//|    """
+//|    :param ulab.array r: A 1-dimension array of values whose size is a power of 2
+//|
+//|    Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
+//|    This function is similar to scipy's ``scipy.signal.spectrogram``."""
+//|    ...
+//|
+
+static mp_obj_t fft_spectrogram(size_t n_args, const mp_obj_t *args) {
+    if(n_args == 2) {
+        return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_SPECTROGRAM);
+    } else {
+        return fft_fft_ifft_spectrum(n_args, args[0], mp_const_none, FFT_SPECTROGRAM);
+    }
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrogram_obj, 1, 2, fft_spectrogram);
+
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&fft_spectrogram_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_fft_globals, ulab_fft_globals_table);
