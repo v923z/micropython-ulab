@@ -22,17 +22,17 @@
 #include "ndarray.h"
 #include "ndarray_properties.h"
 #include "create.h"
-#include "linalg.h"
-#include "vectorise.h"
-#include "poly.h"
-#include "fft.h"
-#include "filter.h"
-#include "numerical.h"
-#include "compare.h"
-#include "approx.h"
-#include "extras.h"
+#include "approx/approx.h"
+#include "compare/compare.h"
+#include "numerical/numerical.h"
+#include "fft/fft.h"
+#include "filter/filter.h"
+#include "linalg/linalg.h"
+#include "poly/poly.h"
+#include "user/user.h"
+#include "vector/vectorise.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.53.1");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.53.2");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
@@ -66,17 +66,71 @@ const mp_obj_type_t ulab_ndarray_type = {
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 
+//| def arange(start, stop, step, dtype=float):
+//|    """
+//|    .. param: start
+//|      First value in the array, optional, defaults to 0
+//|    .. param: stop
+//|      Final value in the array
+//|    .. param: step
+//|      Difference between consecutive elements, optional, defaults to 1.0
+//|    .. param: dtype
+//|      Type of values in the array
+//|    Return a new 1-D array with elements ranging from ``start`` to ``stop``, with step size ``step``."""
+//|    ...
+//|
+//| def eye(size, *, dtype=float):
+//|    """Return a new square array of size, with the diagonal elements set to 1
+//|       and the other elements set to 0."""
+//|    ...
+//|
+//| def linspace(start, stop, *, dtype=float, num=50, endpoint=True):
+//|    """
+//|    .. param: start
+//|      First value in the array
+//|    .. param: stop
+//|      Final value in the array
+//|    .. param int: num
+//|      Count of values in the array
+//|    .. param: dtype
+//|      Type of values in the array
+//|    .. param bool: endpoint
+//|      Whether the ``stop`` value is included.  Note that even when
+//|      endpoint=True, the exact ``stop`` value may not be included due to the
+//|      inaccuracy of floating point arithmetic.
+//|    Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly."""
+//|    ...
+//|
+//| def ones(shape, *, dtype=float):
+//|    """
+//|    .. param: shape
+//|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
+//|    .. param: dtype
+//|       Type of values in the array
+//|    Return a new array of the given shape with all elements set to 1."""
+//|    ...
+//|    
+//| def zeros(shape, *, dtype):
+//|    """
+//|    .. param: shape
+//|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
+//|    .. param: dtype
+//|       Type of values in the array
+//|    Return a new array of the given shape with all elements set to 0."""
+//|    ...
+//|
+
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_printoptions), (mp_obj_t)&ndarray_set_printoptions_obj },
     { MP_ROM_QSTR(MP_QSTR_get_printoptions), (mp_obj_t)&ndarray_get_printoptions_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
-    { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },
-    { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&create_ones_obj },
+    { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
     { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
     { MP_ROM_QSTR(MP_QSTR_linspace), (mp_obj_t)&create_linspace_obj },
-    { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
+    { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&create_ones_obj },
+    { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },
     #if ULAB_LINALG_MODULE
     { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
     #endif
@@ -103,6 +157,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #endif
     #if ULAB_EXTRAS_MODULE
     { MP_ROM_QSTR(MP_QSTR_extras), MP_ROM_PTR(&ulab_extras_module) },
+    #endif
+    #if ULAB_USER_MODULE
+    { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
     #endif
     // class constants
     { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },

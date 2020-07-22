@@ -12,7 +12,8 @@
 #ifndef _POLY_
 #define _POLY_
 
-#include "ulab.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 #if ULAB_POLY_MODULE
 

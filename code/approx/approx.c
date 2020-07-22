@@ -15,7 +15,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
-#include "linalg.h"
+#include "../linalg/linalg.h"
 #include "approx.h"
 
 #if ULAB_APPROX_MODULE

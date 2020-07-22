@@ -13,8 +13,8 @@
 #ifndef _FILTER_
 #define _FILTER_
 
-#include "ulab.h"
-#include "ndarray.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 #if ULAB_FILTER_MODULE
 
