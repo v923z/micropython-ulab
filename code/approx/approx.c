@@ -360,14 +360,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_curve_fit_obj, 2, approx_curve_fit);
 
 //| def interp(x: ulab.array, xp:ulab.array, fp:ulab.array, *, left=None, right=None) -> ulab.array:
 //|    """
-//|    :param ulab.array x: The x-coordinates at which to evaluate the interpolated values.
-//|    :param ulab.array xp: The x-coordinates of the data points, must be increasing
-//|    :param ulab.array fp: The y-coordinates of the data points, same length as xp
-//|    :param left: Value to return for ``x < xp[0]``, default is ``fp[0]``.
-//|    :param right: Value to return for ``x > xp[-1]``, default is ``fp[-1]``.
+//|     :param ulab.array x: The x-coordinates at which to evaluate the interpolated values.
+//|     :param ulab.array xp: The x-coordinates of the data points, must be increasing
+//|     :param ulab.array fp: The y-coordinates of the data points, same length as xp
+//|     :param left: Value to return for ``x < xp[0]``, default is ``fp[0]``.
+//|     :param right: Value to return for ``x > xp[-1]``, default is ``fp[-1]``.
 //|
-//|    Returns the one-dimensional piecewise linear interpolant to a function with given discrete data points (xp, fp), evaluated at x."""
-//|    ...
+//|     Returns the one-dimensional piecewise linear interpolant to a function with given discrete data points (xp, fp), evaluated at x."""
+//|     ...
 //|
 
 STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
