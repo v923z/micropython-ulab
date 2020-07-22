@@ -42,6 +42,7 @@ STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp
 //|     :param float b: The right side of the interval
 //|     :param float xtol: The tolerance value
 //|     :param float maxiter: The maximum number of iterations to perform
+//|
 //|     Find a solution (zero) of the function ``f(x)`` on the interval
 //|     (``a``..``b``) using the bisection method.  The result is accurate to within
 //|     ``xtol`` unless more than ``maxiter`` steps are required."""
@@ -100,6 +101,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_bisect_obj, 3, approx_bisect);
 //|     :param float xtol: The absolute tolerance value
 //|     :param float rtol: The relative tolerance value
 //|     :param float maxiter: The maximum number of iterations to perform
+//|
 //|     Find a solution (zero) of the function ``f(x)`` using Newton's Method.
 //|     The result is accurate to within ``xtol * rtol * |f(x)|`` unless more than
 //|     ``maxiter`` steps are requried."""
@@ -150,6 +152,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_newton_obj, 2, approx_newton);
 //|    :param float x0: The initial x value
 //|    :param float xatol: The absolute tolerance value
 //|    :param float fatol: The relative tolerance value
+//|
 //|    Find a minimum of the function ``f(x)`` using the downhill simplex method.
 //|    The located ``x`` is within ``fxtol`` of the actual minimum, and ``f(x)``
 //|    is within ``fatol`` of the actual minimum unless more than ``maxiter``

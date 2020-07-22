@@ -27,6 +27,7 @@
 //|    """
 //|    :param ulab.array a:
 //|    :param ulab.array v:
+//|
 //|    Returns the discrete, linear convolution of two one-dimensional sequences.
 //|    The result is always an array of float.  Only the ``full`` mode is supported,
 //|    and the ``mode`` named parameter of numpy is not accepted. Note that all other
@@ -122,6 +123,7 @@ static void filter_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_flo
 //|     :param ulab.array x: The data to be filtered
 //|     :param ulab.array zi: Optional initial conditions for the filter
 //|     :return: If ``xi`` is not specified, the filter result alone is returned.  If ``xi`` is specified, the return value is a 2-tuple of the filter result and the final filter conditions.
+//|
 //|     Filter data along one dimension using cascaded second-order sections.
 //|     Filter a data sequence, x, using a digital IIR filter defined by sos.
 //|     The filter function is implemented as a series of second-order filters with direct-form II transposed structure. It is designed to minimize numerical precision errors for high-order filters.

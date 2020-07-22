@@ -76,6 +76,7 @@ const mp_obj_type_t ulab_ndarray_type = {
 //|      Difference between consecutive elements, optional, defaults to 1.0
 //|    .. param: dtype
 //|      Type of values in the array
+//|
 //|    Return a new 1-D array with elements ranging from ``start`` to ``stop``, with step size ``step``."""
 //|    ...
 //|
@@ -98,6 +99,7 @@ const mp_obj_type_t ulab_ndarray_type = {
 //|      Whether the ``stop`` value is included.  Note that even when
 //|      endpoint=True, the exact ``stop`` value may not be included due to the
 //|      inaccuracy of floating point arithmetic.
+//|
 //|    Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly."""
 //|    ...
 //|
@@ -107,6 +109,7 @@ const mp_obj_type_t ulab_ndarray_type = {
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
 //|    .. param: dtype
 //|       Type of values in the array
+//|
 //|    Return a new array of the given shape with all elements set to 1."""
 //|    ...
 //|    
@@ -116,6 +119,7 @@ const mp_obj_type_t ulab_ndarray_type = {
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
 //|    .. param: dtype
 //|       Type of values in the array
+//|
 //|    Return a new array of the given shape with all elements set to 0."""
 //|    ...
 //|

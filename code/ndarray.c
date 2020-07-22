@@ -41,6 +41,7 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|     def __init__(self, values, *, dtype=float):
 //|         """:param sequence values: Sequence giving the initial content of the array.
 //|           :param dtype: The type of array values, ``int8``, ``uint8``, ``int16``, ``uint16``, or ``float``
+//|
 //|           The `values` sequence can either be another ~ulab.array, sequence of numbers
 //|           (in which case a 1-dimensional array is created), or a sequence where each
 //|           subsequence has the same length (in which case a 2-dimensional array is
@@ -64,6 +65,7 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //| 
 //|     def flatten(self, *, order='C'):
 //|         """:param order: Whether to flatten by rows ('C') or columns ('F')
+//|
 //|            Returns a new `ulab.array` object which is always 1 dimensional.
 //|            If order is 'C' (the default", then the data is ordered in rows;
 //|            If it is 'F', then the data is ordered in columns.  "C" and "F" refer

@@ -163,8 +163,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 //|    """
 //|    :param ~ulab.array m1: a matrix, or a vector
 //|    :param ~ulab.array m2: a matrix, or a vector
-//|    Computes the product of two matrices, or two vectors. In the letter case, the inner product is returned."""
 //|
+//|    Computes the product of two matrices, or two vectors. In the letter case, the inner product is returned."""
 //|    ...
 //|
 
