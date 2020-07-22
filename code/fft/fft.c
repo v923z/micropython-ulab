@@ -150,15 +150,15 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
 }
 
 //| def fft(r, c=None):
-//|    """
-//|    :param ulab.array r: A 1-dimension array of values whose size is a power of 2
-//|    :param ulab.array c: An optional 1-dimension array of values whose size is a power of 2, giving the complex part of the value
-//|    :return tuple (r, c): The real and complex parts of the FFT
+//|     """
+//|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
+//|     :param ulab.array c: An optional 1-dimension array of values whose size is a power of 2, giving the complex part of the value
+//|     :return tuple (r, c): The real and complex parts of the FFT
 //|
-//|    Perform a Fast Fourier Transform from the time domain into the frequency domain
-//|    See also ~ulab.extras.spectrum, which computes the magnitude of the fft,
-//|    rather than separately returning its real and imaginary parts."""
-//|    ...
+//|     Perform a Fast Fourier Transform from the time domain into the frequency domain
+//|     See also ~ulab.extras.spectrum, which computes the magnitude of the fft,
+//|     rather than separately returning its real and imaginary parts."""
+//|     ...
 //|
 
 static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
@@ -192,12 +192,12 @@ static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 
 //| def spectrogram(r):
-//|    """
-//|    :param ulab.array r: A 1-dimension array of values whose size is a power of 2
+//|     """
+//|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
 //|
-//|    Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
-//|    This function is similar to scipy's ``scipy.signal.spectrogram``."""
-//|    ...
+//|     Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
+//|     This function is similar to scipy's ``scipy.signal.spectrogram``."""
+//|     ...
 //|
 
 static mp_obj_t fft_spectrogram(size_t n_args, const mp_obj_t *args) {
