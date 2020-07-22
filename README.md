@@ -11,7 +11,7 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 
 ## ndarray
 
-`ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, and `**` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of iterables, or by means of the `ones`, `zeros`, `eye`, or `linspace` functions. 
+`ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, and `**` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of iterables, or by means of the `ararnge`, `eye`, `linspace`, `ones`, or `zeros`  functions. 
 
 `ndarray`s can be iterated on, and have a number of their own methods, such as `shape`, `reshape`, `transpose`, `size`, and `itemsize`.
 
@@ -37,7 +37,7 @@ The `poly` sub-module defines the `polyval`, and `polyfit` functions from `numpy
 
 ### fft
 
-The `fft` sub-module implements the fast Fourier transform, and its inverse for one-dimensional `ndarray`s.
+The `fft` sub-module implements the fast Fourier transform, and its inverse for one-dimensional `ndarray`s, as well as the `spectrogram` function from `scipy`.
 
 ### filter
 
@@ -50,11 +50,11 @@ The `compare` sub-module contains the implementation of the `equal`, `not_equal`
 
 ### approx
 
-The `approx` sub-module contains the implementation of the `interp` function of `numpy`, and `newton`, `bisect`, and `fmin` from `scipy`.
+The `approx` sub-module contains the implementation of the `interp`, and `trapz` functions of `numpy`, and `newton`, `bisect`, and `fmin` from `scipy`.
 
 ### extras
 
-The `extras` sub-module is meant as a user-extendable module, and currently implements the `spectrogram` function of `scipy`. 
+The `user` sub-module is meant as a user-extendable module, and contains a dummy function only. 
 
 # Finding help
 
