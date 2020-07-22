@@ -19,6 +19,15 @@
 #include "poly.h"
 
 #if ULAB_POLY_MODULE
+
+//| """Polynomial functions"""
+//|
+
+//| def polyval(p, x):
+//|    """Evaluate the polynomial p at the points x.  x must be an array."""
+//|    ...
+//|
+
 static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // TODO: return immediately, if o_p is not an iterable
     // TODO: there is a bug here: matrices won't work, 
@@ -67,6 +76,12 @@ static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
+
+//| def polyfit(x, y, degree):
+//|    """Return a polynomial of given degree that approximates the function
+//|       f(x)=y.  If x is not supplied, it is the range(len(y))."""
+//|    ...
+//|
 
 static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     if((n_args != 2) && (n_args != 3)) {
