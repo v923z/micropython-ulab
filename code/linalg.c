@@ -6,7 +6,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2020 Zoltán Vörös
+ * Copyright (c) 2019-2020 Zoltán Vörös 
+ *               2020 Scott Shawcroft for Adafruit Industries
+ * 
 */
 
 #include <stdlib.h>
@@ -18,6 +20,9 @@
 #include "linalg.h"
 
 #if ULAB_LINALG_MODULE
+
+//| """Linear algebra functions"""
+//|
 
 static ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
 	// Returns an ndarray, if the object is a square ndarray, 
@@ -31,6 +36,11 @@ static ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
 	}
 	return ndarray;
 }
+
+//| def size(array):
+//|    """Return the total number of elements in the array, as an integer."""
+//|    ...
+//|
 
 static mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -114,6 +124,16 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     return true;
 }
 
+//| def inv(m):
+//|    """
+//|    :param ~ulab.array m: a square matrix
+//|    :return: The inverse of the matrix, if it exists
+//|    :raises ValueError: if the matrix is not invertible
+//|
+//|    Computes the inverse of a square matrix"""
+//|    ...
+//|
+
 static mp_obj_t linalg_inv(mp_obj_t o_in) {
 	ndarray_obj_t *o = linalg_object_is_square(o_in);
     ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
@@ -138,6 +158,15 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
+
+//| def dot(m1, m2):
+//|    """
+//|    :param ~ulab.array m1: a matrix
+//|    :param ~ulab.array m2: a matrix
+//|    Computes the matrix product of two matrices"""
+//|
+//|    ...
+//|
 
 static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     // TODO: should the results be upcast?
@@ -183,6 +212,14 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
 
+//| def det():
+//|    """
+//|    :param: m, a square matrix
+//|    :return float: The determinant of the matrix"""
+//|
+//|    ...
+//|
+
 static mp_obj_t linalg_det(mp_obj_t oin) {
     ndarray_obj_t *in = linalg_object_is_square(oin);  
     mp_float_t *tmp = m_new(mp_float_t, in->n*in->n);
@@ -214,6 +251,15 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
+
+//| def eig(m):
+//|    """
+//|    :param m: a square matrix
+//|    :return tuple (eigenvectors, eigenvalues):
+//|
+//|    Computes the eigenvalues and eigenvectors of a square matrix"""
+//|    ...
+//|
 
 static mp_obj_t linalg_eig(mp_obj_t oin) {
 	ndarray_obj_t *in = linalg_object_is_square(oin);
@@ -337,6 +383,16 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 
+//| def cholesky(A):
+//|    """
+//|    :param ~ulab.array A: a positive definite, symmetric square matrix
+//|    :return ~ulab.array L: a square root matrix in the lower triangular form
+//|    :raises ValueError: If the input does not fulfill the necessary conditions
+//|
+//|    The returned matrix satisfies the equation m=LL*"""
+//|    ...
+//|
+
 static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 	ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
 	ndarray_obj_t *L = create_new_ndarray(in->n, in->n, NDARRAY_FLOAT);
@@ -387,6 +443,14 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
+
+//| def trace(m):
+//|    """
+//|    :param m: a square matrix
+//|
+//|    Compute the trace of the matrix, the sum of its diagonal elements."""
+//|    ...
+//|
 
 static mp_obj_t linalg_trace(mp_obj_t oin) {
 	ndarray_obj_t *ndarray = linalg_object_is_square(oin);

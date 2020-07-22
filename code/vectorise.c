@@ -7,6 +7,8 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
+ *               2020 Jeff Epler for Adafruit Industries
+ *               2020 Scott Shawcroft for Adafruit Industries
 */
 
 #include <math.h>
@@ -23,6 +25,13 @@
 #endif
     
 #if ULAB_VECTORISE_MODULE
+
+//| """Element-by-element functions
+//| These functions can operate on numbers, 1-D iterables, 1-D arrays, or 2-D arrays by
+//| applying the function to every element in the array.  This is typically
+//| much more efficient than expressing the same operation as a Python loop."""
+//|
+    
 static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     // Return a single value, if o_in is not iterable
     if(mp_obj_is_float(o_in) || MP_OBJ_IS_INT(o_in)) {
@@ -62,78 +71,45 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
     return mp_const_none;
 }
 
+//| def acos():
+//|    """Computes the inverse cosine function"""
+//|    ...
+//|
 
 MATH_FUN_1(acos, acos);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acos_obj, vectorise_acos);
 
+//| def acosh():
+//|    """Computes the inverse hyperbolic cosine function"""
+//|    ...
+//|
+
 MATH_FUN_1(acosh, acosh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acosh_obj, vectorise_acosh);
+
+
+//| def asin():
+//|    """Computes the inverse sine function"""
+//|    ...
+//|
 
 MATH_FUN_1(asin, asin);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asin_obj, vectorise_asin);
 
+//| def asinh():
+//|    """Computes the inverse hyperbolic sine function"""
+//|    ...
+//|
+
 MATH_FUN_1(asinh, asinh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asinh_obj, vectorise_asinh);
 
-MATH_FUN_1(atan, atan);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 
-MATH_FUN_1(atanh, atanh);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atanh_obj, vectorise_atanh);
-
-MATH_FUN_1(ceil, ceil);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_ceil_obj, vectorise_ceil);
-
-MATH_FUN_1(cos, cos);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cos_obj, vectorise_cos);
-
-MATH_FUN_1(cosh, cosh);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cosh_obj, vectorise_cosh);
-
-MATH_FUN_1(erf, erf);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erf_obj, vectorise_erf);
-
-MATH_FUN_1(erfc, erfc);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erfc_obj, vectorise_erfc);
-
-MATH_FUN_1(exp, exp);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_exp_obj, vectorise_exp);
-
-MATH_FUN_1(expm1, expm1);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_expm1_obj, vectorise_expm1);
-
-MATH_FUN_1(floor, floor);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_floor_obj, vectorise_floor);
-
-MATH_FUN_1(gamma, tgamma);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_gamma_obj, vectorise_gamma);
-
-MATH_FUN_1(lgamma, lgamma);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_lgamma_obj, vectorise_lgamma);
-
-MATH_FUN_1(log, log);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log_obj, vectorise_log);
-
-MATH_FUN_1(log10, log10);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log10_obj, vectorise_log10);
-
-MATH_FUN_1(log2, log2);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log2_obj, vectorise_log2);
-
-MATH_FUN_1(sin, sin);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sin_obj, vectorise_sin);
-
-MATH_FUN_1(sinh, sinh);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sinh_obj, vectorise_sinh);
-
-MATH_FUN_1(sqrt, sqrt);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sqrt_obj, vectorise_sqrt);
-
-MATH_FUN_1(tan, tan);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tan_obj, vectorise_tan);
-
-MATH_FUN_1(tanh, tanh);
-MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tanh_obj, vectorise_tanh);
+//| def around(a, *, decimals):
+//|    """Returns a new float array in which each element is rounded to
+//|       ``decimals`` places."""
+//|    ...
+//|
 
 static mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -159,6 +135,21 @@ static mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_around_obj, 1, vectorise_around);
+
+//| def atan():
+//|    """Computes the inverse tangent function; the return values are in the
+//|       range [-pi/2,pi/2]."""
+//|    ...
+//|
+
+MATH_FUN_1(atan, atan);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
+
+//| def atan2(y,x):
+//|    """Computes the inverse tangent function of y/x; the return values are in
+//|       the range [-pi, pi]."""
+//|    ...
+//|
 
 static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 	// the function is implemented for scalars and ndarrays only, with partial 
@@ -213,6 +204,159 @@ static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
 
+
+
+//| def atanh():
+//|    """Computes the inverse hyperbolic tangent function"""
+//|    ...
+//|
+
+MATH_FUN_1(atanh, atanh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atanh_obj, vectorise_atanh);
+
+//| def ceil():
+//|    """Rounds numbers up to the next whole number"""
+//|    ...
+//|
+
+MATH_FUN_1(ceil, ceil);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_ceil_obj, vectorise_ceil);
+
+//| def cos():
+//|    """Computes the cosine function"""
+//|    ...
+//|
+
+MATH_FUN_1(cos, cos);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cos_obj, vectorise_cos);
+
+//| def cosh():
+//|    """Computes the hyperbolic cosine function"""
+//|    ...
+//|
+
+MATH_FUN_1(cosh, cosh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cosh_obj, vectorise_cosh);
+
+//| def erf():
+//|    """Computes the error function, which has applications in statistics"""
+//|    ...
+//|
+
+MATH_FUN_1(erf, erf);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erf_obj, vectorise_erf);
+
+//| def erfc():
+//|    """Computes the complementary error function, which has applications in statistics"""
+//|    ...
+//|
+
+MATH_FUN_1(erfc, erfc);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erfc_obj, vectorise_erfc);
+
+//| def exp():
+//|    """Computes the exponent function."""
+//|    ...
+//|
+
+MATH_FUN_1(exp, exp);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_exp_obj, vectorise_exp);
+
+//| def expm1():
+//|    """Computes $e^x-1$.  In certain applications, using this function preserves numeric accuracy better than the `exp` function."""
+//|    ...
+//|
+
+MATH_FUN_1(expm1, expm1);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_expm1_obj, vectorise_expm1);
+
+//| def floor():
+//|    """Rounds numbers up to the next whole number"""
+//|    ...
+//|
+
+MATH_FUN_1(floor, floor);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_floor_obj, vectorise_floor);
+
+//| def gamma():
+//|    """Computes the gamma function"""
+//|    ...
+//|
+
+MATH_FUN_1(gamma, tgamma);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_gamma_obj, vectorise_gamma);
+
+//| def lgamma():
+//|    """Computes the natural log of the gamma function"""
+//|    ...
+//|
+
+MATH_FUN_1(lgamma, lgamma);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_lgamma_obj, vectorise_lgamma);
+
+//| def log():
+//|    """Computes the natural log"""
+//|    ...
+//|
+
+MATH_FUN_1(log, log);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log_obj, vectorise_log);
+
+//| def log10():
+//|    """Computes the log base 10"""
+//|    ...
+//|
+
+MATH_FUN_1(log10, log10);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log10_obj, vectorise_log10);
+
+//| def log2():
+//|    """Computes the log base 2"""
+//|    ...
+//|
+
+MATH_FUN_1(log2, log2);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log2_obj, vectorise_log2);
+
+//| def sin():
+//|    """Computes the sine function"""
+//|    ...
+//|
+
+MATH_FUN_1(sin, sin);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sin_obj, vectorise_sin);
+
+//| def sinh():
+//|    """Computes the hyperbolic sine"""
+//|    ...
+//|
+
+MATH_FUN_1(sinh, sinh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sinh_obj, vectorise_sinh);
+
+//| def sqrt():
+//|    """Computes the square root"""
+//|    ...
+//|
+
+MATH_FUN_1(sqrt, sqrt);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sqrt_obj, vectorise_sqrt);
+
+//| def tan():
+//|    """Computes the tangent"""
+//|    ...
+//|
+
+MATH_FUN_1(tan, tan);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tan_obj, vectorise_tan);
+
+//| def tanh():
+//|    """Computes the hyperbolic tangent"""
+//|    ...
+
+MATH_FUN_1(tanh, tanh);
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tanh_obj, vectorise_tanh);
+
 static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void) n_args;
     (void) n_kw;
@@ -257,6 +401,15 @@ const mp_obj_type_t vectorise_function_type = {
     .name = MP_QSTR_,
     .call = vectorise_vectorized_function_call,
 };
+
+//| def vectorize(f, *, otypes=None):
+//|    """
+//|    :param callable f: The function to wrap
+//|    :param otypes: List of array types that may be returned by the function.  None is interpreted to mean the return value is float.
+//|    Wrap a Python function ``f`` so that it can be applied to arrays.
+//|    The callable must return only values of the types specified by ``otypes``, or the result is undefined."""
+//|    ...
+//|
 
 static mp_obj_t vectorise_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {

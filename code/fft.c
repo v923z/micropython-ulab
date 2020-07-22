@@ -7,6 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
+ *               2020 Scott Shawcroft for Adafruit Industries
 */
 
 #include <math.h>
@@ -22,6 +23,9 @@
 #include "fft.h"
 
 #if ULAB_FFT_MODULE
+
+//| """Frequency-domain functions"""
+//|
 
 static void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     // This is basically a modification of four1 from Numerical Recipes
@@ -146,6 +150,17 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     }
 }
 
+//| def fft(r, c=None):
+//|    """
+//|    :param ulab.array r: A 1-dimension array of values whose size is a power of 2
+//|    :param ulab.array c: An optional 1-dimension array of values whose size is a power of 2, giving the complex part of the value
+//|    :return tuple (r, c): The real and complex parts of the FFT
+//|    Perform a Fast Fourier Transform from the time domain into the frequency domain
+//|    See also ~ulab.extras.spectrum, which computes the magnitude of the fft,
+//|    rather than separately returning its real and imaginary parts."""
+//|    ...
+//|
+
 static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_FFT);
@@ -155,6 +170,15 @@ static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
+
+//| def ifft(r, c=None):
+//|     """
+//|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
+//|     :param ulab.array c: An optional 1-dimension array of values whose size is a power of 2, giving the complex part of the value
+//|     :return tuple (r, c): The real and complex parts of the inverse FFT
+//|     Perform an Inverse Fast Fourier Transform from the frequeny domain into the time domain"""
+//|     ...
+//| 
 
 static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {

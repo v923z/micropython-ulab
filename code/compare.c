@@ -7,6 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Zoltán Vörös
+ *               2020 Jeff Epler for Adafruit Industries
 */
 
 #include <math.h>
@@ -18,6 +19,9 @@
 #include "compare.h"
 
 #if ULAB_COMPARE_MODULE
+
+//| """Comparison functions"""
+//|
 
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t comptype) {
 	// the function is implemented for scalars and ndarrays only, with partial 
@@ -129,17 +133,37 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
 	return result;	
 
 }
+
+//| def equal(x1, x2):
+//|    """Return an array of bool which is true where x1[i] == x2[i] and false elsewhere"""
+//|    ...
+//|
+
 static mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
 	return compare_equal_helper(x1, x2, MP_BINARY_OP_EQUAL);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_equal_obj, compare_equal);
 
+//| def not_equal(x1, x2):
+//|    """Return an array of bool which is false where x1[i] == x2[i] and true elsewhere"""
+//|    ...
+//|
+
 static mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
 	return compare_equal_helper(x1, x2, MP_BINARY_OP_NOT_EQUAL);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
+
+
+//| def minimum(x1, x2):
+//|    """Compute the element by element minimum of the arguments.
+//|    Arguments may be ulab arrays or numbers.  All array arguments
+//|    must be the same size.  If the inputs are both scalars, a number is
+//|    returned"""
+//|    ...
+//|
 
 static mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
 	// extra round, so that we can return minimum(3, 4) properly
@@ -153,6 +177,16 @@ static mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
 
+
+//| def maximum(x1, x2):
+//|    """
+//|    Compute the element by element maximum of the arguments.
+//|    Arguments may be ulab arrays or numbers.  All array arguments
+//|    must be the same size.  If the inputs are both scalars, a number is
+//|    returned"""
+//|    ...
+//|
+
 static mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
 	// extra round, so that we can return maximum(3, 4) properly
 	mp_obj_t result = compare_function(x1, x2, COMPARE_MAXIMUM);
@@ -164,6 +198,17 @@ static mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
+
+//| def clip(x1, x2, x3):
+//|     """
+//|     Constrain the values from ``x1`` to be between ``x2`` and ``x3``.
+//|     ``x2`` is assumed to be less than or equal to ``x3``.
+//|     Arguments may be ulab arrays or numbers.  All array arguments
+//|     must be the same size.  If the inputs are all scalars, a 1-element
+//|     array is returned.
+//|     Shorthand for ``ulab.maximum(x2, ulab.minimum(x1, x3))``"""
+//|     ...
+//| 
 
 static mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
 	// Note: this function could be made faster by implementing a single-loop comparison in 
