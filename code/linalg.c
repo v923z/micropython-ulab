@@ -150,7 +150,7 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
     if ((m1->m == 1) && (m2->m == 1)) {
         // 2 vectors
         if (m1->array->len != m2->array->len) {
-            mp_raise_ValueError(translate("vectors must have same dimension"));
+            mp_raise_ValueError(translate("vectors must have same lengths"));
         }
         mp_float_t dot = 0.0;
         for (size_t pos=0; pos < m1->array->len; pos++) {
