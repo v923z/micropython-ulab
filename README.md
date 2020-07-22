@@ -11,25 +11,35 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 
 ## ndarray
 
-`ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, and `**` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of iterables, or by means of the `ararnge`, `eye`, `linspace`, `ones`, or `zeros`  functions. 
+`ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, and `**` binary 
+operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that operate element-wise. Type-aware `ndarray`s can 
+be initialised from any `micropython` iterable, lists of iterables, or by means of the `arange`, `eye`, `linspace`, 
+`ones`, or `zeros`  functions. 
 
 `ndarray`s can be iterated on, and have a number of their own methods, such as `shape`, `reshape`, `transpose`, `size`, and `itemsize`.
 
 ## Modules
 
-In addition to the `ndarray`'s operators and methods, seven modules define a great number of functions that can take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules can be excluded from the compiled firmware with a pre-processor switch. 
+In addition to the `ndarray`'s operators and methods, seven modules define a great number of functions that can 
+take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules 
+can be excluded from the compiled firmware with a pre-processor switch. 
 
 ### vector
 
-The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) of `micropython` for `ndarray`s and iterables. In addition, it also provided tools for vectorising generic, user-defined `python` functions. 
+The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) 
+of `micropython` for `ndarray`s and iterables. In addition, it also provided tools for vectorising generic, 
+user-defined `python` functions. 
 
 ### numerical
 
-The `numerical` sub-module defines the `roll`, `flip`, `diff`, `sort` and `argsort` functions for `ndarray`s, and, in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as well as generic one-dimensional iterables.
+The `numerical` sub-module defines the `roll`, `flip`, `diff`, `sort` and `argsort` functions for `ndarray`s, and, 
+in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as 
+well as generic one-dimensional iterables.
 
 ### linalg
 
-The `linalg` sub-module implements functions for matrix inversion, dot product, and the calculation of the determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace. 
+The `linalg` sub-module implements functions for matrix inversion, dot product, and the calculation of the 
+determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace. 
 
 ### poly
 
@@ -37,7 +47,8 @@ The `poly` sub-module defines the `polyval`, and `polyfit` functions from `numpy
 
 ### fft
 
-The `fft` sub-module implements the fast Fourier transform, and its inverse for one-dimensional `ndarray`s, as well as the `spectrogram` function from `scipy`.
+The `fft` sub-module implements the fast Fourier transform, and its inverse for one-dimensional `ndarray`s, 
+as well as the `spectrogram` function from `scipy`.
 
 ### filter
 
@@ -50,7 +61,8 @@ The `compare` sub-module contains the implementation of the `equal`, `not_equal`
 
 ### approx
 
-The `approx` sub-module contains the implementation of the `interp`, and `trapz` functions of `numpy`, and `newton`, `bisect`, and `fmin` from `scipy`.
+The `approx` sub-module contains the implementation of the `interp`, and `trapz` functions of `numpy`, and `newton`, `bisect`, 
+and `fmin` from `scipy`.
 
 ### extras
 
