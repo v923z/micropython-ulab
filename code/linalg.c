@@ -183,6 +183,21 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
 
+static mp_obj_t linalg_norm(mp_obj_t _x) {
+    if (!MP_OBJ_IS_TYPE(_x, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("argument must be ndarray"));
+    }
+    ndarray_obj_t *x = MP_OBJ_TO_PTR(_x);
+    mp_float_t dot = 0.0, v;
+    for (size_t pos=0; pos < x->array->len; pos++) {
+        v = ndarray_get_float_value(x->array->items, x->array->typecode, pos);
+        dot += v*v;
+    }
+    return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
+
 static mp_obj_t linalg_det(mp_obj_t oin) {
     ndarray_obj_t *in = linalg_object_is_square(oin);  
     mp_float_t *tmp = m_new(mp_float_t, in->n*in->n);
@@ -407,6 +422,7 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
 	{ MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
 	{ MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
+	{ MP_ROM_QSTR(MP_QSTR_norm), (mp_obj_t)&linalg_norm_obj },
 	{ MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
 	{ MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },
 	{ MP_ROM_QSTR(MP_QSTR_cholesky), (mp_obj_t)&linalg_cholesky_obj },
