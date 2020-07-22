@@ -194,11 +194,16 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     if((MICROPY_FLOAT_C_FUN(fabs)(stop) > 32768) || (MICROPY_FLOAT_C_FUN(fabs)(start) > 32768) || (MICROPY_FLOAT_C_FUN(fabs)(step) > 32768)) {
         typecode = NDARRAY_FLOAT;
     }
-    size_t len = (size_t) (MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
     if(args[3].u_obj != mp_const_none) {
         typecode = (uint8_t)mp_obj_get_int(args[3].u_obj);
     }
-    ndarray_obj_t *ndarray = create_linspace_arange(start, step, len, typecode);
+    ndarray_obj_t *ndarray;
+    if((stop - start)/step < 0) {
+        ndarray = create_new_ndarray(0, 0, typecode);
+    } else {
+        size_t len = (size_t) (MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
+        ndarray = create_linspace_arange(start, step, len, typecode);
+    }
     return MP_OBJ_FROM_PTR(ndarray);
 }
 
