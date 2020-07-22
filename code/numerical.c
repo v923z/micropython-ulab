@@ -7,6 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
+ *               2020 Scott Shawcroft for Adafruit Industries
 */
 
 #include <math.h>
@@ -30,6 +31,11 @@ enum NUMERICAL_FUNCTION_TYPE {
     NUMERICAL_MEAN,
     NUMERICAL_STD,
 };
+
+//| """Numerical and Statistical functions
+//|
+//| Most of these functions take an "axis" argument, which indicates whether to
+//| operate over the flattened array (None), rows (0), or columns (1)."""
 
 static void axis_sorter(ndarray_obj_t *ndarray, mp_obj_t axis, size_t *m, size_t *n, size_t *N, 
                  size_t *increment, size_t *len, size_t *start_inc) {
@@ -279,11 +285,21 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 
+//| def min(array, *, axis=None):
+//|    """Return the minimum element of the 1D array"""
+//|    ...
+//|
+
 static mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MIN);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
+
+//| def max(array, *, axis=None):
+//|    """Return the maximum element of the 1D array"""
+//|    ...
+//|
 
 static mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MAX);
@@ -291,11 +307,21 @@ static mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_max_obj, 1, numerical_max);
 
+//| def argmin(array, *, axis=None):
+//|    """Return the index of the minimum element of the 1D array"""
+//|    ...
+//|
+
 static mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMIN);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
+
+//| def argmax(array, *, axis=None):
+//|    """Return the index of the maximum element of the 1D array"""
+//|    ...
+//|
 
 static mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMAX);
@@ -303,17 +329,32 @@ static mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmax_obj, 1, numerical_argmax);
 
+//| def sum(array, *, axis=None):
+//|    """Return the sum of the array, as a number if axis is None, otherwise as an array."""
+//|    ...
+//|
+
 static mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_SUM);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sum_obj, 1, numerical_sum);
 
+//| def mean(array, *, axis=None):
+//|    """Return the mean element of the 1D array, as a number if axis is None, otherwise as an array."""
+//|    ...
+//|
+
 static mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MEAN);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
+
+//| def std(array, *, axis=None):
+//|    """Return the standard deviation of the array, as a number if axis is None, otherwise as an array."""
+//|    ...
+//|
 
 static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -344,6 +385,13 @@ static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
+
+//| def roll(array, distance, *, axis=None):
+//|    """Shift the content of a vector by the positions given as the second
+//|       argument. If the ``axis`` keyword is supplied, the shift is applied to
+//|       the given axis.  The array is modified in place."""
+//|    ...
+//|
 
 static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -427,6 +475,13 @@ static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 
+
+//| def flip(array, *, axis=None):
+//|    """Returns a new array that reverses the order of the elements along the
+//|       given axis, or along all axes if axis is None."""
+//|    ...
+//|
+
 static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -475,6 +530,12 @@ static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_flip_obj, 1, numerical_flip);
+
+//| def diff(array, *, axis=1):
+//|    """Return the numerical derivative of successive elements of the array, as
+//|       an array.  axis=None is not supported."""
+//|    ...
+//|
 
 static mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -602,7 +663,12 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     }
 }
 
-// numpy function
+//| def sort(array, *, axis=0):
+//|    """Sort the array along the given axis, or along all axes if axis is None.
+//|       The array is modified in place."""
+//|    ...
+//|
+
 static mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -631,6 +697,11 @@ static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace);
+
+//| def argsort(array, *, axis=None):
+//|    """Returns an array which gives indices into the input array from least to greatest."""
+//|    ...
+//|
 
 static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
