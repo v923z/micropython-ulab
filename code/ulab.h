@@ -55,9 +55,9 @@
 #define ULAB_APPROX_MODULE (1)
 #endif
 
-// user-defined modules
-#ifndef ULAB_EXTRAS_MODULE
-#define ULAB_EXTRAS_MODULE (1)
+// user-defined module
+#ifndef ULAB_USER_MODULE
+#define ULAB_USER_MODULE (1)
 #endif
 
 #endif

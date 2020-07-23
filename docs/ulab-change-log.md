@@ -1,3 +1,21 @@
+Wed, 22 Jul 2020
+
+version 0.53.2
+
+    added circuitpython documentation stubs to the source files
+    
+Wed, 22 Jul 2020
+
+version 0.53.1
+
+    fixed arange with negative steps
+    
+Mon, 20 Jul 2020
+
+version 0.53.0
+
+    added arange to create.c
+    
 Thu, 16 Jul 2020
 
 version 0.52.0

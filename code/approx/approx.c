@@ -6,6 +6,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Zoltán Vörös
+ *               2020 Diego Elio Pettenò
 */
 
 #include <math.h>
@@ -14,10 +15,13 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
-#include "linalg.h"
+#include "../linalg/linalg.h"
 #include "approx.h"
 
 #if ULAB_APPROX_MODULE
+
+//| """Numerical approximation methods"""
+//|
 
 const mp_obj_float_t xtolerance = {{&mp_type_float}, 2.4e-7};
 const mp_obj_float_t rtolerance = {{&mp_type_float}, 0.0};
@@ -30,6 +34,20 @@ STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp
 	fargs[0] = mp_obj_new_float(x);
 	return mp_obj_get_float(type->call(fun, nparams+1, 0, fargs));
 }
+
+//| def bisect(fun, a, b, *, xtol=2.4e-7, maxiter=100) -> float:
+//|     """
+//|     :param callable f: The function to bisect
+//|     :param float a: The left side of the interval
+//|     :param float b: The right side of the interval
+//|     :param float xtol: The tolerance value
+//|     :param float maxiter: The maximum number of iterations to perform
+//|
+//|     Find a solution (zero) of the function ``f(x)`` on the interval
+//|     (``a``..``b``) using the bisection method.  The result is accurate to within
+//|     ``xtol`` unless more than ``maxiter`` steps are required."""
+//|     ...
+//| 
 
 STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	// Simple bisection routine
@@ -76,44 +94,20 @@ STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_bisect_obj, 3, approx_bisect);
 
-STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-	// this is actually the secant method, as the first derivative of the function 
-	// is not accepted as an argument. The function whose root we want to solve for 
-	// must depend on a single variable without parameters, i.e., f(x)
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
-        { MP_QSTR_rtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&rtolerance)} },
-        { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-	mp_obj_t fun = args[0].u_obj;
-	const mp_obj_type_t *type = mp_obj_get_type(fun);
-	if(type->call == NULL) {
-		mp_raise_TypeError(translate("first argument must be a function"));
-	}
-	mp_float_t x = mp_obj_get_float(args[1].u_obj);
-	mp_float_t tol = mp_obj_get_float(args[2].u_obj);
-	mp_float_t rtol = mp_obj_get_float(args[3].u_obj);
-	mp_float_t dx, df, fx;
-	dx = x > 0.0 ? APPROX_EPS * x : -APPROX_EPS * x;
-	mp_obj_t *fargs = m_new(mp_obj_t, 1);
-	for(uint16_t i=0; i < args[4].u_int; i++) {
-		fx = approx_python_call(type, fun, x, fargs, 0);
-		df = (approx_python_call(type, fun, x + dx, fargs, 0) - fx) / dx;
-		dx = fx / df;
-		x -= dx;
-		if(MICROPY_FLOAT_C_FUN(fabs)(dx) < (tol + rtol * MICROPY_FLOAT_C_FUN(fabs)(x))) break;
-	}
-	return mp_obj_new_float(x);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_KW(approx_newton_obj, 2, approx_newton);
-
+//| def fmin(fun, x0, *, xatol=2.4e-7, fatol=2.4e-7, maxiter=200) -> float:
+//|    """
+//|    :param callable f: The function to bisect
+//|    :param float x0: The initial x value
+//|    :param float xatol: The absolute tolerance value
+//|    :param float fatol: The relative tolerance value
+//|
+//|    Find a minimum of the function ``f(x)`` using the downhill simplex method.
+//|    The located ``x`` is within ``fxtol`` of the actual minimum, and ``f(x)``
+//|    is within ``fatol`` of the actual minimum unless more than ``maxiter``
+//|    steps are requried."""
+//|    ...
+//|
+    
 STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	// downhill simplex method in 1D
     static const mp_arg_t allowed_args[] = {
@@ -312,6 +306,18 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_curve_fit_obj, 2, approx_curve_fit);
 
 #endif
 
+//| def interp(x: ulab.array, xp:ulab.array, fp:ulab.array, *, left=None, right=None) -> ulab.array:
+//|    """
+//|     :param ulab.array x: The x-coordinates at which to evaluate the interpolated values.
+//|     :param ulab.array xp: The x-coordinates of the data points, must be increasing
+//|     :param ulab.array fp: The y-coordinates of the data points, same length as xp
+//|     :param left: Value to return for ``x < xp[0]``, default is ``fp[0]``.
+//|     :param right: Value to return for ``x > xp[-1]``, default is ``fp[-1]``.
+//|
+//|     Returns the one-dimensional piecewise linear interpolant to a function with given discrete data points (xp, fp), evaluated at x."""
+//|     ...
+//|
+
 STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -376,6 +382,69 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
 
+//| def newton(fun, x0, *, xtol=2.4e-7, rtol=0.0, maxiter=50) -> float:
+//|     """
+//|     :param callable f: The function to bisect
+//|     :param float x0: The initial x value
+//|     :param float xtol: The absolute tolerance value
+//|     :param float rtol: The relative tolerance value
+//|     :param float maxiter: The maximum number of iterations to perform
+//|
+//|     Find a solution (zero) of the function ``f(x)`` using Newton's Method.
+//|     The result is accurate to within ``xtol * rtol * |f(x)|`` unless more than
+//|     ``maxiter`` steps are requried."""
+//|     ...
+//|
+
+STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+	// this is actually the secant method, as the first derivative of the function 
+	// is not accepted as an argument. The function whose root we want to solve for 
+	// must depend on a single variable without parameters, i.e., f(x)
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
+        { MP_QSTR_rtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&rtolerance)} },
+        { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+	mp_obj_t fun = args[0].u_obj;
+	const mp_obj_type_t *type = mp_obj_get_type(fun);
+	if(type->call == NULL) {
+		mp_raise_TypeError(translate("first argument must be a function"));
+	}
+	mp_float_t x = mp_obj_get_float(args[1].u_obj);
+	mp_float_t tol = mp_obj_get_float(args[2].u_obj);
+	mp_float_t rtol = mp_obj_get_float(args[3].u_obj);
+	mp_float_t dx, df, fx;
+	dx = x > 0.0 ? APPROX_EPS * x : -APPROX_EPS * x;
+	mp_obj_t *fargs = m_new(mp_obj_t, 1);
+	for(uint16_t i=0; i < args[4].u_int; i++) {
+		fx = approx_python_call(type, fun, x, fargs, 0);
+		df = (approx_python_call(type, fun, x + dx, fargs, 0) - fx) / dx;
+		dx = fx / df;
+		x -= dx;
+		if(MICROPY_FLOAT_C_FUN(fabs)(dx) < (tol + rtol * MICROPY_FLOAT_C_FUN(fabs)(x))) break;
+	}
+	return mp_obj_new_float(x);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(approx_newton_obj, 2, approx_newton);
+
+//| def trapz(y: ulab.array, x=None, dx=1.0) -> float:
+//|     """
+//|     :param 1D ulab.array y: the values of the dependent variable
+//|     :param 1D ulab.array x: optional, the coordinates of the independent variable. Defaults to uniformly spaced values.
+//|     :param float dx: the spacing between sample points, if x=None
+//|
+//|     Returns the integral of y(x) using the trapezoidal rule.
+//|     """
+//|     ...
+//|
+
 STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -425,10 +494,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_trapz_obj, 1, approx_trapz);
 STATIC const mp_rom_map_elem_t ulab_approx_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_approx) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&approx_bisect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&approx_newton_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&approx_fmin_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&approx_newton_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_trapz), (mp_obj_t)&approx_trapz_obj },
 };
 

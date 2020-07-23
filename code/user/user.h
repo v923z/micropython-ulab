@@ -9,16 +9,15 @@
  * Copyright (c) 2020 Zoltán Vörös
 */
 
-#ifndef _EXTRA_
-#define _EXTRA_
+#ifndef _USER_
+#define _USER_
 
-#include "ulab.h"
-#include "ndarray.h"
-#include "fft.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
-#if ULAB_EXTRAS_MODULE
+#if ULAB_USER_MODULE
 
-extern mp_obj_module_t ulab_extras_module;
+extern mp_obj_module_t ulab_user_module;
 
 #endif
 #endif

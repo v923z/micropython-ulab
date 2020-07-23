@@ -21,18 +21,18 @@
 #include "ulab.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
-#include "create.h"
-#include "linalg.h"
-#include "vectorise.h"
-#include "poly.h"
-#include "fft.h"
-#include "filter.h"
-#include "numerical.h"
-#include "compare.h"
-#include "approx.h"
-#include "extras.h"
+#include "ulab_create.h"
+#include "approx/approx.h"
+#include "compare/compare.h"
+#include "numerical/numerical.h"
+#include "fft/fft.h"
+#include "filter/filter.h"
+#include "linalg/linalg.h"
+#include "poly/poly.h"
+#include "user/user.h"
+#include "vector/vectorise.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.53.0");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.54.0");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
@@ -72,11 +72,11 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_printoptions), (mp_obj_t)&ndarray_set_printoptions_obj },
     { MP_ROM_QSTR(MP_QSTR_get_printoptions), (mp_obj_t)&ndarray_get_printoptions_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
-    { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },
-    { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&create_ones_obj },
+    { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
     { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
     { MP_ROM_QSTR(MP_QSTR_linspace), (mp_obj_t)&create_linspace_obj },
-    { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
+    { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&create_ones_obj },
+    { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },
     #if ULAB_LINALG_MODULE
     { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
     #endif
@@ -101,8 +101,8 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_APPROX_MODULE
     { MP_ROM_QSTR(MP_QSTR_approx), MP_ROM_PTR(&ulab_approx_module) },
     #endif
-    #if ULAB_EXTRAS_MODULE
-    { MP_ROM_QSTR(MP_QSTR_extras), MP_ROM_PTR(&ulab_extras_module) },
+    #if ULAB_USER_MODULE
+    { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
     #endif
     // class constants
     { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },

@@ -12,8 +12,8 @@
 #ifndef _LINALG_
 #define _LINALG_
 
-#include "ulab.h"
-#include "ndarray.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define epsilon        1.2e-7
