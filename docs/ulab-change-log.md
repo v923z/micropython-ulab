@@ -1,3 +1,9 @@
+Thu, 23 Jul 2020
+
+version 0.54.0
+
+    added norm to linalg
+    
 Wed, 22 Jul 2020
 
 version 0.53.2

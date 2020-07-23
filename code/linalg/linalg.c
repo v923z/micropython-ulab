@@ -238,7 +238,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
 //|    """
 //|    :param ~ulab.array x: a vector or matrix
 //|
-//|    Computes the norm of a vector or matrix."""
+//|    Computes the norm of a vector or matrix, defined by 'sqrt(sum(x**2))'."""
 //|    ...
 //|
 
