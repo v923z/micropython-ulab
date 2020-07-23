@@ -24,26 +24,14 @@ In addition to the `ndarray`'s operators and methods, seven modules define a gre
 take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules 
 can be excluded from the compiled firmware with a pre-processor switch. 
 
-### vector
+### approx
 
-The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) 
-of `micropython` for `ndarray`s and iterables. In addition, it also provided tools for vectorising generic, 
-user-defined `python` functions. 
+The `approx` sub-module contains the implementation of the `interp`, and `trapz` functions of `numpy`, and `newton`, `bisect`, 
+and `fmin` from `scipy`.
 
-### numerical
+### compare
 
-The `numerical` sub-module defines the `roll`, `flip`, `diff`, `sort` and `argsort` functions for `ndarray`s, and, 
-in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as 
-well as generic one-dimensional iterables.
-
-### linalg
-
-The `linalg` sub-module implements functions for matrix inversion, dot product, and the calculation of the 
-determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace. 
-
-### poly
-
-The `poly` sub-module defines the `polyval`, and `polyfit` functions from `numpy`.
+The `compare` sub-module contains the implementation of the `equal`, `not_equal`, `minimum`, `maximum`, and `clip` functions.
 
 ### fft
 
@@ -55,16 +43,28 @@ as well as the `spectrogram` function from `scipy`.
 The `filter` sub-module implements `convolve` for one-dimensional convolution,
 as well as the cascaded second-order sections filter, `sosfilt` from `scipy`.
 
-### compare
+### linalg
 
-The `compare` sub-module contains the implementation of the `equal`, `not_equal`, `minimum`, `maximum`, and `clip` functions.
+The `linalg` sub-module implements functions for matrix inversion, dot product, and the calculation of the 
+determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace. 
 
-### approx
+### numerical
 
-The `approx` sub-module contains the implementation of the `interp`, and `trapz` functions of `numpy`, and `newton`, `bisect`, 
-and `fmin` from `scipy`.
+The `numerical` sub-module defines the `roll`, `flip`, `diff`, `sort` and `argsort` functions for `ndarray`s, and, 
+in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as 
+well as generic one-dimensional iterables.
 
-### extras
+### poly
+
+The `poly` sub-module defines the `polyval`, and `polyfit` functions from `numpy`.
+
+### vector
+
+The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) 
+of `micropython` for `ndarray`s and iterables. In addition, it also provided tools for vectorising generic, 
+user-defined `python` functions. 
+
+### user
 
 The `user` sub-module is meant as a user-extendable module, and contains a dummy function only. 
 
