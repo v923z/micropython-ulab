@@ -291,11 +291,10 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     }
 
     ndarray_obj_t *ndarray;
-    mp_obj_t out;
     if(inplace == 1) {
         ndarray = MP_OBJ_TO_PTR(oin);
     } else {
-        out = ndarray_copy(oin);
+        mp_obj_t out = ndarray_copy(oin);
         ndarray = MP_OBJ_TO_PTR(out);
     }
     size_t increment, start_inc, end, N;
@@ -337,7 +336,7 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     if(inplace == 1) {
         return mp_const_none;
     } else {
-        return out;
+        return MP_OBJ_FROM_PTR(ndarray);
     }
 }
 
