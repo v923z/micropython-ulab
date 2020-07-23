@@ -279,6 +279,8 @@ Matrix methods
 Array initialisation functions
 ------------------------------
 
+`arange <#arange>`__
+
 `eye <#eye>`__
 
 `ones <#ones,-zeros>`__
@@ -316,6 +318,8 @@ Linear algebra functions
 `size <#size>`__
 
 `inv <#inv>`__
+
+`norm <#norm>`__
 
 `dot <#dot>`__
 
@@ -373,6 +377,8 @@ Interpolation, root finding, function minimasation
 `fmin <#fmin>`__
 
 `bisect <#bisect>`__
+
+`trapz <#trapz>`__
 
 ndarray, the basic container
 ============================
@@ -566,6 +572,37 @@ Array initialisation functions
 There are four functions that can be used for initialising an array.
 These are bound to ``ulab`` itself at the top level, i.e., no module has
 to be imported for the function invocations.
+
+arange
+~~~~~~
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.arange.html
+
+The function returns a one-dimensional array with evenly spaced values.
+Takes 3 positional arguments (two are optional), and the ``dtype``
+keyword argument.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    
+    print(ulab.arange(10))
+    print(ulab.arange(2, 10))
+    print(ulab.arange(2, 10, 3))
+    print(ulab.arange(2, 10, 3, dtype=ulab.float))
+
+.. parsed-literal::
+
+    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=int16)
+    array([2, 3, 4, 5, 6, 7, 8, 9], dtype=int16)
+    array([2, 5, 8], dtype=int16)
+    array([2.0, 5.0, 8.0], dtype=float)
+    
+    
+
 
 ones, zeros
 ~~~~~~~~~~~
@@ -3366,6 +3403,36 @@ or symmetry condition, a ``ValueError`` is raised.
     
 
 
+norm
+----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html
+
+The function takes a vector or matrix without options, and returns its
+2-norm, i.e., the square root of the sum of the square of the elements.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    from ulab import linalg
+    
+    a = ulab.array([1, 2, 3, 4, 5])
+    b = ulab.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    
+    print('norm of a:', linalg.norm(a))
+    print('norm of b:', linalg.norm(b))
+
+.. parsed-literal::
+
+    norm of a: 7.416198487095663
+    norm of b: 16.88194301613414
+    
+    
+
+
 trace
 -----
 
@@ -4228,6 +4295,44 @@ for stopping.
 
     0.9996093749999952
     1.199999999999996
+    
+    
+
+
+trapz
+-----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.trapz.html
+
+The function takes one or two one-dimensional ``ndarray``\ s, and
+integrates the dependent values (``y``) using the trapezoidal rule. If
+the independent variable (``x``) is given, that is taken as the sample
+points corresponding to ``y``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    from ulab import approx
+    
+    x = ulab.linspace(0, 9, num=10)
+    y = x*x
+    
+    print('x: ',  x)
+    print('y: ',  y)
+    print('============================')
+    print('integral of y: ', approx.trapz(y))
+    print('integral of y at x: ', approx.trapz(y, x=x))
+
+.. parsed-literal::
+
+    x:  array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0], dtype=float)
+    y:  array([0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0], dtype=float)
+    ============================
+    integral of y:  244.5
+    integral of y at x:  244.5
     
     
 
