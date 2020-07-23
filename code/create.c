@@ -103,7 +103,7 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 0, create_eye);
 
-ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t typecode) {
+STATIC ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t typecode) {
     mp_float_t value = start;
     
     ndarray_obj_t *ndarray = create_new_ndarray(1, len, typecode);
