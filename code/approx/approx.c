@@ -47,7 +47,7 @@ STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp
 //|     (``a``..``b``) using the bisection method.  The result is accurate to within
 //|     ``xtol`` unless more than ``maxiter`` steps are required."""
 //|     ...
-//| 
+//|
 
 STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	// Simple bisection routine
@@ -95,17 +95,17 @@ STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_bisect_obj, 3, approx_bisect);
 
 //| def fmin(fun, x0, *, xatol=2.4e-7, fatol=2.4e-7, maxiter=200) -> float:
-//|    """
-//|    :param callable f: The function to bisect
-//|    :param float x0: The initial x value
-//|    :param float xatol: The absolute tolerance value
-//|    :param float fatol: The relative tolerance value
+//|     """
+//|     :param callable f: The function to bisect
+//|     :param float x0: The initial x value
+//|     :param float xatol: The absolute tolerance value
+//|     :param float fatol: The relative tolerance value
 //|
-//|    Find a minimum of the function ``f(x)`` using the downhill simplex method.
-//|    The located ``x`` is within ``fxtol`` of the actual minimum, and ``f(x)``
-//|    is within ``fatol`` of the actual minimum unless more than ``maxiter``
-//|    steps are requried."""
-//|    ...
+//|     Find a minimum of the function ``f(x)`` using the downhill simplex method.
+//|     The located ``x`` is within ``fxtol`` of the actual minimum, and ``f(x)``
+//|     is within ``fatol`` of the actual minimum unless more than ``maxiter``
+//|     steps are requried."""
+//|     ...
 //|
     
 STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -307,7 +307,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_curve_fit_obj, 2, approx_curve_fit);
 #endif
 
 //| def interp(x: ulab.array, xp:ulab.array, fp:ulab.array, *, left=None, right=None) -> ulab.array:
-//|    """
+//|     """
 //|     :param ulab.array x: The x-coordinates at which to evaluate the interpolated values.
 //|     :param ulab.array xp: The x-coordinates of the data points, must be increasing
 //|     :param ulab.array fp: The y-coordinates of the data points, same length as xp

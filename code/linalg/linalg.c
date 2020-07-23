@@ -91,8 +91,8 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
 //|
 
 static mp_obj_t linalg_cholesky(mp_obj_t oin) {
-	ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
-	ndarray_obj_t *L = create_new_ndarray(in->n, in->n, NDARRAY_FLOAT);
+    ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
+    ndarray_obj_t *L = create_new_ndarray(in->n, in->n, NDARRAY_FLOAT);
     mp_float_t *array = (mp_float_t *)L->array->items;
 
 	size_t pos = 0;
@@ -244,7 +244,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
 //|
 
 static mp_obj_t linalg_eig(mp_obj_t oin) {
-	ndarray_obj_t *in = linalg_object_is_square(oin);
+    ndarray_obj_t *in = linalg_object_is_square(oin);
     mp_float_t *array = m_new(mp_float_t, in->array->len);
     for(size_t i=0; i < in->array->len; i++) {
         array[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
@@ -404,7 +404,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 //|    """
 //|    :param ~ulab.array x: a vector or a matrix
 //|
-//|    Computes the 2-norm of a vector or a matrix, i.e., sqrt(sum(x*x)), however, without the RAM overhead.."""
+//|    Computes the 2-norm of a vector or a matrix, i.e., ``sqrt(sum(x*x))``, however, without the RAM overhead."""
 //|    ...
 //|
 
