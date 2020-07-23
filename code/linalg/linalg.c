@@ -37,51 +37,6 @@ static ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
 	return ndarray;
 }
 
-//| def size(array):
-//|    """Return the total number of elements in the array, as an integer."""
-//|    ...
-//|
-
-static mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("size is defined for ndarrays only"));
-    } else {
-        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
-        if(args[1].u_obj == mp_const_none) {
-            return mp_obj_new_int(ndarray->array->len);
-        } else if(MP_OBJ_IS_INT(args[1].u_obj)) {
-            uint8_t ax = mp_obj_get_int(args[1].u_obj);
-            if(ax == 0) {
-                if(ndarray->m == 1) {
-                    return mp_obj_new_int(ndarray->n);
-                } else {
-                    return mp_obj_new_int(ndarray->m);                    
-                }
-            } else if(ax == 1) {
-                if(ndarray->m == 1) {
-                    mp_raise_ValueError(translate("tuple index out of range"));
-                } else {
-                    return mp_obj_new_int(ndarray->n);
-                }
-            } else {
-                    mp_raise_ValueError(translate("tuple index out of range"));
-            }
-        } else {
-            mp_raise_TypeError(translate("wrong argument type"));
-        }
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_KW(linalg_size_obj, 1, linalg_size);
-
 bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     // returns true, of the inversion was successful, 
     // false, if the matrix is singular
@@ -124,40 +79,106 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     return true;
 }
 
-//| def inv(m):
+//| def cholesky(A):
 //|    """
-//|    :param ~ulab.array m: a square matrix
-//|    :return: The inverse of the matrix, if it exists
-//|    :raises ValueError: if the matrix is not invertible
+//|    :param ~ulab.array A: a positive definite, symmetric square matrix
+//|    :return ~ulab.array L: a square root matrix in the lower triangular form
+//|    :raises ValueError: If the input does not fulfill the necessary conditions
 //|
-//|    Computes the inverse of a square matrix"""
+//|    The returned matrix satisfies the equation m=LL*"""
 //|    ...
 //|
 
-static mp_obj_t linalg_inv(mp_obj_t o_in) {
-	ndarray_obj_t *o = linalg_object_is_square(o_in);
-    ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
-    mp_float_t *data = (mp_float_t *)inverted->array->items;
-    mp_obj_t elem;
-    for(size_t m=0; m < o->m; m++) { // rows first
-        for(size_t n=0; n < o->n; n++) { // columns next
-            // this could, perhaps, be done in single line... 
-            // On the other hand, we probably spend little time here
-            elem = mp_binary_get_val_array(o->array->typecode, o->array->items, m*o->n+n);
-            data[m*o->n+n] = (mp_float_t)mp_obj_get_float(elem);
+static mp_obj_t linalg_cholesky(mp_obj_t oin) {
+	ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
+	ndarray_obj_t *L = create_new_ndarray(in->n, in->n, NDARRAY_FLOAT);
+    mp_float_t *array = (mp_float_t *)L->array->items;
+
+	size_t pos = 0;
+    for(size_t m=0; m < in->m; m++) { // rows
+		for(size_t n=0; n < in->n; n++) { // columns
+			array[m*in->m+n] = ndarray_get_float_value(in->array->items, in->array->typecode, pos++);
+		}
+	}
+
+	// make sure the matrix is symmetric
+    for(size_t m=0; m < in->m; m++) { // rows
+        for(size_t n=m+1; n < in->n; n++) { // columns
+            // compare entry (m, n) to (n, m)
+            if(epsilon < MICROPY_FLOAT_C_FUN(fabs)(array[m*in->n + n] - array[n*in->n + m])) {
+                mp_raise_ValueError(translate("input matrix is asymmetric"));
+            }
         }
     }
-    
-    if(!linalg_invert_matrix(data, o->m)) {
-        // TODO: I am not sure this is needed here. Otherwise, 
-        // how should we free up the unused RAM of inverted?
-        m_del(mp_float_t, inverted->array->items, o->n*o->n);
-        mp_raise_ValueError(translate("input matrix is singular"));
-    }
-    return MP_OBJ_FROM_PTR(inverted);
+	
+	// this is actually not needed, but Cholesky in numpy returns the lower triangular matrix
+	for(size_t i=0; i < in->m; i++) { // rows
+		for(size_t j=i+1; j < in->n; j++) { // columns
+			array[i*in->m + j] = 0.0;
+		}
+	}	
+	mp_float_t sum = 0.0;
+	for(size_t i=0; i < in->m; i++) { // rows
+		for(size_t j=0; j <= i; j++) { // columns
+			sum = array[i*in->m + j];
+			for(size_t k=0; k < j; k++) {
+				sum -= array[i*in->n + k] * array[j*in->n + k];
+			}
+			if(i == j) {
+				if(sum <= 0.0) {
+					mp_raise_ValueError(translate("matrix is not positive definite"));
+				} else {
+					array[i*in->m+i] = MICROPY_FLOAT_C_FUN(sqrt)(sum);
+				}
+			} else {
+				array[i*in->m + j] = sum / array[j*in->m+j];
+			}
+		}
+	}
+	return MP_OBJ_FROM_PTR(L);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
+MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
+
+//| def det():
+//|    """
+//|    :param: m, a square matrix
+//|    :return float: The determinant of the matrix"""
+//|
+//|    ...
+//|
+
+static mp_obj_t linalg_det(mp_obj_t oin) {
+    ndarray_obj_t *in = linalg_object_is_square(oin);  
+    mp_float_t *tmp = m_new(mp_float_t, in->n*in->n);
+    for(size_t i=0; i < in->array->len; i++){
+        tmp[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
+    }
+    mp_float_t c;
+    for(size_t m=0; m < in->m-1; m++){
+        if(MICROPY_FLOAT_C_FUN(fabs)(tmp[m*(in->n+1)]) < epsilon) {
+            m_del(mp_float_t, tmp, in->n*in->n);
+            return mp_obj_new_float(0.0);
+        }
+        for(size_t n=0; n < in->n; n++){
+            if(m != n) {
+                c = tmp[in->n*n+m] / tmp[m*(in->n+1)];
+                for(size_t k=0; k < in->n; k++){
+                    tmp[in->n*n+k] -= c * tmp[in->n*m+k];
+                }
+            }
+        }
+    }
+    mp_float_t det = 1.0;
+                            
+    for(size_t m=0; m < in->m; m++){ 
+        det *= tmp[m*(in->n+1)];
+    }
+    m_del(mp_float_t, tmp, in->n*in->n);
+    return mp_obj_new_float(det);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 
 //| def dot(m1, m2):
 //|    """
@@ -211,46 +232,6 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
-
-//| def det():
-//|    """
-//|    :param: m, a square matrix
-//|    :return float: The determinant of the matrix"""
-//|
-//|    ...
-//|
-
-static mp_obj_t linalg_det(mp_obj_t oin) {
-    ndarray_obj_t *in = linalg_object_is_square(oin);  
-    mp_float_t *tmp = m_new(mp_float_t, in->n*in->n);
-    for(size_t i=0; i < in->array->len; i++){
-        tmp[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
-    }
-    mp_float_t c;
-    for(size_t m=0; m < in->m-1; m++){
-        if(MICROPY_FLOAT_C_FUN(fabs)(tmp[m*(in->n+1)]) < epsilon) {
-            m_del(mp_float_t, tmp, in->n*in->n);
-            return mp_obj_new_float(0.0);
-        }
-        for(size_t n=0; n < in->n; n++){
-            if(m != n) {
-                c = tmp[in->n*n+m] / tmp[m*(in->n+1)];
-                for(size_t k=0; k < in->n; k++){
-                    tmp[in->n*n+k] -= c * tmp[in->n*m+k];
-                }
-            }
-        }
-    }
-    mp_float_t det = 1.0;
-                            
-    for(size_t m=0; m < in->m; m++){ 
-        det *= tmp[m*(in->n+1)];
-    }
-    m_del(mp_float_t, tmp, in->n*in->n);
-    return mp_obj_new_float(det);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 
 //| def eig(m):
 //|    """
@@ -383,66 +364,85 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 
-//| def cholesky(A):
+//| def inv(m):
 //|    """
-//|    :param ~ulab.array A: a positive definite, symmetric square matrix
-//|    :return ~ulab.array L: a square root matrix in the lower triangular form
-//|    :raises ValueError: If the input does not fulfill the necessary conditions
+//|    :param ~ulab.array m: a square matrix
+//|    :return: The inverse of the matrix, if it exists
+//|    :raises ValueError: if the matrix is not invertible
 //|
-//|    The returned matrix satisfies the equation m=LL*"""
+//|    Computes the inverse of a square matrix"""
 //|    ...
 //|
 
-static mp_obj_t linalg_cholesky(mp_obj_t oin) {
-	ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
-	ndarray_obj_t *L = create_new_ndarray(in->n, in->n, NDARRAY_FLOAT);
-    mp_float_t *array = (mp_float_t *)L->array->items;
-
-	size_t pos = 0;
-    for(size_t m=0; m < in->m; m++) { // rows
-		for(size_t n=0; n < in->n; n++) { // columns
-			array[m*in->m+n] = ndarray_get_float_value(in->array->items, in->array->typecode, pos++);
-		}
-	}
-
-	// make sure the matrix is symmetric
-    for(size_t m=0; m < in->m; m++) { // rows
-        for(size_t n=m+1; n < in->n; n++) { // columns
-            // compare entry (m, n) to (n, m)
-            if(epsilon < MICROPY_FLOAT_C_FUN(fabs)(array[m*in->n + n] - array[n*in->n + m])) {
-                mp_raise_ValueError(translate("input matrix is asymmetric"));
-            }
+static mp_obj_t linalg_inv(mp_obj_t o_in) {
+	ndarray_obj_t *o = linalg_object_is_square(o_in);
+    ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
+    mp_float_t *data = (mp_float_t *)inverted->array->items;
+    mp_obj_t elem;
+    for(size_t m=0; m < o->m; m++) { // rows first
+        for(size_t n=0; n < o->n; n++) { // columns next
+            // this could, perhaps, be done in single line... 
+            // On the other hand, we probably spend little time here
+            elem = mp_binary_get_val_array(o->array->typecode, o->array->items, m*o->n+n);
+            data[m*o->n+n] = (mp_float_t)mp_obj_get_float(elem);
         }
     }
-	
-	// this is actually not needed, but Cholesky in numpy returns the lower triangular matrix
-	for(size_t i=0; i < in->m; i++) { // rows
-		for(size_t j=i+1; j < in->n; j++) { // columns
-			array[i*in->m + j] = 0.0;
-		}
-	}	
-	mp_float_t sum = 0.0;
-	for(size_t i=0; i < in->m; i++) { // rows
-		for(size_t j=0; j <= i; j++) { // columns
-			sum = array[i*in->m + j];
-			for(size_t k=0; k < j; k++) {
-				sum -= array[i*in->n + k] * array[j*in->n + k];
-			}
-			if(i == j) {
-				if(sum <= 0.0) {
-					mp_raise_ValueError(translate("matrix is not positive definite"));
-				} else {
-					array[i*in->m+i] = MICROPY_FLOAT_C_FUN(sqrt)(sum);
-				}
-			} else {
-				array[i*in->m + j] = sum / array[j*in->m+j];
-			}
-		}
-	}
-	return MP_OBJ_FROM_PTR(L);
+    
+    if(!linalg_invert_matrix(data, o->m)) {
+        // TODO: I am not sure this is needed here. Otherwise, 
+        // how should we free up the unused RAM of inverted?
+        m_del(mp_float_t, inverted->array->items, o->n*o->n);
+        mp_raise_ValueError(translate("input matrix is singular"));
+    }
+    return MP_OBJ_FROM_PTR(inverted);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
+MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
+
+//| def size(array):
+//|    """Return the total number of elements in the array, as an integer."""
+//|    ...
+//|
+
+static mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("size is defined for ndarrays only"));
+    } else {
+        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+        if(args[1].u_obj == mp_const_none) {
+            return mp_obj_new_int(ndarray->array->len);
+        } else if(MP_OBJ_IS_INT(args[1].u_obj)) {
+            uint8_t ax = mp_obj_get_int(args[1].u_obj);
+            if(ax == 0) {
+                if(ndarray->m == 1) {
+                    return mp_obj_new_int(ndarray->n);
+                } else {
+                    return mp_obj_new_int(ndarray->m);                    
+                }
+            } else if(ax == 1) {
+                if(ndarray->m == 1) {
+                    mp_raise_ValueError(translate("tuple index out of range"));
+                } else {
+                    return mp_obj_new_int(ndarray->n);
+                }
+            } else {
+                    mp_raise_ValueError(translate("tuple index out of range"));
+            }
+        } else {
+            mp_raise_TypeError(translate("wrong argument type"));
+        }
+    }
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(linalg_size_obj, 1, linalg_size);
 
 //| def trace(m):
 //|    """
@@ -468,12 +468,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_trace_obj, linalg_trace);
 
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
 	{ MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
-	{ MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
-	{ MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
-	{ MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
+    { MP_ROM_QSTR(MP_QSTR_cholesky), (mp_obj_t)&linalg_cholesky_obj },
 	{ MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
+	{ MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
 	{ MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },
-	{ MP_ROM_QSTR(MP_QSTR_cholesky), (mp_obj_t)&linalg_cholesky_obj },
+    { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
+    { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
 	{ MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&linalg_trace_obj },	
 };
 
