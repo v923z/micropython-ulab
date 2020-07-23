@@ -21,7 +21,7 @@
 #include "ulab.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
-#include "create.h"
+#include "ulab_create.h"
 #include "approx/approx.h"
 #include "compare/compare.h"
 #include "numerical/numerical.h"
@@ -65,64 +65,6 @@ const mp_obj_type_t ulab_ndarray_type = {
     .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
-
-//| def arange(start, stop, step, dtype=float):
-//|    """
-//|    .. param: start
-//|      First value in the array, optional, defaults to 0
-//|    .. param: stop
-//|      Final value in the array
-//|    .. param: step
-//|      Difference between consecutive elements, optional, defaults to 1.0
-//|    .. param: dtype
-//|      Type of values in the array
-//|
-//|    Return a new 1-D array with elements ranging from ``start`` to ``stop``, with step size ``step``."""
-//|    ...
-//|
-//| def eye(size, *, dtype=float):
-//|    """Return a new square array of size, with the diagonal elements set to 1
-//|       and the other elements set to 0."""
-//|    ...
-//|
-//| def linspace(start, stop, *, dtype=float, num=50, endpoint=True):
-//|    """
-//|    .. param: start
-//|      First value in the array
-//|    .. param: stop
-//|      Final value in the array
-//|    .. param int: num
-//|      Count of values in the array
-//|    .. param: dtype
-//|      Type of values in the array
-//|    .. param bool: endpoint
-//|      Whether the ``stop`` value is included.  Note that even when
-//|      endpoint=True, the exact ``stop`` value may not be included due to the
-//|      inaccuracy of floating point arithmetic.
-//|
-//|    Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly."""
-//|    ...
-//|
-//| def ones(shape, *, dtype=float):
-//|    """
-//|    .. param: shape
-//|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
-//|    .. param: dtype
-//|       Type of values in the array
-//|
-//|    Return a new array of the given shape with all elements set to 1."""
-//|    ...
-//|    
-//| def zeros(shape, *, dtype):
-//|    """
-//|    .. param: shape
-//|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
-//|    .. param: dtype
-//|       Type of values in the array
-//|
-//|    Return a new array of the given shape with all elements set to 0."""
-//|    ...
-//|
 
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
