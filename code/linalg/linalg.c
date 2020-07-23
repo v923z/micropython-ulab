@@ -408,8 +408,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 //|    ...
 //|
 
-the 2-norm of a matrix or vector, i.e., sqrt(sum(x*x)), however, without the RAM overhead.
-
 static mp_obj_t linalg_norm(mp_obj_t _x) {
     if (!MP_OBJ_IS_TYPE(_x, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("argument must be ndarray"));
