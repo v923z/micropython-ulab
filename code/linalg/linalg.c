@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2019-2020 Zoltán Vörös 
  *               2020 Scott Shawcroft for Adafruit Industries
+ *               2020 Roberto Colistete Jr.
  * 
 */
 
@@ -399,6 +400,29 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 
+//| def norm(x: ulab.array) -> float:
+//|    """
+//|    :param ~ulab.array x: a vector or a matrix
+//|
+//|    Computes the 2-norm of a vector or a matrix, i.e., sqrt(sum(x*x)), however, without the RAM overhead.."""
+//|    ...
+//|
+
+static mp_obj_t linalg_norm(mp_obj_t _x) {
+    if (!MP_OBJ_IS_TYPE(_x, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("argument must be ndarray"));
+    }
+    ndarray_obj_t *x = MP_OBJ_TO_PTR(_x);
+    mp_float_t dot = 0.0, v;
+    for (size_t pos=0; pos < x->array->len; pos++) {
+        v = ndarray_get_float_value(x->array->items, x->array->typecode, pos);
+        dot += v*v;
+    }
+    return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
+
 //| def size(array):
 //|    """Return the total number of elements in the array, as an integer."""
 //|    ...
@@ -473,6 +497,7 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
 	{ MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },
     { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
+	{ MP_ROM_QSTR(MP_QSTR_norm), (mp_obj_t)&linalg_norm_obj },	
     { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
 	{ MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&linalg_trace_obj },	
 };
