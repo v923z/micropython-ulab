@@ -159,9 +159,6 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_APPROX_MODULE
     { MP_ROM_QSTR(MP_QSTR_approx), MP_ROM_PTR(&ulab_approx_module) },
     #endif
-    #if ULAB_EXTRAS_MODULE
-    { MP_ROM_QSTR(MP_QSTR_extras), MP_ROM_PTR(&ulab_extras_module) },
-    #endif
     #if ULAB_USER_MODULE
     { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
     #endif
