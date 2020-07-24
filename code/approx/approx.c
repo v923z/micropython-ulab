@@ -23,12 +23,12 @@
 //| """Numerical approximation methods"""
 //|
 
-const mp_obj_float_t xtolerance = {{&mp_type_float}, 2.4e-7};
-const mp_obj_float_t rtolerance = {{&mp_type_float}, 0.0};
-const mp_obj_float_t approx_trapz_dx = {{&mp_type_float}, 1.0};
+const mp_obj_float_t xtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(2.4e-7)};
+const mp_obj_float_t rtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(0.0)};
+const mp_obj_float_t approx_trapz_dx = {{&mp_type_float}, MICROPY_FLOAT_CONST(1.0)};
 
 STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
-	// Helper function for calculating the value of f(x, a, b, c, ...), 
+	// Helper function for calculating the value of f(x, a, b, c, ...),
 	// where f is defined in python. Takes a float, returns a float.
     // The array of mp_obj_t type must be supplied, as must the number of parameters (a, b, c...) in nparams
 	fargs[0] = mp_obj_new_float(x);
@@ -78,13 +78,13 @@ STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 	if(left * right > 0) {
 		mp_raise_ValueError(translate("function has the same sign at the ends of interval"));
 	}
-	mp_float_t rtb = left < 0.0 ? a : b;
-	mp_float_t dx = left < 0.0 ? b - a : a - b;
-	
+	mp_float_t rtb = left < MICROPY_FLOAT_CONST(0.0) ? a : b;
+	mp_float_t dx = left < MICROPY_FLOAT_CONST(0.0) ? b - a : a - b;
+
 	for(uint16_t i=0; i < args[4].u_int; i++) {
-		dx *= 0.5;
+		dx *= MICROPY_FLOAT_CONST(0.5);
 		x_mid = rtb + dx;
-		if(approx_python_call(type, fun, x_mid, fargs, 0) < 0.0) {
+		if(approx_python_call(type, fun, x_mid, fargs, 0) < MICROPY_FLOAT_CONST(0.0)) {
 			rtb = x_mid;
 		}
 		if(MICROPY_FLOAT_C_FUN(fabs)(dx) < xtol) break;
@@ -107,7 +107,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_bisect_obj, 3, approx_bisect);
 //|     steps are requried."""
 //|     ...
 //|
-    
+
 STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	// downhill simplex method in 1D
     static const mp_arg_t allowed_args[] = {
@@ -126,14 +126,14 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 	if(type->call == NULL) {
 		mp_raise_TypeError(translate("first argument must be a function"));
 	}
-	
+
 	// parameters controlling convergence conditions
 	mp_float_t xatol = mp_obj_get_float(args[2].u_obj);
-	mp_float_t fatol = mp_obj_get_float(args[3].u_obj);	
+	mp_float_t fatol = mp_obj_get_float(args[3].u_obj);
 	uint16_t maxiter = args[4].u_obj == mp_const_none ? 200 : mp_obj_get_int(args[4].u_obj);
-	
+
 	mp_float_t x0 = mp_obj_get_float(args[1].u_obj);
-	mp_float_t x1 = x0 != 0.0 ? (1.0 + APPROX_NONZDELTA) * x0 : APPROX_ZDELTA;
+	mp_float_t x1 = x0 != MICROPY_FLOAT_CONST(0.0) ? (MICROPY_FLOAT_CONST(1.0) + APPROX_NONZDELTA) * x0 : APPROX_ZDELTA;
 	mp_obj_t *fargs = m_new(mp_obj_t, 1);
 	mp_float_t f0 = approx_python_call(type, fun, x0, fargs, 0);
 	mp_float_t f1 = approx_python_call(type, fun, x1, fargs, 0);
@@ -145,9 +145,9 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 		uint8_t shrink = 0;
 		f0 = approx_python_call(type, fun, x0, fargs, 0);
 		f1 = approx_python_call(type, fun, x1, fargs, 0);
-		
+
 		// reflection
-		mp_float_t xr = (1.0 + APPROX_ALPHA) * x0 - APPROX_ALPHA * x1;
+		mp_float_t xr = (MICROPY_FLOAT_CONST(1.0) + APPROX_ALPHA) * x0 - APPROX_ALPHA * x1;
 		mp_float_t fr = approx_python_call(type, fun, xr, fargs, 0);
 		if(fr < f0) { // expansion
 			mp_float_t xe = (1 + APPROX_ALPHA * APPROX_BETA) * x0 - APPROX_ALPHA * APPROX_BETA * x1;
@@ -170,7 +170,7 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 					shrink = 1;
 				}
 			} else { // inside contraction
-				mp_float_t xc = (1.0 - APPROX_GAMMA) * x0 + APPROX_GAMMA * x1;
+				mp_float_t xc = (MICROPY_FLOAT_CONST(1.0) - APPROX_GAMMA) * x0 + APPROX_GAMMA * x1;
 				mp_float_t fc = approx_python_call(type, fun, xc, fargs, 0);
 				if(fc < f1) {
 					x1 = xc;
@@ -183,7 +183,7 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 				x1 = x0 + APPROX_DELTA * (x1 - x0);
 				f1 = approx_python_call(type, fun, x1, fargs, 0);
 			}
-			if((MICROPY_FLOAT_C_FUN(fabs)(f1 - f0) < fatol) || 
+			if((MICROPY_FLOAT_C_FUN(fabs)(f1 - f0) < fatol) ||
 				(MICROPY_FLOAT_C_FUN(fabs)(x1 - x0) < xatol)) {
 				break;
 			}
@@ -201,28 +201,28 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_fmin_obj, 2, approx_fmin);
 #if 0
 static void approx_jacobi(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t *x, mp_float_t *y, uint16_t len, mp_float_t *params, uint8_t nparams, mp_float_t *jacobi, mp_float_t *grad) {
     /* Calculates the Jacobian and the gradient of the cost function
-     * 
-     * The entries in the Jacobian are 
-     * J(m, n) = de_m/da_n, 
-     * 
-     * where 
-     * 
-     * e_m = (f(x_m, a1, a2, ...) - y_m)/sigma_m is the error at x_m, 
-     * 
+     *
+     * The entries in the Jacobian are
+     * J(m, n) = de_m/da_n,
+     *
+     * where
+     *
+     * e_m = (f(x_m, a1, a2, ...) - y_m)/sigma_m is the error at x_m,
+     *
      * and
-     * 
+     *
      * a1, a2, ..., a_n are the free parameters
      */
-    mp_obj_t *fargs0 = m_new(mp_obj_t, lenp+1); 
+    mp_obj_t *fargs0 = m_new(mp_obj_t, lenp+1);
     mp_obj_t *fargs1 = m_new(mp_obj_t, lenp+1);
     for(uint8_t p=0; p < nparams; p++) {
         fargs0[p+1] = mp_obj_new_float(params[p]);
         fargs1[p+1] = mp_obj_new_float(params[p]);
     }
     for(uint8_t p=0; p < nparams; p++) {
-        mp_float_t da = params[p] != 0.0 ? (1.0 + APPROX_NONZDELTA) * params[p] : APPROX_ZDELTA;
+        mp_float_t da = params[p] != MICROPY_FLOAT_CONST(0.0) ? (MICROPY_FLOAT_CONST(1.0) + APPROX_NONZDELTA) * params[p] : APPROX_ZDELTA;
         fargs1[p+1] = mp_obj_new_float(params[p] + da);
-        grad[p] = 0.0;
+        grad[p] = MICROPY_FLOAT_CONST(0.0);
         for(uint16_t i=0; i < len; i++) {
             mp_float_t f0 = approx_python_call(type, fun, x[i], fargs0, nparams);
             mp_float_t f1 = approx_python_call(type, fun, x[i], fargs1, nparams);
@@ -234,7 +234,7 @@ static void approx_jacobi(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t *x
 }
 
 static void approx_delta(mp_float_t *jacobi, mp_float_t *grad, uint16_t len, uint8_t nparams, mp_float_t lambda) {
-    // 
+    //
 }
 
 mp_obj_t approx_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -258,7 +258,7 @@ mp_obj_t approx_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 	if(type->call == NULL) {
 		mp_raise_TypeError(translate("first argument must be a function"));
 	}
-    
+
 	mp_obj_t x_obj = args[1].u_obj;
 	mp_obj_t y_obj = args[2].u_obj;
     mp_obj_t p0_obj = args[3].u_obj;
@@ -287,13 +287,13 @@ mp_obj_t approx_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     m_del(mp_float_t, p0, lenp);
 	// parameters controlling convergence conditions
 	//mp_float_t xatol = mp_obj_get_float(args[2].u_obj);
-	//mp_float_t fatol = mp_obj_get_float(args[3].u_obj);	
-    
+	//mp_float_t fatol = mp_obj_get_float(args[3].u_obj);
+
     // this has finite binary representation; we will multiply/divide by 4
-    //mp_float_t lambda = 0.0078125; 
-    
+    //mp_float_t lambda = 0.0078125;
+
     //linalg_invert_matrix(mp_float_t *data, size_t N)
-    
+
     m_del(mp_float_t, x, len);
     m_del(mp_float_t, y, len);
     m_del(mp_float_t, grad, len);
@@ -328,11 +328,11 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     };
 	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-	
+
 	ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj);
 	ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj); // xp must hold an increasing sequence of independent values
 	ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj);
-	if(((xp->m != 1) && (xp->n != 1)) || ((fp->m != 1) && (fp->n != 1)) || 
+	if(((xp->m != 1) && (xp->n != 1)) || ((fp->m != 1) && (fp->n != 1)) ||
 		(xp->array->len < 2) || (fp->array->len < 2) || (xp->array->len != fp->array->len)) {
 		mp_raise_ValueError(translate("interp is defined for 1D arrays of equal length"));
 	}
@@ -397,8 +397,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
 //|
 
 STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-	// this is actually the secant method, as the first derivative of the function 
-	// is not accepted as an argument. The function whose root we want to solve for 
+	// this is actually the secant method, as the first derivative of the function
+	// is not accepted as an argument. The function whose root we want to solve for
 	// must depend on a single variable without parameters, i.e., f(x)
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -420,7 +420,7 @@ STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 	mp_float_t tol = mp_obj_get_float(args[2].u_obj);
 	mp_float_t rtol = mp_obj_get_float(args[3].u_obj);
 	mp_float_t dx, df, fx;
-	dx = x > 0.0 ? APPROX_EPS * x : -APPROX_EPS * x;
+	dx = x > MICROPY_FLOAT_CONST(0.0) ? APPROX_EPS * x : -APPROX_EPS * x;
 	mp_obj_t *fargs = m_new(mp_obj_t, 1);
 	for(uint16_t i=0; i < args[4].u_int; i++) {
 		fx = approx_python_call(type, fun, x, fargs, 0);
@@ -453,12 +453,12 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-	
+
     ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj);
     ndarray_obj_t *x;
-    mp_float_t sum = 0.0;
+    mp_float_t sum = MICROPY_FLOAT_CONST(0.0);
     if(y->array->len < 2) {
-        return mp_obj_new_float(sum);        
+        return mp_obj_new_float(sum);
     }
     if(args[1].u_obj != mp_const_none) {
         x = ndarray_from_mp_obj(args[1].u_obj); // x must hold an increasing sequence of independent values
@@ -486,7 +486,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
         sum *= dx;
 	}
-	return mp_obj_new_float(0.5*sum);
+	return mp_obj_new_float(MICROPY_FLOAT_CONST(0.5)*sum);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_trapz_obj, 1, approx_trapz);
@@ -509,4 +509,3 @@ mp_obj_module_t ulab_approx_module = {
 };
 
 #endif
-

@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -35,7 +35,7 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //| `ulab` is modeled after numpy, and aims to be a compatible subset where
 //| possible.  Numpy's documentation can be found at
 //| https://docs.scipy.org/doc/numpy/index.html"""
-//| 
+//|
 //| class array:
 //|     """1- and 2- dimensional array"""
 //|     def __init__(self, values, *, dtype=float):
@@ -53,16 +53,16 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|           `ulab.array` implements the buffer protocol, so it can be used in many
 //|           places an `array.array` can be used."""
 //|         ...
-//| 
+//|
 //|     shape: tuple = ...
 //|     """The size of the array, a tuple of length 1 or 2"""
-//| 
+//|
 //|     size: int = ...
 //|     """The number of elements in the array"""
-//| 
+//|
 //|     itemsize: int = ...
 //|     """The number of elements in the array"""
-//| 
+//|
 //|     def flatten(self, *, order='C'):
 //|         """:param order: Whether to flatten by rows ('C') or columns ('F')
 //|
@@ -71,66 +71,66 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|            If it is 'F', then the data is ordered in columns.  "C" and "F" refer
 //|            to the typical storage organization of the C and Fortran languages."""
 //|         ...
-//| 
+//|
 //|     def sort(self, *, axis=1):
 //|         """:param axis: Whether to sort elements within rows (0), columns (1), or elements (None)"""
 //|         ...
-//| 
+//|
 //|     def transpose(self):
 //|         """Swap the rows and columns of a 2-dimensional array"""
 //|         ...
-//| 
+//|
 //|     def  __add__(self):
 //|         """Adds corresponding elements of the two arrays, or adds a number to all
 //|            elements of the array.  If both arguments are arrays, their sizes must match."""
 //|         ...
-//| 
+//|
 //|     def  __sub__(self):
 //|         """Subtracts corresponding elements of the two arrays, or adds a number to all
 //|            elements of the array.  If both arguments are arrays, their sizes must match."""
 //|         ...
-//| 
+//|
 //|     def  __mul__(self):
 //|         """Multiplies corresponding elements of the two arrays, or multiplies
 //|            all elements of the array by a number.  If both arguments are arrays,
 //|            their sizes must match."""
 //|         ...
-//| 
+//|
 //|     def __div__(self):
 //|         """Multiplies corresponding elements of the two arrays, or divides
 //|            all elements of the array by a number.  If both arguments are arrays,
 //|            their sizes must match."""
 //|         ...
-//| 
+//|
 //|     def __pow__():
 //|         """Computes the power (x**y) of corresponding elements of the the two arrays,
 //|            or one number and one array.  If both arguments are arrays, their sizes
 //|            must match."""
 //|         ...
-//| 
+//|
 //|     def __getitem__():
 //|         """Retrieve an element of the array."""
 //|         ...
-//| 
+//|
 //|     def __setitem__():
 //|         """Set an element of the array."""
 //|         ...
-//| 
+//|
 //| int8 = ...
 //| """Type code for signed integers in the range -128 .. 127 inclusive, like the 'b' typecode of `array.array`"""
-//| 
+//|
 //| int16 = ...
 //| """Type code for signed integers in the range -32768 .. 32767 inclusive, like the 'h' typecode of `array.array`"""
-//| 
+//|
 //| float = ...
 //| """Type code for floating point values, like the 'f' typecode of `array.array`"""
-//| 
+//|
 //| uint8 = ...
 //| """Type code for unsigned integers in the range 0 .. 255 inclusive, like the 'H' typecode of `array.array`"""
-//| 
+//|
 //| uint16 = ...
 //| """Type code for unsigned integers in the range 0 .. 65535 inclusive, like the 'h' typecode of `array.array`"""
-//| 
+//|
 
 // This function is copied verbatim from objarray.c
 STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
@@ -230,9 +230,9 @@ mp_float_t ndarray_get_float_value(void *data, uint8_t typecode, size_t index) {
 }
 
 bool ndarray_object_is_nditerable(mp_obj_t o_in) {
-    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) || 
-      MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || 
-      MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
+    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) ||
+      MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) ||
+      MP_OBJ_IS_TYPE(o_in, &mp_type_list) ||
       MP_OBJ_IS_TYPE(o_in, &mp_type_range)) {
         return true;
     }
@@ -305,7 +305,7 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     (void)kind;
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_print_str(print, "array(");
-    
+
     if(self->array->len == 0) {
         mp_print_str(print, "[]");
     } else {
@@ -353,7 +353,7 @@ ndarray_obj_t *create_new_ndarray(size_t m, size_t n, uint8_t typecode) {
     ndarray->bytes = m * n * mp_binary_get_size('@', typecode, NULL);
     // this should set all elements to 0, irrespective of the of the typecode (all bits are zero)
     // we could, perhaps, leave this step out, and initialise the array only, when needed
-    memset(array->items, 0, ndarray->bytes); 
+    memset(array->items, 0, ndarray->bytes);
     ndarray->array = array;
     return ndarray;
 }
@@ -371,17 +371,17 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT } },
     };
-    
+
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
+
     uint8_t dtype = args[1].u_int;
     return dtype;
 }
 
 STATIC mp_obj_t ndarray_make_new_core(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
-    
+
 	if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
 		ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0]);
 		if(dtype == ndarray->array->typecode) {
@@ -438,7 +438,7 @@ STATIC mp_obj_t ndarray_make_new_core(size_t n_args, const mp_obj_t *args, mp_ma
         ndarray_assign_elements(self->array, iterable1, dtype, &i);
     } else {
         mp_obj_iter_buf_t iter_buf2;
-        mp_obj_t iterable2; 
+        mp_obj_t iterable2;
 
         while ((item1 = mp_iternext(iterable1)) != MP_OBJ_STOP_ITERATION) {
             iterable2 = mp_getiter(item1, &iter_buf2);
@@ -505,7 +505,7 @@ static mp_bound_slice_t generate_slice(mp_int_t n, mp_obj_t index) {
         mp_int_t _index = mp_obj_get_int(index);
         if(_index < 0) {
             _index += n;
-        } 
+        }
         if((_index >= n) || (_index < 0)) {
             mp_raise_msg(&mp_type_IndexError, translate("index is out of bounds"));
         }
@@ -531,15 +531,15 @@ static void insert_binary_value(ndarray_obj_t *ndarray, size_t nd_index, ndarray
     mp_obj_t tmp = mp_binary_get_val_array(values->array->typecode, values->array->items, value_index);
     if((values->array->typecode == NDARRAY_FLOAT) && (ndarray->array->typecode != NDARRAY_FLOAT)) {
         // workaround: rounding seems not to work in the arm compiler
-        int32_t x = (int32_t)MICROPY_FLOAT_C_FUN(floor)(mp_obj_get_float(tmp)+0.5);
+        int32_t x = (int32_t)MICROPY_FLOAT_C_FUN(floor)(mp_obj_get_float(tmp)+MICROPY_FLOAT_CONST(0.5));
         tmp = mp_obj_new_int(x);
     }
-    mp_binary_set_val_array(ndarray->array->typecode, ndarray->array->items, nd_index, tmp); 
+    mp_binary_set_val_array(ndarray->array->typecode, ndarray->array->items, nd_index, tmp);
 }
 
-static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
-                            mp_bound_slice_t row, mp_bound_slice_t column, 
-                            mp_obj_t row_list, mp_obj_t column_list, 
+static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
+                            mp_bound_slice_t row, mp_bound_slice_t column,
+                            mp_obj_t row_list, mp_obj_t column_list,
                             ndarray_obj_t *values) {
     if((m != values->m) && (n != values->n)) {
         if(values->array->len != 1) { // not a single item
@@ -555,7 +555,7 @@ static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
     if(values->n == 1) {
         N = 0;
     }
-    
+
     if(row_list == mp_const_none) { // rows are indexed by a slice
         rindex = row.start;
         if(column_list == mp_const_none) { // columns are indexed by a slice
@@ -601,7 +601,7 @@ static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
                     i++;
                 }
                 rindex++;
-            } 
+            }
         } else { // columns are indexed by a list
             mp_obj_iter_buf_t column_iter_buf;
             mp_obj_t column_item, column_iterable;
@@ -609,7 +609,7 @@ static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
             cindex = 0;
             while((row_item = mp_iternext(row_iterable)) != MP_OBJ_STOP_ITERATION) {
                 if(mp_obj_is_true(row_item)) {
-                    column_iterable = mp_getiter(column_list, &column_iter_buf);                   
+                    column_iterable = mp_getiter(column_list, &column_iter_buf);
                     while((column_item = mp_iternext(column_iterable)) != MP_OBJ_STOP_ITERATION) {
                         if(mp_obj_is_true(column_item)) {
                             insert_binary_value(ndarray, rindex*ndarray->n+cindex, values, i*M*n+j*N);
@@ -626,9 +626,9 @@ static mp_obj_t insert_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
     return mp_const_none;
 }
 
-static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n, 
-                            mp_bound_slice_t row, mp_bound_slice_t column, 
-                            mp_obj_t row_list, mp_obj_t column_list, 
+static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
+                            mp_bound_slice_t row, mp_bound_slice_t column,
+                            mp_obj_t row_list, mp_obj_t column_list,
                             ndarray_obj_t *values) {
     if(values != NULL) {
         return insert_slice_list(ndarray, m, n, row, column, row_list, column_list, values);
@@ -637,7 +637,7 @@ static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
     ndarray_obj_t *out = create_new_ndarray(m, n, ndarray->array->typecode);
     uint8_t *target = (uint8_t *)out->array->items;
     uint8_t *source = (uint8_t *)ndarray->array->items;
-    size_t cindex, rindex;    
+    size_t cindex, rindex;
     if(row_list == mp_const_none) { // rows are indexed by a slice
         rindex = row.start;
         if(column_list == mp_const_none) { // columns are indexed by a slice
@@ -684,7 +684,7 @@ static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
                     i++;
                 }
                 rindex++;
-            } 
+            }
         } else { // columns are indexed by a list
             mp_obj_iter_buf_t column_iter_buf;
             mp_obj_t column_item, column_iterable;
@@ -692,7 +692,7 @@ static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
             cindex = 0;
             while((row_item = mp_iternext(row_iterable)) != MP_OBJ_STOP_ITERATION) {
                 if(mp_obj_is_true(row_item)) {
-                    column_iterable = mp_getiter(column_list, &column_iter_buf);                   
+                    column_iterable = mp_getiter(column_list, &column_iter_buf);
                     while((column_item = mp_iternext(column_iterable)) != MP_OBJ_STOP_ITERATION) {
                         if(mp_obj_is_true(column_item)) {
                             memcpy(target+(i*n+j)*_sizeof, source+(rindex*ndarray->n+cindex)*_sizeof, _sizeof);
@@ -713,7 +713,7 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
     mp_bound_slice_t row_slice = simple_slice(0, 0, 1), column_slice = simple_slice(0, 0, 1);
 
     size_t m = 0, n = 0;
-    if(MP_OBJ_IS_INT(index) && (ndarray->m == 1) && (values == NULL)) { 
+    if(MP_OBJ_IS_INT(index) && (ndarray->m == 1) && (values == NULL)) {
         // we have a row vector, and don't want to assign
         column_slice = generate_slice(ndarray->n, index);
         if(slice_length(column_slice) == 1) { // we were asked for a single item
@@ -721,7 +721,7 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
             return mp_binary_get_val_array(ndarray->array->typecode, ndarray->array->items, column_slice.start);
         }
     }
-    
+
     if(MP_OBJ_IS_INT(index) || MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
         if(ndarray->m == 1) { // we have a row vector
             column_slice = generate_slice(ndarray->n, index);
@@ -748,11 +748,11 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
         if(tuple->len != 2) {
             mp_raise_msg(&mp_type_IndexError, translate("too many indices"));
         }
-        if(!(MP_OBJ_IS_TYPE(tuple->items[0], &mp_type_list) || 
-            MP_OBJ_IS_TYPE(tuple->items[0], &mp_type_slice) || 
-            MP_OBJ_IS_INT(tuple->items[0])) || 
-           !(MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_list) || 
-            MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_slice) || 
+        if(!(MP_OBJ_IS_TYPE(tuple->items[0], &mp_type_list) ||
+            MP_OBJ_IS_TYPE(tuple->items[0], &mp_type_slice) ||
+            MP_OBJ_IS_INT(tuple->items[0])) ||
+           !(MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_list) ||
+            MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_slice) ||
             MP_OBJ_IS_INT(tuple->items[1]))) {
                 mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
         }
@@ -760,28 +760,28 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
             m = true_length(tuple->items[0]);
             if(MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_list)) {
                 n = true_length(tuple->items[1]);
-                return iterate_slice_list(ndarray, m, n, row_slice, column_slice, 
+                return iterate_slice_list(ndarray, m, n, row_slice, column_slice,
                                           tuple->items[0], tuple->items[1], values);
             } else { // the column is indexed by an integer, or a slice
                 column_slice = generate_slice(ndarray->n, tuple->items[1]);
                 n = slice_length(column_slice);
-                return iterate_slice_list(ndarray, m, n, row_slice, column_slice, 
+                return iterate_slice_list(ndarray, m, n, row_slice, column_slice,
                                           tuple->items[0], mp_const_none, values);
             }
-            
+
         } else { // rows are indexed by a slice, or an integer
             row_slice = generate_slice(ndarray->m, tuple->items[0]);
             m = slice_length(row_slice);
             if(MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_list)) { // columns are indexed by a Boolean list
                 n = true_length(tuple->items[1]);
-                return iterate_slice_list(ndarray, m, n, row_slice, column_slice, 
+                return iterate_slice_list(ndarray, m, n, row_slice, column_slice,
                                          mp_const_none, tuple->items[1], values);
             } else { // columns are indexed by an integer, or a slice
                 column_slice = generate_slice(ndarray->n, tuple->items[1]);
                 n = slice_length(column_slice);
-                return iterate_slice_list(ndarray, m, n, row_slice, column_slice, 
-                                          mp_const_none, mp_const_none, values);             
-                
+                return iterate_slice_list(ndarray, m, n, row_slice, column_slice,
+                                          mp_const_none, mp_const_none, values);
+
             }
         }
     }
@@ -789,18 +789,18 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
 
 mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    
+
     if (value == MP_OBJ_SENTINEL) { // return value(s)
-        return ndarray_get_slice(self, index, NULL);    
+        return ndarray_get_slice(self, index, NULL);
     } else { // assignment to slices; the value must be an ndarray, or a scalar
-        if(!MP_OBJ_IS_TYPE(value, &ulab_ndarray_type) && 
+        if(!MP_OBJ_IS_TYPE(value, &ulab_ndarray_type) &&
           !MP_OBJ_IS_INT(value) && !mp_obj_is_float(value)) {
             mp_raise_ValueError(translate("right hand side must be an ndarray, or a scalar"));
         } else {
             ndarray_obj_t *values = NULL;
             if(MP_OBJ_IS_INT(value)) {
                 values = create_new_ndarray(1, 1, self->array->typecode);
-                mp_binary_set_val_array(values->array->typecode, values->array->items, 0, value);   
+                mp_binary_set_val_array(values->array->typecode, values->array->items, 0, value);
             } else if(mp_obj_is_float(value)) {
                 values = create_new_ndarray(1, 1, NDARRAY_FLOAT);
                 mp_binary_set_val_array(NDARRAY_FLOAT, values->array->items, 0, value);
@@ -809,7 +809,7 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
             return ndarray_get_slice(self, index, values);
         }
-    }      
+    }
     return mp_const_none;
 }
 
@@ -829,7 +829,7 @@ typedef struct _mp_obj_ndarray_it_t {
 static mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     mp_obj_ndarray_it_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
-    // TODO: in numpy, ndarrays are iterated with respect to the first axis. 
+    // TODO: in numpy, ndarrays are iterated with respect to the first axis.
     size_t iter_end = 0;
     if(ndarray->m == 1) {
         iter_end = ndarray->array->len;
@@ -895,8 +895,8 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     mp_obj_t self_copy = ndarray_copy(pos_args[0]);
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self_copy);
-    
-    GET_STR_DATA_LEN(args[0].u_obj, order, len);    
+
+    GET_STR_DATA_LEN(args[0].u_obj, order, len);
     if((len != 1) || ((memcmp(order, "C", 1) != 0) && (memcmp(order, "F", 1) != 0))) {
         mp_raise_ValueError(translate("flattening order must be either 'C', or 'F'"));
     }
@@ -914,7 +914,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
                 memcpy(array+_sizeof*i, self_array+_sizeof*(m*self->n + n), _sizeof);
                 i++;
             }
-        }        
+        }
     }
     ndarray->n = ndarray->array->len;
     ndarray->m = 1;
@@ -954,11 +954,11 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 	// if the ndarray stands on the right hand side of the expression, simply swap the operands
 	ndarray_obj_t *ol, *or;
 	mp_binary_op_t op = _op;
-	if((op == MP_BINARY_OP_REVERSE_ADD) || (op == MP_BINARY_OP_REVERSE_MULTIPLY) || 
-		(op == MP_BINARY_OP_REVERSE_POWER) || (op == MP_BINARY_OP_REVERSE_SUBTRACT) || 
+	if((op == MP_BINARY_OP_REVERSE_ADD) || (op == MP_BINARY_OP_REVERSE_MULTIPLY) ||
+		(op == MP_BINARY_OP_REVERSE_POWER) || (op == MP_BINARY_OP_REVERSE_SUBTRACT) ||
 		(op == MP_BINARY_OP_REVERSE_TRUE_DIVIDE)) {
 		ol = ndarray_from_mp_obj(rhs);
-		or = ndarray_from_mp_obj(lhs);		
+		or = ndarray_from_mp_obj(lhs);
 	} else {
 		ol = ndarray_from_mp_obj(lhs);
 		or = ndarray_from_mp_obj(rhs);
@@ -977,7 +977,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
     // One of the operands is a scalar
     // TODO: conform to numpy with the upcasting
     // TODO: implement in-place operators
-	// these are partial broadcasting rules: either the two arrays 
+	// these are partial broadcasting rules: either the two arrays
 	// are of the same shape, or one of them is of length 1
 	if(((ol->m != or->m) || (ol->n != or->n))) {
 		if((ol->array->len != 1) && (or->array->len != 1)) {
@@ -1009,7 +1009,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 		case MP_BINARY_OP_SUBTRACT:
 		case MP_BINARY_OP_TRUE_DIVIDE:
 		case MP_BINARY_OP_MULTIPLY:
-		case MP_BINARY_OP_POWER:       
+		case MP_BINARY_OP_POWER:
 			// TODO: I believe, this part can be made significantly smaller (compiled size)
 			// by doing only the typecasting in the large ifs, and moving the loops outside
 			// These are the upcasting rules
@@ -1021,7 +1021,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 			// int8 + int16 => int16
 			// int8 + uint16 => uint16
 			// uint16 + int16 => float
-			// The parameters of RUN_BINARY_LOOP are 
+			// The parameters of RUN_BINARY_LOOP are
 			// typecode of result, type_out, type_left, type_right, lhs operand, rhs operand, operator
 			if(ol->array->typecode == NDARRAY_UINT8) {
 				if(or->array->typecode == NDARRAY_UINT8) {
@@ -1046,7 +1046,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lhs, mp_obj_t rhs) {
 					RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, ol, or, op, m, n, len, linc, rinc);
 				} else if(or->array->typecode == NDARRAY_FLOAT) {
 					RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, int8_t, mp_float_t, ol, or, op, m, n, len, linc, rinc);
-				}                
+				}
 			} else if(ol->array->typecode == NDARRAY_UINT16) {
 				if(or->array->typecode == NDARRAY_UINT8) {
 					RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint8_t, ol, or, op, m, n, len, linc, rinc);
@@ -1098,19 +1098,19 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *ndarray = NULL;
     switch (op) {
-        case MP_UNARY_OP_LEN: 
+        case MP_UNARY_OP_LEN:
             if(self->m > 1) {
                 return mp_obj_new_int(self->m);
             } else {
                 return mp_obj_new_int(self->n);
             }
             break;
-        
+
         case MP_UNARY_OP_INVERT:
             if(self->array->typecode == NDARRAY_FLOAT) {
                 mp_raise_ValueError(translate("operation is not supported for given type"));
             }
-            // we can invert the content byte by byte, there is no need to distinguish 
+            // we can invert the content byte by byte, there is no need to distinguish
             // between different typecodes
             ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
             {
@@ -1119,7 +1119,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 return MP_OBJ_FROM_PTR(ndarray);
             }
             break;
-        
+
         case MP_UNARY_OP_NEGATIVE:
             ndarray = MP_OBJ_TO_PTR(ndarray_copy(self_in));
             if(self->array->typecode == NDARRAY_UINT8) {
@@ -1128,7 +1128,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             } else if(self->array->typecode == NDARRAY_INT8) {
                 int8_t *array = (int8_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
-            } else if(self->array->typecode == NDARRAY_UINT16) {                
+            } else if(self->array->typecode == NDARRAY_UINT16) {
                 uint16_t *array = (uint16_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) array[i] = -array[i];
             } else if(self->array->typecode == NDARRAY_INT16) {
@@ -1163,7 +1163,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 mp_float_t *array = (mp_float_t *)ndarray->array->items;
                 for(size_t i=0; i < self->array->len; i++) {
                     if(array[i] < 0) array[i] = -array[i];
-                }                
+                }
             }
             return MP_OBJ_FROM_PTR(ndarray);
             break;
@@ -1173,9 +1173,9 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 mp_obj_t ndarray_transpose(mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    
+
     //  In the old matrix, the coordinate (m, n) is m*self->n + n
-    //  We have to assign this to the coordinate (n, m) in the new 
+    //  We have to assign this to the coordinate (n, m) in the new
     //  matrix, i.e., to n*self->m + m (since the new matrix has self->m columns)
 
 	ndarray_obj_t *ndarray = create_new_ndarray(self->n,  self->m, self->array->typecode);
@@ -1193,7 +1193,7 @@ mp_obj_t ndarray_transpose(mp_obj_t self_in) {
                 sarray += itemsize;
             }
         }
-    } 
+    }
     return MP_OBJ_FROM_PTR(ndarray);
 }
 
