@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -28,8 +28,8 @@
 
 static void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     // This is basically a modification of four1 from Numerical Recipes
-    // The main difference is that this function takes two arrays, one 
-    // for the real, and one for the imaginary parts. 
+    // The main difference is that this function takes two arrays, one
+    // for the real, and one for the imaginary parts.
     int j, m, mmax, istep;
     mp_float_t tempr, tempi;
     mp_float_t wtemp, wr, wpr, wpi, wi, theta;
@@ -51,12 +51,12 @@ static void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
     mmax = 1;
     while (n > mmax) {
         istep = mmax << 1;
-        theta = -2.0*isign*MP_PI/istep;
-        wtemp = MICROPY_FLOAT_C_FUN(sin)(0.5 * theta);
-        wpr = -2.0 * wtemp * wtemp;
+        theta = MICROPY_FLOAT_CONST(-2.0)*isign*MP_PI/istep;
+        wtemp = MICROPY_FLOAT_C_FUN(sin)(MICROPY_FLOAT_CONST(0.5) * theta);
+        wpr = MICROPY_FLOAT_CONST(-2.0) * wtemp * wtemp;
         wpi = MICROPY_FLOAT_C_FUN(sin)(theta);
-        wr = 1.0;
-        wi = 0.0;
+        wr = MICROPY_FLOAT_CONST(1.0);
+        wi = MICROPY_FLOAT_CONST(0.0);
         for(m = 0; m < mmax; m++) {
             for(int i = m; i < n; i += istep) {
                 j = i + mmax;
@@ -78,7 +78,7 @@ static void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
 mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, uint8_t type) {
     if(!MP_OBJ_IS_TYPE(arg_re, &ulab_ndarray_type)) {
         mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
-    } 
+    }
     if(n_args == 2) {
         if(!MP_OBJ_IS_TYPE(arg_im, &ulab_ndarray_type)) {
             mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
@@ -90,11 +90,11 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     if((len & (len-1)) != 0) {
         mp_raise_ValueError(translate("input array length must be power of 2"));
     }
-    
+
     ndarray_obj_t *out_re = create_new_ndarray(1, len, NDARRAY_FLOAT);
     mp_float_t *data_re = (mp_float_t *)out_re->array->items;
-    
-    if(re->array->typecode == NDARRAY_FLOAT) { 
+
+    if(re->array->typecode == NDARRAY_FLOAT) {
         // By treating this case separately, we can save a bit of time.
         // I don't know if it is worthwhile, though...
         memcpy((mp_float_t *)out_re->array->items, (mp_float_t *)re->array->items, re->bytes);
@@ -165,7 +165,7 @@ static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_FFT);
     } else {
-        return fft_fft_ifft_spectrum(n_args, args[0], mp_const_none, FFT_FFT);        
+        return fft_fft_ifft_spectrum(n_args, args[0], mp_const_none, FFT_FFT);
     }
 }
 
@@ -179,7 +179,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 //|
 //|     Perform an Inverse Fast Fourier Transform from the frequeny domain into the time domain"""
 //|     ...
-//| 
+//|
 
 static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {

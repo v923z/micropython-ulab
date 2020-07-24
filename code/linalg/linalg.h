@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -16,9 +16,9 @@
 #include "../ndarray.h"
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#define epsilon        1.2e-7
+#define epsilon        MICROPY_FLOAT_CONST(1.2e-7)
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#define epsilon        2.3e-16
+#define epsilon        MICROPY_FLOAT_CONST(2.3e-16)
 #endif
 
 #define JACOBI_MAX     20
