@@ -86,11 +86,16 @@ quick testing of `ulab`. Otherwise, compilation from the source is required with
 the appropriate settings, which are usually defined in the `mpconfigboard.h` file of the port
 in question.
 
-`ulab` is also included in most development builds of `CircuitPython` for SAMD51 and nRF microcontrollers.
+`ulab` is included in the following compiled `micropython` variants and derivatives: 
+
+1. `CircuitPython` for SAMD51 and nRF microcontrollers https://github.com/adafruit/circuitpython
+1. `MicroPython for K210` https://github.com/loboris/MicroPython_K210_LoBo
+1. `MaixPy` https://github.com/sipeed/MaixPy
+1. `OpenMV` https://github.com/openmv/openmv
 
 ## Compiling
 
-If you want to try the latest version of `ulab` on micropython, or your hardware is 
+If you want to try the latest version of `ulab` on `micropython` or one of its forks, or your hardware is 
 different to pyboard.v.1.1, or PYBD_SF6, the firmware can be compiled 
 from the source by following these steps:
 
