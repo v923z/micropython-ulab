@@ -78,15 +78,16 @@ A number of practical examples are listed in the excellent
 
 # Firmware
 
-Firmware for pyboard.v.1.1, and PYBD_SF6 is released once in a while, and can be downloaded
-from https://github.com/v923z/micropython-ulab/releases. Since a number of features can be
+Pre-compiler firmware for a number of hardware platforms can be downloaded from Roberto Colistete's 
+gitlab repository: https://gitlab.com/rcolistete/micropython-samples/-/tree/master/Pyboard/Firmware/v1.12_with_ulab/ 
+Since a number of features can be
 set in the firmware (threading, support for SD card, LEDs, user switch etc.), and it is
 impossible to create something that suits everyone, these releases should only be used for
 quick testing of `ulab`. Otherwise, compilation from the source is required with
 the appropriate settings, which are usually defined in the `mpconfigboard.h` file of the port
 in question.
 
-`ulab` is included in the following compiled `micropython` variants and derivatives: 
+`ulab` is also included in the following compiled `micropython` variants and derivatives: 
 
 1. `CircuitPython` for SAMD51 and nRF microcontrollers https://github.com/adafruit/circuitpython
 1. `MicroPython for K210` https://github.com/loboris/MicroPython_K210_LoBo
@@ -95,8 +96,7 @@ in question.
 
 ## Compiling
 
-If you want to try the latest version of `ulab` on `micropython` or one of its forks, or your hardware is 
-different to pyboard.v.1.1, or PYBD_SF6, the firmware can be compiled 
+If you want to try the latest version of `ulab` on `micropython` or one of its forks, the firmware can be compiled 
 from the source by following these steps:
 
 First, you have to clone the `micropython` repository by running
