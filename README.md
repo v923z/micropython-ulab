@@ -78,7 +78,7 @@ A number of practical examples are listed in the excellent
 
 # Firmware
 
-Pre-compiler firmware for a number of hardware platforms can be downloaded from Roberto Colistete's 
+Compiled firmware for many hardware platforms can be downloaded from Roberto Colistete's 
 gitlab repository: https://gitlab.com/rcolistete/micropython-samples/-/tree/master/Pyboard/Firmware/v1.12_with_ulab/ 
 Since a number of features can be
 set in the firmware (threading, support for SD card, LEDs, user switch etc.), and it is
