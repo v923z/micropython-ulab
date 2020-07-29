@@ -1,3 +1,9 @@
+Wed, 29 Jul 2020
+
+version 0.54.1
+
+    changed to size_t for the length of arrays
+    
 Thu, 23 Jul 2020
 
 version 0.54.0
