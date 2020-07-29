@@ -215,7 +215,7 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(args[2].u_int) {
+    if(args[2].u_int < 2) {
         mp_raise_ValueError(translate("number of points must be at least 2"));
     }
     size_t len = (size_t)args[2].u_int;
