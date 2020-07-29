@@ -35,14 +35,14 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     if(!ndarray_object_is_nditerable(args[0])) {
         mp_raise_ValueError(translate("input data must be an iterable"));
     }
-    uint16_t lenx = 0, leny = 0;
+    size_t lenx = 0, leny = 0;
     uint8_t deg = 0;
     mp_float_t *x, *XT, *y, *prod;
 
     if(n_args == 2) { // only the y values are supplied
         // TODO: this is actually not enough: the first argument can very well be a matrix, 
         // in which case we are between the rock and a hard place
-        leny = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
+        leny = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
         deg = (uint8_t)mp_obj_get_int(args[1]);
         if(leny < deg) {
             mp_raise_ValueError(translate("more degrees of freedom than data points"));
@@ -58,8 +58,8 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         if(!ndarray_object_is_nditerable(args[1])) {
             mp_raise_ValueError(translate("input data must be an iterable"));
         }
-        lenx = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
-        leny = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(args[1]));
+        lenx = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
+        leny = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[1]));
         if(lenx != leny) {
             mp_raise_ValueError(translate("input vectors must be of equal length"));
         }
@@ -76,7 +76,7 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     // one could probably express X as a function of XT, 
     // and thereby save RAM, because X is used only in the product
     XT = m_new(mp_float_t, (deg+1)*leny); // XT is a matrix of shape (deg+1, len) (rows, columns)
-    for(uint8_t i=0; i < leny; i++) { // column index
+    for(size_t i=0; i < leny; i++) { // column index
         XT[i+0*lenx] = 1.0; // top row
         for(uint8_t j=1; j < deg+1; j++) { // row index
             XT[i+j*leny] = XT[i+(j-1)*leny]*x[i];
@@ -85,8 +85,8 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     
     prod = m_new(mp_float_t, (deg+1)*(deg+1)); // the product matrix is of shape (deg+1, deg+1)
     mp_float_t sum;
-    for(uint16_t i=0; i < deg+1; i++) { // column index
-        for(uint16_t j=0; j < deg+1; j++) { // row index
+    for(uint8_t i=0; i < deg+1; i++) { // column index
+        for(uint8_t j=0; j < deg+1; j++) { // row index
             sum = 0.0;
             for(size_t k=0; k < lenx; k++) {
                 // (j, k) * (k, i) 
@@ -109,9 +109,9 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     } 
     // at this point, we have the inverse of X^T * X
     // y is a column vector; x is free now, we can use it for storing intermediate values
-    for(uint16_t i=0; i < deg+1; i++) { // row index
+    for(uint8_t i=0; i < deg+1; i++) { // row index
         sum = 0.0;
-        for(uint16_t j=0; j < lenx; j++) { // column index
+        for(size_t j=0; j < lenx; j++) { // column index
             sum += XT[i*lenx+j]*y[j];
         }
         x[i] = sum;
@@ -125,9 +125,9 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     m_del(float, y, leny);
     
     // now, we calculate beta, i.e., we apply prod = (X^T * X)^(-1) on x = X^T * y; x is a column vector now
-    for(uint16_t i=0; i < deg+1; i++) {
+    for(uint8_t i=0; i < deg+1; i++) {
         sum = 0.0;
-        for(uint16_t j=0; j < deg+1; j++) {
+        for(uint8_t j=0; j < deg+1; j++) {
             sum += prod[i*(deg+1)+j]*x[j];
         }
         betav[i] = sum;
@@ -176,7 +176,7 @@ static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     uint8_t plen = mp_obj_get_int(mp_obj_len_maybe(o_p));
     mp_float_t *p = m_new(mp_float_t, plen);
     p_iterable = mp_getiter(o_p, &p_buf);
-    uint16_t i = 0;    
+    uint8_t i = 0;    
     while((p_item = mp_iternext(p_iterable)) != MP_OBJ_STOP_ITERATION) {
         p[i] = mp_obj_get_float(p_item);
         i++;
