@@ -26,16 +26,16 @@
 //| """Frequency-domain functions"""
 //|
 
-static void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
+static void fft_kernel(mp_float_t *real, mp_float_t *imag, size_t n, int isign) {
     // This is basically a modification of four1 from Numerical Recipes
     // The main difference is that this function takes two arrays, one
     // for the real, and one for the imaginary parts.
-    int j, m, mmax, istep;
+    size_t j, m, mmax, istep;
     mp_float_t tempr, tempi;
     mp_float_t wtemp, wr, wpr, wpi, wi, theta;
 
     j = 0;
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         if (j > i) {
             SWAP(mp_float_t, real[i], real[j]);
             SWAP(mp_float_t, imag[i], imag[j]);
@@ -58,7 +58,7 @@ static void fft_kernel(mp_float_t *real, mp_float_t *imag, int n, int isign) {
         wr = MICROPY_FLOAT_CONST(1.0);
         wi = MICROPY_FLOAT_CONST(0.0);
         for(m = 0; m < mmax; m++) {
-            for(int i = m; i < n; i += istep) {
+            for(size_t i = m; i < n; i += istep) {
                 j = i + mmax;
                 tempr = wr * real[j] - wi * imag[j];
                 tempi = wr * imag[j] + wi * real[j];
@@ -86,7 +86,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     }
     // Check if input is of length of power of 2
     ndarray_obj_t *re = MP_OBJ_TO_PTR(arg_re);
-    uint16_t len = re->array->len;
+    size_t len = re->array->len;
     if((len & (len-1)) != 0) {
         mp_raise_ValueError(translate("input array length must be power of 2"));
     }

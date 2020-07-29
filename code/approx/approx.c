@@ -23,6 +23,7 @@
 //| """Numerical approximation methods"""
 //|
 
+
 const mp_obj_float_t xtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(2.4e-7)};
 const mp_obj_float_t rtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(0.0)};
 const mp_obj_float_t approx_trapz_dx = {{&mp_type_float}, MICROPY_FLOAT_CONST(1.0)};
@@ -80,7 +81,9 @@ STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 	}
 	mp_float_t rtb = left < MICROPY_FLOAT_CONST(0.0) ? a : b;
 	mp_float_t dx = left < MICROPY_FLOAT_CONST(0.0) ? b - a : a - b;
-
+    if(args[4].u_int < 0) {
+        mp_raise_ValueError(translate("maxiter should be > 0"));
+    }
 	for(uint16_t i=0; i < args[4].u_int; i++) {
 		dx *= MICROPY_FLOAT_CONST(0.5);
 		x_mid = rtb + dx;
@@ -130,7 +133,15 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 	// parameters controlling convergence conditions
 	mp_float_t xatol = mp_obj_get_float(args[2].u_obj);
 	mp_float_t fatol = mp_obj_get_float(args[3].u_obj);
-	uint16_t maxiter = args[4].u_obj == mp_const_none ? 200 : mp_obj_get_int(args[4].u_obj);
+	uint16_t maxiter;
+    if(args[4].u_obj == mp_const_none) {
+        maxiter = 200;
+    } else {
+        if(args[4].u_obj < 0) {
+            mp_raise_TypeError(translate("maxiter must be > 0"));
+        }
+        maxiter = (uint16_t)mp_obj_get_int(args[4].u_obj);
+    }
 
 	mp_float_t x0 = mp_obj_get_float(args[1].u_obj);
 	mp_float_t x1 = x0 != MICROPY_FLOAT_CONST(0.0) ? (MICROPY_FLOAT_CONST(1.0) + APPROX_NONZDELTA) * x0 : APPROX_ZDELTA;
@@ -268,7 +279,7 @@ mp_obj_t approx_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     if(!ndarray_object_is_nditerable(p0_obj)) {
         mp_raise_TypeError(translate("initial values must be iterable"));
     }
-    uint16_t len = (uint16_t)mp_obj_get_int(mp_obj_len_maybe(x_obj));
+    size_t len = (size_t)mp_obj_get_int(mp_obj_len_maybe(x_obj));
     uint8_t lenp = (uint8_t)mp_obj_get_int(mp_obj_len_maybe(p0_obj));
     if(len != (uint16_t)mp_obj_get_int(mp_obj_len_maybe(y_obj))) {
         mp_raise_ValueError(translate("data must be of equal length"));
@@ -422,6 +433,9 @@ STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 	mp_float_t dx, df, fx;
 	dx = x > MICROPY_FLOAT_CONST(0.0) ? APPROX_EPS * x : -APPROX_EPS * x;
 	mp_obj_t *fargs = m_new(mp_obj_t, 1);
+    if(args[4].u_int < 0) {
+        mp_raise_ValueError(translate("maxiter must be > 0"));
+    }
 	for(uint16_t i=0; i < args[4].u_int; i++) {
 		fx = approx_python_call(type, fun, x, fargs, 0);
 		df = (approx_python_call(type, fun, x + dx, fargs, 0) - fx) / dx;
