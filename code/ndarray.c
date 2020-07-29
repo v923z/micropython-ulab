@@ -1207,7 +1207,7 @@ mp_obj_t ndarray_reshape(mp_obj_t self_in, mp_obj_t shape) {
 
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t item, iterable = mp_getiter(shape, &iter_buf);
-    uint16_t m, n;
+    size_t m, n;
     item = mp_iternext(iterable);
     m = mp_obj_get_int(item);
     item = mp_iternext(iterable);
