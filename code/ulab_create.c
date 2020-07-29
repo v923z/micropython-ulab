@@ -126,7 +126,7 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     if((stop - start)/step < 0) {
         ndarray = create_new_ndarray(0, 0, typecode);
     } else {
-        size_t len = (size_t) (MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
+        size_t len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
         ndarray = create_linspace_arange(start, step, len, typecode);
     }
     return MP_OBJ_FROM_PTR(ndarray);
@@ -215,10 +215,10 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    uint16_t len = args[2].u_int;
-    if(len < 2) {
+    if(args[2].u_int) {
         mp_raise_ValueError(translate("number of points must be at least 2"));
     }
+    size_t len = (size_t)args[2].u_int;
     mp_float_t start, step;
     start = mp_obj_get_float(args[0].u_obj);
     uint8_t typecode = args[5].u_int;
