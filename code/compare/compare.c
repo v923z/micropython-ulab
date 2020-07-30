@@ -134,17 +134,22 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
 
 }
 
-//| def clip(x1, x2, x3):
+//| def clip(
+//|     x1: Union[ulab.array, float],
+//|     x2: Union[ulab.array, float],
+//|     x3: Union[ulab.array, float],
+//| ) -> ulab.array:
 //|     """
 //|     Constrain the values from ``x1`` to be between ``x2`` and ``x3``.
 //|     ``x2`` is assumed to be less than or equal to ``x3``.
+//|
 //|     Arguments may be ulab arrays or numbers.  All array arguments
 //|     must be the same size.  If the inputs are all scalars, a 1-element
 //|     array is returned.
+//|
 //|     Shorthand for ``ulab.maximum(x2, ulab.minimum(x1, x3))``"""
 //|     ...
-//| 
-
+//|
 static mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
 	// Note: this function could be made faster by implementing a single-loop comparison in 
 	// RUN_COMPARE_LOOP. However, that would add around 2 kB of compile size, while we 
@@ -155,37 +160,35 @@ static mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
 
 MP_DEFINE_CONST_FUN_OBJ_3(compare_clip_obj, compare_clip);
 
-//| def equal(x1, x2):
-//|    """Return an array of bool which is true where x1[i] == x2[i] and false elsewhere"""
-//|    ...
+//| def equal(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> List[bool]:
+//|     """Return an array of bool which is true where x1[i] == x2[i] and false elsewhere"""
+//|     ...
 //|
-
 static mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
 	return compare_equal_helper(x1, x2, MP_BINARY_OP_EQUAL);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_equal_obj, compare_equal);
 
-//| def not_equal(x1, x2):
-//|    """Return an array of bool which is false where x1[i] == x2[i] and true elsewhere"""
-//|    ...
+//| def not_equal(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> List[bool]:
+//|     """Return an array of bool which is false where x1[i] == x2[i] and true elsewhere"""
+//|     ...
 //|
-
 static mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
 	return compare_equal_helper(x1, x2, MP_BINARY_OP_NOT_EQUAL);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
 
-//| def maximum(x1, x2):
-//|    """
-//|    Compute the element by element maximum of the arguments.
-//|    Arguments may be ulab arrays or numbers.  All array arguments
-//|    must be the same size.  If the inputs are both scalars, a number is
-//|    returned"""
-//|    ...
+//| def maximum(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> ulab.array:
+//|     """
+//|     Compute the element by element maximum of the arguments.
 //|
-
+//|     Arguments may be ulab arrays or numbers.  All array arguments
+//|     must be the same size.  If the inputs are both scalars, a number is
+//|     returned"""
+//|     ...
+//|
 static mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
 	// extra round, so that we can return maximum(3, 4) properly
 	mp_obj_t result = compare_function(x1, x2, COMPARE_MAXIMUM);
@@ -198,12 +201,13 @@ static mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
 
-//| def minimum(x1, x2):
-//|    """Compute the element by element minimum of the arguments.
-//|    Arguments may be ulab arrays or numbers.  All array arguments
-//|    must be the same size.  If the inputs are both scalars, a number is
-//|    returned"""
-//|    ...
+//| def minimum(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> ulab.array:
+//|     """Compute the element by element minimum of the arguments.
+//|
+//|     Arguments may be ulab arrays or numbers.  All array arguments
+//|     must be the same size.  If the inputs are both scalars, a number is
+//|     returned"""
+//|     ...
 //|
 
 static mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {

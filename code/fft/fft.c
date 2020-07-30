@@ -149,18 +149,18 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     }
 }
 
-//| def fft(r, c=None):
+//| def fft(r: ulab.array, c: Optional[ulab.array] = None) -> Tuple[ulab.array, ulab.array]:
 //|     """
 //|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
 //|     :param ulab.array c: An optional 1-dimension array of values whose size is a power of 2, giving the complex part of the value
 //|     :return tuple (r, c): The real and complex parts of the FFT
 //|
 //|     Perform a Fast Fourier Transform from the time domain into the frequency domain
+//|
 //|     See also ~ulab.extras.spectrum, which computes the magnitude of the fft,
 //|     rather than separately returning its real and imaginary parts."""
 //|     ...
 //|
-
 static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_FFT);
@@ -171,7 +171,7 @@ static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 
-//| def ifft(r, c=None):
+//| def ifft(r: ulab.array, c: Optional[ulab.array] = None) -> Tuple[ulab.array, ulab.array]:
 //|     """
 //|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
 //|     :param ulab.array c: An optional 1-dimension array of values whose size is a power of 2, giving the complex part of the value
@@ -191,7 +191,7 @@ static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 
-//| def spectrogram(r):
+//| def spectrogram(r: ulab.array) -> ulab.array:
 //|     """
 //|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
 //|
