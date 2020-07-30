@@ -55,7 +55,7 @@ STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_xtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
         { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100} },
     };
@@ -343,27 +343,26 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 	ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj);
 	ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj); // xp must hold an increasing sequence of independent values
 	ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj);
-	if(((xp->m != 1) && (xp->n != 1)) || ((fp->m != 1) && (fp->n != 1)) ||
-		(xp->array->len < 2) || (fp->array->len < 2) || (xp->array->len != fp->array->len)) {
+	if((xp->ndim != 1) || (fp->ndim != 1) || (xp->len < 2) || (fp->len < 2) || (xp->len != fp->len)) {
 		mp_raise_ValueError(translate("interp is defined for 1D arrays of equal length"));
 	}
-	ndarray_obj_t *y = create_new_ndarray(x->m, x->n, NDARRAY_FLOAT);
+	ndarray_obj_t *y = ndarray_new_linear_array(x->len, NDARRAY_FLOAT);
 	mp_float_t left_value, right_value;
-	mp_float_t xp_left = ndarray_get_float_value(xp->array->items, xp->array->typecode, 0);
-	mp_float_t xp_right = ndarray_get_float_value(xp->array->items, xp->array->typecode, xp->array->len-1);
+	mp_float_t xp_left = ndarray_get_float_value(xp->array, xp->dtype, 0);
+	mp_float_t xp_right = ndarray_get_float_value(xp->array, xp->dtype, xp->len-1);
 	if(args[3].u_obj == mp_const_none) {
-		left_value = ndarray_get_float_value(fp->array->items, fp->array->typecode, 0);
+		left_value = ndarray_get_float_value(fp->array, fp->dtype, 0);
 	} else {
 		left_value = mp_obj_get_float(args[3].u_obj);
 	}
 	if(args[4].u_obj == mp_const_none) {
-		right_value = ndarray_get_float_value(fp->array->items, fp->array->typecode, fp->array->len-1);
+		right_value = ndarray_get_float_value(fp->array, fp->dtype, fp->len-1);
 	} else {
 		right_value = mp_obj_get_float(args[4].u_obj);
 	}
-	mp_float_t *yarray = (mp_float_t *)y->array->items;
-	for(size_t i=0; i < x->array->len; i++, yarray++) {
-		mp_float_t x_value = ndarray_get_float_value(x->array->items, x->array->typecode, i);
+	mp_float_t *yarray = (mp_float_t *)y->array;
+	for(size_t i=0; i < x->len; i++, yarray++) {
+		mp_float_t x_value = ndarray_get_float_value(x->array, x->dtype, i);
 		if(x_value <= xp_left) {
 			*yarray = left_value;
 		} else if(x_value >= xp_right) {
@@ -371,20 +370,20 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 		} else { // do the binary search here
 			mp_float_t xp_left_, xp_right_;
 			mp_float_t fp_left, fp_right;
-			size_t left_index = 0, right_index = xp->array->len - 1, middle_index;
+			size_t left_index = 0, right_index = xp->len - 1, middle_index;
 			while(right_index - left_index > 1) {
 				middle_index = left_index + (right_index - left_index) / 2;
-				mp_float_t xp_middle = ndarray_get_float_value(xp->array->items, xp->array->typecode, middle_index);
+				mp_float_t xp_middle = ndarray_get_float_value(xp->array, xp->dtype, middle_index);
 				if(x_value <= xp_middle) {
 					right_index = middle_index;
 				} else {
 					left_index = middle_index;
 				}
 			}
-			xp_left_ = ndarray_get_float_value(xp->array->items, xp->array->typecode, left_index);
-			xp_right_ = ndarray_get_float_value(xp->array->items, xp->array->typecode, right_index);
-			fp_left = ndarray_get_float_value(fp->array->items, fp->array->typecode, left_index);
-			fp_right = ndarray_get_float_value(fp->array->items, fp->array->typecode, right_index);
+			xp_left_ = ndarray_get_float_value(xp->array, xp->dtype, left_index);
+			xp_right_ = ndarray_get_float_value(xp->array, xp->dtype, right_index);
+			fp_left = ndarray_get_float_value(fp->array, fp->dtype, left_index);
+			fp_right = ndarray_get_float_value(fp->array, fp->dtype, right_index);
 			*yarray = fp_left + (x_value - xp_left_) * (fp_right - fp_left) / (xp_right_ - xp_left_);
 		}
 	}
@@ -471,20 +470,20 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj);
     ndarray_obj_t *x;
     mp_float_t sum = MICROPY_FLOAT_CONST(0.0);
-    if(y->array->len < 2) {
+    if(y->len < 2) {
         return mp_obj_new_float(sum);
     }
     if(args[1].u_obj != mp_const_none) {
         x = ndarray_from_mp_obj(args[1].u_obj); // x must hold an increasing sequence of independent values
-        if(((y->m != 1) && (y->n != 1)) || ((x->m != 1) && (x->n != 1)) || (y->array->len != x->array->len)) {
+        if((y->ndim != 1) || (x->ndim != 1) || (y->len != x->len)) {
             mp_raise_ValueError(translate("trapz is defined for 1D arrays of equal length"));
         }
         mp_float_t x1, x2, y1, y2;
-        y1 = ndarray_get_float_value(y->array->items, y->array->typecode, 0);
-        x1 = ndarray_get_float_value(x->array->items, x->array->typecode, 0);
-        for(size_t i=1; i < y->array->len; i++) {
-            y2 = ndarray_get_float_value(y->array->items, y->array->typecode, i);
-            x2 = ndarray_get_float_value(x->array->items, x->array->typecode, i);
+        y1 = ndarray_get_float_value(y->array, y->dtype, 0);
+        x1 = ndarray_get_float_value(x->array, x->dtype, 0);
+        for(size_t i=1; i < y->len; i++) {
+            y2 = ndarray_get_float_value(y->array, y->dtype, i);
+            x2 = ndarray_get_float_value(x->array, x->dtype, i);
             sum += (x2 - x1) * (y2 + y1);
             x1 = x2;
             y1 = y2;
@@ -492,9 +491,9 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     } else {
         mp_float_t y1, y2;
         mp_float_t dx = mp_obj_get_float(args[2].u_obj);
-        y1 = ndarray_get_float_value(y->array->items, y->array->typecode, 0);
-        for(size_t i=1; i < y->array->len; i++) {
-            y2 = ndarray_get_float_value(y->array->items, y->array->typecode, i);
+        y1 = ndarray_get_float_value(y->array, y->dtype, 0);
+        for(size_t i=1; i < y->len; i++) {
+            y2 = ndarray_get_float_value(y->array, y->dtype, i);
             sum += (y2 + y1);
             y1 = y2;
         }

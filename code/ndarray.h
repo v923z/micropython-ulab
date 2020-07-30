@@ -161,13 +161,6 @@ mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t f
 
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 
-#define CREATE_SINGLE_ITEM(outarray, type, typecode, value) do {\
-    ndarray_obj_t *tmp = create_new_ndarray(1, 1, (typecode));\
-    type *tmparr = (type *)tmp->array->items;\
-    tmparr[0] = (type)(value);\
-    (outarray) = MP_OBJ_FROM_PTR(tmp);\
-} while(0)
-
 /*  
     mp_obj_t row = mp_obj_new_list(n, NULL);
     mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);

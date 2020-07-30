@@ -52,7 +52,7 @@
 
 // the approx module consumes about 4.5 kB of flash space
 #ifndef ULAB_APPROX_MODULE
-#define ULAB_APPROX_MODULE (0)
+#define ULAB_APPROX_MODULE (1)
 #endif
 
 // user-defined module
