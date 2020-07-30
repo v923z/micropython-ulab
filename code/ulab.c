@@ -32,14 +32,14 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.54.1");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "1.0.0");
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },
     { MP_ROM_QSTR(MP_QSTR_transpose), MP_ROM_PTR(&ndarray_transpose_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },
+//    { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },
     { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
     { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&ndarray_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&ndarray_itemsize_obj) },
@@ -58,10 +58,10 @@ const mp_obj_type_t ulab_ndarray_type = {
     .name = MP_QSTR_ndarray,
     .print = ndarray_print,
     .make_new = ndarray_make_new,
-    .subscr = ndarray_subscr,
+//    .subscr = ndarray_subscr,
     .getiter = ndarray_getiter,
     .unary_op = ndarray_unary_op,
-    .binary_op = ndarray_binary_op,
+//    .binary_op = ndarray_binary_op,
     .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
@@ -73,7 +73,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_printoptions), (mp_obj_t)&ndarray_get_printoptions_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
     { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
-    { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
+//    { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
     { MP_ROM_QSTR(MP_QSTR_linspace), (mp_obj_t)&create_linspace_obj },
     { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&create_ones_obj },
     { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },

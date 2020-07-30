@@ -17,6 +17,7 @@
 #include "py/objstr.h"
 #include "py/objlist.h"
 
+#define ULAB_MAX_DIMS	            4
 #define NDARRAY_PRINT_THRESHOLD  	10
 #define NDARRAY_PRINT_EDGEITEMS		3
 
@@ -55,9 +56,13 @@ void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *, mp_obj_t *, mp_obj_t *);
 
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
+#define NDARRAY_NUMERIC   0
+#define NDARRAY_BOOLEAN   1
+
 extern const mp_obj_type_t ulab_ndarray_type;
 
 enum NDARRAY_TYPE {
+    NDARRAY_BOOL = '?', // this must never be assigned to the dtype!
     NDARRAY_UINT8 = 'B',
     NDARRAY_INT8 = 'b',
     NDARRAY_UINT16 = 'H', 
@@ -66,27 +71,59 @@ enum NDARRAY_TYPE {
 };
 
 typedef struct _ndarray_obj_t {
-    mp_obj_base_t base;
-    size_t m, n;
-    size_t len;
-    mp_obj_array_t *array;
-    size_t bytes;
+	mp_obj_base_t base;
+	size_t shape[ULAB_MAX_DIMS];
+	int32_t strides[ULAB_MAX_DIMS];
+	size_t len;
+	void *array;
+	uint8_t dtype;
+	uint8_t boolean;
+	uint8_t ndim;
 } ndarray_obj_t;
 
-mp_obj_t mp_obj_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
+// this is a helper structure, so that we can return shape AND strides from a function
+typedef struct _ndarray_header_obj_t {
+    size_t *shape;
+    int32_t *strides;
+    int8_t axis;
+} ndarray_header_obj_t;
+
+typedef struct _short_descriptor_t {
+	size_t left_shape[ULAB_MAX_DIMS];
+	size_t right_shape[ULAB_MAX_DIMS];
+	size_t output_shape[ULAB_MAX_DIMS];
+	int32_t left_strides[ULAB_MAX_DIMS];
+	int32_t right_strides[ULAB_MAX_DIMS];
+	int32_t output_strides[ULAB_MAX_DIMS];
+	bool broadcastable;
+} short_descriptor_t;
+
+mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
 
 mp_float_t ndarray_get_float_value(void *, uint8_t , size_t );
 bool ndarray_object_is_nditerable(mp_obj_t );
 void fill_array_iterable(mp_float_t *, mp_obj_t );
 
+
+void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
+
 mp_obj_t ndarray_set_printoptions(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_set_printoptions_obj);
+
 mp_obj_t ndarray_get_printoptions(void);
 MP_DECLARE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj);
+
 void ndarray_print_row(const mp_print_t *, mp_obj_array_t *, size_t , size_t );
-void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
-void ndarray_assign_elements(mp_obj_array_t *, mp_obj_t , uint8_t , size_t *);
-ndarray_obj_t *create_new_ndarray(size_t , size_t , uint8_t );
+void ndarray_assign_elements(ndarray_obj_t *, mp_obj_t , uint8_t , size_t *);
+size_t *ndarray_new_coords(uint8_t );
+size_t *ndarray_contract_shape(ndarray_obj_t *, uint8_t );
+int32_t *ndarray_contract_strides(ndarray_obj_t *, uint8_t );
+
+ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t , size_t *, uint8_t );
+ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *, uint8_t );
+ndarray_obj_t *ndarray_new_ndarray(uint8_t , size_t *, int32_t *, uint8_t );
+ndarray_obj_t *ndarray_new_linear_array(size_t , uint8_t );
+bool ndarray_is_dense(ndarray_obj_t *);
 
 mp_obj_t ndarray_copy(mp_obj_t );
 #ifdef CIRCUITPY
@@ -100,7 +137,15 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_unary_op(mp_unary_op_t , mp_obj_t );
 
 mp_obj_t ndarray_shape(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_shape_obj);
+
+mp_obj_t ndarray_strides(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_strides_obj);
+
 mp_obj_t ndarray_size(mp_obj_t );
+mp_obj_t ndarray_itemsize(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_itemsize_obj);
+
 mp_obj_t ndarray_itemsize(mp_obj_t );
 mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
 
@@ -129,6 +174,18 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
     should work outside the loop, but it doesn't. Go figure! 
 */
 
+#define NDARRAY_INDEX_FROM_FLAT2(ndarray, stride_array, shape_strides, index, _tindex, _nindex) do {\
+    size_t Q;\
+    (_tindex) = (index);\
+    (_nindex) = (ndarray)->offset;\
+    for(size_t _x=0; _x < (ndarray)->ndim; _x++) {\
+        Q = (_tindex) / (shape_strides)[_x];\
+        (_tindex) -= Q * (shape_strides)[_x];\
+        (_nindex) += Q * (stride_array)[_x];\
+    }\
+} while(0)
+
+/*
 #define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op, m, n, len, linc, rinc) do {\
     type_left *left = (type_left *)(ol)->array->items;\
     type_right *right = (type_right *)(or)->array->items;\
@@ -165,4 +222,5 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
     }\
 } while(0)
 
+*/
 #endif

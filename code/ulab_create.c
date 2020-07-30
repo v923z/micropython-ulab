@@ -14,7 +14,7 @@
 #include "py/runtime.h"
 #include "ulab_create.h"
 
-static mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
+mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} } ,
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
@@ -30,42 +30,40 @@ static mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_ma
     ndarray_obj_t *ndarray = NULL;
     if(MP_OBJ_IS_INT(args[0].u_obj)) {
         size_t n = mp_obj_get_int(args[0].u_obj);
-        ndarray = create_new_ndarray(1, n, dtype);
+        ndarray = ndarray_new_linear_array(n, dtype);
     } else if(MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
         mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0].u_obj);
         if(tuple->len != 2) {
             mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
         }
-        ndarray = create_new_ndarray(mp_obj_get_int(tuple->items[0]), 
-                                                  mp_obj_get_int(tuple->items[1]), dtype);
+        ndarray = ndarray_new_ndarray_from_tuple(tuple, dtype);
     }
     if(kind == 1) {
         mp_obj_t one = mp_obj_new_int(1);
-        for(size_t i=0; i < ndarray->array->len; i++) {
-            mp_binary_set_val_array(dtype, ndarray->array->items, i, one);
+        for(size_t i=0; i < ndarray->len; i++) {
+            mp_binary_set_val_array(dtype, ndarray->array, i, one);
         }
     }
     return MP_OBJ_FROM_PTR(ndarray);
 }
-
-STATIC ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t typecode) {
+STATIC ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t dtype) {
     mp_float_t value = start;
     
-    ndarray_obj_t *ndarray = create_new_ndarray(1, len, typecode);
-    if(typecode == NDARRAY_UINT8) {
-        uint8_t *array = (uint8_t *)ndarray->array->items;
+    ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
+    if(dtype == NDARRAY_UINT8) {
+        uint8_t *array = (uint8_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value += step) array[i] = (uint8_t)value;
-    } else if(typecode == NDARRAY_INT8) {
-        int8_t *array = (int8_t *)ndarray->array->items;
+    } else if(dtype == NDARRAY_INT8) {
+        int8_t *array = (int8_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value += step) array[i] = (int8_t)value;
-    } else if(typecode == NDARRAY_UINT16) {
-        uint16_t *array = (uint16_t *)ndarray->array->items;
+    } else if(dtype == NDARRAY_UINT16) {
+        uint16_t *array = (uint16_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value += step) array[i] = (uint16_t)value;
-    } else if(typecode == NDARRAY_INT16) {
-        int16_t *array = (int16_t *)ndarray->array->items;
+    } else if(dtype == NDARRAY_INT16) {
+        int16_t *array = (int16_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value += step) array[i] = (int16_t)value;
     } else {
-        mp_float_t *array = (mp_float_t *)ndarray->array->items;
+        mp_float_t *array = (mp_float_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value += step) array[i] = value;
     }
     return ndarray;
@@ -96,40 +94,39 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    uint8_t typecode = NDARRAY_FLOAT;
+    uint8_t dtype = NDARRAY_FLOAT;
     mp_float_t start, stop, step;
     if(n_args == 1) {
         start = 0.0;
         stop = mp_obj_get_float(args[0].u_obj);
         step = 1.0;
-        if(mp_obj_is_int(args[0].u_obj)) typecode = NDARRAY_INT16;
+        if(mp_obj_is_int(args[0].u_obj)) dtype = NDARRAY_INT16;
     } else if(n_args == 2) {
         start = mp_obj_get_float(args[0].u_obj);
         stop = mp_obj_get_float(args[1].u_obj);
         step = 1.0;
-        if(mp_obj_is_int(args[0].u_obj) && mp_obj_is_int(args[1].u_obj)) typecode = NDARRAY_INT16;
+        if(mp_obj_is_int(args[0].u_obj) && mp_obj_is_int(args[1].u_obj)) dtype = NDARRAY_INT16;
     } else if(n_args == 3) {
         start = mp_obj_get_float(args[0].u_obj);
         stop = mp_obj_get_float(args[1].u_obj);
         step = mp_obj_get_float(args[2].u_obj);
-        if(mp_obj_is_int(args[0].u_obj) && mp_obj_is_int(args[1].u_obj) && mp_obj_is_int(args[2].u_obj)) typecode = NDARRAY_INT16;        
+        if(mp_obj_is_int(args[0].u_obj) && mp_obj_is_int(args[1].u_obj) && mp_obj_is_int(args[2].u_obj)) dtype = NDARRAY_INT16;
     } else {
         mp_raise_TypeError(translate("wrong number of arguments"));
     }
     if((MICROPY_FLOAT_C_FUN(fabs)(stop) > 32768) || (MICROPY_FLOAT_C_FUN(fabs)(start) > 32768) || (MICROPY_FLOAT_C_FUN(fabs)(step) > 32768)) {
-        typecode = NDARRAY_FLOAT;
+        dtype = NDARRAY_FLOAT;
     }
     if(args[3].u_obj != mp_const_none) {
-        typecode = (uint8_t)mp_obj_get_int(args[3].u_obj);
+        dtype = (uint8_t)mp_obj_get_int(args[3].u_obj);
     }
-    ndarray_obj_t *ndarray;
+    size_t len;
     if((stop - start)/step < 0) {
-        ndarray = create_new_ndarray(0, 0, typecode);
+        len = 0;
     } else {
-        size_t len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
-        ndarray = create_linspace_arange(start, step, len, typecode);
+        len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
     }
-    return MP_OBJ_FROM_PTR(ndarray);
+    return MP_OBJ_FROM_PTR(ndarray_new_linear_array(len, dtype));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
@@ -140,6 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 //|    ...
 //|
 
+/*
 mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -183,6 +181,7 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 0, create_eye);
 
+*/
 //| def linspace(start, stop, *, dtype=float, num=50, endpoint=True):
 //|    """
 //|    .. param: start
