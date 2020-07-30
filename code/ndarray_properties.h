@@ -37,6 +37,13 @@ STATIC const mp_obj_property_t ndarray_shape_obj = {
               mp_const_none },
 };
 
+STATIC const mp_obj_property_t ndarray_strides_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&ndarray_get_strides_obj,
+              mp_const_none,
+              mp_const_none },
+};
+
 STATIC const mp_obj_property_t ndarray_size_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&ndarray_get_size_obj,
@@ -55,6 +62,7 @@ STATIC const mp_obj_property_t ndarray_itemsize_obj = {
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_size_obj, ndarray_size);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_itemsize_obj, ndarray_itemsize);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_shape_obj, ndarray_shape);
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_strides_obj, ndarray_strides);
 
 #endif
 

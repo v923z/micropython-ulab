@@ -438,7 +438,7 @@ ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dt
     int32_t *strides = m_new(int32_t, ndim);
     strides[ndim-1] = 1;
     for(size_t i=ndim-1; i > 0; i--) {
-        strides[i-1] = strides[i] * shape[i-1];
+        strides[i-1] = strides[i] * shape[i];
     }
     return ndarray_new_ndarray(ndim, shape, strides, dtype);
 }
@@ -990,7 +990,7 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
             self->cur++;
             return mp_binary_get_val_array(ndarray->dtype, ndarray->array, self->cur-1);
         } else { // we have a tensor, return the reduced view
-            int32_t offset = self->cur * ndarray->strides[0];
+            size_t offset = self->cur * ndarray->strides[0];
             self->cur++;
             ndarray_obj_t *value = ndarray_new_view(ndarray, ndarray->ndim-1, ndarray->shape+1, ndarray->strides+1, offset);
             return MP_OBJ_FROM_PTR(value);
@@ -1015,6 +1015,18 @@ mp_obj_t ndarray_shape(mp_obj_t self_in) {
     mp_obj_t *items = m_new(mp_obj_t, self->ndim);
     for(uint8_t i=0; i < self->ndim; i++) {
         items[i] = mp_obj_new_int(self->shape[i]);
+    }
+    mp_obj_t tuple = mp_obj_new_tuple(self->ndim, items);
+    m_del(mp_obj_t, items, self->ndim);
+    return tuple;
+}
+
+mp_obj_t ndarray_strides(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t *items = m_new(mp_obj_t, self->ndim);
+    uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
+    for(int8_t i=0; i < self->ndim; i++) {
+        items[i] = mp_obj_new_int(self->strides[i]*itemsize);
     }
     mp_obj_t tuple = mp_obj_new_tuple(self->ndim, items);
     m_del(mp_obj_t, items, self->ndim);
@@ -1337,7 +1349,6 @@ mp_obj_t ndarray_transpose(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
 
 mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
-    // There is an error somewhere here: a = ulab.array(range(10)).reshape((2, 5)) won't work
     ndarray_obj_t *ndarray_in = MP_OBJ_TO_PTR(oin);
 	if(!MP_OBJ_IS_TYPE(_shape, &mp_type_tuple)) {
 		mp_raise_TypeError(translate("shape must be a tuple"));
@@ -1357,6 +1368,7 @@ mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
     if(ndarray_in->len != new_length) {
         mp_raise_ValueError(translate("input and output shapes are not compatible"));
     }
+    
     ndarray_obj_t *ndarray;
     if(ndarray_is_dense(ndarray_in)) {
         // TODO: check if this is what numpy does

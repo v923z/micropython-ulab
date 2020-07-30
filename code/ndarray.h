@@ -143,6 +143,7 @@ mp_obj_t ndarray_strides(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_strides_obj);
 
 mp_obj_t ndarray_size(mp_obj_t );
+
 mp_obj_t ndarray_itemsize(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_itemsize_obj);
 
