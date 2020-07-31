@@ -36,6 +36,9 @@ enum NUMERICAL_FUNCTION_TYPE {
 //|
 //| Most of these functions take an "axis" argument, which indicates whether to
 //| operate over the flattened array (None), rows (0), or columns (1)."""
+//|
+//| from ulab import _ArrayLike
+//|
 
 static void axis_sorter(ndarray_obj_t *ndarray, mp_obj_t axis, size_t *m, size_t *n, size_t *N, 
                  size_t *increment, size_t *len, size_t *start_inc) {
@@ -340,9 +343,9 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     }
 }
 
-//| def argmax(array, *, axis=None):
-//|    """Return the index of the maximum element of the 1D array"""
-//|    ...
+//| def argmax(array: _ArrayLike, *, axis: Optional[int] = None) -> int:
+//|     """Return the index of the maximum element of the 1D array"""
+//|     ...
 //|
 
 static mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -351,9 +354,9 @@ static mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmax_obj, 1, numerical_argmax);
 
-//| def argmin(array, *, axis=None):
-//|    """Return the index of the minimum element of the 1D array"""
-//|    ...
+//| def argmin(array: _ArrayLike, *, axis: Optional[int] = None) -> int:
+//|     """Return the index of the minimum element of the 1D array"""
+//|     ...
 //|
 
 static mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -362,9 +365,9 @@ static mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 
-//| def argsort(array, *, axis=None):
-//|    """Returns an array which gives indices into the input array from least to greatest."""
-//|    ...
+//| def argsort(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
+//|     """Returns an array which gives indices into the input array from least to greatest."""
+//|     ...
 //|
 
 static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -437,10 +440,10 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 
-//| def diff(array, *, axis=1):
-//|    """Return the numerical derivative of successive elements of the array, as
-//|       an array.  axis=None is not supported."""
-//|    ...
+//| def diff(array: ulab.array, *, axis: int = 1) -> ulab.array:
+//|     """Return the numerical derivative of successive elements of the array, as
+//|        an array.  axis=None is not supported."""
+//|     ...
 //|
 
 static mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -513,10 +516,10 @@ static mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
 
-//| def flip(array, *, axis=None):
-//|    """Returns a new array that reverses the order of the elements along the
-//|       given axis, or along all axes if axis is None."""
-//|    ...
+//| def flip(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
+//|     """Returns a new array that reverses the order of the elements along the
+//|        given axis, or along all axes if axis is None."""
+//|     ...
 //|
 
 static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -568,9 +571,9 @@ static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_flip_obj, 1, numerical_flip);
 
-//| def max(array, *, axis=None):
-//|    """Return the maximum element of the 1D array"""
-//|    ...
+//| def max(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
+//|     """Return the maximum element of the 1D array"""
+//|     ...
 //|
 
 static mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -579,9 +582,9 @@ static mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_max_obj, 1, numerical_max);
 
-//| def mean(array, *, axis=None):
-//|    """Return the mean element of the 1D array, as a number if axis is None, otherwise as an array."""
-//|    ...
+//| def mean(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
+//|     """Return the mean element of the 1D array, as a number if axis is None, otherwise as an array."""
+//|     ...
 //|
 
 static mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -590,9 +593,9 @@ static mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 
-//| def min(array, *, axis=None):
-//|    """Return the minimum element of the 1D array"""
-//|    ...
+//| def min(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
+//|     """Return the minimum element of the 1D array"""
+//|     ...
 //|
 
 static mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -601,11 +604,11 @@ static mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
 
-//| def roll(array, distance, *, axis=None):
-//|    """Shift the content of a vector by the positions given as the second
-//|       argument. If the ``axis`` keyword is supplied, the shift is applied to
-//|       the given axis.  The array is modified in place."""
-//|    ...
+//| def roll(array: ulab.array, distance: int, *, axis: Optional[int] = None) -> None:
+//|     """Shift the content of a vector by the positions given as the second
+//|        argument. If the ``axis`` keyword is supplied, the shift is applied to
+//|        the given axis.  The array is modified in place."""
+//|     ...
 //|
 
 static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -690,10 +693,10 @@ static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 
-//| def sort(array, *, axis=0):
-//|    """Sort the array along the given axis, or along all axes if axis is None.
-//|       The array is modified in place."""
-//|    ...
+//| def sort(array: ulab.array, *, axis: Optional[int] = 0) -> ulab.array:
+//|     """Sort the array along the given axis, or along all axes if axis is None.
+//|        The array is modified in place."""
+//|     ...
 //|
 
 static mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -725,9 +728,9 @@ static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace);
 
-//| def std(array, *, axis=None):
-//|    """Return the standard deviation of the array, as a number if axis is None, otherwise as an array."""
-//|    ...
+//| def std(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
+//|     """Return the standard deviation of the array, as a number if axis is None, otherwise as an array."""
+//|     ...
 //|
 
 static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -760,9 +763,9 @@ static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
 
-//| def sum(array, *, axis=None):
-//|    """Return the sum of the array, as a number if axis is None, otherwise as an array."""
-//|    ...
+//| def sum(array: _ArrayLike, *, axis: Optional[int] = None) -> Union[float, int, ulab.array]:
+//|     """Return the sum of the array, as a number if axis is None, otherwise as an array."""
+//|     ...
 //|
 
 static mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

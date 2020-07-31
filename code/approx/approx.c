@@ -36,7 +36,14 @@ STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp
 	return mp_obj_get_float(type->call(fun, nparams+1, 0, fargs));
 }
 
-//| def bisect(fun, a, b, *, xtol=2.4e-7, maxiter=100) -> float:
+//| def bisect(
+//|     fun: Callable[[float], float],
+//|     a: float,
+//|     b: float,
+//|     *,
+//|     xtol: float = 2.4e-7,
+//|     maxiter: int = 100
+//| ) -> float:
 //|     """
 //|     :param callable f: The function to bisect
 //|     :param float a: The left side of the interval
@@ -97,7 +104,14 @@ STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_bisect_obj, 3, approx_bisect);
 
-//| def fmin(fun, x0, *, xatol=2.4e-7, fatol=2.4e-7, maxiter=200) -> float:
+//| def fmin(
+//|     fun: Callable[[float], float],
+//|     x0: float,
+//|     *,
+//|     xatol: float = 2.4e-7,
+//|     fatol: float = 2.4e-7,
+//|     maxiter: int = 200
+//| ) -> float:
 //|     """
 //|     :param callable f: The function to bisect
 //|     :param float x0: The initial x value
@@ -317,7 +331,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_curve_fit_obj, 2, approx_curve_fit);
 
 #endif
 
-//| def interp(x: ulab.array, xp:ulab.array, fp:ulab.array, *, left=None, right=None) -> ulab.array:
+//| def interp(
+//|     x: ulab.array,
+//|     xp: ulab.array,
+//|     fp: ulab.array,
+//|     *,
+//|     left: Optional[float] = None,
+//|     right: Optional[float] = None
+//| ) -> ulab.array:
 //|     """
 //|     :param ulab.array x: The x-coordinates at which to evaluate the interpolated values.
 //|     :param ulab.array xp: The x-coordinates of the data points, must be increasing
@@ -392,7 +413,14 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
 
-//| def newton(fun, x0, *, xtol=2.4e-7, rtol=0.0, maxiter=50) -> float:
+//| def newton(
+//|     fun: Callable[[float], float],
+//|     x0: float,
+//|     *,
+//|     xtol: float = 2.4e-7,
+//|     rtol: float = 0.0,
+//|     maxiter: int = 50
+//| ) -> float:
 //|     """
 //|     :param callable f: The function to bisect
 //|     :param float x0: The initial x value
@@ -447,7 +475,7 @@ STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_newton_obj, 2, approx_newton);
 
-//| def trapz(y: ulab.array, x=None, dx=1.0) -> float:
+//| def trapz(y: ulab.array, x: Optional[ulab.array] = None, dx: float = 1.0) -> float:
 //|     """
 //|     :param 1D ulab.array y: the values of the dependent variable
 //|     :param 1D ulab.array x: optional, the coordinates of the independent variable. Defaults to uniformly spaced values.

@@ -69,19 +69,22 @@ STATIC ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
     return ndarray;
 }
 
-//| def arange(start, stop, step, dtype=float):
-//|    """
-//|    .. param: start
-//|      First value in the array, optional, defaults to 0
-//|    .. param: stop
-//|      Final value in the array
-//|    .. param: step
-//|      Difference between consecutive elements, optional, defaults to 1.0
-//|    .. param: dtype
-//|      Type of values in the array
+//| @overload
+//| def arange(stop: _float, step: _float = 1, dtype: _DType = float) -> array: ...
+//| @overload
+//| def arange(start: _float, stop: _float, step: _float = 1, dtype: _DType = float) -> array:
+//|     """
+//|     .. param: start
+//|       First value in the array, optional, defaults to 0
+//|     .. param: stop
+//|       Final value in the array
+//|     .. param: step
+//|       Difference between consecutive elements, optional, defaults to 1.0
+//|     .. param: dtype
+//|       Type of values in the array
 //|
-//|    Return a new 1-D array with elements ranging from ``start`` to ``stop``, with step size ``step``."""
-//|    ...
+//|     Return a new 1-D array with elements ranging from ``start`` to ``stop``, with step size ``step``."""
+//|     ...
 //|
 
 mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -131,12 +134,11 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 
-//| def eye(size, *, dtype=float):
-//|    """Return a new square array of size, with the diagonal elements set to 1
-//|       and the other elements set to 0."""
-//|    ...
+//| def eye(size: int, *, dtype: _DType = float) -> array:
+//|     """Return a new square array of size, with the diagonal elements set to 1
+//|        and the other elements set to 0."""
+//|     ...
 //|
-
 /*
 mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -180,25 +182,31 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 0, create_eye);
-
 */
-//| def linspace(start, stop, *, dtype=float, num=50, endpoint=True):
-//|    """
-//|    .. param: start
-//|      First value in the array
-//|    .. param: stop
-//|      Final value in the array
-//|    .. param int: num
-//|      Count of values in the array
-//|    .. param: dtype
-//|      Type of values in the array
-//|    .. param bool: endpoint
-//|      Whether the ``stop`` value is included.  Note that even when
-//|      endpoint=True, the exact ``stop`` value may not be included due to the
-//|      inaccuracy of floating point arithmetic.
+//| def linspace(
+//|     start: _float,
+//|     stop: _float,
+//|     *,
+//|     dtype: _DType = float,
+//|     num: int = 50,
+//|     endpoint: bool = True
+//| ) -> array:
+//|     """
+//|     .. param: start
+//|       First value in the array
+//|     .. param: stop
+//|       Final value in the array
+//|     .. param int: num
+//|       Count of values in the array
+//|     .. param: dtype
+//|       Type of values in the array
+//|     .. param bool: endpoint
+//|       Whether the ``stop`` value is included.  Note that even when
+//|       endpoint=True, the exact ``stop`` value may not be included due to the
+//|       inaccuracy of floating point arithmetic.
 //|
-//|    Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly."""
-//|    ...
+//|     Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly."""
+//|     ...
 //|
 
 mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -236,7 +244,7 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 
-//| def ones(shape, *, dtype=float):
+//| def ones(shape: Union[int, Tuple[int, int]], *, dtype: _DType = float) -> array:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
@@ -253,7 +261,7 @@ mp_obj_t create_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 
-//| def zeros(shape, *, dtype):
+//| def zeros(shape: Union[int, Tuple[int, int]], *, dtype: _DType = float) -> array:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
