@@ -80,14 +80,14 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     return true;
 }
 
-//| def cholesky(A):
-//|    """
-//|    :param ~ulab.array A: a positive definite, symmetric square matrix
-//|    :return ~ulab.array L: a square root matrix in the lower triangular form
-//|    :raises ValueError: If the input does not fulfill the necessary conditions
+//| def cholesky(A: ulab.array) -> ulab.array:
+//|     """
+//|     :param ~ulab.array A: a positive definite, symmetric square matrix
+//|     :return ~ulab.array L: a square root matrix in the lower triangular form
+//|     :raises ValueError: If the input does not fulfill the necessary conditions
 //|
-//|    The returned matrix satisfies the equation m=LL*"""
-//|    ...
+//|     The returned matrix satisfies the equation m=LL*"""
+//|     ...
 //|
 
 static mp_obj_t linalg_cholesky(mp_obj_t oin) {
@@ -141,12 +141,13 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
 
-//| def det():
-//|    """
-//|    :param: m, a square matrix
-//|    :return float: The determinant of the matrix"""
+//| def det(m: ulab.array) -> float:
+//|     """
+//|     :param: m, a square matrix
+//|     :return float: The determinant of the matrix
 //|
-//|    ...
+//|     Computes the eigenvalues and eigenvectors of a square matrix"""
+//|     ...
 //|
 
 static mp_obj_t linalg_det(mp_obj_t oin) {
@@ -181,7 +182,7 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 
-//| def dot(m1, m2):
+//| def dot(m1: ulab.array, m2: ulab.array) -> Union[ulab.array, float]:
 //|    """
 //|    :param ~ulab.array m1: a matrix, or a vector
 //|    :param ~ulab.array m2: a matrix, or a vector
@@ -234,13 +235,13 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
 
-//| def eig(m):
-//|    """
-//|    :param m: a square matrix
-//|    :return tuple (eigenvectors, eigenvalues):
+//| def eig(m: ulab.array) -> Tuple[ulab.array, ulab.array]:
+//|     """
+//|     :param m: a square matrix
+//|     :return tuple (eigenvectors, eigenvalues):
 //|
-//|    Computes the eigenvalues and eigenvectors of a square matrix"""
-//|    ...
+//|     Computes the eigenvalues and eigenvectors of a square matrix"""
+//|     ...
 //|
 
 static mp_obj_t linalg_eig(mp_obj_t oin) {
@@ -365,16 +366,15 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 
-//| def inv(m):
-//|    """
-//|    :param ~ulab.array m: a square matrix
-//|    :return: The inverse of the matrix, if it exists
-//|    :raises ValueError: if the matrix is not invertible
+//| def inv(m: ulab.array) -> ulab.array:
+//|     """
+//|     :param ~ulab.array m: a square matrix
+//|     :return: The inverse of the matrix, if it exists
+//|     :raises ValueError: if the matrix is not invertible
 //|
-//|    Computes the inverse of a square matrix"""
-//|    ...
+//|     Computes the inverse of a square matrix"""
+//|     ...
 //|
-
 static mp_obj_t linalg_inv(mp_obj_t o_in) {
 	ndarray_obj_t *o = linalg_object_is_square(o_in);
     ndarray_obj_t *inverted = create_new_ndarray(o->m, o->n, NDARRAY_FLOAT);
@@ -423,9 +423,9 @@ static mp_obj_t linalg_norm(mp_obj_t _x) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
 
-//| def size(array):
-//|    """Return the total number of elements in the array, as an integer."""
-//|    ...
+//| def size(array: ulab.array) -> int:
+//|     """Return the total number of elements in the array, as an integer."""
+//|     ...
 //|
 
 static mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -468,12 +468,12 @@ static mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
 MP_DEFINE_CONST_FUN_OBJ_KW(linalg_size_obj, 1, linalg_size);
 
-//| def trace(m):
-//|    """
-//|    :param m: a square matrix
+//| def trace(m: ulab.array) -> float:
+//|     """
+//|     :param m: a square matrix
 //|
-//|    Compute the trace of the matrix, the sum of its diagonal elements."""
-//|    ...
+//|     Compute the trace of the matrix, the sum of its diagonal elements."""
+//|     ...
 //|
 
 static mp_obj_t linalg_trace(mp_obj_t oin) {

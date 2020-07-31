@@ -36,9 +36,24 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //| possible.  Numpy's documentation can be found at
 //| https://docs.scipy.org/doc/numpy/index.html"""
 //|
+//| from typing import List
+//|
+//| _DType = int
+//| """`ulab.int8`, `ulab.uint8`, `ulab.int16`, `ulab.uint16`, or `ulab.float`"""
+//|
+//| _Index = Union[int, slice, List[bool], Tuple[Union[int, slice, List[bool]], Union[int, slice, List[bool]]]]
+//| _float = float
+//|
+
 //| class array:
 //|     """1- and 2- dimensional array"""
-//|     def __init__(self, values, *, dtype=float):
+//|
+//|     def __init__(
+//|         self,
+//|         values: Union[array, Iterable[_float], Iterable[Iterable[_float]]],
+//|         *,
+//|         dtype: _DType = float
+//|     ) -> None:
 //|         """:param sequence values: Sequence giving the initial content of the array.
 //|           :param dtype: The type of array values, ``int8``, ``uint8``, ``int16``, ``uint16``, or ``float``
 //|
@@ -54,16 +69,16 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|           places an `array.array` can be used."""
 //|         ...
 //|
-//|     shape: tuple = ...
+//|     shape: Union[Tuple[int], Tuple[int, int]]
 //|     """The size of the array, a tuple of length 1 or 2"""
 //|
-//|     size: int = ...
+//|     size: int
 //|     """The number of elements in the array"""
 //|
-//|     itemsize: int = ...
-//|     """The number of elements in the array"""
+//|     itemsize: int
+//|     """The size of a single item in the array"""
 //|
-//|     def flatten(self, *, order='C'):
+//|     def flatten(self, *, order: str = "C") -> array:
 //|         """:param order: Whether to flatten by rows ('C') or columns ('F')
 //|
 //|            Returns a new `ulab.array` object which is always 1 dimensional.
@@ -72,63 +87,96 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|            to the typical storage organization of the C and Fortran languages."""
 //|         ...
 //|
-//|     def sort(self, *, axis=1):
+//|     def reshape(self, shape: Tuple[int, int]) -> array:
+//|         """Returns an array containing the same data with a new shape."""
+//|         ...
+//|
+//|     def sort(self, *, axis: Optional[int] = 1) -> None:
 //|         """:param axis: Whether to sort elements within rows (0), columns (1), or elements (None)"""
 //|         ...
 //|
-//|     def transpose(self):
+//|     def transpose(self) -> array:
 //|         """Swap the rows and columns of a 2-dimensional array"""
 //|         ...
 //|
-//|     def  __add__(self):
+//|     def __add__(self, other: Union[array, _float]) -> array:
 //|         """Adds corresponding elements of the two arrays, or adds a number to all
 //|            elements of the array.  If both arguments are arrays, their sizes must match."""
 //|         ...
+//|     def __radd__(self, other: _float) -> array: ...
 //|
-//|     def  __sub__(self):
-//|         """Subtracts corresponding elements of the two arrays, or adds a number to all
+//|     def __sub__(self, other: Union[array, _float]) -> array:
+//|         """Subtracts corresponding elements of the two arrays, or subtracts a number from all
 //|            elements of the array.  If both arguments are arrays, their sizes must match."""
 //|         ...
+//|     def __rsub__(self, other: _float) -> array: ...
 //|
-//|     def  __mul__(self):
+//|     def __mul__(self, other: Union[array, _float]) -> array:
 //|         """Multiplies corresponding elements of the two arrays, or multiplies
 //|            all elements of the array by a number.  If both arguments are arrays,
 //|            their sizes must match."""
 //|         ...
+//|     def __rmul__(self, other: _float) -> array: ...
 //|
-//|     def __div__(self):
+//|     def __div__(self, other: Union[array, _float]) -> array:
 //|         """Multiplies corresponding elements of the two arrays, or divides
 //|            all elements of the array by a number.  If both arguments are arrays,
 //|            their sizes must match."""
 //|         ...
+//|     def __rdiv__(self, other: _float) -> array: ...
 //|
-//|     def __pow__():
+//|     def __pow__(self, other: Union[array, _float]) -> array:
 //|         """Computes the power (x**y) of corresponding elements of the the two arrays,
 //|            or one number and one array.  If both arguments are arrays, their sizes
 //|            must match."""
 //|         ...
+//|     def __rpow__(self, other: _float) -> array: ...
 //|
-//|     def __getitem__():
+//|     def __inv__(self) -> array:
+//|         ...
+//|     def __neg__(self) -> array:
+//|         ...
+//|     def __pos__(self) -> array:
+//|         ...
+//|     def __abs__(self) -> array:
+//|         ...
+//|     def __len__(self) -> array:
+//|         ...
+//|     def __lt__(self, other: Union[array, _float]) -> List[bool]:
+//|         ...
+//|     def __le__(self, other: Union[array, _float]) -> List[bool]:
+//|         ...
+//|     def __gt__(self, other: Union[array, _float]) -> List[bool]:
+//|         ...
+//|     def __ge__(self, other: Union[array, _float]) -> List[bool]:
+//|         ...
+//|
+//|     def __iter__(self) -> Union[Iterator[array], Iterator[_float]]:
+//|         ...
+//|
+//|     def __getitem__(self, index: _Index) -> Union[array, _float]:
 //|         """Retrieve an element of the array."""
 //|         ...
 //|
-//|     def __setitem__():
+//|     def __setitem__(self, index: _Index, value: Union[array, _float]) -> None:
 //|         """Set an element of the array."""
 //|         ...
 //|
-//| int8 = ...
+//| _ArrayLike = Union[array, List[_float], Tuple[_float], range]
+//|
+//| int8: _DType
 //| """Type code for signed integers in the range -128 .. 127 inclusive, like the 'b' typecode of `array.array`"""
 //|
-//| int16 = ...
+//| int16: _DType
 //| """Type code for signed integers in the range -32768 .. 32767 inclusive, like the 'h' typecode of `array.array`"""
 //|
-//| float = ...
+//| float: _DType
 //| """Type code for floating point values, like the 'f' typecode of `array.array`"""
 //|
-//| uint8 = ...
+//| uint8: _DType
 //| """Type code for unsigned integers in the range 0 .. 255 inclusive, like the 'H' typecode of `array.array`"""
 //|
-//| uint16 = ...
+//| uint16: _DType
 //| """Type code for unsigned integers in the range 0 .. 65535 inclusive, like the 'h' typecode of `array.array`"""
 //|
 
