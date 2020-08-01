@@ -37,7 +37,7 @@
 static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     // Return a single value, if o_in is not iterable
     if(mp_obj_is_float(o_in) || MP_OBJ_IS_INT(o_in)) {
-            return mp_obj_new_float(f(mp_obj_get_float(o_in)));
+        return mp_obj_new_float(f(mp_obj_get_float(o_in)));
     }
     mp_float_t x;
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
@@ -240,6 +240,21 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cos_obj, vectorise_cos);
 MATH_FUN_1(cosh, cosh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cosh_obj, vectorise_cosh);
 
+//| def degrees(a: _ArrayLike) -> ulab.array:
+//|    """Converts angles from radians to degrees"""
+//|    ...
+//|
+
+static mp_float_t vectorise_degrees_(mp_float_t value) {
+    return value * MICROPY_FLOAT_CONST(180.0) / MP_PI;
+}
+
+static mp_obj_t vectorise_degrees(mp_obj_t x_obj) {
+    return vectorise_generic_vector(x_obj, vectorise_degrees_);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_degrees_obj, vectorise_degrees);
+
 //| def erf(a: _ArrayLike) -> ulab.array:
 //|    """Computes the error function, which has applications in statistics"""
 //|    ...
@@ -319,6 +334,21 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log10_obj, vectorise_log10);
 
 MATH_FUN_1(log2, log2);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log2_obj, vectorise_log2);
+
+//| def radians(a: _ArrayLike) -> ulab.array:
+//|    """Converts angles from degrees to radians"""
+//|    ...
+//|
+
+static mp_float_t vectorise_radians_(mp_float_t value) {
+    return value * MP_PI / MICROPY_FLOAT_CONST(180.0);
+}
+
+static mp_obj_t vectorise_radians(mp_obj_t x_obj) {
+    return vectorise_generic_vector(x_obj, vectorise_radians_);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_radians_obj, vectorise_radians);
 
 //| def sin(a: _ArrayLike) -> ulab.array:
 //|    """Computes the sine function"""
@@ -466,6 +496,8 @@ STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_atanh), (mp_obj_t)&vectorise_atanh_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ceil), (mp_obj_t)&vectorise_ceil_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_cos), (mp_obj_t)&vectorise_cos_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cosh), (mp_obj_t)&vectorise_cosh_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&vectorise_degrees_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_erf), (mp_obj_t)&vectorise_erf_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_erfc), (mp_obj_t)&vectorise_erfc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&vectorise_exp_obj },
@@ -476,6 +508,7 @@ STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&vectorise_log_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&vectorise_log10_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log2), (mp_obj_t)&vectorise_log2_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_radians), (mp_obj_t)&vectorise_radians_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sin), (mp_obj_t)&vectorise_sin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sinh), (mp_obj_t)&vectorise_sinh_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&vectorise_sqrt_obj },
