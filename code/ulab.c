@@ -32,7 +32,10 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.54.1");
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "0.55.0");
+
+mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MICROPY_FLOAT_CONST(M_E)};
+mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MICROPY_FLOAT_CONST(MP_PI)};
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
@@ -105,6 +108,8 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
     #endif
     // class constants
+    { MP_ROM_QSTR(MP_QSTR_e), MP_ROM_PTR(&ulab_const_float_e_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pi), MP_ROM_PTR(&ulab_const_float_pi_obj) },
     { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },
     { MP_ROM_QSTR(MP_QSTR_int8), MP_ROM_INT(NDARRAY_INT8) },
     { MP_ROM_QSTR(MP_QSTR_uint16), MP_ROM_INT(NDARRAY_UINT16) },
