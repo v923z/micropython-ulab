@@ -1,3 +1,9 @@
+Sat, 1 Aug 2020
+
+version 0.55.0
+
+    added the pi, and e constants, and the degrees and radians functions
+
 Wed, 29 Jul 2020
 
 version 0.54.1
