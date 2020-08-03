@@ -70,7 +70,7 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data
 -  fast Fourier transforms
 
-At the time of writing this manual (for version 0.50.0), the library
+At the time of writing this manual (for version 0.54.0), the library
 adds approximately 40 kB of extra compiled code to the micropython
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
 can easily shave off a couple of kB. See the section on `customising
@@ -192,8 +192,8 @@ firmware, and that is most probably too late.
 Except for ``fft``, the standard sub-modules, ``vector``, ``linalg``,
 ``numerical``, and ``poly`` are all ``numpy``-compatible. User-defined
 functions that accept ``ndarray``\ s as their argument should be
-implemented in the ``extras`` sub-module, or its sub-modules. Hints as
-to how to do that can be found in the section `Extending
+implemented in the ``user`` sub-module, or its sub-modules. Hints as to
+how to do that can be found in the section `Extending
 ulab <#Extending-ulab>`__.
 
 Supported functions and methods
@@ -2918,7 +2918,8 @@ virtually no RAM beyond the output array is used.
 
 Since the underlying container of the output array is of type
 ``uint16_t``, neither of the output dimensions should be larger than
-65535.
+65535. If that happens to be the case, the function will bail out with a
+``ValueError``.
 
 .. code::
         
@@ -3727,9 +3728,7 @@ In addition to the Fourier transform and its inverse, ``ulab`` also
 sports a function called ``spectrogram``, which returns the absolute
 value of the Fourier transform. This could be used to find the dominant
 spectral component in a time series. The arguments are treated in the
-same way as in ``fft``, and ``ifft``. In order to keep compatibility of
-the core modules with ``numpy``, this function is defined in the
-``extras`` sub-module.
+same way as in ``fft``, and ``ifft``.
 
 .. code::
         
@@ -3737,12 +3736,12 @@ the core modules with ``numpy``, this function is defined in the
     
     import ulab as np
     from ulab import vector
-    from ulab import extras
+    from ulab import fft
     
     x = np.linspace(0, 10, num=1024)
     y = vector.sin(x)
     
-    a = extras.spectrogram(y)
+    a = fft.spectrogram(y)
     
     print('original vector:\t', y)
     print('\nspectrum:\t', a)
@@ -3766,7 +3765,6 @@ As such, ``spectrogram`` is really just a shorthand for
     import ulab as np
     from ulab import fft
     from ulab import vector
-    from ulab import extras
     
     x = np.linspace(0, 10, num=1024)
     y = vector.sin(x)
@@ -3775,7 +3773,7 @@ As such, ``spectrogram`` is really just a shorthand for
     
     print('\nspectrum calculated the hard way:\t', vector.sqrt(a*a + b*b))
     
-    a = extras.spectrogram(y)
+    a = fft.spectrogram(y)
     
     print('\nspectrum calculated the lazy way:\t', a)
 
@@ -4341,10 +4339,10 @@ Extending ulab
 ==============
 
 As mentioned at the beginning, ``ulab`` is a set of sub-modules, out of
-which one, ``extra`` is explicitly reserved for user code. You should
+which one, ``user`` is explicitly reserved for user code. You should
 implement your functions in this sub-module, or sub-modules thereof.
 
-The new functions can easily be added to ``extra`` in a couple of simple
+The new functions can easily be added to ``user`` in a couple of simple
 steps. At the C level, the type definition of an ``ndarray`` is as
 follows:
 
