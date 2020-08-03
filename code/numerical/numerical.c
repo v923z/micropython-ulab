@@ -390,8 +390,7 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
         start_inc = ndarray->n;
         end = ndarray->n;
         N = n;
-    } else if((mp_obj_get_int(args[1].u_obj) == -1) || 
-              (mp_obj_get_int(args[1].u_obj) == 1)) { // sort along the horizontal axis
+    } else if((mp_obj_get_int(args[1].u_obj) == -1) || (mp_obj_get_int(args[1].u_obj) == 1)) { // sort along the horizontal axis
         m = ndarray->m;
         n = ndarray->n;
         increment = 1;
@@ -409,6 +408,9 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_ValueError(translate("axis must be -1, 0, None, or 1"));
     }
 
+    if((m > 65535) || (n > 65535)) {
+        mp_raise_ValueError(translate("sorted axis can't be longer than 65535"));
+    }
     // at the expense of flash, we could save RAM by creating 
     // an NDARRAY_UINT16 ndarray only, if needed, otherwise, NDARRAY_UINT8
     ndarray_obj_t *indices = create_new_ndarray(m, n, NDARRAY_UINT16);

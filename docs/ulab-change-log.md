@@ -1,3 +1,9 @@
+Mon, 03 Aug 2020
+
+version 0.54.2
+
+    argsort throws an error, if the array is longer than 65535
+
 Wed, 29 Jul 2020
 
 version 0.54.1
