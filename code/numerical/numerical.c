@@ -219,13 +219,13 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
                 RUN_ARGMIN(ndarray, results, mp_float_t, mp_float_t, len, start, increment, optype, j);
             }
         } else { // argmin/argmax
-            if((ndarray->array->typecode == NDARRAY_UINT8)) {
+            if(ndarray->array->typecode == NDARRAY_UINT8) {
                 RUN_ARGMIN(ndarray, results, uint8_t, uint16_t, len, start, increment, optype, j);
-            } else if((ndarray->array->typecode == NDARRAY_INT8)) {
+            } else if(ndarray->array->typecode == NDARRAY_INT8) {
                 RUN_ARGMIN(ndarray, results, int8_t, uint16_t, len, start, increment, optype, j);
-            } else if((ndarray->array->typecode == NDARRAY_UINT16)) {
+            } else if(ndarray->array->typecode == NDARRAY_UINT16) {
                 RUN_ARGMIN(ndarray, results, uint16_t, uint16_t, len, start, increment, optype, j);
-            } else if((ndarray->array->typecode == NDARRAY_INT16)) {
+            } else if(ndarray->array->typecode == NDARRAY_INT16) {
                 RUN_ARGMIN(ndarray, results, int16_t, uint16_t, len, start, increment, optype, j);
             } else {
                 RUN_ARGMIN(ndarray, results, mp_float_t, uint16_t, len, start, increment, optype, j);
