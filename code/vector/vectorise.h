@@ -26,11 +26,22 @@ typedef struct _vectorized_function_obj_t {
 
 extern mp_obj_module_t ulab_vectorise_module;
 
-#define ITERATE_VECTOR(type, source, out) do {\
-    type *input = (type *)(source)->array->items;\
-    for(size_t i=0; i < (source)->array->len; i++) {\
-                (out)[i] = f(input[i]);\
-    }\
+#define ITERATE_VECTOR(type, source, array) do {\
+    type *input = (type *)(source)->array;\
+    size_t i=0, j, k, l;\
+    do {\
+        j = 0;\
+        do {\
+            k = 0;\
+            do {\
+                l = 0;\
+                do {\
+                    *(array)++ = f(*input);\
+                    l++;\
+                } while(l < (source)->shape[3]);\
+            } while(k < (source)->shape[2]);\
+        } while(j < (source)->shape[1]);\
+    } while(i < (source)->shape[0]);\
 } while(0)
 
 #define MATH_FUN_1(py_name, c_name) \

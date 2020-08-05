@@ -42,31 +42,32 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
     mp_float_t x;
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
-        ndarray_obj_t *ndarray = create_new_ndarray(source->m, source->n, NDARRAY_FLOAT);
-        mp_float_t *dataout = (mp_float_t *)ndarray->array->items;
-        if(source->array->typecode == NDARRAY_UINT8) {
-            ITERATE_VECTOR(uint8_t, source, dataout);
-        } else if(source->array->typecode == NDARRAY_INT8) {
-            ITERATE_VECTOR(int8_t, source, dataout);
-        } else if(source->array->typecode == NDARRAY_UINT16) {
-            ITERATE_VECTOR(uint16_t, source, dataout);
-        } else if(source->array->typecode == NDARRAY_INT16) {
-            ITERATE_VECTOR(int16_t, source, dataout);
+        ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        if(source->dtype == NDARRAY_UINT8) {
+            ITERATE_VECTOR(uint8_t, source, array);
+        } else if(source->dtype == NDARRAY_INT8) {
+            ITERATE_VECTOR(int8_t, source, array);
+        } else if(source->dtype == NDARRAY_UINT16) {
+            ITERATE_VECTOR(uint16_t, source, array);
+        } else if(source->dtype == NDARRAY_INT16) {
+            ITERATE_VECTOR(int16_t, source, array);
         } else {
-            ITERATE_VECTOR(mp_float_t, source, dataout);
+            ITERATE_VECTOR(mp_float_t, source, array);
         }
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
         MP_OBJ_IS_TYPE(o_in, &mp_type_range)) { // i.e., the input is a generic iterable
             mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
-            ndarray_obj_t *out = create_new_ndarray(1, o->len, NDARRAY_FLOAT);
-            mp_float_t *dataout = (mp_float_t *)out->array->items;
+            ndarray_obj_t *out = ndarray_new_linear_array(o->len, NDARRAY_FLOAT);
+            mp_float_t *array = (mp_float_t *)out->array;
             mp_obj_iter_buf_t iter_buf;
             mp_obj_t item, iterable = mp_getiter(o_in, &iter_buf);
             size_t i=0;
             while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
                 x = mp_obj_get_float(item);
-                dataout[i++] = f(x);
+                *array++ = f(x);
+                i++;
             }
         return MP_OBJ_FROM_PTR(out);
     }
@@ -126,14 +127,14 @@ static mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map
 	}
     int8_t n = args[1].u_int;
 	mp_float_t mul = MICROPY_FLOAT_C_FUN(pow)(10.0, n);
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
-    ndarray_obj_t *result = create_new_ndarray(ndarray->m, ndarray->n, NDARRAY_FLOAT);
-    mp_float_t *array = (mp_float_t *)result->array->items;
-    for(size_t i=0; i < ndarray->array->len; i++) {
-		mp_float_t f = ndarray_get_float_value(ndarray->array->items, ndarray->array->typecode, i);
+    ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
+    mp_float_t *array = (mp_float_t *)ndarray->array;
+    for(size_t i=0; i < ndarray->len; i++) {
+		mp_float_t f = ndarray_get_float_value(ndarray->array, ndarray->dtype, i);
 		*array++ = MICROPY_FLOAT_C_FUN(round)(f * mul) / mul;
 	}
-    return MP_OBJ_FROM_PTR(result);
+    return MP_OBJ_FROM_PTR(ndarray);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_around_obj, 1, vectorise_around);
@@ -153,6 +154,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 //|    ...
 //|
 
+/*
 static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 	// the function is implemented for scalars and ndarrays only, with partial 
 	// broadcasting: arguments must be either scalars, or ndarrays of equal size/shape
@@ -162,15 +164,15 @@ static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 	}
 	ndarray_obj_t *ndarray_x, *ndarray_y;
 	if(MP_OBJ_IS_INT(x) || mp_obj_is_float(x)) {
-		ndarray_x = create_new_ndarray(1, 1, NDARRAY_FLOAT);
-		mp_float_t *array_x = (mp_float_t *)ndarray_x->array->items;
+		ndarray_x = ndarray_new_linear_array(1, NDARRAY_FLOAT);
+		mp_float_t *array_x = (mp_float_t *)ndarray_x->array;
 		*array_x = mp_obj_get_float(x);
 	} else {
 		ndarray_x = MP_OBJ_TO_PTR(x);
 	}
 	if(MP_OBJ_IS_INT(y) || mp_obj_is_float(y)) {
-		ndarray_y = create_new_ndarray(1, 1, NDARRAY_FLOAT);
-		mp_float_t *array_y = (mp_float_t *)ndarray_y->array->items;
+		ndarray_y = ndarray_new_linear_array(1, NDARRAY_FLOAT);
+		mp_float_t *array_y = (mp_float_t *)ndarray_y->array;
 		*array_y = mp_obj_get_float(y);
 	} else {
 		ndarray_y = MP_OBJ_TO_PTR(y);
@@ -205,7 +207,7 @@ static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
-
+*/
 
 
 //| def atanh(a: _ArrayLike) -> ulab.array:
@@ -367,31 +369,31 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
     mp_obj_t fvalue;
     if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0]);
-        ndarray_obj_t *target = create_new_ndarray(source->m, source->n, self->otypes);
-        for(size_t i=0; i < source->array->len; i++) {
-            avalue[0] = mp_binary_get_val_array(source->array->typecode, source->array->items, i);
+        ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, self->otypes);
+        for(size_t i=0; i < source->len; i++) {
+            avalue[0] = mp_binary_get_val_array(source->dtype, source->array, i);
             fvalue = self->type->call(self->fun, 1, 0, avalue);
-            mp_binary_set_val_array(self->otypes, target->array->items, i, fvalue);
+            mp_binary_set_val_array(self->otypes, ndarray->array, i, fvalue);
         }
-        return MP_OBJ_FROM_PTR(target);
+        return MP_OBJ_FROM_PTR(ndarray);
     } else if(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || MP_OBJ_IS_TYPE(args[0], &mp_type_list) ||
         MP_OBJ_IS_TYPE(args[0], &mp_type_range)) { // i.e., the input is a generic iterable
         size_t len = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
-        ndarray_obj_t *target = create_new_ndarray(1, len, self->otypes);
+        ndarray_obj_t *ndarray = ndarray_new_linear_array(len, self->otypes);
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
         size_t i=0;
         while ((avalue[0] = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             fvalue = self->type->call(self->fun, 1, 0, avalue);
-            mp_binary_set_val_array(self->otypes, target->array->items, i, fvalue);
+            mp_binary_set_val_array(self->otypes, ndarray->array, i, fvalue);
             i++;
         }
-        return MP_OBJ_FROM_PTR(target);
+        return MP_OBJ_FROM_PTR(ndarray);
     } else if(mp_obj_is_int(args[0]) || mp_obj_is_float(args[0])) {
-        ndarray_obj_t *target = create_new_ndarray(1, 1, self->otypes);
+        ndarray_obj_t *ndarray = ndarray_new_linear_array(1, self->otypes);
         fvalue = self->type->call(self->fun, 1, 0, args);
-        mp_binary_set_val_array(self->otypes, target->array->items, 0, fvalue);
-        return MP_OBJ_FROM_PTR(target);
+        mp_binary_set_val_array(self->otypes, ndarray->array, 0, fvalue);
+        return MP_OBJ_FROM_PTR(ndarray);
     } else {
         mp_raise_ValueError(translate("wrong input type"));
     }
@@ -458,7 +460,7 @@ STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_vector) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_arctan2), (mp_obj_t)&vectorise_arctan2_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_arctan2), (mp_obj_t)&vectorise_arctan2_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_around), (mp_obj_t)&vectorise_around_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_asinh), (mp_obj_t)&vectorise_asinh_obj },

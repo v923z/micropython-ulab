@@ -17,7 +17,7 @@
 
 // vectorise (all functions) takes approx. 6 kB of flash space
 #ifndef ULAB_VECTORISE_MODULE
-#define ULAB_VECTORISE_MODULE (0)
+#define ULAB_VECTORISE_MODULE (1)
 #endif
 
 // linalg adds around 6 kB to the firmware

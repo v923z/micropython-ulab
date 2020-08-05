@@ -59,6 +59,9 @@ void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *, mp_obj_t *, mp_obj_t *);
 #define NDARRAY_NUMERIC   0
 #define NDARRAY_BOOLEAN   1
 
+#define NDARRAY_NDARRAY_TYPE    1
+#define NDARRAY_ITERABLE_TYPE   2
+
 extern const mp_obj_type_t ulab_ndarray_type;
 
 enum NDARRAY_TYPE {
@@ -72,13 +75,15 @@ enum NDARRAY_TYPE {
 
 typedef struct _ndarray_obj_t {
 	mp_obj_base_t base;
-	size_t shape[ULAB_MAX_DIMS];
-	int32_t strides[ULAB_MAX_DIMS];
-	size_t len;
-	void *array;
-	uint8_t dtype;
+    uint8_t dense;
+    uint8_t dtype;
+    uint8_t itemsize;
 	uint8_t boolean;
 	uint8_t ndim;
+    size_t len;
+	size_t shape[ULAB_MAX_DIMS];
+	int32_t strides[ULAB_MAX_DIMS];
+    void *array;
 } ndarray_obj_t;
 
 // this is a helper structure, so that we can return shape AND strides from a function
@@ -113,7 +118,7 @@ MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_set_printoptions_obj);
 mp_obj_t ndarray_get_printoptions(void);
 MP_DECLARE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj);
 
-void ndarray_print_row(const mp_print_t *, mp_obj_array_t *, size_t , size_t );
+void ndarray_print_row(const mp_print_t *, ndarray_obj_t *, size_t , size_t );
 void ndarray_assign_elements(ndarray_obj_t *, mp_obj_t , uint8_t , size_t *);
 size_t *ndarray_new_coords(uint8_t );
 size_t *ndarray_contract_shape(ndarray_obj_t *, uint8_t );
