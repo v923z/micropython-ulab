@@ -24,14 +24,17 @@ mp_uint_t ndarray_print_threshold = NDARRAY_PRINT_THRESHOLD;
 mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 
 //| """Manipulate numeric data similar to numpy
+//|
 //| `ulab` is a numpy-like module for micropython, meant to simplify and
 //| speed up common mathematical operations on arrays. The primary goal was to
 //| implement a small subset of numpy that might be useful in the context of a
 //| microcontroller. This means low-level data processing of linear (array) and
 //| two-dimensional (matrix) data.
+//|
 //| `ulab` is adapted from micropython-ulab, and the original project's
 //| documentation can be found at
 //| https://micropython-ulab.readthedocs.io/en/latest/
+//|
 //| `ulab` is modeled after numpy, and aims to be a compatible subset where
 //| possible.  Numpy's documentation can be found at
 //| https://docs.scipy.org/doc/numpy/index.html"""
@@ -42,8 +45,9 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //| """`ulab.int8`, `ulab.uint8`, `ulab.int16`, `ulab.uint16`, or `ulab.float`"""
 //|
 //| _Index = Union[int, slice, List[bool], Tuple[Union[int, slice, List[bool]], Union[int, slice, List[bool]]]]
-//| _float = float
 //|
+//| _float = float
+//| """Type alias of the bulitin float"""
 
 //| class array:
 //|     """1- and 2- dimensional array"""
@@ -163,6 +167,7 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|         ...
 //|
 //| _ArrayLike = Union[array, List[_float], Tuple[_float], range]
+//| """`ulab.array`, `List[float]`, `Tuple[float]` or `range`"""
 //|
 //| int8: _DType
 //| """Type code for signed integers in the range -128 .. 127 inclusive, like the 'b' typecode of `array.array`"""
