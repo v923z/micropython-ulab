@@ -334,96 +334,74 @@ mp_obj_t ndarray_get_printoptions(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj, ndarray_get_printoptions);
 
 
-void ndarray_print_row(const mp_print_t *print, ndarray_obj_t *ndarray, size_t n0, size_t n) {
+void ndarray_print_row(const mp_print_t *print, uint8_t dtype, uint8_t *array, size_t stride, size_t n) {
     mp_print_str(print, "[");
     if((n <= ndarray_print_threshold) || (n <= 2*ndarray_print_edgeitems)) { // if the array is short, print everything
-        mp_obj_print_helper(print, mp_binary_get_val_array(ndarray->dtype, ndarray->array, n0), PRINT_REPR);
-        for(size_t i=1; i < n; i++) {
+        mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+        array += stride;
+        for(size_t i=1; i < n; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, mp_binary_get_val_array(ndarray->dtype, ndarray->array, n0+i), PRINT_REPR);
+            mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
         }
     } else {
-        mp_obj_print_helper(print, mp_binary_get_val_array(ndarray->dtype, ndarray->array, n0), PRINT_REPR);
-        for(size_t i=1; i < ndarray_print_edgeitems; i++) {
+        mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+        array += stride;
+        for(size_t i=1; i < ndarray_print_edgeitems; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, mp_binary_get_val_array(ndarray->dtype, ndarray->array, n0+i), PRINT_REPR);
+            mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
         }
         mp_printf(print, ", ..., ");
-        mp_obj_print_helper(print, mp_binary_get_val_array(ndarray->dtype, ndarray->array, n0+n-ndarray_print_edgeitems), PRINT_REPR);
-        for(size_t i=1; i < ndarray_print_edgeitems; i++) {
+        array += stride * (n - 2 *  ndarray_print_edgeitems);
+        mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+        array += stride;
+        for(size_t i=1; i < ndarray_print_edgeitems; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, mp_binary_get_val_array(ndarray->dtype, ndarray->array, n0+n-ndarray_print_edgeitems+i), PRINT_REPR);
+            mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
         }
     }
     mp_print_str(print, "]");
 }
 
+void ndarray_print_bracket(const mp_print_t *print, const size_t condition, const size_t shape, const char *string) {
+    if(condition < shape) {
+        mp_print_str(print, string);
+    }
+}
+
 void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    size_t i=0, j, k;
-    
+    uint8_t *array = (uint8_t *)self->array;
+    size_t i=0;
     mp_print_str(print, "array(");
-    do {
-        j = 0;
-        do {
-            k = 0;
-            do {
-                // fix offset here!
-                ndarray_print_row(print, self, 0, self->len);
-                k++;
-            } while(k < self->shape[2]);
-            j++;
-        } while(j < self->shape[1]);
-        i++;
-    } while(i < self->shape[0]);
-    
-/*    uint8_t print_extra = self->ndim;
-    size_t *coords = ndarray_new_coords(self->ndim);
-    int32_t last_stride = self->strides[self->ndim-1];
-    
-    size_t offset = 0;
-    if(self->len == 0) mp_print_str(print, "[");
-    for(size_t i=0; i < self->len; i++) {
-        for(uint8_t j=0; j < print_extra; j++) {
-            mp_print_str(print, "[");
-        }
-        print_extra = 0;
-        if(!self->boolean) {
-            mp_obj_print_helper(print, mp_binary_get_val_array(self->dtype, self->array, offset), PRINT_REPR);
-        } else {
-            if(((uint8_t *)self->array)[offset]) {
-                mp_print_str(print, "True");
-            } else {
-                mp_print_str(print, "False");
-            }
-        }
-		offset += last_stride;
-        coords[self->ndim-1] += 1;
-        if(coords[self->ndim-1] != self->shape[self->ndim-1]) {
-            mp_print_str(print, ", ");
-        }
-        for(uint8_t j=self->ndim-1; j > 0; j--) {
-            if(coords[j] == self->shape[j]) {
-                offset -= self->shape[j] * self->strides[j];
-                offset += self->strides[j-1];
-                print_extra += 1;
-                coords[j] = 0;
-                coords[j-1] += 1;
-                mp_print_str(print, "]");
-            } else { // coordinates can change only, if the last coordinate changes
-                break;
-            }
-        }
-        if(print_extra && (i != self->len-1)) {
-            mp_print_str(print, "\n");
-            if(print_extra > 1) {
-                mp_print_str(print, "\n");
-            }
-        }
+    if(self->shape[ULAB_MAX_DIMS-4] > 0) {
+        mp_print_str(print, "[");
     }
-    m_del(size_t, coords, self->ndim);
-	mp_print_str(print, "]");*/
+    do {
+        size_t j = 0;
+        ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "[");
+        do {
+            size_t k = 0;
+            ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "[");
+            do {
+                ndarray_print_row(print, self->dtype, array, self->strides[ULAB_MAX_DIMS-1], self->shape[ULAB_MAX_DIMS-1]);
+                array += self->strides[ULAB_MAX_DIMS-2];
+                k++;
+                ndarray_print_bracket(print, k, self->shape[ULAB_MAX_DIMS-2], ",\n\t");
+            } while(k < self->shape[ULAB_MAX_DIMS-2]);
+            ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "]");
+            j++;
+            ndarray_print_bracket(print, j, self->shape[ULAB_MAX_DIMS-3], ",\n\n\t");
+            array -= self->strides[ULAB_MAX_DIMS-2] * self->shape[ULAB_MAX_DIMS-2];
+            array += self->strides[ULAB_MAX_DIMS-3];
+        } while(j < self->shape[ULAB_MAX_DIMS-3]);
+        ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "]");
+        array -= self->strides[ULAB_MAX_DIMS-3] * self->shape[ULAB_MAX_DIMS-3];
+        array += self->strides[ULAB_MAX_DIMS-4];
+        i++;
+        ndarray_print_bracket(print, i, self->shape[ULAB_MAX_DIMS-4], ",\n\n\t");
+    } while(i < self->shape[ULAB_MAX_DIMS-4]);
+    
 	if(self->boolean) {
 		mp_print_str(print, ", dtype=bool)");
 	} else if(self->dtype == NDARRAY_UINT8) {
@@ -1440,16 +1418,12 @@ mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
         mp_raise_ValueError(translate("maximum number of dimensions is 4"));
 	}
     size_t *new_shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(new_shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     size_t new_length = 1;
-    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
-        if(i < ULAB_MAX_DIMS - source->ndim - 1) {
-            new_shape[i] = 0;
-        } else {
-            new_shape[i] = mp_obj_get_int(shape->items[i - source->ndim - 1]);
-            new_length *= new_shape[i];
-        }
+    for(uint8_t i=0; i < shape->len; i++) {
+        new_shape[ULAB_MAX_DIMS - i - 1] = mp_obj_get_int(shape->items[shape->len - i - 1]);
+        new_length *= new_shape[ULAB_MAX_DIMS - i - 1];
     }
-
     if(source->len != new_length) {
         mp_raise_ValueError(translate("input and output shapes are not compatible"));
     }
