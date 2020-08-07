@@ -86,23 +86,6 @@ typedef struct _ndarray_obj_t {
     void *array;
 } ndarray_obj_t;
 
-// this is a helper structure, so that we can return shape AND strides from a function
-typedef struct _ndarray_header_obj_t {
-    size_t *shape;
-    int32_t *strides;
-    int8_t axis;
-} ndarray_header_obj_t;
-
-typedef struct _short_descriptor_t {
-	size_t left_shape[ULAB_MAX_DIMS];
-	size_t right_shape[ULAB_MAX_DIMS];
-	size_t output_shape[ULAB_MAX_DIMS];
-	int32_t left_strides[ULAB_MAX_DIMS];
-	int32_t right_strides[ULAB_MAX_DIMS];
-	int32_t output_strides[ULAB_MAX_DIMS];
-	bool broadcastable;
-} short_descriptor_t;
-
 mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
 
 mp_float_t ndarray_get_float_value(void *, uint8_t , size_t );
