@@ -372,33 +372,46 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     (void)kind;
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t *array = (uint8_t *)self->array;
-    size_t i=0;
     mp_print_str(print, "array(");
+
+    #if ULAB_MAX_DIMS > 3
+    size_t i=0;
     ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-4], "[");
     do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
         size_t j = 0;
         ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "[");
         do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
             size_t k = 0;
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "[");
             do {
+            #endif
                 ndarray_print_row(print, self->dtype, array, self->strides[ULAB_MAX_DIMS-1], self->shape[ULAB_MAX_DIMS-1]);
+            #if ULAB_MAX_DIMS > 1
                 array += self->strides[ULAB_MAX_DIMS-2];
                 k++;
                 ndarray_print_bracket(print, k, self->shape[ULAB_MAX_DIMS-2], ",\n\t");
+            #endif
             } while(k < self->shape[ULAB_MAX_DIMS-2]);
+            #if ULAB_MAX_DIMS > 2
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "]");
             j++;
             ndarray_print_bracket(print, j, self->shape[ULAB_MAX_DIMS-3], ",\n\n\t");
             array -= self->strides[ULAB_MAX_DIMS-2] * self->shape[ULAB_MAX_DIMS-2];
             array += self->strides[ULAB_MAX_DIMS-3];
         } while(j < self->shape[ULAB_MAX_DIMS-3]);
+        #endif
+    #if ULAB_MAX_DIMS > 3
         ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "]");
         array -= self->strides[ULAB_MAX_DIMS-3] * self->shape[ULAB_MAX_DIMS-3];
         array += self->strides[ULAB_MAX_DIMS-4];
         i++;
         ndarray_print_bracket(print, i, self->shape[ULAB_MAX_DIMS-4], ",\n\n\t");
     } while(i < self->shape[ULAB_MAX_DIMS-4]);
+    #endif
     
 	if(self->boolean) {
 		mp_print_str(print, ", dtype=bool)");
@@ -1247,9 +1260,9 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
 //		case MP_BINARY_OP_MORE:
 //		case MP_BINARY_OP_MORE_EQUAL:
 		case MP_BINARY_OP_ADD:
-//		case MP_BINARY_OP_SUBTRACT:
+		case MP_BINARY_OP_SUBTRACT:
 //		case MP_BINARY_OP_TRUE_DIVIDE:
-//		case MP_BINARY_OP_MULTIPLY:
+		case MP_BINARY_OP_MULTIPLY:
 //		case MP_BINARY_OP_POWER:
 			// TODO: I believe, this part can be made significantly smaller (compiled size)
 			// by doing only the typecasting in the large ifs, and moving the loops outside
