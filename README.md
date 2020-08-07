@@ -79,9 +79,8 @@ A number of practical examples are listed in the excellent
 # Firmware
 
 Compiled firmware for many hardware platforms can be downloaded from Roberto Colistete's 
-gitlab repository: for the [pyboad](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/Pyboard/Firmware/), for [ESP32](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/ESP32), and 
-for [ESP8266](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/ESP8266/Firmware). 
-Since a number of features can be set in the firmware (threading, support for SD card, LEDs, user switch etc.), and it is
+[gitlab repository](https://gitlab.com/rcolistete/micropython-firmwares/-/tree/master/). These include the pyboard, the ESP32, the ESP8266, 
+and the Pycom boards. Since a number of features can be set in the firmware (threading, support for SD card, LEDs, user switch etc.), and it is
 impossible to create something that suits everyone, these releases should only be used for
 quick testing of `ulab`. Otherwise, compilation from the source is required with
 the appropriate settings, which are usually defined in the `mpconfigboard.h` file of the port
