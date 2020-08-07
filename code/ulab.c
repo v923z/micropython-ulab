@@ -32,7 +32,12 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, "1.0.0");
+#define ULAB_VERSION 0.99.0
+#define xstr(s) str(s)
+#define str(s) #s
+#define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
+
+STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
