@@ -374,9 +374,7 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     uint8_t *array = (uint8_t *)self->array;
     size_t i=0;
     mp_print_str(print, "array(");
-    if(self->shape[ULAB_MAX_DIMS-4] > 0) {
-        mp_print_str(print, "[");
-    }
+    ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-4], "[");
     do {
         size_t j = 0;
         ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "[");
