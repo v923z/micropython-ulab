@@ -183,42 +183,34 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
     }\
 } while(0)
 
-/*
-#define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op, m, n, len, linc, rinc) do {\
-    type_left *left = (type_left *)(ol)->array->items;\
-    type_right *right = (type_right *)(or)->array->items;\
-    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY) || ((op) == MP_BINARY_OP_POWER)) {\
-        ndarray_obj_t *out = create_new_ndarray((m), (n), (typecode));\
-        type_out *(odata) = (type_out *)out->array->items;\
-        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left + *right; }\
-		else if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left * *right; }\
-        else if((op) == MP_BINARY_OP_POWER) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = (type_out)MICROPY_FLOAT_C_FUN(pow)(*left, *right); }\
-        else if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left - *right; }\
-        return MP_OBJ_FROM_PTR(out);\
-	} else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
-        ndarray_obj_t *out = create_new_ndarray((m), (n), NDARRAY_FLOAT);\
-        mp_float_t *odata = (mp_float_t *)out->array->items;\
-        for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) {*odata++ = (mp_float_t)(*left)/(mp_float_t)(*right);}\
-        return MP_OBJ_FROM_PTR(out);\
-	} else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
-             ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL) || \
-             ((op) == MP_BINARY_OP_EQUAL) || ((op) == MP_BINARY_OP_NOT_EQUAL)) {\
-        mp_obj_t out_list = mp_obj_new_list(0, NULL);\
-        for(size_t i=0; i < m; i++) {\
-            mp_obj_t row = mp_obj_new_list(n, NULL);\
-            mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
-			if((op) == MP_BINARY_OP_LESS) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left < *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_LESS_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left <= *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_MORE) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left > *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_MORE_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left >= *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left == *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_NOT_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left != *right ? mp_const_true : mp_const_false; }\
-            if(m == 1) return row;\
-            mp_obj_list_append(out_list, row);\
-		}\
-        return out_list;\
+#define RUN_BINARY_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
+    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
+        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
+        uint8_t *array = (uint8_t *)results->array;\
+        if((op) == MP_BINARY_OP_ADD) {\
+            size_t i = 0;\
+            do {\
+                size_t j = 0;\
+                do {\
+                    size_t k = 0;\
+                    do {\
+                        size_t l = 0;\
+                        do {\
+                            *((type_out *)array) = *((type_left *)(larray)) + *((type_right *)(rarray));\
+                            array += results->strides[ULAB_MAX_DIMS - 1];\
+                            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                            l++;\
+                        } while(l <  results->shape[ULAB_MAX_DIMS - 1]);\
+                        k++;\
+                    } while(k <  results->shape[ULAB_MAX_DIMS - 2]);\
+                    j++;\
+                } while(j <  results->shape[ULAB_MAX_DIMS - 3]);\
+                i++;\
+            } while(i <  results->shape[ULAB_MAX_DIMS - 4]);\
+            return MP_OBJ_FROM_PTR(results);\
+        }\
     }\
 } while(0)
 
-*/
 #endif
