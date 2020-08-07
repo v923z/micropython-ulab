@@ -159,29 +159,23 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
                 size_t l = 0;\
                 do {\
                     *((type_out *)(array)) = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
-                    (array) += results->strides[ULAB_MAX_DIMS - 1];\
+                    (array) += sizeof(type_out);\
                     (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
                     (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
                     l++;\
                 } while(l <  results->shape[ULAB_MAX_DIMS - 1]);\
-                (array) -= results->strides[ULAB_MAX_DIMS-1] * results->shape[ULAB_MAX_DIMS-1];\
-                (array) += results->strides[ULAB_MAX_DIMS-2];\
                 (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];\
                 (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
                 (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];\
                 (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
                 k++;\
             } while(k <  results->shape[ULAB_MAX_DIMS - 2]);\
-            (array) -= results->strides[ULAB_MAX_DIMS-2] * results->shape[ULAB_MAX_DIMS-2];\
-            (array) += results->strides[ULAB_MAX_DIMS-3];\
             (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];\
             (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
             (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];\
             (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
             j++;\
         } while(j <  results->shape[ULAB_MAX_DIMS - 3]);\
-        (array) -= results->strides[ULAB_MAX_DIMS-3] * results->shape[ULAB_MAX_DIMS-3];\
-        (array) += results->strides[ULAB_MAX_DIMS-4];\
         (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
         (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];\
@@ -201,21 +195,17 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
             size_t l = 0;\
             do {\
                 *((type_out *)(array)) = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
-                (array) += results->strides[ULAB_MAX_DIMS - 1];\
+                (array) += sizeof(type_out);\
                 (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
                 (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l <  results->shape[ULAB_MAX_DIMS - 1]);\
-            (array) -= results->strides[ULAB_MAX_DIMS-1] * results->shape[ULAB_MAX_DIMS-1];\
-            (array) += results->strides[ULAB_MAX_DIMS-2];\
             (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];\
             (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
             (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];\
             (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k <  results->shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= results->strides[ULAB_MAX_DIMS-2] * results->shape[ULAB_MAX_DIMS-2];\
-        (array) += results->strides[ULAB_MAX_DIMS-3];\
         (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
         (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];\
@@ -233,13 +223,11 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         size_t l = 0;\
         do {\
             *((type_out *)(array)) = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
-            (array) += results->strides[ULAB_MAX_DIMS - 1];\
+            (array) += sizeof(type_out);\
             (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
             (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
             l++;\
         } while(l <  results->shape[ULAB_MAX_DIMS - 1]);\
-        (array) -= results->strides[ULAB_MAX_DIMS-1] * results->shape[ULAB_MAX_DIMS-1];\
-        (array) += results->strides[ULAB_MAX_DIMS-2];\
         (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
         (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];\
@@ -255,7 +243,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
     size_t l = 0;\
     do {\
         *((type_out *)(array)) = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
-        (array) += results->strides[ULAB_MAX_DIMS - 1];\
+        (array) += sizeof(type_out);\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
         l++;\
