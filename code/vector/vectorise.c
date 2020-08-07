@@ -27,6 +27,7 @@
 #if ULAB_VECTORISE_MODULE
 
 //| """Element-by-element functions
+//|
 //| These functions can operate on numbers, 1-D iterables, 1-D arrays, or 2-D arrays by
 //| applying the function to every element in the array.  This is typically
 //| much more efficient than expressing the same operation as a Python loop."""
