@@ -384,19 +384,17 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "[");
         do {
         #endif
-            #if ULAB_MAX_DIMS > 1
             size_t k = 0;
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "[");
             do {
-            #endif
                 ndarray_print_row(print, self->dtype, array, self->strides[ULAB_MAX_DIMS-1], self->shape[ULAB_MAX_DIMS-1]);
-            #if ULAB_MAX_DIMS > 1
+                #if ULAB_MAX_DIMS > 1
                 array += self->strides[ULAB_MAX_DIMS-2];
                 k++;
                 ndarray_print_bracket(print, k, self->shape[ULAB_MAX_DIMS-2], ",\n\t");
-            #endif
+                #endif
             } while(k < self->shape[ULAB_MAX_DIMS-2]);
-            #if ULAB_MAX_DIMS > 2
+        #if ULAB_MAX_DIMS > 2
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "]");
             j++;
             ndarray_print_bracket(print, j, self->shape[ULAB_MAX_DIMS-3], ",\n\n\t");
@@ -1253,15 +1251,15 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     uint8_t *rarray = (uint8_t *)rhs->array;
     
 	switch(op) {
-//		case MP_BINARY_OP_EQUAL:
-//		case MP_BINARY_OP_NOT_EQUAL:
-//		case MP_BINARY_OP_LESS:
-//		case MP_BINARY_OP_LESS_EQUAL:
-//		case MP_BINARY_OP_MORE:
-//		case MP_BINARY_OP_MORE_EQUAL:
+		case MP_BINARY_OP_EQUAL:
+		case MP_BINARY_OP_NOT_EQUAL:
+		case MP_BINARY_OP_LESS:
+		case MP_BINARY_OP_LESS_EQUAL:
+		case MP_BINARY_OP_MORE:
+		case MP_BINARY_OP_MORE_EQUAL:
 		case MP_BINARY_OP_ADD:
 		case MP_BINARY_OP_SUBTRACT:
-//		case MP_BINARY_OP_TRUE_DIVIDE:
+		case MP_BINARY_OP_TRUE_DIVIDE:
 		case MP_BINARY_OP_MULTIPLY:
 //		case MP_BINARY_OP_POWER:
 			// TODO: I believe, this part can be made significantly smaller (compiled size)
@@ -1338,7 +1336,6 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
 					RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
 				}
 			}
-			// this instruction should never be reached, but we have to make the compiler happy
 			return MP_OBJ_NULL;
 			break;
 		default:
