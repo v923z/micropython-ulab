@@ -75,25 +75,20 @@ const mp_obj_type_t ulab_ndarray_type = {
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
     { MP_ROM_QSTR(MP_QSTR_set_printoptions), (mp_obj_t)&ndarray_set_printoptions_obj },
     { MP_ROM_QSTR(MP_QSTR_get_printoptions), (mp_obj_t)&ndarray_get_printoptions_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
+    { MP_ROM_QSTR(MP_QSTR_ndinfo), (mp_obj_t)&ndarray_info_obj },
     { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
 //    { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
     { MP_ROM_QSTR(MP_QSTR_linspace), (mp_obj_t)&create_linspace_obj },
     { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&create_ones_obj },
     { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },
-    #if ULAB_LINALG_MODULE
-    { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
+    #if ULAB_APPROX_MODULE
+    { MP_ROM_QSTR(MP_QSTR_approx), MP_ROM_PTR(&ulab_approx_module) },
     #endif
-    #if ULAB_VECTORISE_MODULE
-    { MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vectorise_module) },
-    #endif
-    #if ULAB_NUMERICAL_MODULE
-    { MP_ROM_QSTR(MP_QSTR_numerical), MP_ROM_PTR(&ulab_numerical_module) },
-    #endif
-    #if ULAB_POLY_MODULE
-    { MP_ROM_QSTR(MP_QSTR_poly), MP_ROM_PTR(&ulab_poly_module) },
+    #if ULAB_COMPARE_MODULE
+    { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&ulab_compare_module) },
     #endif
     #if ULAB_FFT_MODULE
     { MP_ROM_QSTR(MP_QSTR_fft), MP_ROM_PTR(&ulab_fft_module) },
@@ -101,14 +96,20 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_FILTER_MODULE
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&ulab_filter_module) },
     #endif
-    #if ULAB_COMPARE_MODULE
-    { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&ulab_compare_module) },
+    #if ULAB_LINALG_MODULE
+    { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
     #endif
-    #if ULAB_APPROX_MODULE
-    { MP_ROM_QSTR(MP_QSTR_approx), MP_ROM_PTR(&ulab_approx_module) },
+    #if ULAB_NUMERICAL_MODULE
+    { MP_ROM_QSTR(MP_QSTR_numerical), MP_ROM_PTR(&ulab_numerical_module) },
+    #endif
+    #if ULAB_POLY_MODULE
+    { MP_ROM_QSTR(MP_QSTR_poly), MP_ROM_PTR(&ulab_poly_module) },
     #endif
     #if ULAB_USER_MODULE
     { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
+    #endif
+    #if ULAB_VECTORISE_MODULE
+    { MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vectorise_module) },
     #endif
     // class constants
     { MP_ROM_QSTR(MP_QSTR_bool), MP_ROM_INT(NDARRAY_BOOL) },

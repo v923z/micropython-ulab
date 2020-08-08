@@ -134,7 +134,7 @@ mp_obj_t ndarray_size(mp_obj_t );
 mp_obj_t ndarray_itemsize(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_itemsize_obj);
 
-mp_obj_t ndarray_itemsize(mp_obj_t );
+//mp_obj_t ndarray_itemsize(mp_obj_t );
 mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
 
 mp_obj_t ndarray_reshape(mp_obj_t , mp_obj_t );
@@ -142,6 +142,9 @@ MP_DECLARE_CONST_FUN_OBJ_2(ndarray_reshape_obj);
 
 mp_obj_t ndarray_transpose(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
+
+mp_obj_t ndarray_info(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_info_obj);
 
 mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 //void ndarray_attributes(mp_obj_t , qstr , mp_obj_t *);

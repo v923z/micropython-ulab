@@ -1479,6 +1479,50 @@ mp_obj_t info(ndarray_obj_t *) {
 }
 */
 
+mp_obj_t ndarray_info(mp_obj_t obj_in) {
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj_in);
+	if(!MP_OBJ_IS_TYPE(ndarray, &ulab_ndarray_type)) {
+		mp_raise_TypeError(translate("function is defined for ndarrays only"));
+    }
+//    uint8_t *array = (uint8_t *)ndarray->array;
+    mp_printf(MP_PYTHON_PRINTER, "class: ndarray\n");
+    mp_printf(MP_PYTHON_PRINTER, "shape: (");
+    if(ndarray->ndim == 1) {
+        mp_printf(MP_PYTHON_PRINTER, "%d,", ndarray->shape[ULAB_MAX_DIMS-1]);
+    } else {
+        for(uint8_t i=0; i < ndarray->ndim-1; i++) mp_printf(MP_PYTHON_PRINTER, "%d, ", ndarray->shape[i]);
+        mp_printf(MP_PYTHON_PRINTER, "%d", ndarray->shape[ULAB_MAX_DIMS-1]);
+    }
+    mp_printf(MP_PYTHON_PRINTER, ")\n");
+    mp_printf(MP_PYTHON_PRINTER, "strides: (");
+    if(ndarray->ndim == 1) {
+        mp_printf(MP_PYTHON_PRINTER, "%d,", ndarray->strides[ULAB_MAX_DIMS-1]);
+    } else {
+        for(uint8_t i=0; i < ndarray->ndim-1; i++) mp_printf(MP_PYTHON_PRINTER, "%d, ", ndarray->strides[i]);
+        mp_printf(MP_PYTHON_PRINTER, "%d", ndarray->strides[ULAB_MAX_DIMS-1]);
+    }
+    mp_printf(MP_PYTHON_PRINTER, ")\n");
+    mp_printf(MP_PYTHON_PRINTER, "itemsize: %d\n", ndarray->itemsize);
+    mp_printf(MP_PYTHON_PRINTER, "data pointer: 0x%p\n", ndarray->array);
+    mp_printf(MP_PYTHON_PRINTER, "type: ");
+    if(ndarray->boolean) {
+		mp_printf(MP_PYTHON_PRINTER, "bool\n");
+	} else if(ndarray->dtype == NDARRAY_UINT8) {
+		mp_printf(MP_PYTHON_PRINTER, "uint8\n");
+	} else if(ndarray->dtype == NDARRAY_INT8) {
+		mp_printf(MP_PYTHON_PRINTER, "int8\n");
+	} else if(ndarray->dtype == NDARRAY_UINT16) {
+		mp_printf(MP_PYTHON_PRINTER, "uint16\n");
+	} else if(ndarray->dtype == NDARRAY_INT16) {
+		mp_printf(MP_PYTHON_PRINTER, "int16\n");
+	} else if(ndarray->dtype == NDARRAY_FLOAT) {
+		mp_printf(MP_PYTHON_PRINTER, "float\n");
+	}
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_info_obj, ndarray_info);
+
 mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // buffer_p.get_buffer() returns zero for success, while mp_get_buffer returns true for success
