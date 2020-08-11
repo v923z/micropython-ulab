@@ -549,14 +549,16 @@ ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *sha
     ndarray->boolean = source->boolean;
     ndarray->dtype = source->dtype;
     ndarray->ndim = ndim;
+    ndarray->itemsize = source->itemsize;
     ndarray->len = 1;
     for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndim; i--) {
 		ndarray->shape[i-1] = shape[i-1];
 		ndarray->strides[i-1] = strides[i-1];
 		ndarray->len *= shape[i-1];
 	}
-    uint8_t itemsize = mp_binary_get_size('@', source->dtype, NULL);
-    ndarray->array = (uint8_t *)source->array + offset * itemsize;
+    uint8_t *pointer = (uint8_t *)source->array;
+    pointer += offset;
+    ndarray->array = pointer;
     return ndarray;
 }
 
@@ -1039,16 +1041,17 @@ typedef struct _mp_obj_ndarray_it_t {
 mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     mp_obj_ndarray_it_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
-    size_t iter_end = ndarray->shape[0];
+    size_t iter_end = ndarray->shape[ULAB_MAX_DIMS-ndarray->ndim];
     if(self->cur < iter_end) {
         if(ndarray->ndim == 1) { // we have a linear array
             // read the current value
-            self->cur++;
-            return mp_binary_get_val_array(ndarray->dtype, ndarray->array, self->cur-1);
+            // TODO: this doesn't take views into account
+            return mp_binary_get_val_array(ndarray->dtype, ndarray->array, self->cur++);
         } else { // we have a tensor, return the reduced view
-            size_t offset = self->cur * ndarray->strides[0];
+            size_t offset = self->cur * ndarray->strides[ULAB_MAX_DIMS - ndarray->ndim];
+            offset *= ndarray->itemsize;
             self->cur++;
-            ndarray_obj_t *value = ndarray_new_view(ndarray, ndarray->ndim-1, ndarray->shape+1, ndarray->strides+1, offset);
+            ndarray_obj_t *value = ndarray_new_view(ndarray, ndarray->ndim-1, ndarray->shape, ndarray->strides, offset);
             return MP_OBJ_FROM_PTR(value);
         }
     } else {
@@ -1472,12 +1475,6 @@ mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
-
-/*
-mp_obj_t info(ndarray_obj_t *) {
-    mp_print_str(MP_PYTHON_PRINTER, "  ");
-}
-*/
 
 mp_obj_t ndarray_info(mp_obj_t obj_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj_in);
