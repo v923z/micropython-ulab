@@ -289,6 +289,38 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 
 #endif
 
+#if ULAB_MAX_DIMS == 2
+#define ASSIGNMENT_LOOP(view_type, value_type, view, view_array, value, value_array, strides)\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            *((view_type *)(view_array)) = (view_type)(*((value_type *)(value_array)));\
+            (view_array) += (view)->strides[ULAB_MAX_DIMS - 1];\
+            (value_array) += (strides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l <  (view)->shape[ULAB_MAX_DIMS - 1]);\
+        (view_array) -= (view)->strides[ULAB_MAX_DIMS - 1] * (view)->shape[ULAB_MAX_DIMS-1];\
+        (view_array) += (view)->strides[ULAB_MAX_DIMS - 2];\
+        (value_array) -= (strides)[ULAB_MAX_DIMS - 1] * (value)->shape[ULAB_MAX_DIMS-1];\
+        (value_array) += (strides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k <  (view)->shape[ULAB_MAX_DIMS - 2]);\
+
+#endif
+
+#if ULAB_MAX_DIMS == 1
+#define ASSIGNMENT_LOOP(view_type, value_type, view, view_array, value, value_array, strides)\
+    size_t l = 0;\
+    do {\
+        *(view_array) = (view_type)(*((value_type *)(value_array)));\
+        (view_array) += (view)->strides[ULAB_MAX_DIMS - 1];\
+        (value_array) += (strides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l <  (view)->shape[ULAB_MAX_DIMS - 1]);\
+
+#endif
+
 #define RUN_BINARY_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
     if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
         ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
