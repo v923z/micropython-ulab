@@ -384,16 +384,18 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "[");
         do {
         #endif
+            #if ULAB_MAX_DIMS > 1
             size_t k = 0;
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "[");
             do {
+            #endif
                 ndarray_print_row(print, self->dtype, array, self->strides[ULAB_MAX_DIMS-1], self->shape[ULAB_MAX_DIMS-1]);
                 #if ULAB_MAX_DIMS > 1
                 array += self->strides[ULAB_MAX_DIMS-2];
                 k++;
                 ndarray_print_bracket(print, k, self->shape[ULAB_MAX_DIMS-2], ",\n\t");
-                #endif
             } while(k < self->shape[ULAB_MAX_DIMS-2]);
+                #endif
         #if ULAB_MAX_DIMS > 2
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "]");
             j++;
@@ -515,30 +517,11 @@ void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target) {
     // TODO: this won't work for now.
 	// copies the content of source->array into a new dense void pointer
 	// it is assumed that the dtypes in source and target are the same
-	size_t *coords = ndarray_new_coords(source->ndim);
-	int32_t last_stride = source->strides[source->ndim-1];
-	uint8_t itemsize = mp_binary_get_size('@', source->dtype, NULL);
-
-	uint8_t *array = (uint8_t *)source->array;
-	uint8_t *new_array = (uint8_t *)target->array;
-
+    uint8_t *sarray = (uint8_t *)source->array;
+    uint8_t *tarray = (uint8_t *)target->array;
 	for(size_t i=0; i < source->len; i++) {
-		memcpy(new_array, array, itemsize);
-		new_array += itemsize;        
-		array += last_stride*itemsize;
-		coords[source->ndim-1] += 1;
-		for(uint8_t j=source->ndim-1; j > 0; j--) {
-			if(coords[j] == source->shape[j]) {
-				array -= source->shape[j] * source->strides[j] * itemsize;
-				array += source->strides[j-1] * itemsize;
-				coords[j] = 0;
-				coords[j-1] += 1;
-			} else { // coordinates can change only, if the last coordinate changes
-				break;
-			}
-		}
+		memcpy(tarray, sarray, source->itemsize);
 	}
-	m_del(size_t, coords, source->ndim);
 }
 
 ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *shape, int32_t *strides, int32_t offset) {
@@ -876,6 +859,9 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
     size_t iter_end = ndarray->shape[ULAB_MAX_DIMS-ndarray->ndim];
     if(self->cur < iter_end) {
+        #if ULAB_MAX_DIMS == 1
+        return mp_binary_get_val_array(ndarray->dtype, ndarray->array, self->cur++);
+        #else
         if(ndarray->ndim == 1) { // we have a linear array
             // read the current value
             // TODO: this doesn't take views into account
@@ -887,6 +873,7 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
             ndarray_obj_t *value = ndarray_new_view(ndarray, ndarray->ndim-1, ndarray->shape, ndarray->strides, offset);
             return MP_OBJ_FROM_PTR(value);
         }
+        #endif
     } else {
         return MP_OBJ_STOP_ITERATION;
     }
@@ -1258,6 +1245,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
+#if ULAB_MAX_DIMS > 1
 mp_obj_t ndarray_transpose(mp_obj_t self_in) {
     // TODO: check, what happens to the offset here, if we have a view
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -1308,6 +1296,7 @@ mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
+#endif
 
 mp_obj_t ndarray_info(mp_obj_t obj_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj_in);

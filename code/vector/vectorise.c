@@ -37,23 +37,23 @@
 static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     // Return a single value, if o_in is not iterable
     if(mp_obj_is_float(o_in) || MP_OBJ_IS_INT(o_in)) {
-            return mp_obj_new_float(f(mp_obj_get_float(o_in)));
-    }
-    mp_float_t x;
+        return mp_obj_new_float(f(mp_obj_get_float(o_in)));
+    }    
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
+        uint8_t *sarray = (uint8_t *)source->array;
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
-        mp_float_t *array = (mp_float_t *)ndarray->array;
+        uint8_t *array = (uint8_t *)ndarray->array;
         if(source->dtype == NDARRAY_UINT8) {
-            ITERATE_VECTOR(uint8_t, source, array);
+            ITERATE_VECTOR(uint8_t, array, source, sarray);
         } else if(source->dtype == NDARRAY_INT8) {
-            ITERATE_VECTOR(int8_t, source, array);
+            ITERATE_VECTOR(int8_t, array, source, sarray);
         } else if(source->dtype == NDARRAY_UINT16) {
-            ITERATE_VECTOR(uint16_t, source, array);
+            ITERATE_VECTOR(uint16_t, array, source, sarray);
         } else if(source->dtype == NDARRAY_INT16) {
-            ITERATE_VECTOR(int16_t, source, array);
+            ITERATE_VECTOR(int16_t, array, source, sarray);
         } else {
-            ITERATE_VECTOR(mp_float_t, source, array);
+            ITERATE_VECTOR(mp_float_t, array, source, sarray);
         }
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
@@ -65,7 +65,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
             mp_obj_t item, iterable = mp_getiter(o_in, &iter_buf);
             size_t i=0;
             while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-                x = mp_obj_get_float(item);
+                mp_float_t x = mp_obj_get_float(item);
                 *array++ = f(x);
                 i++;
             }

@@ -86,9 +86,11 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     }
     // Check if input is of length of power of 2
     ndarray_obj_t *re = MP_OBJ_TO_PTR(arg_re);
+    #if ULAB_MAX_DIMS > 1
     if(re->ndim != 1) {
         mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));
 	}
+    #endif
     size_t len = re->len;
     if((len & (len-1)) != 0) {
         mp_raise_ValueError(translate("input array length must be power of 2"));
@@ -97,10 +99,8 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     ndarray_obj_t *out_re = ndarray_new_linear_array(len, NDARRAY_FLOAT);
     mp_float_t *data_re = (mp_float_t *)out_re->array;
 
-    uint8_t itemsize;
     if(re->dtype == NDARRAY_FLOAT) {
-        itemsize = mp_binary_get_size('@', re->dtype, NULL);
-        memcpy((mp_float_t *)data_re, (mp_float_t *)re->array, re->len*itemsize);
+        memcpy((mp_float_t *)data_re, (mp_float_t *)re->array, re->len*re->itemsize);
     } else {
         for(size_t i=0; i < len; i++) {
             *data_re++ = ndarray_get_float_value(re->array, re->dtype, i);
@@ -112,15 +112,16 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
 
     if(n_args == 2) {
         ndarray_obj_t *im = MP_OBJ_TO_PTR(arg_im);
+        #if ULAB_MAX_DIMS > 1
         if(im->ndim != 1) {
             mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));			
 		}
+        #endif
         if (re->len != im->len) {
             mp_raise_ValueError(translate("real and imaginary parts must be of equal length"));
         }
         if(im->dtype == NDARRAY_FLOAT) {
-            itemsize = mp_binary_get_size('@', im->dtype, NULL);
-            memcpy((mp_float_t *)data_im, (mp_float_t *)im->array, im->len*itemsize);
+            memcpy((mp_float_t *)data_im, (mp_float_t *)im->array, im->len*im->itemsize);
         } else {
             for(size_t i=0; i < len; i++) {
                *data_im++ = ndarray_get_float_value(im->array, im->dtype, i);

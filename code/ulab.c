@@ -42,8 +42,10 @@ STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
+    #if ULAB_MAX_DIMS > 1
     { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },
     { MP_ROM_QSTR(MP_QSTR_transpose), MP_ROM_PTR(&ndarray_transpose_obj) },
+    #endif
 //    { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },
     { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
     { MP_ROM_QSTR(MP_QSTR_strides), MP_ROM_PTR(&ndarray_strides_obj) }, 
@@ -80,7 +82,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_printoptions), (mp_obj_t)&ndarray_get_printoptions_obj },
     { MP_ROM_QSTR(MP_QSTR_ndinfo), (mp_obj_t)&ndarray_info_obj },
     { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
-//    { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
+    #if ULAB_MAX_DIMS > 1
+    { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_linspace), (mp_obj_t)&create_linspace_obj },
     { MP_ROM_QSTR(MP_QSTR_ones), (mp_obj_t)&create_ones_obj },
     { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },

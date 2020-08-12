@@ -134,12 +134,13 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 
+#if ULAB_MAX_DIMS > 1
 //| def eye(size: int, *, dtype: _DType = float) -> array:
 //|     """Return a new square array of size, with the diagonal elements set to 1
 //|        and the other elements set to 0."""
 //|     ...
 //|
-/*
+
 mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -160,12 +161,13 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
         m = mp_obj_get_int(args[1].u_rom_obj);
     }
     
-    ndarray_obj_t *ndarray = create_new_ndarray(m, n, dtype);
+    size_t shape[] = {0, 0, m, n};
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, shape, dtype);
     mp_obj_t one = mp_obj_new_int(1);
     size_t i = 0;
     if((k >= 0) && (k < n)) {
         while(k < n) {
-            mp_binary_set_val_array(dtype, ndarray->array->items, i*n+k, one);
+            mp_binary_set_val_array(dtype, ndarray->array, i*n+k, one);
             k++;
             i++;
         }
@@ -173,7 +175,7 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
         k = -k;
         i = 0;
         while(k < m) {
-            mp_binary_set_val_array(dtype, ndarray->array->items, k*n+i, one);
+            mp_binary_set_val_array(dtype, ndarray->array, k*n+i, one);
             k++;
             i++;
         }
@@ -182,7 +184,9 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 0, create_eye);
-*/
+
+#endif
+
 //| def linspace(
 //|     start: _float,
 //|     stop: _float,

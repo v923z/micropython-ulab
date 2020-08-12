@@ -27,8 +27,7 @@ typedef struct _vectorized_function_obj_t {
 extern mp_obj_module_t ulab_vectorise_module;
 
 #if ULAB_MAX_DIMS == 4
-#define ITERATE_VECTOR(type, source, array) do {\
-    type *input = (type *)(source)->array;\
+#define ITERATE_VECTOR(type, array, source, sarray) do {\
     size_t i=0;\
     do {\
         size_t j = 0;\
@@ -37,52 +36,70 @@ extern mp_obj_module_t ulab_vectorise_module;
             do {\
                 size_t l = 0;\
                 do {\
-                    *(array) = f(*input);\
+                    *((mp_float_t *)(array)) = f(*((type *)(sarray)));\
+                    (array) += sizeof(mp_float_t);\
+                    (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
                     l++;\
                 } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
+                (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS-1];\
+                (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
             } while(k < (source)->shape[ULAB_MAX_DIMS-2]);\
+            (sarray) -= (source)->strides[ULAB_MAX_DIMS - 2] * (source)->shape[ULAB_MAX_DIMS-2];\
+            (sarray) += (source)->strides[ULAB_MAX_DIMS - 3];\
         } while(j < (source)->shape[ULAB_MAX_DIMS-3]);\
+        (sarray) -= (source)->strides[ULAB_MAX_DIMS - 3] * (source)->shape[ULAB_MAX_DIMS-3];\
+        (sarray) += (source)->strides[ULAB_MAX_DIMS - 4];\
     } while(i < (source)->shape[ULAB_MAX_DIMS-4]);\
 } while(0)
+
 #endif
 
 #if ULAB_MAX_DIMS == 3
-#define ITERATE_VECTOR(type, source, array) do {\
-    type *input = (type *)(source)->array;\
+#define ITERATE_VECTOR(type, array, source, sarray) do {\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                *(array)++ = f(*input);\
+                *((mp_float_t *)(array)) = f(*((type *)(sarray)));\
+                (array) += sizeof(mp_float_t);\
+                (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
+            (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS-1];\
+            (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
         } while(k < (source)->shape[ULAB_MAX_DIMS-2]);\
+        (sarray) -= (source)->strides[ULAB_MAX_DIMS - 2] * (source)->shape[ULAB_MAX_DIMS-2];\
+        (sarray) += (source)->strides[ULAB_MAX_DIMS - 3];\
     } while(j < (source)->shape[ULAB_MAX_DIMS-3]);\
 } while(0)
 #endif
 
 #if ULAB_MAX_DIMS == 2
-#define ITERATE_VECTOR(type, source, array) do {\
-    type *input = (type *)(source)->array;\
+#define ITERATE_VECTOR(type, array, source, sarray) do {\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            *(array)++ = f(*input);\
+            *((mp_float_t *)(array)) = f(*((type *)(sarray)));\
+            (array) += sizeof(mp_float_t);\
+            (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
             l++;\
         } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
+        (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS-1];\
+        (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
     } while(k < (source)->shape[ULAB_MAX_DIMS-2]);\
 } while(0)
 #endif
 
 #if ULAB_MAX_DIMS == 1
-#define ITERATE_VECTOR(type, source, array) do {\
-    type *input = (type *)(source)->array;\
+#define ITERATE_VECTOR(type, array, source, sarray) do {\
     size_t l = 0;\
     do {\
-        *(array)++ = f(*input);\
+        *((mp_float_t *)(array)) = f(*((type *)(sarray)));\
+        (array) += sizeof(mp_float_t);\
+        (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
 } while(0)
