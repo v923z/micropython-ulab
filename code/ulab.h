@@ -39,14 +39,14 @@
 #define ULAB_NUMERICAL_MODULE (0)
 #endif
 
-// FFT costs about 2 kB of flash space
+// FFT costs about 2.5 kB of flash space
 #ifndef ULAB_FFT_MODULE
 #define ULAB_FFT_MODULE (1)
 #endif
 
 // the filter module occupies about 1 kB of flash space
 #ifndef ULAB_FILTER_MODULE
-#define ULAB_FILTER_MODULE (0)
+#define ULAB_FILTER_MODULE (1)
 #endif
 
 // the compare module consumes about 12 kB of flash space

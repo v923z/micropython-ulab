@@ -36,7 +36,6 @@
 //|    filtering operations.  Convolution filters are typically constructed ahead
 //|    of time.  This can be done using desktop python with scipy, or on web pages
 //|    such as https://fiiir.com/
-//|    Convolution is most time-efficient when both inputs are of float type."""
 //|    ...
 //|
 
@@ -55,50 +54,37 @@ static mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
     ndarray_obj_t *c = MP_OBJ_TO_PTR(args[1].u_obj);
-    size_t len_a = a->array->len;
-    size_t len_c = c->array->len;
     // deal with linear arrays only
-    if(a->m*a->n != len_a || c->m*c->n != len_c) {
+    #if ULAB_MAX_DIMS > 1
+    if((a->ndim != 1) || (c->ndim != 1)) {
         mp_raise_TypeError(translate("convolve arguments must be linear arrays"));
     }
+    #endif
+    size_t len_a = a->len;
+    size_t len_c = c->len;
     if(len_a == 0 || len_c == 0) {
         mp_raise_TypeError(translate("convolve arguments must not be empty"));
     }
 
     int len = len_a + len_c - 1; // convolve mode "full"
-    ndarray_obj_t *out = create_new_ndarray(1, len, NDARRAY_FLOAT);
-    mp_float_t *outptr = out->array->items;
+    ndarray_obj_t *out = ndarray_new_linear_array(len, NDARRAY_FLOAT);
+    mp_float_t *outptr = (mp_float_t *)out->array;
+    uint8_t *aarray = (uint8_t *)a->array;
+    uint8_t *carray = (uint8_t *)c->array;
+    
     int off = len_c-1;
-
-    if(a->array->typecode == NDARRAY_FLOAT && c->array->typecode == NDARRAY_FLOAT) {
-        mp_float_t* a_items = (mp_float_t*)a->array->items;
-        mp_float_t* c_items = (mp_float_t*)c->array->items;
-        for(int k=-off; k<len-off; k++) {
-            mp_float_t accum = (mp_float_t)0;
-            int top_n = MIN(len_c, len_a - k);
-            int bot_n = MAX(-k, 0);
-            mp_float_t* a_ptr = a_items + bot_n + k;
-            mp_float_t* a_end = a_ptr + (top_n - bot_n);
-            mp_float_t* c_ptr = c_items + len_c - bot_n - 1;
-            for(; a_ptr != a_end;) {
-                accum += *a_ptr++ * *c_ptr--;
-            }
-            *outptr++ = accum;
+    for(int k=-off; k<len-off; k++) {
+        mp_float_t accum = (mp_float_t)0;
+        int top_n = MIN(len_c, len_a - k);
+        int bot_n = MAX(-k, 0);
+        for(int n=bot_n; n<top_n; n++) {
+            int idx_c = (len_c - n - 1) * c->strides[ULAB_MAX_DIMS - 1];
+            int idx_a = (n + k) * a->strides[ULAB_MAX_DIMS - 1];
+            mp_float_t ai = ndarray_get_float_index(aarray, a->dtype, idx_a);
+            mp_float_t ci = ndarray_get_float_index(carray, c->dtype, idx_c);
+            accum += ai * ci;
         }
-    } else {
-        for(int k=-off; k<len-off; k++) {
-            mp_float_t accum = (mp_float_t)0;
-            int top_n = MIN(len_c, len_a - k);
-            int bot_n = MAX(-k, 0);
-            for(int n=bot_n; n<top_n; n++) {
-                int idx_c = len_c - n - 1;
-                int idx_a = n+k;
-                mp_float_t ai = ndarray_get_float_value(a->array->items, a->array->typecode, idx_a);
-                mp_float_t ci = ndarray_get_float_value(c->array->items, c->array->typecode, idx_c);
-                accum += ai * ci;
-            }
-            *outptr++ = accum;
-        }
+        *outptr++ = accum;
     }
 
     return out;
@@ -145,13 +131,20 @@ static mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         mp_raise_TypeError(translate("sosfilt requires iterable arguments"));
     }
     size_t lenx = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[1].u_obj));
-    ndarray_obj_t *y = create_new_ndarray(1, lenx, NDARRAY_FLOAT);
-    mp_float_t *yarray = (mp_float_t *)y->array->items;
+    ndarray_obj_t *y = ndarray_new_linear_array(lenx, NDARRAY_FLOAT);
+    mp_float_t *yarray = (mp_float_t *)y->array;
     mp_float_t coeffs[6];
     if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_ndarray_type)) {
         ndarray_obj_t *inarray = MP_OBJ_TO_PTR(args[1].u_obj);
+        #if ULAB_MAX_DIMS > 1
+        if(inarray->ndim > 1) {
+            mp_raise_ValueError(translate("input must be one-dimensional"));
+        }
+        #endif
+        uint8_t *iarray = (uint8_t *)inarray->array;
         for(size_t i=0; i < lenx; i++) {
-            *yarray++ = ndarray_get_float_value(inarray->array->items, inarray->array->typecode, i);
+            *yarray++ = ndarray_get_float_value(iarray, inarray->dtype);
+            iarray += inarray->strides[ULAB_MAX_DIMS - 1];
         }
         yarray -= lenx;
     } else {
@@ -162,21 +155,23 @@ static mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_obj_t item, iterable = mp_getiter(args[0].u_obj, &iter_buf);
     size_t lensos = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0].u_obj));
 
-    ndarray_obj_t *zf = create_new_ndarray(lensos, 2, NDARRAY_FLOAT);
-    mp_float_t *zf_array = (mp_float_t *)zf->array->items;
+    size_t shape[] = {0, 0, lensos, 2};
+    ndarray_obj_t *zf = ndarray_new_dense_ndarray(2, shape, NDARRAY_FLOAT);
+    mp_float_t *zf_array = (mp_float_t *)zf->array;
 
     if(args[2].u_obj != mp_const_none) {
         if(!MP_OBJ_IS_TYPE(args[2].u_obj, &ulab_ndarray_type)) {
             mp_raise_TypeError(translate("zi must be an ndarray"));
         } else {
             ndarray_obj_t *zi = MP_OBJ_TO_PTR(args[2].u_obj);
-            if((zi->m != lensos) || (zi->n != 2)) {
+            if((zi->shape[ULAB_MAX_DIMS - 1] != lensos) || (zi->shape[ULAB_MAX_DIMS - 1] != 2)) {
                 mp_raise_ValueError(translate("zi must be of shape (n_section, 2)"));
             }
-            if(zi->array->typecode != NDARRAY_FLOAT) {
+            if(zi->dtype != NDARRAY_FLOAT) {
                 mp_raise_ValueError(translate("zi must be of float type"));
             }
-            memcpy(zf_array, zi->array->items, 2*lensos*sizeof(mp_float_t));
+            // TODO: this won't work with sparse arrays
+            memcpy(zf_array, zi->array, 2*lensos*sizeof(mp_float_t));
         }
     }
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
