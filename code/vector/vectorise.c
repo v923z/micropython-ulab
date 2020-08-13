@@ -129,10 +129,12 @@ static mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map
 	mp_float_t mul = MICROPY_FLOAT_C_FUN(pow)(10.0, n);
     ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
-    mp_float_t *array = (mp_float_t *)ndarray->array;
+    mp_float_t *narray = (mp_float_t *)ndarray->array;
+    uint8_t *sarray = (uint8_t *)source->array;
     for(size_t i=0; i < ndarray->len; i++) {
-		mp_float_t f = ndarray_get_float_value(ndarray->array, ndarray->dtype, i);
-		*array++ = MICROPY_FLOAT_C_FUN(round)(f * mul) / mul;
+		mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
+        sarray += ndarray->strides[ULAB_MAX_DIMS - 1];
+		*narray++ = MICROPY_FLOAT_C_FUN(round)(f * mul) / mul;
 	}
     return MP_OBJ_FROM_PTR(ndarray);
 }

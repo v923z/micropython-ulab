@@ -99,14 +99,12 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     ndarray_obj_t *out_re = ndarray_new_linear_array(len, NDARRAY_FLOAT);
     mp_float_t *data_re = (mp_float_t *)out_re->array;
 
-    if(re->dtype == NDARRAY_FLOAT) {
-        memcpy((mp_float_t *)data_re, (mp_float_t *)re->array, re->len*re->itemsize);
-    } else {
-        for(size_t i=0; i < len; i++) {
-            *data_re++ = ndarray_get_float_value(re->array, re->dtype, i);
-        }
-        data_re -= len;
+    uint8_t *array = (uint8_t *)re->array;
+    for(size_t i=0; i < len; i++) {
+        *data_re++ = ndarray_get_float_value(array, re->dtype);
+        array += re->strides[ULAB_MAX_DIMS - 1];
     }
+    data_re -= len;
     ndarray_obj_t *out_im = ndarray_new_linear_array(len, NDARRAY_FLOAT);
     mp_float_t *data_im = (mp_float_t *)out_im->array;
 
@@ -120,14 +118,12 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
         if (re->len != im->len) {
             mp_raise_ValueError(translate("real and imaginary parts must be of equal length"));
         }
-        if(im->dtype == NDARRAY_FLOAT) {
-            memcpy((mp_float_t *)data_im, (mp_float_t *)im->array, im->len*im->itemsize);
-        } else {
-            for(size_t i=0; i < len; i++) {
-               *data_im++ = ndarray_get_float_value(im->array, im->dtype, i);
-            }
-            data_im -= len;
+        array = (uint8_t *)im->array;
+        for(size_t i=0; i < len; i++) {
+           *data_im++ = ndarray_get_float_value(array, im->dtype);
+           array += im->strides[ULAB_MAX_DIMS - 1];
         }
+        data_im -= len;
     }
 
     if((type == FFT_FFT) || (type == FFT_SPECTROGRAM)) {
