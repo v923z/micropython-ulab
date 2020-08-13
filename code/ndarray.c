@@ -514,14 +514,50 @@ ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dt
 }
 
 void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target) {
-    // TODO: this won't work for now.
-	// copies the content of source->array into a new dense void pointer
+    // TODO: if the array is dense, the content could be copied in a single pass
+    // copies the content of source->array into a new dense void pointer
 	// it is assumed that the dtypes in source and target are the same
+    // Since the target is a new array, it is supposed to be dense
     uint8_t *sarray = (uint8_t *)source->array;
     uint8_t *tarray = (uint8_t *)target->array;
-	for(size_t i=0; i < source->len; i++) {
-		memcpy(tarray, sarray, source->itemsize);
-	}
+    
+    #if ULAB_MAX_DIMS > 3
+    size_t i = 0;
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        size_t j = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            size_t k = 0;
+            do {
+            #endif
+                size_t l = 0;
+                do {
+                    memcpy(tarray, sarray, source->itemsize);
+                    tarray += target->itemsize;
+                    sarray += source->strides[ULAB_MAX_DIMS - 1];
+                    l++;
+                } while(l <  source->shape[ULAB_MAX_DIMS - 1]);
+            #if ULAB_MAX_DIMS > 1
+                sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
+                sarray += source->strides[ULAB_MAX_DIMS - 2];
+                k++;
+            } while(k <  source->shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
+            sarray += source->strides[ULAB_MAX_DIMS - 3];
+            j++;
+        } while(j <  source->shape[ULAB_MAX_DIMS - 3]);
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
+        sarray += source->strides[ULAB_MAX_DIMS - 4];
+        i++;
+    } while(i <  source->shape[ULAB_MAX_DIMS - 4]);
+    #endif
 }
 
 ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *shape, int32_t *strides, int32_t offset) {
