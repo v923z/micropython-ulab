@@ -975,7 +975,6 @@ mp_obj_t ndarray_itemsize(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(self->itemsize);
 }
 
-/*
 mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_order, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_C)} },
@@ -983,34 +982,95 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    mp_obj_t self_copy = ndarray_copy(pos_args[0]);
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self_copy);
-
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     GET_STR_DATA_LEN(args[0].u_obj, order, len);
     if((len != 1) || ((memcmp(order, "C", 1) != 0) && (memcmp(order, "F", 1) != 0))) {
         mp_raise_ValueError(translate("flattening order must be either 'C', or 'F'"));
     }
 
-    // if order == 'C', we simply have to set m, and n, there is nothing else to do
-    if(memcmp(order, "F", 1) == 0) {
-        ndarray_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-        uint8_t _sizeof = mp_binary_get_size('@', self->array->typecode, NULL);
-        // get the data of self_in: we won't need a temporary buffer for the transposition
-        uint8_t *self_array = (uint8_t *)self->array->items;
-        uint8_t *array = (uint8_t *)ndarray->array->items;
-        size_t i=0;
-        for(size_t n=0; n < self->n; n++) {
-            for(size_t m=0; m < self->m; m++) {
-                memcpy(array+_sizeof*i, self_array+_sizeof*(m*self->n + n), _sizeof);
-                i++;
-            }
-        }
+    uint8_t *sarray = (uint8_t *)self->array;
+    ndarray_obj_t *ndarray = ndarray_new_linear_array(self->len, self->dtype);
+    uint8_t *array = (uint8_t *)ndarray->array;
+
+    if(memcmp(order, "C", 1) == 0) {
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        memcpy(array, sarray, self->itemsize);
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                        sarray += self->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l <  self->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    sarray -= self->strides[ULAB_MAX_DIMS - 1] * self->shape[ULAB_MAX_DIMS-1];
+                    sarray += self->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k <  self->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                sarray -= self->strides[ULAB_MAX_DIMS - 2] * self->shape[ULAB_MAX_DIMS-2];
+                sarray += self->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j <  self->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            sarray -= self->strides[ULAB_MAX_DIMS - 3] * self->shape[ULAB_MAX_DIMS-3];
+            sarray += self->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i <  self->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+    } else {
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        memcpy(array, sarray, self->itemsize);
+                        array += ndarray->strides[0];
+                        sarray += self->strides[0];
+                        l++;
+                    } while(l <  self->shape[0]);
+                #if ULAB_MAX_DIMS > 1
+                    sarray -= self->strides[0] * self->shape[0];
+                    sarray += self->strides[1];
+                    k++;
+                } while(k <  self->shape[1]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                sarray -= self->strides[1] * self->shape[1];
+                sarray += self->strides[2];
+                j++;
+            } while(j <  self->shape[2]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            sarray -= self->strides[2] * self->shape[2];
+            sarray += self->strides[3];
+            i++;
+        } while(i <  self->shape[3]);
+        #endif
     }
-    ndarray->n = ndarray->array->len;
-    ndarray->m = 1;
-    return self_copy;
+    return MP_OBJ_FROM_PTR(ndarray);
 }
-*/
 
 // Binary operations
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
