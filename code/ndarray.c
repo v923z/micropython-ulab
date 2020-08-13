@@ -639,7 +639,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
 
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
-	size_t i = 0, len1 = 0, len2 = 0;
+	size_t len1 = 0, len2 = 0;
     if (len_in == MP_OBJ_NULL) {
         mp_raise_ValueError(translate("first argument must be an iterable"));
     } else {
@@ -659,7 +659,10 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
     // We have to figure out, whether the first element of the iterable is an iterable itself
     // Perhaps, there is a more elegant way of handling this
     mp_obj_iter_buf_t iter_buf1;
-    mp_obj_t item1, iterable1 = mp_getiter(args[0], &iter_buf1);
+    mp_obj_t iterable1 = mp_getiter(args[0], &iter_buf1);
+    #if ULAB_MAX_DIMS > 1
+    mp_obj_t item1;
+    size_t i = 0;
     while ((item1 = mp_iternext(iterable1)) != MP_OBJ_STOP_ITERATION) {
         len_in = mp_obj_len_maybe(item1);
         if(len_in != MP_OBJ_NULL) { // indeed, this seems to be an iterable
@@ -673,19 +676,24 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
             i++;
         }
     }
+    #endif
     // By this time, it should be established, what the shape is, so we can now create the array
     if(len2 == 0) {
 		self = ndarray_new_linear_array(len1, dtype);
-	} else {
+	}
+    #if ULAB_MAX_DIMS > 1
+    else {
 		size_t shape[2] = {len1, len2};
 		self = ndarray_new_dense_ndarray(2, shape, dtype);
 	}
-    
+    #endif
     size_t idx = 0;
     iterable1 = mp_getiter(args[0], &iter_buf1);
     if(len2 == 0) { // the first argument is a single iterable
         ndarray_assign_elements(self, iterable1, dtype, &idx);
-    } else {
+    }
+    #if ULAB_MAX_DIMS > 1
+    else {
         mp_obj_iter_buf_t iter_buf2;
         mp_obj_t iterable2;
         while ((item1 = mp_iternext(iterable1)) != MP_OBJ_STOP_ITERATION) {
@@ -693,6 +701,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
             ndarray_assign_elements(self, iterable2, dtype, &idx);
         }
     }
+    #endif
     return MP_OBJ_FROM_PTR(self);
 }
 
