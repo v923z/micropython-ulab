@@ -17,9 +17,7 @@
 #include "py/objstr.h"
 #include "py/objlist.h"
 
-#define ULAB_MAX_DIMS	            2
-#define NDARRAY_PRINT_THRESHOLD  	10
-#define NDARRAY_PRINT_EDGEITEMS		3
+#include "ulab.h"
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define FLOAT_TYPECODE 'f'

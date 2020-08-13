@@ -12,6 +12,10 @@
 #ifndef __ULAB__
 #define __ULAB__
 
+#define ULAB_MAX_DIMS               2
+#define NDARRAY_PRINT_THRESHOLD     10
+#define NDARRAY_PRINT_EDGEITEMS     3
+
 // the create module is always included
 #define ULAB_CREATE_MODULE (1)
 
