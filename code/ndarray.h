@@ -90,6 +90,7 @@ mp_float_t ndarray_get_float_value(void *, uint8_t );
 mp_float_t ndarray_get_float_index(void *, uint8_t , size_t );
 bool ndarray_object_is_nditerable(mp_obj_t );
 void fill_array_iterable(mp_float_t *, mp_obj_t );
+size_t *ndarray_shape_vector(size_t , size_t , size_t , size_t );
 
 
 void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
@@ -101,7 +102,6 @@ mp_obj_t ndarray_get_printoptions(void);
 MP_DECLARE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj);
 
 void ndarray_assign_elements(ndarray_obj_t *, mp_obj_t , uint8_t , size_t *);
-size_t *ndarray_new_coords(uint8_t );
 size_t *ndarray_contract_shape(ndarray_obj_t *, uint8_t );
 int32_t *ndarray_contract_strides(ndarray_obj_t *, uint8_t );
 

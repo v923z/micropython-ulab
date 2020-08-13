@@ -296,10 +296,21 @@ int32_t *strides_from_shape(size_t *shape, uint8_t dtype) {
     return strides;
 }
 
-size_t *ndarray_new_coords(uint8_t ndim) {
-    size_t *coords = m_new(size_t, ndim);
-    memset(coords, 0, ndim*sizeof(size_t));
-    return coords;
+size_t *ndarray_shape_vector(size_t a, size_t b, size_t c, size_t d) {
+    // returns a ULAB_MAX_DIMS-aware array of shapes
+    // WARNING: this assumes that the maximum possible dimension is 4!
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    shape[ULAB_MAX_DIMS - 1] = d;
+    #if ULAB_MAX_DIMS > 1
+    shape[ULAB_MAX_DIMS - 2] = c;
+    #endif
+    #if ULAB_MAX_DIMS > 2
+    shape[ULAB_MAX_DIMS - 3] = b;
+    #endif
+    #if ULAB_MAX_DIMS > 3
+    shape[ULAB_MAX_DIMS - 4] = a;
+    #endif
+    return shape;
 }
 
 // TODO: should be re-named as array_like

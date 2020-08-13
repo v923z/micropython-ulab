@@ -26,7 +26,7 @@
 
 // linalg adds around 6 kB to the firmware
 #ifndef ULAB_LINALG_MODULE
-#define ULAB_LINALG_MODULE (0)
+#define ULAB_LINALG_MODULE (1)
 #endif
 
 // poly requires approx. 2.5 kB
