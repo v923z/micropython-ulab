@@ -931,12 +931,13 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
     size_t iter_end = ndarray->shape[ULAB_MAX_DIMS-ndarray->ndim];
     if(self->cur < iter_end) {
+        // separating this case out saves 50 bytes for 1D arrays
         #if ULAB_MAX_DIMS == 1
-        return mp_binary_get_val_array(ndarray->dtype, ndarray->array, self->cur++);
+        int32_t pos = self->cur * ndarray->strides[ULAB_MAX_DIMS - 1] / ndarray->itemsize;
+        return mp_binary_get_val_array(ndarray->dtype, ndarray->array, pos);
         #else
         if(ndarray->ndim == 1) { // we have a linear array
-            // read the current value
-            size_t pos = self->cur * ndarray->strides[ULAB_MAX_DIMS - 1] / ndarray->itemsize;
+            int32_t pos = self->cur * ndarray->strides[ULAB_MAX_DIMS - 1] / ndarray->itemsize;
             self->cur++;
             return mp_binary_get_val_array(ndarray->dtype, ndarray->array, pos);
         } else { // we have a tensor, return the reduced view
