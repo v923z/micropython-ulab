@@ -1074,7 +1074,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 
 // Binary operations
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
-	// creates an ndarray from an micropython int or float
+	// creates an ndarray from a micropython int or float
 	// if the input is an ndarray, it is returned
 	ndarray_obj_t *ndarray;
 	if(MP_OBJ_IS_INT(obj)) {
@@ -1095,7 +1095,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
 			ndarray = ndarray_new_linear_array(1, NDARRAY_INT16);
             int16_t *array = (int16_t *)ndarray->array;
             array[0] = (int16_t)ivalue;
-		} else { // the integer value clearly does not fit the ulab types, so move on to float
+		} else { // the integer value clearly does not fit the ulab integer types, so move on to float
 			ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
             mp_float_t *array = (mp_float_t *)ndarray->array;
             array[0] = (mp_float_t)ivalue;
@@ -1106,7 +1106,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
         mp_float_t *array = (mp_float_t *)ndarray->array;
         array[0] = (mp_float_t)fvalue;
 	} else if(MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)){
-		ndarray = MP_OBJ_TO_PTR(obj);
+        return obj;
 	} else {
 		mp_raise_TypeError(translate("wrong operand type"));
 	}
