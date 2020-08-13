@@ -941,10 +941,8 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
             return mp_binary_get_val_array(ndarray->dtype, ndarray->array, pos);
         } else { // we have a tensor, return the reduced view
             size_t offset = self->cur * ndarray->strides[ULAB_MAX_DIMS - ndarray->ndim];
-            offset *= ndarray->itemsize;
             self->cur++;
-            ndarray_obj_t *value = ndarray_new_view(ndarray, ndarray->ndim-1, ndarray->shape, ndarray->strides, offset);
-            return MP_OBJ_FROM_PTR(value);
+            return MP_OBJ_FROM_PTR(ndarray_new_view(ndarray, ndarray->ndim-1, ndarray->shape, ndarray->strides, offset));
         }
         #endif
     } else {
