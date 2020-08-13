@@ -76,6 +76,10 @@ as well as at [circuitpython-ulab](https://circuitpython.readthedocs.io/en/lates
 A number of practical examples are listed in the excellent
 [circuitpython-ulab](https://learn.adafruit.com/ulab-crunch-numbers-fast-with-circuitpython/overview) overview.
 
+# Benchmarks
+
+Representative numbers on performance can be found under [ulab samples](https://github.com/thiagofe/ulab_samples). 
+
 # Firmware
 
 Compiled firmware for many hardware platforms can be downloaded from Roberto Colistete's 
