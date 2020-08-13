@@ -279,14 +279,12 @@ mp_float_t ndarray_get_float_value(void *data, uint8_t typecode) {
 void ndarray_fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     mp_obj_iter_buf_t x_buf;
     mp_obj_t x_item, x_iterable = mp_getiter(iterable, &x_buf);
-    size_t i=0;
     while ((x_item = mp_iternext(x_iterable)) != MP_OBJ_STOP_ITERATION) {
         *array++ = (mp_float_t)mp_obj_get_float(x_item);
-        i++;
     }
 }
 
-int32_t *strides_from_shape(size_t *shape, uint8_t dtype) {
+static int32_t *strides_from_shape(size_t *shape, uint8_t dtype) {
     // returns a strides array that corresponds to a dense array with the prescribed shape
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
     strides[ULAB_MAX_DIMS-1] = 	(int32_t)mp_binary_get_size('@', dtype, NULL);;
@@ -938,8 +936,9 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
         #else
         if(ndarray->ndim == 1) { // we have a linear array
             // read the current value
-            // TODO: this doesn't take views into account
-            return mp_binary_get_val_array(ndarray->dtype, ndarray->array, self->cur++);
+            size_t pos = self->cur * ndarray->strides[ULAB_MAX_DIMS - 1] / ndarray->itemsize;
+            self->cur++;
+            return mp_binary_get_val_array(ndarray->dtype, ndarray->array, pos);
         } else { // we have a tensor, return the reduced view
             size_t offset = self->cur * ndarray->strides[ULAB_MAX_DIMS - ndarray->ndim];
             offset *= ndarray->itemsize;
