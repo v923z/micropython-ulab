@@ -112,8 +112,8 @@ ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *, uint8_t );
 ndarray_obj_t *ndarray_new_ndarray(uint8_t , size_t *, int32_t *, uint8_t );
 ndarray_obj_t *ndarray_new_linear_array(size_t , uint8_t );
 bool ndarray_is_dense(ndarray_obj_t *);
-
 mp_obj_t ndarray_copy(mp_obj_t );
+
 #ifdef CIRCUITPY
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 #else
@@ -121,6 +121,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_
 #endif
 mp_obj_t ndarray_subscr(mp_obj_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_getiter(mp_obj_t , mp_obj_iter_buf_t *);
+bool ndarray_can_broadcast(ndarray_obj_t *, ndarray_obj_t *, uint8_t *, size_t *, int32_t *, int32_t *);
 mp_obj_t ndarray_binary_op(mp_binary_op_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_unary_op(mp_unary_op_t , mp_obj_t );
 

@@ -45,9 +45,9 @@
 #define ULAB_FILTER_MODULE (0)
 #endif
 
-// the compare module consumes about 4 kB of flash space
+// the compare module consumes about 12 kB of flash space
 #ifndef ULAB_COMPARE_MODULE
-#define ULAB_COMPARE_MODULE (0)
+#define ULAB_COMPARE_MODULE (1)
 #endif
 
 // the approx module consumes about 4.5 kB of flash space
