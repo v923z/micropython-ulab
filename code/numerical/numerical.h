@@ -41,6 +41,124 @@ extern mp_obj_module_t ulab_numerical_module;
     }\
 } while(0)
 
+/*
+#define RUN_SUM(type, array, shape, stride, sum) do {\
+    (sum) = 0;\
+    for(size_t i=0; i < (shape); i++) {\
+        (sum) += *((type *)(array));\
+        (array) += (stride);\
+    }\
+} while(0)
+*/
+
+#if ULAB_MAX_DIMS == 1
+#define RUN_SUM(ndarray, type, array, shape, stride) do {\
+    type sum = 0;\
+    for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
+        sum += *((type *)(array));\
+        (array) += (ndarray)->strides[(index)];\
+    }\
+    return mp_obj_new_int(sum);\
+} while(0)
+#endif
+
+#if ULAB_MAX_DIMS == 2
+#define RUN_SUM(ndarray, type, array, results, rarray, shape, stride, index) do {\
+    if((ndarray)->ndim > 1) {\
+        (results) = ndarray_new_dense_ndarray((ndarray)->ndim-1, (shape), (ndarray)->dtype);\
+        (rarray) = (results)->array;\
+    }\
+    size_t l = 0;\
+    do {\
+        type sum = 0;\
+        for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
+            sum += *((type *)(array));\
+            (array) += (ndarray)->strides[(index)];\
+        }\
+        if((ndarray)->ndim == 1) {\
+            return mp_obj_new_int(sum);\
+        }\
+        *(rarray) = (type)sum;\
+        (rarray) += (ndarray)->itemsize;\
+        (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+    return MP_OBJ_FROM_PTR(results);\
+} while(0)
+#endif
+
+#if ULAB_MAX_DIMS == 3
+#define RUN_SUM(ndarray, type, array, results, rarray, shape, stride) do {\
+    if((ndarray)->ndim > 1) {\
+        (results) = ndarray_new_dense_ndarray((ndarray)->ndim-1, (shape), (ndarray)->dtype);\
+        (rarray) = (results)->array;\
+    }\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            type sum = 0;\
+            for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
+                sum += *((type *)(array));\
+                (array) += (ndarray)->strides[(index)];\
+            }\
+            if((ndarray)->ndim == 1) {\
+                return mp_obj_new_int(sum);\
+            }\
+            *(rarray) = (type)sum;\
+            (rarray) += (ndarray)->itemsize;\
+            (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+            (array) += (strides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        k++;\
+    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+    return MP_OBJ_FROM_PTR(results);\
+} while(0)
+#endif
+
+#if ULAB_MAX_DIMS == 4
+#define RUN_SUM(ndarray, type, array, results, rarray, shape, stride) do {\
+    if((ndarray)->ndim > 1) {\
+        (results) = ndarray_new_dense_ndarray((ndarray)->ndim-1, (shape), (ndarray)->dtype);\
+        (rarray) = results->array;\
+    }\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                type sum = 0;\
+                for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
+                    sum += *((type *)(array));\
+                    (array) += (ndarray)->strides[(index)];\
+                }\
+                if(ndarray->ndim == 1) {\
+                    return mp_obj_new_int(sum);\
+                }\
+                *(rarray) = (type)sum;\
+                (rarray) += (ndarray)->itemsize;\
+                (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+                (array) += (strides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+            (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+            (array) += (strides)[ULAB_MAX_DIMS - 3];\
+            k++;\
+        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+    return MP_OBJ_FROM_PTR(results);\
+} while(0)
+#endif
+
+/*
 #define RUN_SUM(ndarray, type, optype, len, start, increment) do {\
     type *array = (type *)(ndarray)->array->items;\
     type value;\
@@ -49,7 +167,7 @@ extern mp_obj_module_t ulab_numerical_module;
         sum += value;\
     }\
 } while(0)
-
+*/
 #define RUN_STD(ndarray, type, len, start, increment) do {\
     type *array = (type *)(ndarray)->array->items;\
     mp_float_t value;\

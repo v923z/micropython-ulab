@@ -36,7 +36,7 @@
 
 // numerical is about 12 kB
 #ifndef ULAB_NUMERICAL_MODULE
-#define ULAB_NUMERICAL_MODULE (0)
+#define ULAB_NUMERICAL_MODULE (1)
 #endif
 
 // FFT costs about 2.5 kB of flash space

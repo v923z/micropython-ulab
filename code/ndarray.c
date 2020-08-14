@@ -1204,7 +1204,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
 
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
-    
+
 	switch(op) {
 		case MP_BINARY_OP_EQUAL:
 		case MP_BINARY_OP_NOT_EQUAL:

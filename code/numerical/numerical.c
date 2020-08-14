@@ -35,63 +35,90 @@ enum NUMERICAL_FUNCTION_TYPE {
 //| """Numerical and Statistical functions
 //|
 //| Most of these functions take an "axis" argument, which indicates whether to
-//| operate over the flattened array (None), rows (0), or columns (1)."""
+//| operate over the flattened array (None), or a particular axis (integer)."""
 //|
 //| from ulab import _ArrayLike
 //|
 
-static void axis_sorter(ndarray_obj_t *ndarray, mp_obj_t axis, size_t *m, size_t *n, size_t *N, 
-                 size_t *increment, size_t *len, size_t *start_inc) {
-    if(axis == mp_const_none) { // flatten the array
-        *m = 1;
-        *n = 1;
-        *len = ndarray->array->len;
-        *N = 1;
-        *increment = 1;
-        *start_inc = ndarray->array->len;
-    } else if((mp_obj_get_int(axis) == 1)) { // along the horizontal axis
-        *m = ndarray->m;
-        *n = 1;
-        *len = ndarray->n;
-        *N = ndarray->m;
-        *increment = 1;
-        *start_inc = ndarray->n;
-    } else { // along vertical axis
-        *m = 1;
-        *n = ndarray->n;
-        *len = ndarray->m;
-        *N = ndarray->n;
-        *increment = ndarray->n;
-        *start_inc = 1;
-    }    
+static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *shape, int32_t *strides) {
+    // removes the values corresponding to a single axis from the shape and strides array
+    uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + axis;
+    if((ndarray->ndim == 1) && (axis == 0)) {
+        index = 0;
+    }
+    for(uint8_t i = ULAB_MAX_DIMS - 1; i > 0; i--) {
+        if(i > index) {
+            shape[i] = ndarray->shape[i];
+            strides[i] = ndarray->strides[i];
+        } else {
+            shape[i] = ndarray->shape[i-1];
+            strides[i] = ndarray->strides[i-1];
+        }
+    }
 }
 
 static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, size_t ddof) {
-    mp_float_t value, sum = 0.0, sq_sum = 0.0;
+    mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0;
+    size_t count = 1;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t item, iterable = mp_getiter(oin, &iter_buf);
-    mp_int_t len = mp_obj_get_int(mp_obj_len(oin));
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+    if((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         value = mp_obj_get_float(item);
-        sum += value;
+        M = m = value;
+        count++;
+    }
+    while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        value = mp_obj_get_float(item);
+        m = M + (value - M) / count;
+        s = S + (value - M) * (value - m);
+        M = m;
+        S = s;
+        count++;
     }
     if(optype ==  NUMERICAL_SUM) {
-        return mp_obj_new_float(sum);
+        return mp_obj_new_float(m * (count - 1));
     } else if(optype == NUMERICAL_MEAN) {
-        return mp_obj_new_float(sum/len);
+        return count > 0 ? mp_obj_new_float(m) : mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
     } else { // this should be the case of the standard deviation
-        // TODO: note that we could get away with a single pass, if we used the Weldorf algorithm
-        // That should save a fair amount of time, because we would have to extract the values only once
-        iterable = mp_getiter(oin, &iter_buf);
-        sum /= len; // this is now the mean!
-        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            value = mp_obj_get_float(item) - sum;
-            sq_sum += value * value;
-        }
-        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(sq_sum/(len-ddof)));
+        return count > ddof ? mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(count * s / (count - ddof))) : mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
     }
 }
 
+static mp_obj_t numerical_sum_mean_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
+    //uint8_t *array = (uint8_t *)ndarray->array;
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+
+    if(axis == mp_const_none) { // work with the flattened array
+        // pass for now...
+    } else {
+        int8_t ax = mp_obj_get_int(axis);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
+        }
+        numerical_reduce_axes(ndarray, ax, shape, strides);
+        uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        uint8_t *array = ndarray->array;
+        ndarray_obj_t *results = NULL;
+        uint8_t *rarray = NULL;
+        if(optype == NUMERICAL_SUM) {
+            if(ndarray->dtype == NDARRAY_UINT8) {
+                RUN_SUM(ndarray, uint8_t, array, results, rarray, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_INT8) {
+                RUN_SUM(ndarray, int8_t, array, results, rarray, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_UINT16) {
+                RUN_SUM(ndarray, uint16_t, array, results, rarray, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_INT16) {
+                RUN_SUM(ndarray, int16_t, array, results, rarray, shape, strides, index);
+            }
+        }
+    }
+    return mp_const_none;
+}
+/*
 STATIC mp_obj_t numerical_sum_mean_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
     size_t m, n, increment, start, start_inc, N, len; 
     axis_sorter(ndarray, axis, &m, &n, &N, &increment, &len, &start_inc);
@@ -237,7 +264,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
 	}
     return MP_OBJ_FROM_PTR(results);
 }
-
+*/
 STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t optype) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} } ,
@@ -249,20 +276,19 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     
     mp_obj_t oin = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
-    if((axis != mp_const_none) && (mp_obj_get_int(axis) != 0) && (mp_obj_get_int(axis) != 1)) {
-        // this seems to pass with False, and True...
-        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
+    if((axis != mp_const_none) && (!MP_OBJ_IS_INT(axis))) {
+        mp_raise_TypeError(translate("axis must be None, or an integer"));
     }
     
     if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || 
         MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
         switch(optype) {
-            case NUMERICAL_MIN:
+/*            case NUMERICAL_MIN:
             case NUMERICAL_ARGMIN:
             case NUMERICAL_MAX:
             case NUMERICAL_ARGMAX:
                 return numerical_argmin_argmax_iterable(oin, optype);
-            case NUMERICAL_SUM:
+  */          case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
                 return numerical_sum_mean_std_iterable(oin, optype, 0);
             default: // we should never reach this point, but whatever
@@ -271,12 +297,12 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         switch(optype) {
-            case NUMERICAL_MIN:
+/*            case NUMERICAL_MIN:
             case NUMERICAL_MAX:
             case NUMERICAL_ARGMIN:
             case NUMERICAL_ARGMAX:
                 return numerical_argmin_argmax_ndarray(ndarray, axis, optype);
-            case NUMERICAL_SUM:
+*/            case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
                 return numerical_sum_mean_ndarray(ndarray, axis, optype);
             default:
@@ -287,7 +313,7 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     }
     return mp_const_none;
 }
-
+/*
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
     if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
@@ -589,7 +615,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_max_obj, 1, numerical_max);
 //|     """Return the mean element of the 1D array, as a number if axis is None, otherwise as an array."""
 //|     ...
 //|
-
+*/
 static mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MEAN);
 }
@@ -600,7 +626,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 //|     """Return the minimum element of the 1D array"""
 //|     ...
 //|
-
+/*
 static mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MIN);
 }
@@ -730,7 +756,7 @@ static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace);
-
+*/
 //| def std(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the standard deviation of the array, as a number if axis is None, otherwise as an array."""
 //|     ...
@@ -755,10 +781,10 @@ static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     }
     if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
         return numerical_sum_mean_std_iterable(oin, NUMERICAL_STD, ddof);
-    } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    } /*else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         return numerical_std_ndarray(ndarray, axis, ddof);
-    } else {
+    } */else {
         mp_raise_TypeError(translate("input must be tuple, list, range, or ndarray"));
     }
     return mp_const_none;
@@ -779,16 +805,16 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sum_obj, 1, numerical_sum);
 
 STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_numerical) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_std), (mp_obj_t)&numerical_std_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
 };
