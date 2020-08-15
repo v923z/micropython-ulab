@@ -1359,7 +1359,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             return MP_OBJ_NULL; // op not supported
             break;
     }
-	return MP_OBJ_NULL;
+    return MP_OBJ_NULL;
 }
 
 mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
