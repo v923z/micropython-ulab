@@ -1218,8 +1218,8 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             
         // by separating the associative operators, we can save a lot of flash space,
         // because the operands can simply be swapped for half of the cases
-		case MP_BINARY_OP_EQUAL:
-		case MP_BINARY_OP_NOT_EQUAL:
+        case MP_BINARY_OP_EQUAL:
+        case MP_BINARY_OP_NOT_EQUAL:
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_MULTIPLY:
             if(lhs->dtype == NDARRAY_UINT8) {
