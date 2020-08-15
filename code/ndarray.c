@@ -1206,16 +1206,77 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     uint8_t *rarray = (uint8_t *)rhs->array;
 
 	switch(op) {
+        case MP_BINARY_OP_LESS:
+            // here we simply swap the operands
+            return ndarray_binary_op(MP_BINARY_OP_MORE, rhs, lhs);
+            break;
+            
+        case MP_BINARY_OP_LESS_EQUAL:
+            // here we simply swap the operands
+            return ndarray_binary_op(MP_BINARY_OP_MORE_EQUAL, rhs, lhs);
+            break;
+            
+        // by separating the associative operators, we can save a lot of flash space,
+        // because the operands can simply be swapped for half of the cases
 		case MP_BINARY_OP_EQUAL:
 		case MP_BINARY_OP_NOT_EQUAL:
-		case MP_BINARY_OP_LESS:
-		case MP_BINARY_OP_LESS_EQUAL:
+        case MP_BINARY_OP_ADD:
+        case MP_BINARY_OP_MULTIPLY:
+            if(lhs->dtype == NDARRAY_UINT8) {
+				if(rhs->dtype == NDARRAY_UINT8) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_UINT8, uint8_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_INT8) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_UINT16) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_INT16) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_FLOAT) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				}
+			} else if(lhs->dtype == NDARRAY_INT8) {
+				if(rhs->dtype == NDARRAY_INT8) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_INT8, int8_t, int8_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_UINT16) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_INT16) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_FLOAT) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else {
+                    ndarray_binary_op(op, rhs, lhs);
+                }
+			} else if(lhs->dtype == NDARRAY_UINT16) {
+				if(rhs->dtype == NDARRAY_UINT16) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_INT16) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_FLOAT) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else {
+                    ndarray_binary_op(op, rhs, lhs);
+                }
+			} else if(lhs->dtype == NDARRAY_INT16) {
+				if(rhs->dtype == NDARRAY_INT16) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else if(rhs->dtype == NDARRAY_FLOAT) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else {
+                    ndarray_binary_op(op, rhs, lhs);
+                }
+			} else if(lhs->dtype == NDARRAY_FLOAT) {
+                if(rhs->dtype == NDARRAY_FLOAT) {
+					RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+				} else {
+                    ndarray_binary_op(op, rhs, lhs);
+                }
+			}
+            break;
+            
 		case MP_BINARY_OP_MORE:
 		case MP_BINARY_OP_MORE_EQUAL:
-		case MP_BINARY_OP_ADD:
 		case MP_BINARY_OP_SUBTRACT:
 		case MP_BINARY_OP_TRUE_DIVIDE:
-		case MP_BINARY_OP_MULTIPLY:
 //		case MP_BINARY_OP_POWER:
 			// TODO: I believe, this part can be made significantly smaller (compiled size)
 			// by doing only the typecasting in the large ifs, and moving the loops outside

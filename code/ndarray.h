@@ -427,7 +427,47 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
     
 #endif // ULAB_MAX_DIMS == 4
 
+#define RUN_ASSOC_BINARY_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
+    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
+        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
+        uint8_t *array = (uint8_t *)results->array;\
+        if((op) == MP_BINARY_OP_ADD) {\
+            BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, +);\
+        } else if((op) == MP_BINARY_OP_MULTIPLY) {\
+            BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, *);\
+        }\
+    } else if(((op) == MP_BINARY_OP_EQUAL) || ((op) == MP_BINARY_OP_NOT_EQUAL)) {\
+        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_UINT8);\
+        uint8_t *array = (uint8_t *)results->array;\
+        if((op) == MP_BINARY_OP_EQUAL) {\
+            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, ==);\
+        } else if((op) == MP_BINARY_OP_NOT_EQUAL){\
+            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, !=);\
+        }\
+    }\
+} while(0)
 
+#define RUN_BINARY_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
+    if(((op) == MP_BINARY_OP_SUBTRACT)) {\
+        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
+        uint8_t *array = (uint8_t *)results->array;\
+        BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, -);\
+    } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
+        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_FLOAT);\
+        uint8_t *array = (uint8_t *)results->array;\
+        BINARY_LOOP(results, array, mp_float_t, type_left, type_right, larray, lstrides, rarray, rstrides, /);\
+    } else if(((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\
+        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_UINT8);\
+        uint8_t *array = (uint8_t *)results->array;\
+        if((op) == MP_BINARY_OP_MORE) {\
+            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, >);\
+        } else if((op) == MP_BINARY_OP_MORE_EQUAL){\
+            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, >=);\
+        }\
+    }\
+} while(0)
+
+/*
 #define RUN_BINARY_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
     if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
         ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
@@ -443,8 +483,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_FLOAT);\
         uint8_t *array = (uint8_t *)results->array;\
         BINARY_LOOP(results, array, mp_float_t, type_left, type_right, larray, lstrides, rarray, rstrides, /);\
-    } else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
-                ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL) || \
+    } else if(((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL) || \
                 ((op) == MP_BINARY_OP_EQUAL) || ((op) == MP_BINARY_OP_NOT_EQUAL)) {\
         ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_UINT8);\
         uint8_t *array = (uint8_t *)results->array;\
@@ -452,10 +491,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
             EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, ==);\
         } else if((op) == MP_BINARY_OP_NOT_EQUAL){\
             EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, !=);\
-        } else if((op) == MP_BINARY_OP_LESS) {\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, <);\
-        } else if((op) == MP_BINARY_OP_LESS_EQUAL){\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, <=);\
         } else if((op) == MP_BINARY_OP_MORE) {\
             EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, >);\
         } else if((op) == MP_BINARY_OP_MORE_EQUAL){\
@@ -463,5 +498,5 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         }\
     }\
 } while(0)
-
+*/
 #endif
