@@ -1164,42 +1164,42 @@ bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim
 }
 
 mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
-	// if the ndarray stands on the right hand side of the expression, simply swap the operands
-	ndarray_obj_t *lhs, *rhs;
-	mp_binary_op_t op = _op;
-	if((op == MP_BINARY_OP_REVERSE_ADD) || (op == MP_BINARY_OP_REVERSE_MULTIPLY) ||
-		(op == MP_BINARY_OP_REVERSE_POWER) || (op == MP_BINARY_OP_REVERSE_SUBTRACT) ||
-		(op == MP_BINARY_OP_REVERSE_TRUE_DIVIDE)) {
-		lhs = ndarray_from_mp_obj(robj);
-		rhs = ndarray_from_mp_obj(lobj);
-	} else {
-		lhs = ndarray_from_mp_obj(lobj);
-		rhs = ndarray_from_mp_obj(robj);
-	}
-	if(op == MP_BINARY_OP_REVERSE_ADD) {
-		op = MP_BINARY_OP_ADD;
-	} else if(op == MP_BINARY_OP_REVERSE_MULTIPLY) {
-		op = MP_BINARY_OP_MULTIPLY;
-	} else if(op == MP_BINARY_OP_REVERSE_POWER) {
-		op = MP_BINARY_OP_POWER;
-	} else if(op == MP_BINARY_OP_REVERSE_SUBTRACT) {
-		op = MP_BINARY_OP_SUBTRACT;
-	} else if(op == MP_BINARY_OP_REVERSE_TRUE_DIVIDE) {
-		op = MP_BINARY_OP_TRUE_DIVIDE;
-	}
+    // if the ndarray stands on the right hand side of the expression, simply swap the operands
+    ndarray_obj_t *lhs, *rhs;
+    mp_binary_op_t op = _op;
+    if((op == MP_BINARY_OP_REVERSE_ADD) || (op == MP_BINARY_OP_REVERSE_MULTIPLY) ||
+        (op == MP_BINARY_OP_REVERSE_POWER) || (op == MP_BINARY_OP_REVERSE_SUBTRACT) ||
+        (op == MP_BINARY_OP_REVERSE_TRUE_DIVIDE)) {
+        lhs = ndarray_from_mp_obj(robj);
+        rhs = ndarray_from_mp_obj(lobj);
+    } else {
+        lhs = ndarray_from_mp_obj(lobj);
+        rhs = ndarray_from_mp_obj(robj);
+    }
+    if(op == MP_BINARY_OP_REVERSE_ADD) {
+        op = MP_BINARY_OP_ADD;
+    } else if(op == MP_BINARY_OP_REVERSE_MULTIPLY) {
+        op = MP_BINARY_OP_MULTIPLY;
+    } else if(op == MP_BINARY_OP_REVERSE_POWER) {
+        op = MP_BINARY_OP_POWER;
+    } else if(op == MP_BINARY_OP_REVERSE_SUBTRACT) {
+        op = MP_BINARY_OP_SUBTRACT;
+    } else if(op == MP_BINARY_OP_REVERSE_TRUE_DIVIDE) {
+        op = MP_BINARY_OP_TRUE_DIVIDE;
+    }
     // One of the operands is a scalar
     // TODO: conform to numpy with the upcasting
     // TODO: implement in-place operators
-    
+
     uint8_t ndim = 0;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
     int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
     if(!ndarray_can_broadcast(lhs, rhs, &ndim, shape, lstrides, rstrides)) {
-        mp_raise_ValueError(translate("operands could not be broadcast together"));
-        m_del(size_t, shape, ULAB_MAX_DIMS);
-        m_del(int32_t, lstrides, ULAB_MAX_DIMS);
-        m_del(int32_t, rstrides, ULAB_MAX_DIMS);
+    mp_raise_ValueError(translate("operands could not be broadcast together"));
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(int32_t, lstrides, ULAB_MAX_DIMS);
+    m_del(int32_t, rstrides, ULAB_MAX_DIMS);
     }
 
     uint8_t *larray = (uint8_t *)lhs->array;
