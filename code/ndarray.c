@@ -458,10 +458,10 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
 void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t dtype, size_t *idx) {
     // assigns a single row in the matrix
     mp_obj_t item;
-	if(ndarray->boolean) {
+    if(ndarray->boolean) {
         uint8_t *array = (uint8_t *)ndarray->array;
         array += *idx;
-	    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             // TODO: this might be wrong here: we have to check for the trueness of item
             if(mp_obj_is_true(item)) {
                 *array = 1;
@@ -477,13 +477,13 @@ void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t 
 }
 
 bool ndarray_is_dense(ndarray_obj_t *ndarray) {
-	// returns true, if the array is dense, false otherwise
-	// the array should dense, if the very first stride can be calculated from shape
-	int32_t stride = ndarray->itemsize;
-	for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndarray->ndim; i--) {
+    // returns true, if the array is dense, false otherwise
+    // the array should dense, if the very first stride can be calculated from shape
+    int32_t stride = ndarray->itemsize;
+    for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndarray->ndim; i--) {
         stride *= ndarray->shape[i];
     }
-	return stride == ndarray->strides[ULAB_MAX_DIMS-ndarray->ndim-1] ? true : false;
+    return stride == ndarray->strides[ULAB_MAX_DIMS-ndarray->ndim-1] ? true : false;
 }
 
 ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
@@ -494,12 +494,12 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     ndarray->dense = 1;
     ndarray->dtype = dtype;
     ndarray->ndim = ndim;
-	ndarray->len = 1;
+    ndarray->len = 1;
     ndarray->itemsize = mp_binary_get_size('@', dtype, NULL);
     for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndim; i--) {
-		ndarray->shape[i-1] = shape[i-1];
-		ndarray->strides[i-1] = strides[i-1];
-		ndarray->len *= shape[i-1];
+        ndarray->shape[i-1] = shape[i-1];
+        ndarray->strides[i-1] = strides[i-1];
+        ndarray->len *= shape[i-1];
 	}
     if(dtype == NDARRAY_BOOL) {
         dtype = NDARRAY_UINT8;
