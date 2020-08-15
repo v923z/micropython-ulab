@@ -27,16 +27,16 @@
 
 #if ULAB_MAX_DIMS > 1
 static ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
-	// Returns an ndarray, if the object is a square ndarray,
-	// raises the appropriate exception otherwise
-	if(!MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)) {
+    // Returns an ndarray, if the object is a square ndarray,
+    // raises the appropriate exception otherwise
+    if(!MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("size is defined for ndarrays only"));
     }
-	ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj);
-	if((ndarray->shape[ULAB_MAX_DIMS - 1] != ndarray->shape[ULAB_MAX_DIMS - 2]) || (ndarray->ndim != 2)) {
-		mp_raise_ValueError(translate("input must be square matrix"));
-	}
-	return ndarray;
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj);
+    if((ndarray->shape[ULAB_MAX_DIMS - 1] != ndarray->shape[ULAB_MAX_DIMS - 2]) || (ndarray->ndim != 2)) {
+        mp_raise_ValueError(translate("input must be square matrix"));
+    }
+    return ndarray;
 }
 #endif
 
@@ -101,15 +101,15 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
     uint8_t *array = (uint8_t *)ndarray->array;
     for(size_t m=0; m < N; m++) { // rows
-		for(size_t n=0; n < N; n++) { // columns
+        for(size_t n=0; n < N; n++) { // columns
             *Larray++ = ndarray_get_float_value(array, ndarray->dtype);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
-		}
+        }
         array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;\
         array += ndarray->strides[ULAB_MAX_DIMS - 2];\
-	}
+    }
     Larray -= N*N;
-	// make sure the matrix is symmetric
+    // make sure the matrix is symmetric
     for(size_t m=0; m < N; m++) { // rows
         for(size_t n=m+1; n < N; n++) { // columns
             // compare entry (m, n) to (n, m)
@@ -119,31 +119,31 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
         }
     }
 
-	// this is actually not needed, but Cholesky in numpy returns the lower triangular matrix
-	for(size_t i=0; i < N; i++) { // rows
-		for(size_t j=i+1; j < N; j++) { // columns
-			Larray[i*N + j] = MICROPY_FLOAT_CONST(0.0);
-		}
-	}
-	mp_float_t sum = 0.0;
-	for(size_t i=0; i < N; i++) { // rows
-		for(size_t j=0; j <= i; j++) { // columns
-			sum = Larray[i * N + j];
-			for(size_t k=0; k < j; k++) {
-				sum -= Larray[i * N + k] * Larray[j * N + k];
-			}
-			if(i == j) {
-				if(sum <= MICROPY_FLOAT_CONST(0.0)) {
-					mp_raise_ValueError(translate("matrix is not positive definite"));
-				} else {
-					Larray[i * N + i] = MICROPY_FLOAT_C_FUN(sqrt)(sum);
-				}
-			} else {
-				Larray[i * N + j] = sum / Larray[j * N + j];
-			}
-		}
-	}
-	return MP_OBJ_FROM_PTR(L);
+    // this is actually not needed, but Cholesky in numpy returns the lower triangular matrix
+    for(size_t i=0; i < N; i++) { // rows
+        for(size_t j=i+1; j < N; j++) { // columns
+            Larray[i*N + j] = MICROPY_FLOAT_CONST(0.0);
+        }
+    }
+    mp_float_t sum = 0.0;
+    for(size_t i=0; i < N; i++) { // rows
+        for(size_t j=0; j <= i; j++) { // columns
+            sum = Larray[i * N + j];
+            for(size_t k=0; k < j; k++) {
+                sum -= Larray[i * N + k] * Larray[j * N + k];
+            }
+            if(i == j) {
+                if(sum <= MICROPY_FLOAT_CONST(0.0)) {
+                    mp_raise_ValueError(translate("matrix is not positive definite"));
+                } else {
+                    Larray[i * N + i] = MICROPY_FLOAT_C_FUN(sqrt)(sum);
+                }
+            } else {
+                Larray[i * N + j] = sum / Larray[j * N + j];
+            }
+        }
+    }
+    return MP_OBJ_FROM_PTR(L);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
@@ -163,13 +163,13 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
     mp_float_t *tmp = m_new(mp_float_t, N * N);
     for(size_t m=0; m < N; m++) { // rows
-		for(size_t n=0; n < N; n++) { // columns
+        for(size_t n=0; n < N; n++) { // columns
             *tmp++ = ndarray_get_float_value(array, ndarray->dtype);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
-		}
+        }
         array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;\
         array += ndarray->strides[ULAB_MAX_DIMS - 2];\
-	}
+    }
 
     mp_float_t c;
     for(size_t m=0; m < N-1; m++){
@@ -523,36 +523,36 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_size_obj, 1, linalg_size);
 //|
 
 static mp_obj_t linalg_trace(mp_obj_t oin) {
-	ndarray_obj_t *ndarray = linalg_object_is_square(oin);
-	mp_float_t trace = 0.0;
-	for(size_t i=0; i < ndarray->len; i++) {
+    ndarray_obj_t *ndarray = linalg_object_is_square(oin);
+    mp_float_t trace = 0.0;
+    for(size_t i=0; i < ndarray->len; i++) {
         size_t pos = i * (ndarray->strides[ULAB_MAX_DIMS - 1] + ndarray->strides[ULAB_MAX_DIMS - 2]);
-		trace += ndarray_get_float_index(ndarray->array, ndarray->dtype, pos);
-	}
-	if(ndarray->dtype == NDARRAY_FLOAT) {
-		return mp_obj_new_float(trace);
-	}
-	return mp_obj_new_int_from_float(trace);
+        trace += ndarray_get_float_index(ndarray->array, ndarray->dtype, pos);
+    }
+    if(ndarray->dtype == NDARRAY_FLOAT) {
+        return mp_obj_new_float(trace);
+    }
+    return mp_obj_new_int_from_float(trace);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_trace_obj, linalg_trace);
 #endif
 
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
-	{ MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
     #if ULAB_MAX_DIMS > 1
     { MP_ROM_QSTR(MP_QSTR_cholesky), (mp_obj_t)&linalg_cholesky_obj },
-	{ MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
+    { MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
     #endif
-	{ MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
+    { MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
     #if ULAB_MAX_DIMS > 1
-	{ MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },
+    { MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },
     { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
     #endif
-	{ MP_ROM_QSTR(MP_QSTR_norm), (mp_obj_t)&linalg_norm_obj },
+    { MP_ROM_QSTR(MP_QSTR_norm), (mp_obj_t)&linalg_norm_obj },
     { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
     #if ULAB_MAX_DIMS > 1
-	{ MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&linalg_trace_obj },
+    { MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&linalg_trace_obj },
     #endif
 };
 

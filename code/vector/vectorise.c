@@ -122,20 +122,20 @@ static mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-	if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
-		mp_raise_TypeError(translate("first argument must be an ndarray"));
-	}
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("first argument must be an ndarray"));
+    }
     int8_t n = args[1].u_int;
-	mp_float_t mul = MICROPY_FLOAT_C_FUN(pow)(10.0, n);
+    mp_float_t mul = MICROPY_FLOAT_C_FUN(pow)(10.0, n);
     ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
     mp_float_t *narray = (mp_float_t *)ndarray->array;
     uint8_t *sarray = (uint8_t *)source->array;
     for(size_t i=0; i < ndarray->len; i++) {
-		mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
+        mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
         sarray += ndarray->strides[ULAB_MAX_DIMS - 1];
-		*narray++ = MICROPY_FLOAT_C_FUN(round)(f * mul) / mul;
-	}
+        *narray++ = MICROPY_FLOAT_C_FUN(round)(f * mul) / mul;
+    }
     return MP_OBJ_FROM_PTR(ndarray);
 }
 
@@ -158,53 +158,53 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 
 /*
 static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
-	// the function is implemented for scalars and ndarrays only, with partial 
-	// broadcasting: arguments must be either scalars, or ndarrays of equal size/shape
-	if(!(MP_OBJ_IS_INT(x) || mp_obj_is_float(x) || MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) &&
-		!(MP_OBJ_IS_INT(y) || mp_obj_is_float(y) || MP_OBJ_IS_TYPE(y, &ulab_ndarray_type))) {
-		mp_raise_TypeError(translate("arctan2 is implemented for scalars and ndarrays only"));
-	}
-	ndarray_obj_t *ndarray_x, *ndarray_y;
-	if(MP_OBJ_IS_INT(x) || mp_obj_is_float(x)) {
-		ndarray_x = ndarray_new_linear_array(1, NDARRAY_FLOAT);
-		mp_float_t *array_x = (mp_float_t *)ndarray_x->array;
-		*array_x = mp_obj_get_float(x);
-	} else {
-		ndarray_x = MP_OBJ_TO_PTR(x);
-	}
-	if(MP_OBJ_IS_INT(y) || mp_obj_is_float(y)) {
-		ndarray_y = ndarray_new_linear_array(1, NDARRAY_FLOAT);
-		mp_float_t *array_y = (mp_float_t *)ndarray_y->array;
-		*array_y = mp_obj_get_float(y);
-	} else {
-		ndarray_y = MP_OBJ_TO_PTR(y);
-	}
-	// check, whether partial broadcasting is possible here
-	if((ndarray_x->m != ndarray_y->m) || (ndarray_x->n != ndarray_y->n)) {
-		if((ndarray_x->array->len != 1) && (ndarray_y->array->len != 1)) {
+    // the function is implemented for scalars and ndarrays only, with partial 
+    // broadcasting: arguments must be either scalars, or ndarrays of equal size/shape
+    if(!(MP_OBJ_IS_INT(x) || mp_obj_is_float(x) || MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) &&
+        !(MP_OBJ_IS_INT(y) || mp_obj_is_float(y) || MP_OBJ_IS_TYPE(y, &ulab_ndarray_type))) {
+        mp_raise_TypeError(translate("arctan2 is implemented for scalars and ndarrays only"));
+    }
+    ndarray_obj_t *ndarray_x, *ndarray_y;
+    if(MP_OBJ_IS_INT(x) || mp_obj_is_float(x)) {
+        ndarray_x = ndarray_new_linear_array(1, NDARRAY_FLOAT);
+        mp_float_t *array_x = (mp_float_t *)ndarray_x->array;
+        *array_x = mp_obj_get_float(x);
+    } else {
+        ndarray_x = MP_OBJ_TO_PTR(x);
+    }
+    if(MP_OBJ_IS_INT(y) || mp_obj_is_float(y)) {
+        ndarray_y = ndarray_new_linear_array(1, NDARRAY_FLOAT);
+        mp_float_t *array_y = (mp_float_t *)ndarray_y->array;
+        *array_y = mp_obj_get_float(y);
+    } else {
+        ndarray_y = MP_OBJ_TO_PTR(y);
+    }
+    // check, whether partial broadcasting is possible here
+    if((ndarray_x->m != ndarray_y->m) || (ndarray_x->n != ndarray_y->n)) {
+        if((ndarray_x->array->len != 1) && (ndarray_y->array->len != 1)) {
             mp_raise_ValueError(translate("operands could not be broadcast together"));
-		}
-	}
-	size_t xinc = 0, yinc = 0;
-	size_t m = MAX(ndarray_x->m, ndarray_y->m);
-	size_t n = MAX(ndarray_x->n, ndarray_y->n);
-	size_t len = MAX(ndarray_x->array->len, ndarray_y->array->len);
-	if(ndarray_x->array->len != 1) {
-		xinc = 1;
-	}
-	if(ndarray_y->array->len != 1) {
-		yinc = 1;
-	}
-	size_t posx = 0, posy = 0;
-	ndarray_obj_t *result = create_new_ndarray(m, n, NDARRAY_FLOAT);
-	mp_float_t *array_r = (mp_float_t *)result->array->items;
-	for(size_t i=0; i < len; i++) {
-		mp_float_t value_x = ndarray_get_float_value(ndarray_x->array->items, ndarray_x->array->typecode, posx);
-		mp_float_t value_y = ndarray_get_float_value(ndarray_y->array->items, ndarray_y->array->typecode, posy);
-		*array_r++ = MICROPY_FLOAT_C_FUN(atan2)(value_x, value_y);
-		posx += xinc;
-		posy += yinc;
-	}
+        }
+    }
+    size_t xinc = 0, yinc = 0;
+    size_t m = MAX(ndarray_x->m, ndarray_y->m);
+    size_t n = MAX(ndarray_x->n, ndarray_y->n);
+    size_t len = MAX(ndarray_x->array->len, ndarray_y->array->len);
+    if(ndarray_x->array->len != 1) {
+        xinc = 1;
+    }
+    if(ndarray_y->array->len != 1) {
+        yinc = 1;
+    }
+    size_t posx = 0, posy = 0;
+    ndarray_obj_t *result = create_new_ndarray(m, n, NDARRAY_FLOAT);
+    mp_float_t *array_r = (mp_float_t *)result->array->items;
+    for(size_t i=0; i < len; i++) {
+        mp_float_t value_x = ndarray_get_float_value(ndarray_x->array->items, ndarray_x->array->typecode, posx);
+        mp_float_t value_y = ndarray_get_float_value(ndarray_y->array->items, ndarray_y->array->typecode, posy);
+        *array_r++ = MICROPY_FLOAT_C_FUN(atan2)(value_x, value_y);
+        posx += xinc;
+        posy += yinc;
+    }
     return MP_OBJ_FROM_PTR(result);
 }
 

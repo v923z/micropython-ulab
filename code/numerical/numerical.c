@@ -185,9 +185,9 @@ static mp_obj_t numerical_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, siz
 }
 
 static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
-	if(MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(oin)) == 0) {
-		mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
-	}
+    if(MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(oin)) == 0) {
+        mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
+    }
     size_t idx = 0, best_idx = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(oin, &iter_buf);
@@ -195,21 +195,21 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
     uint8_t op = 0; // argmin, min
     if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) op = 1;
     item = mp_iternext(iterable);
-	mp_obj_t best_obj = item;
+    mp_obj_t best_obj = item;
     mp_float_t value, best_value = mp_obj_get_float(item);
     value = best_value;
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-		idx++;
-		value = mp_obj_get_float(item);
-		if((op == 0) && (value < best_value)) {
-			best_obj = item;
-			best_idx = idx;
-			best_value = value;
-		} else if((op == 1) && (value > best_value)) {
-			best_obj = item;
-			best_idx = idx;
-			best_value = value;
-		}
+        idx++;
+        value = mp_obj_get_float(item);
+        if((op == 0) && (value < best_value)) {
+            best_obj = item;
+            best_idx = idx;
+            best_value = value;
+        } else if((op == 1) && (value > best_value)) {
+            best_obj = item;
+            best_idx = idx;
+            best_value = value;
+        }
     }
     if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
         return MP_OBJ_NEW_SMALL_INT(best_idx);
@@ -224,8 +224,8 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
     ndarray_obj_t *results;
     if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
         if(ndarray->array->len == 0) {
-			mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
-		}
+            mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
+        }
         results = create_new_ndarray(m, n, NDARRAY_UINT16);
     } else {
         results = create_new_ndarray(m, n, ndarray->array->typecode);
@@ -259,9 +259,9 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
             }
         }
     }
-	if(results->array->len == 1) {
+    if(results->array->len == 1) {
         return mp_binary_get_val_array(results->array->typecode, results->array->items, 0);
-	}
+    }
     return MP_OBJ_FROM_PTR(results);
 }
 */

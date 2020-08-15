@@ -89,7 +89,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     #if ULAB_MAX_DIMS > 1
     if(re->ndim != 1) {
         mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));
-	}
+    }
     #endif
     size_t len = re->len;
     if((len & (len-1)) != 0) {
@@ -112,8 +112,8 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
         ndarray_obj_t *im = MP_OBJ_TO_PTR(arg_im);
         #if ULAB_MAX_DIMS > 1
         if(im->ndim != 1) {
-            mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));			
-		}
+            mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));         
+        }
         #endif
         if (re->len != im->len) {
             mp_raise_ValueError(translate("real and imaginary parts must be of equal length"));

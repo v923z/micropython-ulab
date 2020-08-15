@@ -138,12 +138,12 @@ MP_DECLARE_CONST_FUN_OBJ_3(compare_clip_obj);
 
 
 #define RUN_COMPARE_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
-	ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
-	uint8_t *array = (uint8_t *)results->array;\
-	if((op) == COMPARE_MINIMUM) {\
+    ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
+    uint8_t *array = (uint8_t *)results->array;\
+    if((op) == COMPARE_MINIMUM) {\
         COMPARE_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, <);\
     }\
-	if((op) == COMPARE_MAXIMUM) {\
+    if((op) == COMPARE_MAXIMUM) {\
         COMPARE_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, >);\
     }\
 } while(0)

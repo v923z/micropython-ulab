@@ -31,7 +31,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(user_dummy_obj, user_dummy);
 
 STATIC const mp_rom_map_elem_t ulab_user_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_user) },
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_dummy), (mp_obj_t)&user_dummy_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_dummy), (mp_obj_t)&user_dummy_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_user_globals, ulab_user_globals_table);
