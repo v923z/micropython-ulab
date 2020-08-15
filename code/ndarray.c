@@ -1196,10 +1196,10 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
     int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
     if(!ndarray_can_broadcast(lhs, rhs, &ndim, shape, lstrides, rstrides)) {
-    mp_raise_ValueError(translate("operands could not be broadcast together"));
-    m_del(size_t, shape, ULAB_MAX_DIMS);
-    m_del(int32_t, lstrides, ULAB_MAX_DIMS);
-    m_del(int32_t, rstrides, ULAB_MAX_DIMS);
+        mp_raise_ValueError(translate("operands could not be broadcast together"));
+        m_del(size_t, shape, ULAB_MAX_DIMS);
+        m_del(int32_t, lstrides, ULAB_MAX_DIMS);
+        m_del(int32_t, rstrides, ULAB_MAX_DIMS);
     }
 
     uint8_t *larray = (uint8_t *)lhs->array;
