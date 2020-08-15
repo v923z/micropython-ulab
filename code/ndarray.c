@@ -1092,43 +1092,43 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 
 // Binary operations
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
-	// creates an ndarray from a micropython int or float
-	// if the input is an ndarray, it is returned
-	ndarray_obj_t *ndarray;
-	if(MP_OBJ_IS_INT(obj)) {
-		int32_t ivalue = mp_obj_get_int(obj);
-		if((ivalue > 0) && (ivalue < 256)) {
+    // creates an ndarray from a micropython int or float
+    // if the input is an ndarray, it is returned
+    ndarray_obj_t *ndarray;
+    if(MP_OBJ_IS_INT(obj)) {
+        int32_t ivalue = mp_obj_get_int(obj);
+        if((ivalue > 0) && (ivalue < 256)) {
             ndarray = ndarray_new_linear_array(1, NDARRAY_UINT8);
             uint8_t *array = (uint8_t *)ndarray->array;
             array[0] = (uint8_t)ivalue;
-		} else if((ivalue > 255) && (ivalue < 65535)) {
-			ndarray = ndarray_new_linear_array(1, NDARRAY_UINT16);
+        } else if((ivalue > 255) && (ivalue < 65535)) {
+            ndarray = ndarray_new_linear_array(1, NDARRAY_UINT16);
             uint16_t *array = (uint16_t *)ndarray->array;
             array[0] = (uint16_t)ivalue;
-		} else if((ivalue < 0) && (ivalue > -128)) {
-			ndarray = ndarray_new_linear_array(1, NDARRAY_INT8);
+        } else if((ivalue < 0) && (ivalue > -128)) {
+            ndarray = ndarray_new_linear_array(1, NDARRAY_INT8);
             int8_t *array = (int8_t *)ndarray->array;
             array[0] = (int8_t)ivalue;
-		} else if((ivalue < -127) && (ivalue > -32767)) {
-			ndarray = ndarray_new_linear_array(1, NDARRAY_INT16);
+        } else if((ivalue < -127) && (ivalue > -32767)) {
+            ndarray = ndarray_new_linear_array(1, NDARRAY_INT16);
             int16_t *array = (int16_t *)ndarray->array;
             array[0] = (int16_t)ivalue;
-		} else { // the integer value clearly does not fit the ulab integer types, so move on to float
-			ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
+        } else { // the integer value clearly does not fit the ulab integer types, so move on to float
+            ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
             mp_float_t *array = (mp_float_t *)ndarray->array;
             array[0] = (mp_float_t)ivalue;
-		}
-	} else if(mp_obj_is_float(obj)) {
-		mp_float_t fvalue = mp_obj_get_float(obj);
+        }
+    } else if(mp_obj_is_float(obj)) {
+        mp_float_t fvalue = mp_obj_get_float(obj);
         ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
         array[0] = (mp_float_t)fvalue;
-	} else if(MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)){
+    } else if(MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)){
         return obj;
-	} else {
-		mp_raise_TypeError(translate("wrong operand type"));
-	}
-	return ndarray;
+    } else {
+        mp_raise_TypeError(translate("wrong operand type"));
+    }
+    return ndarray;
 }
 
 bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
