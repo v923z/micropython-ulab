@@ -49,11 +49,55 @@ extern mp_obj_module_t ulab_numerical_module;
         (array) += (ndarray)->strides[(index)];\
     }\
     memcpy((rarray), &sum, (ndarray)->itemsize);\
+    (rarray) += (ndarray)->itemsize;\
+})
+
+// The mean could be calculated by simply dividing the sum by
+// the number of elements, but that method is numerically unstable
+#define RUN_MEAN1(ndarray, type, array, results, r, index)\
+({\
+    mp_float_t M, m;\
+    M = m = *(mp_float_t *)((type *)(array));\
+    for(size_t i=1; i < (ndarray)->shape[(index)]; i++) {\
+        (array) += (ndarray)->strides[(index)];\
+        mp_float_t value = *(mp_float_t *)((type *)(array));\
+        m = M + (value - M) / (mp_float_t)(i+1);\
+        M = m;\
+    }\
+    (array) += (ndarray)->strides[(index)];\
+    *(r)++ = M;\
+})
+
+// Instead of the straightforward implementation of the definition,
+// we take the numerically stable Welford algorithm here
+// https://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation/
+#define RUN_STD1(ndarray, type, array, results, r, index, div)\
+({\
+    mp_float_t M, m, S = 0.0, s = 0.0;\
+    M = m = *(mp_float_t *)((type *)(array));\
+    for(size_t i=1; i < (ndarray)->shape[(index)]; i++) {\
+        (array) += (ndarray)->strides[(index)];\
+        mp_float_t value = *(mp_float_t *)((type *)(array));\
+        m = M + (value - M) / (mp_float_t)i;\
+        s = S + (value - M) * (value - m);\
+        M = m;\
+        S = s;\
+    }\
+    (array) += (ndarray)->strides[(index)];\
+    *(r)++ = MICROPY_FLOAT_C_FUN(sqrt)((ndarray)->shape[(index)] * s / (div));\
 })
 
 #if ULAB_MAX_DIMS == 1
 #define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
     RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
+} while(0)
+
+#define RUN_MEAN(ndarray, type, array, results, r, shape, strides, index) do {\
+    RUN_MEAN1((ndarray), type, (array), (results), (r), (index));\
+} while(0)
+
+#define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
+    RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
 } while(0)
 #endif
 
@@ -62,31 +106,41 @@ extern mp_obj_module_t ulab_numerical_module;
     size_t l = 0;\
     do {\
         RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
-        (rarray) += (ndarray)->itemsize;\
         (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
         (array) += (strides)[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
 } while(0)
+
+#define RUN_MEAN(ndarray, type, array, results, r, shape, strides, index) do {\
+    size_t l = 0;\
+    do {\
+        RUN_MEAN1((ndarray), type, (array), (results), (r), (index));\
+        (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+} while(0)
+
+#define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
+    size_t l = 0;\
+    do {\
+        RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
+        (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+} while(0)
+
 #endif
 
 #if ULAB_MAX_DIMS == 3
 #define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
-    if((ndarray)->ndim > 1) {\
-        (results) = ndarray_new_dense_ndarray((ndarray)->ndim-1, (shape), (ndarray)->dtype);\
-        (rarray) = (results)->array;\
-    }\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            type sum = 0;\
-            for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
-                sum += *((type *)(array));\
-                (array) += (ndarray)->strides[(index)];\
-            }\
-            memcpy((rarray), &sum, (ndarray)->itemsize);\
-            (rarray) += (ndarray)->itemsize;\
+            RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
             (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
             (array) += (strides)[ULAB_MAX_DIMS - 1];\
             l++;\
@@ -96,27 +150,50 @@ extern mp_obj_module_t ulab_numerical_module;
         k++;\
     } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
 } while(0)
+
+#define RUN_MEAN(ndarray, type, array, results, r, shape, strides, index) do {\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            RUN_MEAN1((ndarray), type, (array), (results), (r), (index));\
+            (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+            (array) += (strides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        k++;\
+    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+} while(0)
+
+#define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
+            (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+            (array) += (strides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        k++;\
+    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+} while(0)
+
 #endif
 
 #if ULAB_MAX_DIMS == 4
 #define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
-    if((ndarray)->ndim > 1) {\
-        (results) = ndarray_new_dense_ndarray((ndarray)->ndim-1, (shape), (ndarray)->dtype);\
-        (rarray) = results->array;\
-    }\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                type sum = 0;\
-                for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
-                    sum += *((type *)(array));\
-                    (array) += (ndarray)->strides[(index)];\
-                }\
-                memcpy((rarray), &sum, (ndarray)->itemsize);\
-                (rarray) += (ndarray)->itemsize;\
+                RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
                 (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
                 (array) += (strides)[ULAB_MAX_DIMS - 1];\
                 l++;\
@@ -130,6 +207,51 @@ extern mp_obj_module_t ulab_numerical_module;
         j++;\
     } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
 } while(0)
+
+#define RUN_MEAN(ndarray, type, array, results, r, shape, strides, index) do {\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                RUN_MEAN1((ndarray), type, (array), (results), (r), (index));\
+                (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+                (array) += (strides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+            (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+            (array) += (strides)[ULAB_MAX_DIMS - 3];\
+            k++;\
+        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+} while(0)
+
+#define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
+                (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+                (array) += (strides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+            (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+            (array) += (strides)[ULAB_MAX_DIMS - 3];\
+            k++;\
+        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+} while(0)
+
 #endif
 
 /*
@@ -142,18 +264,6 @@ extern mp_obj_module_t ulab_numerical_module;
     }\
 } while(0)
 */
-#define RUN_STD(ndarray, type, len, start, increment) do {\
-    type *array = (type *)(ndarray)->array->items;\
-    mp_float_t value;\
-    for(size_t k=0; k < (len); k++) {\
-        sum += array[(start)+k*(increment)];\
-    }\
-    sum /= (len);\
-    for(size_t k=0; k < (len); k++) {\
-        value = (array[(start)+k*(increment)] - sum);\
-        sum_sq += value * value;\
-    }\
-} while(0)
 
 #define CALCULATE_DIFF(in, out, type, M, N, inn, increment) do {\
     type *source = (type *)(in)->array->items;\

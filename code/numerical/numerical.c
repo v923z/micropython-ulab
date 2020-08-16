@@ -86,7 +86,7 @@ static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, si
     }
 }
 
-static mp_obj_t numerical_sum_mean_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
+static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype, size_t ddof) {
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
@@ -104,10 +104,12 @@ static mp_obj_t numerical_sum_mean_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis
         numerical_reduce_axes(ndarray, ax, shape, strides);
         uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
         // Take MAX(...) here, so that we can include the 1-dimensional case
-        ndarray_obj_t *results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, ndarray->dtype);
-        uint8_t *rarray = (uint8_t *)results->array;
+        ndarray_obj_t *results = NULL;
+        uint8_t *rarray = NULL;
 
         if(optype == NUMERICAL_SUM) {
+             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, ndarray->dtype);
+             rarray = (uint8_t *)results->array;
             // TODO: numpy promotes the output to the highest integer type
             if(ndarray->dtype == NDARRAY_UINT8) {
                 RUN_SUM(ndarray, uint8_t, array, results, rarray, shape, strides, index);
@@ -119,6 +121,35 @@ static mp_obj_t numerical_sum_mean_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis
                 RUN_SUM(ndarray, int16_t, array, results, rarray, shape, strides, index);
             } else {
                 RUN_SUM(ndarray, mp_float_t, array, results, rarray, shape, strides, index);
+            }
+        } else if(optype == NUMERICAL_MEAN) {
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
+            mp_float_t *r = (mp_float_t *)results->array;
+            if(ndarray->dtype == NDARRAY_UINT8) {
+                RUN_MEAN(ndarray, uint8_t, array, results, r, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_INT8) {
+                RUN_MEAN(ndarray, int8_t, array, results, r, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_UINT16) {
+                RUN_MEAN(ndarray, uint16_t, array, results, r, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_INT16) {
+                RUN_MEAN(ndarray, int16_t, array, results, r, shape, strides, index);
+            } else {
+                RUN_MEAN(ndarray, mp_float_t, array, results, r, shape, strides, index);
+            }
+        } else { // this case is certainly the standard deviation
+            mp_float_t div = (mp_float_t)(ndarray->shape[index] - ddof);
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
+            mp_float_t *r = (mp_float_t *)results->array;
+            if(ndarray->dtype == NDARRAY_UINT8) {
+                RUN_STD(ndarray, uint8_t, array, results, r, shape, strides, index, div);
+            } else if(ndarray->dtype == NDARRAY_INT8) {
+                RUN_STD(ndarray, int8_t, array, results, r, shape, strides, index, div);
+            } else if(ndarray->dtype == NDARRAY_UINT16) {
+                RUN_STD(ndarray, uint16_t, array, results, r, shape, strides, index, div);
+            } else if(ndarray->dtype == NDARRAY_INT16) {
+                RUN_STD(ndarray, int16_t, array, results, r, shape, strides, index, div);
+            } else {
+                RUN_STD(ndarray, mp_float_t, array, results, r, shape, strides, index, div);
             }
         }
         if(ndarray->ndim == 1) { // return a scalar here
@@ -266,8 +297,8 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_ARGMIN:
             case NUMERICAL_MAX:
             case NUMERICAL_ARGMAX:
-                return numerical_argmin_argmax_iterable(oin, optype);
-  */          case NUMERICAL_SUM:
+                return numerical_argmin_argmax_iterable(oin, optype); */
+            case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
                 return numerical_sum_mean_std_iterable(oin, optype, 0);
             default: // we should never reach this point, but whatever
@@ -283,7 +314,7 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
                 return numerical_argmin_argmax_ndarray(ndarray, axis, optype);
 */            case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
-                return numerical_sum_mean_ndarray(ndarray, axis, optype);
+                return numerical_sum_mean_std_ndarray(ndarray, axis, optype, 0);
             default:
                 mp_raise_NotImplementedError(translate("operation is not implemented on ndarrays"));
         }
@@ -756,14 +787,14 @@ static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     size_t ddof = args[2].u_int;
     if((axis != mp_const_none) && (mp_obj_get_int(axis) != 0) && (mp_obj_get_int(axis) != 1)) {
         // this seems to pass with False, and True...
-        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
+        mp_raise_ValueError(translate("axis must be None, or an integer"));
     }
     if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
         return numerical_sum_mean_std_iterable(oin, NUMERICAL_STD, ddof);
-    } /*else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
-        return numerical_std_ndarray(ndarray, axis, ddof);
-    } */else {
+        return numerical_sum_mean_std_ndarray(ndarray, axis, NUMERICAL_STD, ddof);
+    } else {
         mp_raise_TypeError(translate("input must be tuple, list, range, or ndarray"));
     }
     return mp_const_none;

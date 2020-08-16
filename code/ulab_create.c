@@ -183,7 +183,7 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     return MP_OBJ_FROM_PTR(ndarray);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 0, create_eye);
+MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 
 #endif
 
