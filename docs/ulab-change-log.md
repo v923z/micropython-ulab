@@ -1,3 +1,9 @@
+Mon, 17 Aug 2020
+
+version 0.54.3
+
+    fixed small error in linalg
+
 Mon, 03 Aug 2020
 
 version 0.54.2
@@ -86,7 +92,6 @@ version 0.44.0
 
 	add approx sub-module with newton, fmin, and bisect functions
 
-=======
 Tue, 19 May 2020
 
 version 0.46.1
