@@ -22,37 +22,35 @@ extern mp_obj_module_t ulab_numerical_module;
 // TODO: implement cumsum
 //mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);
 
+
 #define RUN_ARGMIN1(ndarray, type, array, results, rarray, index, op)\
 ({\
     uint16_t best_index = 0;\
     type best_value = ((type *)(array));\
     if(((op) == NUMERICAL_MAX) || ((op) == NUMERICAL_ARGMAX)) {\
         for(uint16_t i=0; i < (ndarray)->shape[(index)]; i++) {\
-            sum += *((type *)(array));\
+            if(*((type *)(array)) > best_value) {\
+                best_index = i;\
+                best_value = *((type *)(array));\
+            }\
             (array) += (ndarray)->strides[(index)];\
         }\
-        memcpy((rarray), &sum, (ndarray)->itemsize);\
-        (rarray) += (ndarray)->itemsize;\
     } else {\
+        for(uint16_t i=0; i < (ndarray)->shape[(index)]; i++) {\
+            if(*((type *)(array)) < best_value) {\
+                best_index = i;\
+                best_value = *((type *)(array));\
+            }\
+            (array) += (ndarray)->strides[(index)];\
+        }\
     }\
-
-    memcpy((rarray), &sum, (ndarray)->itemsize);\
-    (rarray) += (ndarray)->itemsize;\
+    if(((op) == NUMERICAL_ARGMAX) || ((op) == NUMERICAL_ARGMIN)) {\
+        memcpy((rarray), best_index, (results)->itemsize);\
+    } else {\
+        memcpy((rarray), best_value, (results)->itemsize);\
+    }\
+    (rarray) += (results)->itemsize;\
 })
-    
-    if(((op) == NUMERICAL_MAX) || ((op) == NUMERICAL_ARGMAX)) {\
-        for(size_t i=1; i < (len); i++) {\
-            if(array[(start)+i*(increment)] > array[(start)+best_index*(increment)]) best_index = i;\
-        }\
-        if((op) == NUMERICAL_MAX) outarray[(pos)] = (typeout)array[(start)+best_index*(increment)];\
-        else outarray[(pos)] = best_index;\
-    } else{\
-        for(size_t i=1; i < (len); i++) {\
-            if(array[(start)+i*(increment)] < array[(start)+best_index*(increment)]) best_index = i;\
-        }\
-        if((op) == NUMERICAL_MIN) outarray[(pos)] = (typeout)array[(start)+best_index*(increment)];\
-        else outarray[(pos)] = best_index;\
-    }\
 
 #define RUN_SUM1(ndarray, type, array, results, rarray, index)\
 ({\
