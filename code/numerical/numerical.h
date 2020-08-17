@@ -22,10 +22,24 @@ extern mp_obj_module_t ulab_numerical_module;
 // TODO: implement cumsum
 //mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);
 
-#define RUN_ARGMIN(in, out, typein, typeout, len, start, increment, op, pos) do {\
-    typein *array = (typein *)(in)->array->items;\
-    typeout *outarray = (typeout *)(out)->array->items;\
-    size_t best_index = 0;\
+#define RUN_ARGMIN1(ndarray, type, array, results, rarray, index, op)\
+({\
+    uint16_t best_index = 0;\
+    type best_value = ((type *)(array));\
+    if(((op) == NUMERICAL_MAX) || ((op) == NUMERICAL_ARGMAX)) {\
+        for(uint16_t i=0; i < (ndarray)->shape[(index)]; i++) {\
+            sum += *((type *)(array));\
+            (array) += (ndarray)->strides[(index)];\
+        }\
+        memcpy((rarray), &sum, (ndarray)->itemsize);\
+        (rarray) += (ndarray)->itemsize;\
+    } else {\
+    }\
+
+    memcpy((rarray), &sum, (ndarray)->itemsize);\
+    (rarray) += (ndarray)->itemsize;\
+})
+    
     if(((op) == NUMERICAL_MAX) || ((op) == NUMERICAL_ARGMAX)) {\
         for(size_t i=1; i < (len); i++) {\
             if(array[(start)+i*(increment)] > array[(start)+best_index*(increment)]) best_index = i;\
@@ -39,7 +53,6 @@ extern mp_obj_module_t ulab_numerical_module;
         if((op) == NUMERICAL_MIN) outarray[(pos)] = (typeout)array[(start)+best_index*(increment)];\
         else outarray[(pos)] = best_index;\
     }\
-} while(0)
 
 #define RUN_SUM1(ndarray, type, array, results, rarray, index)\
 ({\
@@ -253,17 +266,6 @@ extern mp_obj_module_t ulab_numerical_module;
 } while(0)
 
 #endif
-
-/*
-#define RUN_SUM(ndarray, type, optype, len, start, increment) do {\
-    type *array = (type *)(ndarray)->array->items;\
-    type value;\
-    for(size_t k=0; k < (len); k++) {\
-        value = array[(start)+k*(increment)];\
-        sum += value;\
-    }\
-} while(0)
-*/
 
 #define CALCULATE_DIFF(in, out, type, M, N, inn, increment) do {\
     type *source = (type *)(in)->array->items;\
