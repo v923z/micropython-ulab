@@ -26,7 +26,7 @@ extern mp_obj_module_t ulab_numerical_module;
 #define RUN_ARGMIN1(ndarray, type, array, results, rarray, index, op)\
 ({\
     uint16_t best_index = 0;\
-    type best_value = ((type *)(array));\
+    type best_value = *((type *)(array));\
     if(((op) == NUMERICAL_MAX) || ((op) == NUMERICAL_ARGMAX)) {\
         for(uint16_t i=0; i < (ndarray)->shape[(index)]; i++) {\
             if(*((type *)(array)) > best_value) {\
@@ -45,9 +45,9 @@ extern mp_obj_module_t ulab_numerical_module;
         }\
     }\
     if(((op) == NUMERICAL_ARGMAX) || ((op) == NUMERICAL_ARGMIN)) {\
-        memcpy((rarray), best_index, (results)->itemsize);\
+        memcpy((rarray), &best_index, (results)->itemsize);\
     } else {\
-        memcpy((rarray), best_value, (results)->itemsize);\
+        memcpy((rarray), &best_value, (results)->itemsize);\
     }\
     (rarray) += (results)->itemsize;\
 })
@@ -110,6 +110,10 @@ extern mp_obj_module_t ulab_numerical_module;
 #define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
     RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
 } while(0)
+
+#define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
+    RUN_ARGMIN1((ndarray), type, (array), (results), (rarray), (index), (op));\
+} while(0)
 #endif
 
 #if ULAB_MAX_DIMS == 2
@@ -137,6 +141,16 @@ extern mp_obj_module_t ulab_numerical_module;
     size_t l = 0;\
     do {\
         RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
+        (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+} while(0)
+
+#define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
+    size_t l = 0;\
+    do {\
+        RUN_ARGMIN1((ndarray), type, (array), (results), (rarray), (index), (op));\
         (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
         (array) += (strides)[ULAB_MAX_DIMS - 1];\
         l++;\
@@ -184,6 +198,22 @@ extern mp_obj_module_t ulab_numerical_module;
         size_t l = 0;\
         do {\
             RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
+            (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+            (array) += (strides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        k++;\
+    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+} while(0)
+
+#define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            RUN_ARGMIN1((ndarray), type, (array), (results), (rarray), (index), (op));\
             (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
             (array) += (strides)[ULAB_MAX_DIMS - 1];\
             l++;\
@@ -249,6 +279,28 @@ extern mp_obj_module_t ulab_numerical_module;
             size_t l = 0;\
             do {\
                 RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
+                (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+                (array) += (strides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+            (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+            (array) += (strides)[ULAB_MAX_DIMS - 3];\
+            k++;\
+        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+} while(0)
+
+#define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                RUN_ARGMIN1((ndarray), type, (array), (results), (rarray), (index), (op));\
                 (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
                 (array) += (strides)[ULAB_MAX_DIMS - 1];\
                 l++;\
