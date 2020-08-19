@@ -528,7 +528,7 @@ static mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
-/*
+
 //| def flip(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
 //|     """Returns a new array that reverses the order of the elements along the
 //|        given axis, or along all axes if axis is None."""
@@ -547,43 +547,33 @@ static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("flip argument must be an ndarray"));
     }
-    if((args[1].u_obj != mp_const_none) &&
-           (mp_obj_get_int(args[1].u_obj) != 0) &&
-           (mp_obj_get_int(args[1].u_obj) != 1)) {
-        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
+    
+    ndarray_obj_t *results = NULL;
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    if(args[1].u_obj == mp_const_none) { // flip the flattened array
+        results = ndarray_new_linear_array(ndarray->len, ndarray->dtype);
+        ndarray_copy_array(ndarray, results);
+        uint8_t *rarray = (uint8_t *)results->array;
+        rarray += (results->len - 1) * results->itemsize;
+        results->array = rarray;
+        results->strides[ULAB_MAX_DIMS - 1] = -results->strides[ULAB_MAX_DIMS - 1];
+    } else if(MP_OBJ_IS_INT(args[1].u_obj)){
+        int8_t ax = mp_obj_get_int(args[1].u_obj);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
+        }
+        int32_t offset = (ndarray->shape[ax] - 1) * ndarray->strides[ax];
+        results = ndarray_new_view(ndarray, ndarray->ndim, ndarray->shape, ndarray->strides, offset);
+        results->strides[ax] = -results->strides[ax];
+    } else {
+        mp_raise_TypeError(translate("wrong index type"));
     }
-
-    ndarray_obj_t *in = MP_OBJ_TO_PTR(args[0].u_obj);
-    mp_obj_t oout = ndarray_copy(args[0].u_obj);
-    ndarray_obj_t *out = MP_OBJ_TO_PTR(oout);
-    uint8_t _sizeof = mp_binary_get_size('@', in->array->typecode, NULL);
-    uint8_t *array_in = (uint8_t *)in->array->items;
-    uint8_t *array_out = (uint8_t *)out->array->items;
-    size_t len;
-    if((args[1].u_obj == mp_const_none) || (mp_obj_get_int(args[1].u_obj) == 1)) { // flip horizontally
-        uint16_t M = in->m;
-        len = in->n;
-        if(args[1].u_obj == mp_const_none) { // flip flattened array
-            len = in->array->len;
-            M = 1;
-        }
-        for(size_t m=0; m < M; m++) {
-            for(size_t n=0; n < len; n++) {
-                memcpy(array_out+_sizeof*(m*len+n), array_in+_sizeof*((m+1)*len-n-1), _sizeof);
-            }
-        }
-    } else { // flip vertically
-        for(size_t m=0; m < in->m; m++) {
-            for(size_t n=0; n < in->n; n++) {
-                memcpy(array_out+_sizeof*(m*in->n+n), array_in+_sizeof*((in->m-m-1)*in->n+n), _sizeof);
-            }
-        }
-    }
-    return out;
+    return results;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_flip_obj, 1, numerical_flip);
-*/
+
 //| def max(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the maximum element of the 1D array"""
 //|     ...
@@ -793,7 +783,7 @@ STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
