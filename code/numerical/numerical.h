@@ -98,6 +98,21 @@ extern mp_obj_module_t ulab_numerical_module;
     *(r)++ = MICROPY_FLOAT_C_FUN(sqrt)((ndarray)->shape[(index)] * s / (div));\
 })
 
+#define RUN_DIFF1(ndarray, type, array, results, rarray, index, stencil, N)\
+({\
+    for(size_t i=0; i < (ndarray)->shape[(index)] - (N); i++) {\
+        type sum = 0;\
+        uint8_t *source = (array);\
+        for(uint8_t d=0; d < (N)+1; d++) {\
+            sum -= (stencil)[d] * *((type *)source);\
+            source += (ndarray)->strides[(index)];\
+        }\
+        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        *(type *)(rarray) = sum;\
+        (rarray) += (ndarray)->itemsize;\
+    }\
+})
+
 #if ULAB_MAX_DIMS == 1
 #define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
     RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
@@ -114,6 +129,11 @@ extern mp_obj_module_t ulab_numerical_module;
 #define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
     RUN_ARGMIN1((ndarray), type, (array), (results), (rarray), (index), (op));\
 } while(0)
+
+#define RUN_DIFF(ndarray, type, array, results, rarray, shape, strides, index, stencil, N) do {\
+    RUN_DIFF1((ndarray), type, (array), (results), (rarray), (index), (stencil), (N));
+} while(0)
+
 #endif
 
 #if ULAB_MAX_DIMS == 2
@@ -152,6 +172,16 @@ extern mp_obj_module_t ulab_numerical_module;
     do {\
         RUN_ARGMIN1((ndarray), type, (array), (results), (rarray), (index), (op));\
         (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
+        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+} while(0)
+
+#define RUN_DIFF(ndarray, type, array, results, rarray, shape, strides, index, stencil, N) do {\
+    size_t l = 0;\
+    do {\
+        RUN_DIFF1((ndarray), type, (array), (results), (rarray), (index), (stencil), (N));\
+        (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS - 1];\
         (array) += (strides)[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
@@ -316,18 +346,6 @@ extern mp_obj_module_t ulab_numerical_module;
 } while(0)
 
 #endif
-
-#define CALCULATE_DIFF(in, out, type, M, N, inn, increment) do {\
-    type *source = (type *)(in)->array->items;\
-    type *target = (type *)(out)->array->items;\
-    for(size_t i=0; i < (M); i++) {\
-        for(size_t j=0; j < (N); j++) {\
-            for(uint8_t k=0; k < n+1; k++) {\
-                target[i*(N)+j] -= stencil[k]*source[i*(inn)+j+k*(increment)];\
-            }\
-        }\
-    }\
-} while(0)
 
 #define HEAPSORT(type, ndarray) do {\
     type *array = (type *)(ndarray)->array->items;\

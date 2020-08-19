@@ -452,7 +452,7 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
-
+*/
 //| def diff(array: ulab.array, *, axis: int = 1) -> ulab.array:
 //|     """Return the numerical derivative of successive elements of the array, as
 //|        an array.  axis=None is not supported."""
@@ -473,62 +473,62 @@ static mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         mp_raise_TypeError(translate("diff argument must be an ndarray"));
     }
 
-    ndarray_obj_t *in = MP_OBJ_TO_PTR(args[0].u_obj);
-    size_t increment, N, M;
-    if((args[2].u_int == -1) || (args[2].u_int == 1)) { // differentiate along the horizontal axis
-        increment = 1;
-    } else if(args[2].u_int == 0) { // differtiate along vertical axis
-        increment = in->n;
-    } else {
-        mp_raise_ValueError(translate("axis must be -1, 0, or 1"));
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    int8_t ax = args[2].u_int;
+    if(ax < 0) ax += ndarray->ndim;
+
+    if((ax < 0) || (ax > ndarray->ndim - 1)) {
+        mp_raise_ValueError(translate("index out of range"));
     }
-    if((args[1].u_int < 0) || (args[1].u_int > 9)) {
-        mp_raise_ValueError(translate("n must be between 0, and 9"));
+
+    uint8_t N = args[1].u_int;
+    uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+    if((N < 0) || (N > 9) || (N > ndarray->shape[index])) {
+        mp_raise_ValueError(translate("differentiation order out of range"));
     }
-    uint8_t n = args[1].u_int;
-    int8_t *stencil = m_new(int8_t, n+1);
+
+    int8_t *stencil = m_new(int8_t, N+1);
     stencil[0] = 1;
-    for(uint8_t i=1; i < n+1; i++) {
-        stencil[i] = -stencil[i-1]*(n-i+1)/i;
+    for(uint8_t i=1; i < N+1; i++) {
+        stencil[i] = -stencil[i-1]*(N-i+1)/i;
     }
 
-    ndarray_obj_t *out;
-
-    if(increment == 1) { // differentiate along the horizontal axis
-        if(n >= in->n) {
-            out = create_new_ndarray(in->m, 0, in->array->typecode);
-            m_del(uint8_t, stencil, n);
-            return MP_OBJ_FROM_PTR(out);
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
+        shape[i] = ndarray->shape[i];
+        if(i == index) {
+            shape[i] -= N;
         }
-        N = in->n - n;
-        M = in->m;
-    } else { // differentiate along vertical axis
-        if(n >= in->m) {
-            out = create_new_ndarray(0, in->n, in->array->typecode);
-            m_del(uint8_t, stencil, n);
-            return MP_OBJ_FROM_PTR(out);
-        }
-        M = in->m - n;
-        N = in->n;
     }
-    out = create_new_ndarray(M, N, in->array->typecode);
-    if(in->array->typecode == NDARRAY_UINT8) {
-        CALCULATE_DIFF(in, out, uint8_t, M, N, in->n, increment);
-    } else if(in->array->typecode == NDARRAY_INT8) {
-        CALCULATE_DIFF(in, out, int8_t, M, N, in->n, increment);
-    }  else if(in->array->typecode == NDARRAY_UINT16) {
-        CALCULATE_DIFF(in, out, uint16_t, M, N, in->n, increment);
-    } else if(in->array->typecode == NDARRAY_INT16) {
-        CALCULATE_DIFF(in, out, int16_t, M, N, in->n, increment);
+    uint8_t *array = (uint8_t *)ndarray->array;
+    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, shape, ndarray->dtype);
+    uint8_t *rarray = (uint8_t *)results->array;
+
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
+    numerical_reduce_axes(ndarray, ax, shape, strides);
+
+    if(ndarray->dtype == NDARRAY_UINT8) {
+        RUN_DIFF(ndarray, uint8_t, array, results, rarray, shape, strides, index, stencil, N);
+    } else if(ndarray->dtype == NDARRAY_INT8) {
+        RUN_DIFF(ndarray, int8_t, array, results, rarray, shape, strides, index, stencil, N);
+    }  else if(ndarray->dtype == NDARRAY_UINT16) {
+        RUN_DIFF(ndarray, uint16_t, array, results, rarray, shape, strides, index, stencil, N);
+    } else if(ndarray->dtype == NDARRAY_INT16) {
+        RUN_DIFF(ndarray, int16_t, array, results, rarray, shape, strides, index, stencil, N);
     } else {
-        CALCULATE_DIFF(in, out, mp_float_t, M, N, in->n, increment);
+        RUN_DIFF(ndarray, mp_float_t, array, results, rarray, shape, strides, index, stencil, N);
     }
-    m_del(int8_t, stencil, n);
-    return MP_OBJ_FROM_PTR(out);
+    m_del(int8_t, stencil, N+1);
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(int32_t, strides, ULAB_MAX_DIMS);
+    return MP_OBJ_FROM_PTR(results);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
-
+/*
 //| def flip(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
 //|     """Returns a new array that reverses the order of the elements along the
 //|        given axis, or along all axes if axis is None."""
@@ -792,7 +792,7 @@ STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
