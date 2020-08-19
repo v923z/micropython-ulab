@@ -563,6 +563,7 @@ static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         if((ax < 0) || (ax > ndarray->ndim - 1)) {
             mp_raise_ValueError(translate("index out of range"));
         }
+        ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
         int32_t offset = (ndarray->shape[ax] - 1) * ndarray->strides[ax];
         results = ndarray_new_view(ndarray, ndarray->ndim, ndarray->shape, ndarray->strides, offset);
         results->strides[ax] = -results->strides[ax];
