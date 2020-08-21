@@ -417,12 +417,12 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
             do {
             #endif
                 ndarray_print_row(print, self->dtype, array, self->strides[ULAB_MAX_DIMS-1], self->shape[ULAB_MAX_DIMS-1]);
-                #if ULAB_MAX_DIMS > 1
+            #if ULAB_MAX_DIMS > 1
                 array += self->strides[ULAB_MAX_DIMS-2];
                 k++;
                 ndarray_print_bracket(print, k, self->shape[ULAB_MAX_DIMS-2], ",\n\t");
             } while(k < self->shape[ULAB_MAX_DIMS-2]);
-                #endif
+            #endif
         #if ULAB_MAX_DIMS > 2
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "]");
             j++;
@@ -439,7 +439,8 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         ndarray_print_bracket(print, i, self->shape[ULAB_MAX_DIMS-4], ",\n\n\t");
     } while(i < self->shape[ULAB_MAX_DIMS-4]);
     #endif
-    
+
+    if(self->ndim > 1) mp_print_str(print, "]");
     if(self->boolean) {
         mp_print_str(print, ", dtype=bool)");
     } else if(self->dtype == NDARRAY_UINT8) {

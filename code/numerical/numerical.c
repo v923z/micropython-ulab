@@ -568,7 +568,7 @@ static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         results = ndarray_new_view(ndarray, ndarray->ndim, ndarray->shape, ndarray->strides, offset);
         results->strides[ax] = -results->strides[ax];
     } else {
-        mp_raise_TypeError(translate("wrong index type"));
+        mp_raise_TypeError(translate("wrong axis index"));
     }
     return results;
 }
@@ -607,7 +607,7 @@ static mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
-/*
+
 //| def roll(array: ulab.array, distance: int, *, axis: Optional[int] = None) -> None:
 //|     """Shift the content of a vector by the positions given as the second
 //|        argument. If the ``axis`` keyword is supplied, the shift is applied to
@@ -625,78 +625,152 @@ static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t oin = args[0].u_obj;
-    int16_t shift = mp_obj_get_int(args[1].u_obj);
-    if((args[2].u_obj != mp_const_none) &&
-           (mp_obj_get_int(args[2].u_obj) != 0) &&
-           (mp_obj_get_int(args[2].u_obj) != 1)) {
-        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("roll argument must be an ndarray"));
     }
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    uint8_t *array = ndarray->array;
+    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, ndarray->shape, ndarray->dtype);
 
-    ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
-    uint8_t _sizeof = mp_binary_get_size('@', in->array->typecode, NULL);
-    size_t len;
-    int16_t _shift;
-    uint8_t *array = (uint8_t *)in->array->items;
-    // TODO: transpose the matrix, if axis == 0. Though, that is hard on the RAM...
-    if(shift < 0) {
-        _shift = -shift;
+    int32_t shift = mp_obj_get_int(args[1].u_obj);
+    int32_t _shift = shift < 0 ? -shift : shift;
+
+    size_t counter;
+    uint8_t *rarray = (uint8_t *)results->array;
+
+    if(args[2].u_obj == mp_const_none) { // roll the flattened array
+        _shift = _shift % results->len;
+        if(shift > 0) { // shift to the right
+            rarray += _shift * results->itemsize;
+            counter = results->len - _shift;
+        } else { // shift to the left
+            rarray += (results->len - _shift) * results->itemsize;
+            counter = _shift;
+        }
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        memcpy(rarray, array, ndarray->itemsize);
+                        rarray += results->itemsize;
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                        if(counter > 0) counter--;
+                        if(counter == 0) {
+                            rarray = results->array;
+                        }
+                    } while(l <  ndarray->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                    array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k <  ndarray->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+                array += ndarray->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j <  ndarray->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+            array += ndarray->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+    } else if(MP_OBJ_IS_INT(args[2].u_obj)){
+        int8_t ax = mp_obj_get_int(args[2].u_obj);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
+        }
+        size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+        int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+        memset(strides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
+        numerical_reduce_axes(ndarray, ax, shape, strides);
+
+        size_t *rshape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(rshape, 0, sizeof(size_t)*ULAB_MAX_DIMS);        
+        int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
+        memset(rstrides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
+        numerical_reduce_axes(results, ax, rshape, rstrides);
+
+        ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        uint8_t *_rarray;
+        _shift = _shift % results->shape[ax];
+        
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    _rarray = rarray;
+                    rarray += _shift * results->strides[ax];
+                    counter = results->shape[ax] - _shift;
+                    if((shift < 0) && (_shift > 0)) {
+                        rarray += (results->shape[ax] - _shift) * results->strides[ax];
+                        counter = _shift;
+                    }
+                    do {
+                        memcpy(rarray, array, ndarray->itemsize);
+                        array += ndarray->strides[ax];
+                        rarray += results->strides[ax];
+                        if(--counter == 0) {
+                            rarray = _rarray;
+                        }
+                        l++;
+                    } while(l < ndarray->shape[ax]);
+                #if ULAB_MAX_DIMS > 1
+                    rarray = _rarray;
+                    rarray += rstrides[ULAB_MAX_DIMS - 1];
+                    array -= ndarray->strides[ax] * ndarray->shape[ax];
+                    array += strides[ULAB_MAX_DIMS - 1];
+                    k++;
+                } while(k < shape[ULAB_MAX_DIMS - 1]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                rarray -= rstrides[ULAB_MAX_DIMS - 1] * rshape[ULAB_MAX_DIMS-1];
+                rarray += rstrides[ULAB_MAX_DIMS - 2];
+                array -= strides[ULAB_MAX_DIMS - 1] * shape[ULAB_MAX_DIMS-1];
+                array += strides[ULAB_MAX_DIMS - 2];
+                j++;
+            } while(j < shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            rarray -= rstrides[ULAB_MAX_DIMS - 2] * rshape[ULAB_MAX_DIMS-2];
+            rarray += rstrides[ULAB_MAX_DIMS - 3];
+            array -= strides[ULAB_MAX_DIMS - 2] * shape[ULAB_MAX_DIMS-2];
+            array += strides[ULAB_MAX_DIMS - 3];
+            i++;
+        } while(i < shape[ULAB_MAX_DIMS - 3]);
+        #endif
     } else {
-        _shift = shift;
+        mp_raise_TypeError(translate("wrong axis index"));        
     }
-    if((args[2].u_obj == mp_const_none) || (mp_obj_get_int(args[2].u_obj) == 1)) { // shift horizontally
-        uint16_t M;
-        if(args[2].u_obj == mp_const_none) {
-            len = in->array->len;
-            M = 1;
-        } else {
-            len = in->n;
-            M = in->m;
-        }
-        _shift = _shift % len;
-        if(shift < 0) _shift = len - _shift;
-        // TODO: if(shift > len/2), we should move in the opposite direction. That would save RAM
-        _shift *= _sizeof;
-        uint8_t *tmp = m_new(uint8_t, _shift);
-        for(size_t m=0; m < M; m++) {
-            memmove(tmp, &array[m*len*_sizeof], _shift);
-            memmove(&array[m*len*_sizeof], &array[m*len*_sizeof+_shift], len*_sizeof-_shift);
-            memmove(&array[(m+1)*len*_sizeof-_shift], tmp, _shift);
-        }
-        m_del(uint8_t, tmp, _shift);
-        return mp_const_none;
-    } else {
-        len = in->m;
-        // temporary buffer
-        uint8_t *_data = m_new(uint8_t, _sizeof*len);
-
-        _shift = _shift % len;
-        if(shift < 0) _shift = len - _shift;
-        _shift *= _sizeof;
-        uint8_t *tmp = m_new(uint8_t, _shift);
-
-        for(size_t n=0; n < in->n; n++) {
-            for(size_t m=0; m < len; m++) {
-                // this loop should fill up the temporary buffer
-                memmove(&_data[m*_sizeof], &array[(m*in->n+n)*_sizeof], _sizeof);
-            }
-            // now, the actual shift
-            memmove(tmp, _data, _shift);
-            memmove(_data, &_data[_shift], len*_sizeof-_shift);
-            memmove(&_data[len*_sizeof-_shift], tmp, _shift);
-            for(size_t m=0; m < len; m++) {
-                // this loop should dump the content of the temporary buffer into data
-                memmove(&array[(m*in->n+n)*_sizeof], &_data[m*_sizeof], _sizeof);
-            }
-        }
-        m_del(uint8_t, tmp, _shift);
-        m_del(uint8_t, _data, _sizeof*len);
-        return mp_const_none;
-    }
+    return results;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
-
+/*
 //| def sort(array: ulab.array, *, axis: Optional[int] = 0) -> ulab.array:
 //|     """Sort the array along the given axis, or along all axes if axis is None.
 //|        The array is modified in place."""
@@ -788,7 +862,7 @@ STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_std), (mp_obj_t)&numerical_std_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },

@@ -113,6 +113,11 @@ extern mp_obj_module_t ulab_numerical_module;
     }\
 })
 
+/*
+#define RUN_ROLL()\
+({\
+    
+})*/
 #if ULAB_MAX_DIMS == 1
 #define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
     RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
