@@ -157,10 +157,27 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
         tmp[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
     }
     mp_float_t c;
+    mp_float_t det_sign = 1.0;
+
     for(size_t m=0; m < in->m-1; m++){
         if(MICROPY_FLOAT_C_FUN(fabs)(tmp[m*(in->n+1)]) < epsilon) {
-            m_del(mp_float_t, tmp, in->n*in->n);
-            return mp_obj_new_float(0.0);
+            //look for a line to swap
+            size_t m1=m+1;
+            for(; m1 < in->m; m1++){
+                if ( !(MICROPY_FLOAT_C_FUN(fabs)(tmp[m1*(in->n)+m]) < epsilon) ){
+                    for(size_t m2=0; m2 < in->n; m2++){
+                        mp_float_t swapVal = tmp[m*(in->n)+m2];
+                        tmp[m*(in->n)+m2] = tmp[m1*(in->n)+m2];
+                        tmp[m1*(in->n)+m2] = swapVal;
+                    }
+                    det_sign = -det_sign;
+                    break;
+                }
+            }
+            if (m1 >= in->m){
+                m_del(mp_float_t, tmp, in->n*in->n);
+                return mp_obj_new_float(0.0);
+            }
         }
         for(size_t n=0; n < in->n; n++){
             if(m != n) {
@@ -171,7 +188,7 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
             }
         }
     }
-    mp_float_t det = 1.0;
+    mp_float_t det = det_sign;
 
     for(size_t m=0; m < in->m; m++){
         det *= tmp[m*(in->n+1)];
