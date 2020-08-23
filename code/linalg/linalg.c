@@ -55,8 +55,25 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     for(size_t m=0; m < N; m++){
         // this could be faster with ((c < epsilon) && (c > -epsilon))
         if(MICROPY_FLOAT_C_FUN(fabs)(data[m*(N+1)]) < epsilon) {
-            m_del(mp_float_t, unit, N*N);
-            return false;
+            //look for a line to swap
+            size_t m1=m+1;
+            for(; m1 < N; m1++){
+                if ( !(MICROPY_FLOAT_C_FUN(fabs)(data[m1*N+m]) < epsilon) ){
+                    for(size_t m2=0; m2 < N; m2++){
+                        mp_float_t swapVal = data[m*N+m2];
+                        data[m*N+m2] = data[m1*N+m2];
+                        data[m1*N+m2] = swapVal;
+                        swapVal = unit[m*N+m2];
+                        unit[m*N+m2] = unit[m1*N+m2];
+                        unit[m1*N+m2] = swapVal;
+                    }
+                    break;
+                }
+            }
+            if (m1 >= N){
+                m_del(mp_float_t, unit, N*N);
+                return false;
+            }
         }
         for(size_t n=0; n < N; n++){
             if(m != n){
