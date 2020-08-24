@@ -46,7 +46,7 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     // will be returned after all the transformations
     mp_float_t *unit = m_new(mp_float_t, N*N);
 
-    mp_float_t elem = 1.0;
+    mp_float_t elem = MICROPY_FLOAT_CONST(1.0);
     // initialise the unit matrix
     memset(unit, 0, sizeof(mp_float_t)*N*N);
     for(size_t m=0; m < N; m++) {
@@ -135,7 +135,7 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 			array[i*in->m + j] = MICROPY_FLOAT_CONST(0.0);
 		}
 	}
-	mp_float_t sum = 0.0;
+	mp_float_t sum = MICROPY_FLOAT_CONST(0.0);
 	for(size_t i=0; i < in->m; i++) { // rows
 		for(size_t j=0; j <= i; j++) { // columns
 			sum = array[i*in->m + j];
@@ -174,7 +174,7 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
         tmp[i] = ndarray_get_float_value(in->array->items, in->array->typecode, i);
     }
     mp_float_t c;
-    mp_float_t det_sign = 1.0;
+    mp_float_t det_sign = MICROPY_FLOAT_CONST(1.0);
 
     for(size_t m=0; m < in->m-1; m++){
         if(MICROPY_FLOAT_C_FUN(fabs)(tmp[m*(in->n+1)]) < epsilon) {
@@ -238,7 +238,7 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
         if (m1->array->len != m2->array->len) {
             mp_raise_ValueError(translate("vectors must have same lengths"));
         }
-        mp_float_t dot = 0.0;
+        mp_float_t dot = MICROPY_FLOAT_CONST(0.0);
         for (size_t pos=0; pos < m1->array->len; pos++) {
             dot += ndarray_get_float_value(m1->array->items, m1->array->typecode, pos)*ndarray_get_float_value(m2->array->items, m2->array->typecode, pos);
         }
@@ -253,7 +253,7 @@ static mp_obj_t linalg_dot(mp_obj_t _m1, mp_obj_t _m2) {
         mp_float_t *outdata = (mp_float_t *)out->array->items;
         for(size_t i=0; i < m1->m; i++) { // rows of m1
             for(size_t j=0; j < m2->n; j++) { // columns of m2
-                mp_float_t sum = 0.0, v1, v2;
+                mp_float_t sum = MICROPY_FLOAT_CONST(0.0), v1, v2;
                 for(size_t k=0; k < m2->m; k++) {
                     // (i, k) * (k, j)
                     v1 = ndarray_get_float_value(m1->array->items, m1->array->typecode, i*m1->n+k);
@@ -301,7 +301,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
     mp_float_t *eigvectors = (mp_float_t *)eigenvectors->array->items;
     // start out with the unit matrix
     for(size_t m=0; m < in->m; m++) {
-        eigvectors[m*(in->n+1)] = 1.0;
+        eigvectors[m*(in->n+1)] = MICROPY_FLOAT_CONST(1.0);
     }
     mp_float_t largest, w, t, c, s, tau, aMk, aNk, vm, vn;
     size_t M, N;
@@ -311,7 +311,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
         // find the pivot here
         M = 0;
         N = 0;
-        largest = 0.0;
+        largest = MICROPY_FLOAT_CONST(0.0);
         for(size_t m=0; m < in->m-1; m++) { // -1: no need to inspect last row
             for(size_t n=m+1; n < in->n; n++) {
                 w = MICROPY_FLOAT_C_FUN(fabs)(array[m*in->n + n]);
@@ -447,7 +447,7 @@ static mp_obj_t linalg_norm(mp_obj_t _x) {
         mp_raise_TypeError(translate("argument must be ndarray"));
     }
     ndarray_obj_t *x = MP_OBJ_TO_PTR(_x);
-    mp_float_t dot = 0.0, v;
+    mp_float_t dot = MICROPY_FLOAT_CONST(0.0), v;
     for (size_t pos=0; pos < x->array->len; pos++) {
         v = ndarray_get_float_value(x->array->items, x->array->typecode, pos);
         dot += v*v;
@@ -512,7 +512,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_size_obj, 1, linalg_size);
 
 static mp_obj_t linalg_trace(mp_obj_t oin) {
 	ndarray_obj_t *ndarray = linalg_object_is_square(oin);
-	mp_float_t trace = 0.0;
+	mp_float_t trace = MICROPY_FLOAT_CONST(0.0);
 	for(size_t pos=0; pos < ndarray->array->len; pos+=(ndarray->m+1)) {
 		trace += ndarray_get_float_value(ndarray->array->items, ndarray->array->typecode, pos);
 	}
