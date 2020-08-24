@@ -194,7 +194,7 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
             }
             if (m1 >= in->m){
                 m_del(mp_float_t, tmp, in->n*in->n);
-                return mp_obj_new_float(0.0);
+                return mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
             }
         }
         for(size_t n=0; n < in->n; n++){
