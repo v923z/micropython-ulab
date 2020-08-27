@@ -296,7 +296,7 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     }
     return mp_const_none;
 }
-/*
+
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
     if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
@@ -306,52 +306,29 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     if(inplace == 1) {
         ndarray = MP_OBJ_TO_PTR(oin);
     } else {
-        mp_obj_t out = ndarray_copy(oin);
-        ndarray = MP_OBJ_TO_PTR(out);
+        ndarray = ndarray_copy(MP_OBJ_TO_PTR(oin));
     }
-    size_t increment, start_inc, end, N;
-    if(axis == mp_const_none) { // flatten the array
-        ndarray->m = 1;
-        ndarray->n = ndarray->array->len;
-        increment = 1;
-        start_inc = ndarray->n;
-        end = ndarray->n;
-        N = ndarray->n;
-    } else if((mp_obj_get_int(axis) == -1) ||
-              (mp_obj_get_int(axis) == 1)) { // sort along the horizontal axis
-        increment = 1;
-        start_inc = ndarray->n;
-        end = ndarray->array->len;
-        N = ndarray->n;
-    } else if(mp_obj_get_int(axis) == 0) { // sort along vertical axis
-        increment = ndarray->n;
-        start_inc = 1;
-        end = ndarray->n;
-        N = ndarray->m;
+
+    if(axis == mp_const_none) {
+        // work with the flattened array
+    }
+    int32_t increment = ndarray->strides[ax] / ndarray->itemsize;
+
+    if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
+        HEAPSORT(ndarray, uint8_t, strides, ax, increment);
+    } else if((ndarray->array->typecode == NDARRAY_INT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
+        HEAPSORT(ndarray, uint16_t, strides, ax, increment);
     } else {
-        mp_raise_ValueError(translate("axis must be -1, 0, None, or 1"));
+        HEAPSORT(ndarray, mp_float_t, strides, ax, increment);
     }
 
-    size_t q, k, p, c;
-
-    for(size_t start=0; start < end; start+=start_inc) {
-        q = N;
-        k = (q >> 1);
-        if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
-            HEAPSORT(uint8_t, ndarray);
-        } else if((ndarray->array->typecode == NDARRAY_INT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
-            HEAPSORT(uint16_t, ndarray);
-        } else {
-            HEAPSORT(mp_float_t, ndarray);
-        }
-    }
     if(inplace == 1) {
         return mp_const_none;
     } else {
         return MP_OBJ_FROM_PTR(ndarray);
     }
 }
-*/
+
 //| def argmax(array: _ArrayLike, *, axis: Optional[int] = None) -> int:
 //|     """Return the index of the maximum element of the 1D array"""
 //|     ...
@@ -547,7 +524,7 @@ static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("flip argument must be an ndarray"));
     }
-    
+
     ndarray_obj_t *results = NULL;
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
     if(args[1].u_obj == mp_const_none) { // flip the flattened array
@@ -701,7 +678,7 @@ static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         numerical_reduce_axes(ndarray, ax, shape, strides);
 
         size_t *rshape = m_new(size_t, ULAB_MAX_DIMS);
-        memset(rshape, 0, sizeof(size_t)*ULAB_MAX_DIMS);        
+        memset(rshape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
         int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
         memset(rstrides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
         numerical_reduce_axes(results, ax, rshape, rstrides);
@@ -709,7 +686,7 @@ static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
         uint8_t *_rarray;
         _shift = _shift % results->shape[ax];
-        
+
         #if ULAB_MAX_DIMS > 3
         size_t i = 0;
         do {
@@ -764,7 +741,7 @@ static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         } while(i < shape[ULAB_MAX_DIMS - 3]);
         #endif
     } else {
-        mp_raise_TypeError(translate("wrong axis index"));        
+        mp_raise_TypeError(translate("wrong axis index"));
     }
     return results;
 }

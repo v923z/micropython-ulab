@@ -113,11 +113,40 @@ extern mp_obj_module_t ulab_numerical_module;
     }\
 })
 
-/*
-#define RUN_ROLL()\
+#define HEAPSORT1(ndarray, type, shape, strides, index, increment);
 ({\
-    
-})*/
+    type *_array = (type *)(ndarray)->array;\
+    type tmp;\
+    size_t c, q, p, k = ((ndarray)->shape[(index)] >> 1);\
+    for (;;) {\
+        if (k > 0) {\
+            tmp = _array[(--k)*(increment)];\
+        } else {\
+            q--;\
+            if(q == 0) {\
+                break;\
+            }\
+            tmp = _array[q*(increment)];\
+            _array[q*(increment)] = array[0];\
+        }\
+        p = k;\
+        c = k + k + 1;\
+        while (c < q) {\
+            if((c + 1 < q)  &&  (_array[(c+1)*(increment)] > _array[c*(increment)])) {\
+                c++;\
+            }\
+            if(_array[c*(increment)] > tmp) {\
+                _array[p*(increment)] = _array[c*(increment)];\
+                p = c;\
+                c = p + p + 1;\
+            } else {\
+                break;\
+            }\
+        }\
+        _array[p*(increment)] = tmp;\
+    }\
+})
+
 #if ULAB_MAX_DIMS == 1
 #define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
     RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
@@ -137,6 +166,10 @@ extern mp_obj_module_t ulab_numerical_module;
 
 #define RUN_DIFF(ndarray, type, array, results, rarray, shape, strides, index, stencil, N) do {\
     RUN_DIFF1((ndarray), type, (array), (results), (rarray), (index), (stencil), (N));
+} while(0)
+
+#define HEAPSORT(ndarray, type, shape, strides, index, increment) do {\
+    HEAPSORT1((ndarray), type, (shape), (strides), (index), (increment));
 } while(0)
 
 #endif
@@ -351,39 +384,6 @@ extern mp_obj_module_t ulab_numerical_module;
 } while(0)
 
 #endif
-
-#define HEAPSORT(type, ndarray) do {\
-    type *array = (type *)(ndarray)->array->items;\
-    array += start;\
-    type tmp;\
-    for (;;) {\
-        if (k > 0) {\
-            tmp = array[(--k)*increment];\
-        } else {\
-            q--;\
-            if(q == 0) {\
-                break;\
-            }\
-            tmp = array[q*increment];\
-            array[q*increment] = array[0];\
-        }\
-        p = k;\
-        c = k + k + 1;\
-        while (c < q) {\
-            if((c + 1 < q)  &&  (array[(c+1)*increment] > array[c*increment])) {\
-                c++;\
-            }\
-            if(array[c*increment] > tmp) {\
-                array[p*increment] = array[c*increment];\
-                p = c;\
-                c = p + p + 1;\
-            } else {\
-                break;\
-            }\
-        }\
-        array[p*increment] = tmp;\
-    }\
-} while(0)
 
 // This is pretty similar to HEAPSORT above; perhaps, the two could be combined somehow
 // On the other hand, since this is a macro, it doesn't really matter
