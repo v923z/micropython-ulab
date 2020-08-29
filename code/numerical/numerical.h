@@ -113,11 +113,11 @@ extern mp_obj_module_t ulab_numerical_module;
     }\
 })
 
-#define HEAPSORT1(ndarray, type, shape, strides, index, increment);
+#define HEAPSORT1(ndarray, type, array, shape, strides, index, increment, N)\
 ({\
-    type *_array = (type *)(ndarray)->array;\
+    type *_array = (type *)array;\
     type tmp;\
-    size_t c, q, p, k = ((ndarray)->shape[(index)] >> 1);\
+    size_t c, q = (N), p, k = (N) >> 1;\
     for (;;) {\
         if (k > 0) {\
             tmp = _array[(--k)*(increment)];\
@@ -168,8 +168,8 @@ extern mp_obj_module_t ulab_numerical_module;
     RUN_DIFF1((ndarray), type, (array), (results), (rarray), (index), (stencil), (N));
 } while(0)
 
-#define HEAPSORT(ndarray, type, shape, strides, index, increment) do {\
-    HEAPSORT1((ndarray), type, (shape), (strides), (index), (increment));
+#define HEAPSORT(ndarray, type, array, shape, strides, index, increment, N) do {\
+    HEAPSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N));
 } while(0)
 
 #endif
@@ -220,6 +220,15 @@ extern mp_obj_module_t ulab_numerical_module;
     do {\
         RUN_DIFF1((ndarray), type, (array), (results), (rarray), (index), (stencil), (N));\
         (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS - 1];\
+        (array) += (strides)[ULAB_MAX_DIMS - 2];\
+        l++;\
+    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+} while(0)
+
+#define HEAPSORT(ndarray, type, array, shape, strides, index, increment, N) do {\
+    size_t l = 0;\
+    do {\
+        HEAPSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N));\
         (array) += (strides)[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
@@ -292,6 +301,37 @@ extern mp_obj_module_t ulab_numerical_module;
     } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
 } while(0)
 
+#define RUN_DIFF(ndarray, type, array, results, rarray, shape, strides, index, stencil, N) do {\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            RUN_DIFF1((ndarray), type, (array), (results), (rarray), (index), (stencil), (N));\
+            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS - 1];\
+            (array) += (strides)[ULAB_MAX_DIMS - 2];\
+            l++;\
+        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
+        (array) += (strides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+} while(0)
+
+#define HEAPSORT(ndarray, type, array, shape, strides, index, increment, N) do {\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            HEAPSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N));\
+            (array) += (strides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
+        (array) += (strides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+} while(0)
+
 #endif
 
 #if ULAB_MAX_DIMS == 4
@@ -307,8 +347,8 @@ extern mp_obj_module_t ulab_numerical_module;
                 (array) += (strides)[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-            (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
-            (array) += (strides)[ULAB_MAX_DIMS - 3];\
+            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
+            (array) += (strides)[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
         (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
@@ -329,8 +369,8 @@ extern mp_obj_module_t ulab_numerical_module;
                 (array) += (strides)[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-            (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
-            (array) += (strides)[ULAB_MAX_DIMS - 3];\
+            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
+            (array) += (strides)[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
         (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
@@ -351,8 +391,8 @@ extern mp_obj_module_t ulab_numerical_module;
                 (array) += (strides)[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-            (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
-            (array) += (strides)[ULAB_MAX_DIMS - 3];\
+            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
+            (array) += (strides)[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
         (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
@@ -373,8 +413,51 @@ extern mp_obj_module_t ulab_numerical_module;
                 (array) += (strides)[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-            (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
-            (array) += (strides)[ULAB_MAX_DIMS - 3];\
+            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
+            (array) += (strides)[ULAB_MAX_DIMS - 2];\
+            k++;\
+        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+} while(0)
+
+#define RUN_DIFF(ndarray, type, array, results, rarray, shape, strides, index, stencil, N) do {\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                RUN_DIFF1((ndarray), type, (array), (results), (rarray), (index), (stencil), (N));\
+                (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS - 1];\
+                (array) += (strides)[ULAB_MAX_DIMS - 2];\
+                l++;\
+            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
+            (array) += (strides)[ULAB_MAX_DIMS - 2];\
+            k++;\
+        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
+        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+} while(0)
+
+#define HEAPSORT(ndarray, type, array, shape, strides, index, increment, N) do {\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                HEAPSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N));\
+                (array) += (strides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
+            (array) += (strides)[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
         (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\

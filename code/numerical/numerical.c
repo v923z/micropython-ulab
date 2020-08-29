@@ -45,7 +45,7 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
     uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + axis;
     if((ndarray->ndim == 1) && (axis == 0)) {
         index = 0;
-        shape[ULAB_MAX_DIMS - 1] = 1;
+        shape[ULAB_MAX_DIMS - 1] = 0;
         return;
     }
     for(uint8_t i = ULAB_MAX_DIMS - 1; i > 0; i--) {
@@ -306,22 +306,43 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     if(inplace == 1) {
         ndarray = MP_OBJ_TO_PTR(oin);
     } else {
-        ndarray = ndarray_copy(MP_OBJ_TO_PTR(oin));
+        ndarray = ndarray_copy_view(MP_OBJ_TO_PTR(oin));
     }
 
+    int8_t ax = 0;
     if(axis == mp_const_none) {
-        // work with the flattened array
+        // flatten the array
+        for(uint8_t i=0; i < ULAB_MAX_DIMS - 1; i++) {
+            ndarray->shape[i] = 0;
+            ndarray->strides[i] = 0;
+        }
+        ndarray->shape[ULAB_MAX_DIMS - 1] = ndarray->len;
+        ndarray->strides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
+        ndarray->ndim = 1;
+    } else {
+        ax = mp_obj_get_int(axis);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
+        }
     }
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+    numerical_reduce_axes(ndarray, ax, shape, strides);
+    ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+    // we work with the typed array, so re-scale the stride
     int32_t increment = ndarray->strides[ax] / ndarray->itemsize;
 
-    if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
-        HEAPSORT(ndarray, uint8_t, strides, ax, increment);
-    } else if((ndarray->array->typecode == NDARRAY_INT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
-        HEAPSORT(ndarray, uint16_t, strides, ax, increment);
+    uint8_t *array = (uint8_t *)ndarray->array;
+    if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
+        HEAPSORT(ndarray, uint8_t, array, shape, strides, ax, increment, ndarray->shape[ax]);
+    } else if((ndarray->dtype == NDARRAY_INT16) || (ndarray->dtype == NDARRAY_INT16)) {
+        HEAPSORT(ndarray, uint16_t, array, shape, strides, ax, increment, ndarray->shape[ax]);
     } else {
-        HEAPSORT(ndarray, mp_float_t, strides, ax, increment);
+        HEAPSORT(ndarray, mp_float_t, array, shape, strides, ax, increment, ndarray->shape[ax]);
     }
-
     if(inplace == 1) {
         return mp_const_none;
     } else {
@@ -747,7 +768,7 @@ static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
-/*
+
 //| def sort(array: ulab.array, *, axis: Optional[int] = 0) -> ulab.array:
 //|     """Sort the array along the given axis, or along all axes if axis is None.
 //|        The array is modified in place."""
@@ -768,6 +789,7 @@ static mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_obj, 1, numerical_sort);
 
+/*
 // method of an ndarray
 static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -840,7 +862,7 @@ STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_std), (mp_obj_t)&numerical_std_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
 };

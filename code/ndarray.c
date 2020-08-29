@@ -287,7 +287,7 @@ void ndarray_fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
 static int32_t *strides_from_shape(size_t *shape, uint8_t dtype) {
     // returns a strides array that corresponds to a dense array with the prescribed shape
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_size('@', dtype, NULL);;
+    strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_size('@', dtype, NULL);
     for(uint8_t i=ULAB_MAX_DIMS; i > 1; i--) {
         strides[i-2] = strides[i-1] * shape[i-1];
     }
@@ -615,7 +615,7 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
     // In order to make it dtype-agnostic, we copy the memory content 
     // instead of reading out the values
     
-    int32_t *strides = strides_from_shape(source->shape, source->ndim);
+    int32_t *strides = strides_from_shape(source->shape, source->dtype);
 
     uint8_t dtype = source->dtype;
     if(source->boolean) {
