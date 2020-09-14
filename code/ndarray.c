@@ -497,9 +497,15 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     ndarray->ndim = ndim;
     ndarray->len = 1;
     ndarray->itemsize = mp_binary_get_size('@', dtype, NULL);
+    int32_t *_strides;
+    if(strides == NULL) {
+        _strides = strides_from_shape(shape, dtype);
+    } else {
+        _strides = strides;
+    }
     for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndim; i--) {
         ndarray->shape[i-1] = shape[i-1];
-        ndarray->strides[i-1] = strides[i-1];
+        ndarray->strides[i-1] = _strides[i-1];
         ndarray->len *= shape[i-1];
     }
     if(dtype == NDARRAY_BOOL) {

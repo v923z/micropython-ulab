@@ -372,7 +372,6 @@ static mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 
-/*
 //| def argsort(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
 //|     """Returns an array which gives indices into the input array from least to greatest."""
 //|     ...
@@ -389,68 +388,99 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_TypeError(translate("argsort argument must be an ndarray"));
     }
 
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
-    size_t increment, start_inc, end, N, m, n;
-    if(args[1].u_obj == mp_const_none) { // flatten the array
-        m = 1;
-        n = ndarray->array->len;
-        increment = 1;
-        start_inc = ndarray->n;
-        end = ndarray->n;
-        N = n;
-    } else if((mp_obj_get_int(args[1].u_obj) == -1) ||
-              (mp_obj_get_int(args[1].u_obj) == 1)) { // sort along the horizontal axis
-        m = ndarray->m;
-        n = ndarray->n;
-        increment = 1;
-        start_inc = n;
-        end = ndarray->array->len;
-        N = n;
-    } else if(mp_obj_get_int(args[1].u_obj) == 0) { // sort along vertical axis
-        m = ndarray->m;
-        n = ndarray->n;
-        increment = n;
-        start_inc = 1;
-        end = n;
-        N = m;
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);    
+    if(args[1].u_obj == mp_const_none) {
+        // bail out, though dense arrays could still be sorted
+        mp_raise_NotImplementedError(translate("argsort is not implemented for flattened arrays"));
+    }
+    // Since we are returning an NDARRAY_UINT16 array, bail out, 
+    // if the axis is longer than what we can hold
+    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
+        if(ndarray->shape[i] > 65535) {
+            mp_raise_ValueError(translate("axis too long"));
+        }
+    }
+    int8_t ax = mp_obj_get_int(args[1].u_obj);
+    if(ax < 0) ax += ndarray->ndim;
+    if((ax < 0) || (ax > ndarray->ndim - 1)) {
+        mp_raise_ValueError(translate("index out of range"));
+    }
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+    numerical_reduce_axes(ndarray, ax, shape, strides);
+
+    // We could return an NDARRAY_UINT8 array, if all lengths are shorter than 256
+    ndarray_obj_t *indices = ndarray_new_ndarray(ndarray->ndim, ndarray->shape, NULL, NDARRAY_UINT16);
+    int32_t *istrides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(istrides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+    numerical_reduce_axes(indices, ax, shape, istrides);
+    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
+        istrides[i] /= sizeof(uint16_t);
+    }
+    
+    ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+    // we work with the typed array, so re-scale the stride
+    int32_t increment = ndarray->strides[ax] / ndarray->itemsize;
+    uint16_t iincrement = indices->strides[ax] / sizeof(uint16_t);
+
+    uint8_t *array = (uint8_t *)ndarray->array;
+    uint16_t *iarray = (uint16_t *)indices->array;
+
+    // fill in the index values
+    #if ULAB_MAX_DIMS > 3
+    size_t j = 0;
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        size_t k = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            size_t l = 0;
+            do {
+            #endif
+            uint16_t m=0;
+                do {
+                    *iarray = m++;
+                    iarray += iincrement;
+                } while(m < indices->shape[ax]);
+            #if ULAB_MAX_DIMS > 1
+                iarray -= iincrement * indices->shape[ax];
+                iarray += istrides[ULAB_MAX_DIMS - 1];
+                l++;
+            } while(l < shape[ULAB_MAX_DIMS - 1]);
+            iarray -= istrides[ULAB_MAX_DIMS - 1] * shape[ULAB_MAX_DIMS - 1];
+            iarray += istrides[ULAB_MAX_DIMS - 2];
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            k++;
+        } while(k < shape[ULAB_MAX_DIMS - 2]);
+        iarray -= istrides[ULAB_MAX_DIMS - 2] * shape[ULAB_MAX_DIMS - 2];
+        iarray += istrides[ULAB_MAX_DIMS - 3];
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        j++;
+    } while(j < shape[ULAB_MAX_DIMS - 3]);
+    #endif
+    
+    // reset the array
+    iarray = indices->array;
+    
+    printf("%d", istrides[ULAB_MAX_DIMS - 1]);
+    if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
+        HEAP_ARGSORT(ndarray, uint8_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
+    } else if((ndarray->dtype == NDARRAY_UINT16) || (ndarray->dtype == NDARRAY_INT16)) {
+        HEAP_ARGSORT(ndarray, uint16_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
     } else {
-        mp_raise_ValueError(translate("axis must be -1, 0, None, or 1"));
-    }
-
-    if((m > 65535) || (n > 65535)) {
-        mp_raise_ValueError(translate("sorted axis can't be longer than 65535"));
-    }
-    // at the expense of flash, we could save RAM by creating
-    // an NDARRAY_UINT16 ndarray only, if needed, otherwise, NDARRAY_UINT8
-    ndarray_obj_t *indices = create_new_ndarray(m, n, NDARRAY_UINT16);
-    uint16_t *index_array = (uint16_t *)indices->array->items;
-    // initialise the index array
-    // if array is flat: 0 to indices->n
-    // if sorting vertically, identical indices are arranged row-wise
-    // if sorting horizontally, identical indices are arranged colunn-wise
-    for(uint16_t start=0; start < end; start+=start_inc) {
-        for(uint16_t s=0; s < N; s++) {
-            index_array[start+s*increment] = s;
-        }
-    }
-
-    size_t q, k, p, c;
-    for(size_t start=0; start < end; start+=start_inc) {
-        q = N;
-        k = (q >> 1);
-        if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
-            HEAP_ARGSORT(uint8_t, ndarray, index_array);
-        } else if((ndarray->array->typecode == NDARRAY_INT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
-            HEAP_ARGSORT(uint16_t, ndarray, index_array);
-        } else {
-            HEAP_ARGSORT(mp_float_t, ndarray, index_array);
-        }
+        HEAP_ARGSORT(ndarray, mp_float_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
     }
     return MP_OBJ_FROM_PTR(indices);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
-*/
+
 //| def diff(array: ulab.array, *, axis: int = 1) -> ulab.array:
 //|     """Return the numerical derivative of successive elements of the array, as
 //|        an array.  axis=None is not supported."""
@@ -855,7 +885,7 @@ STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_numerical) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
