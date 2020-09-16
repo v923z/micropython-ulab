@@ -441,7 +441,7 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
             size_t l = 0;
             do {
             #endif
-            uint16_t m=0;
+            uint16_t m = 0;
                 do {
                     *iarray = m++;
                     iarray += iincrement;
@@ -464,11 +464,9 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
         j++;
     } while(j < shape[ULAB_MAX_DIMS - 3]);
     #endif
-    
     // reset the array
     iarray = indices->array;
     
-    printf("%d", istrides[ULAB_MAX_DIMS - 1]);
     if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
         HEAP_ARGSORT(ndarray, uint8_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
     } else if((ndarray->dtype == NDARRAY_UINT16) || (ndarray->dtype == NDARRAY_INT16)) {

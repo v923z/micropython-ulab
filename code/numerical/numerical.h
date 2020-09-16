@@ -117,10 +117,10 @@ extern mp_obj_module_t ulab_numerical_module;
 ({\
     type *_array = (type *)array;\
     type tmp;\
-    size_t c, q = (N), p, k = (N) >> 1;\
+    size_t c, q = (N), p, r = (N) >> 1;\
     for (;;) {\
-        if (k > 0) {\
-            tmp = _array[(--k)*(increment)];\
+        if (r > 0) {\
+            tmp = _array[(--r)*(increment)];\
         } else {\
             q--;\
             if(q == 0) {\
@@ -129,8 +129,8 @@ extern mp_obj_module_t ulab_numerical_module;
             tmp = _array[q*(increment)];\
             _array[q*(increment)] = array[0];\
         }\
-        p = k;\
-        c = k + k + 1;\
+        p = r;\
+        c = r + r + 1;\
         while (c < q) {\
             if((c + 1 < q)  &&  (_array[(c+1)*(increment)] > _array[c*(increment)])) {\
                 c++;\
@@ -147,32 +147,33 @@ extern mp_obj_module_t ulab_numerical_module;
     }\
 })
 
-#define HEAP_ARGSORT1(ndarray, type, array, shape, strides, index, increment, N, iarray, iincrement)\
+#define HEAP_ARGSORT1(type, array, increment, N, iarray, iincrement)\
 ({\
     type *_array = (type *)array;\
     type tmp;\
-    uint16_t itmp, c, q = (N), p, k = (N) >> 1;\
+    uint16_t itmp, c, q = (N), p, r = (N) >> 1;\
     for (;;) {\
-        if (k > 0) {\
-            tmp = _array[(iarray)[--k*(iincrement)]*(increment)];\
-            itmp = (iarray)[k*(iincrement)];\
+        if (r > 0) {\
+            r--;\
+            itmp = (iarray)[r*(iincrement)];\
+            tmp = _array[itmp*(increment)];\
         } else {\
             q--;\
             if(q == 0) {\
                 break;\
             }\
-            tmp = _array[(iarray)[q*(iincrement)]*(increment)];\
             itmp = (iarray)[q*(iincrement)];\
+            tmp = _array[itmp*(increment)];\
             (iarray)[q*(iincrement)] = (iarray)[0];\
         }\
-        p = k;\
-        c = k + k + 1;\
+        p = r;\
+        c = r + r + 1;\
         while (c < q) {\
             if((c + 1 < q)  &&  (_array[(iarray)[(c+1)*(iincrement)]*(increment)] > _array[(iarray)[c*(iincrement)]*(increment)])) {\
                 c++;\
             }\
             if(_array[(iarray)[c*(iincrement)]*(increment)] > tmp) {\
-                (iarray)[p] = (iarray)[c];\
+                (iarray)[p*(iincrement)] = (iarray)[c*(iincrement)];\
                 p = c;\
                 c = p + p + 1;\
             } else {\
@@ -209,7 +210,7 @@ extern mp_obj_module_t ulab_numerical_module;
 } while(0)
 
 #define HEAP_ARGSORT(ndarray, type, array, shape, strides, index, increment, N, iarray, istrides, iincrement) do {\
-    HEAP_ARGSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N), (iarray), (iincrement));\
+    HEAP_ARGSORT1(type, (array), (increment), (N), (iarray), (iincrement));\
 } while(0)
 
 #endif
@@ -277,7 +278,7 @@ extern mp_obj_module_t ulab_numerical_module;
 #define HEAP_ARGSORT(ndarray, type, array, shape, strides, index, increment, N, iarray, istrides, iincrement) do {\
     size_t l = 0;\
     do {\
-        HEAP_ARGSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N), (iarray), (iincrement));\
+        HEAP_ARGSORT1(type, (array), (increment), (N), (iarray), (iincrement));\
         (array) += (strides)[ULAB_MAX_DIMS - 1];\
         (iarray) += (istrides)[ULAB_MAX_DIMS - 1];\
         l++;\
@@ -387,22 +388,7 @@ extern mp_obj_module_t ulab_numerical_module;
     do {\
         size_t l = 0;\
         do {\
-            HEAPSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N));\
-            (array) += (strides)[ULAB_MAX_DIMS - 1];\
-            l++;\
-        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-        (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
-        (array) += (strides)[ULAB_MAX_DIMS - 2];\
-        k++;\
-    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
-} while(0)
-
-#define HEAP_ARGSORT(ndarray, type, array, shape, strides, index, increment, N, iarray, istrides, iincrement) do {\
-    size_t k = 0;\
-    do {\
-        size_t l = 0;\
-        do {\
-            HEAP_ARGSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N), (iarray), (iincrement));\
+            HEAP_ARGSORT1(type, (array), (increment), (N), (iarray), (iincrement));\
             (array) += (strides)[ULAB_MAX_DIMS - 1];\
             (iarray) += (istrides)[ULAB_MAX_DIMS - 1];\
             l++;\
@@ -411,6 +397,7 @@ extern mp_obj_module_t ulab_numerical_module;
         (iarray) += (istrides)[ULAB_MAX_DIMS - 2];\
         (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
         (array) += (strides)[ULAB_MAX_DIMS - 2];\
+        k++;
     } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
 } while(0)
 
@@ -555,7 +542,7 @@ extern mp_obj_module_t ulab_numerical_module;
         do {\
             size_t l = 0;\
             do {\
-                HEAP_ARGSORT1((ndarray), type, (array), (shape), (strides), (index), (increment), (N), (iarray), (iincrement));\
+                HEAP_ARGSORT1(type, (array), (increment), (N), (iarray), (iincrement));\
                 (array) += (strides)[ULAB_MAX_DIMS - 1];\
                 (iarray) += (istrides)[ULAB_MAX_DIMS - 1];\
                 l++;\
@@ -564,6 +551,7 @@ extern mp_obj_module_t ulab_numerical_module;
             (iarray) += (istrides)[ULAB_MAX_DIMS - 2];\
             (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
             (array) += (strides)[ULAB_MAX_DIMS - 2];\
+            k++;
         } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
         (iarray) -= (istrides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
         (iarray) += (istrides)[ULAB_MAX_DIMS - 3];\
