@@ -514,6 +514,8 @@ static mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(linalg_size_obj, 1, linalg_size);
 
 #if ULAB_MAX_DIMS > 1
+#if ULAB_LINALG_HAS_TRACE
+
 //| def trace(m: ulab.array) -> float:
 //|     """
 //|     :param m: a square matrix
@@ -537,22 +539,35 @@ static mp_obj_t linalg_trace(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_trace_obj, linalg_trace);
 #endif
+#endif
 
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
     #if ULAB_MAX_DIMS > 1
+    #if ULAB_LINALG_HAS_CHOLESKY
     { MP_ROM_QSTR(MP_QSTR_cholesky), (mp_obj_t)&linalg_cholesky_obj },
+    #endif
+    #if ULAB_LINALG_HAS_DET
     { MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
     #endif
-    { MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
-    #if ULAB_MAX_DIMS > 1
+    #if ULAB_LINALG_HAS_EIG
     { MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },
+    #endif
+    #if ULAB_LINALG_HAS_INV
     { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
     #endif
-    { MP_ROM_QSTR(MP_QSTR_norm), (mp_obj_t)&linalg_norm_obj },
-    { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
-    #if ULAB_MAX_DIMS > 1
+    #if ULAB_LINALG_HAS_TRACE
     { MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&linalg_trace_obj },
+    #endif
+    #endif
+    #if ULAB_LINALG_HAS_DOT
+    { MP_ROM_QSTR(MP_QSTR_dot), (mp_obj_t)&linalg_dot_obj },
+    #endif
+    #if ULAB_LINALG_HAS_NORM
+    { MP_ROM_QSTR(MP_QSTR_norm), (mp_obj_t)&linalg_norm_obj },
+    #endif
+    #if ULAB_LINALG_HAS_SIZE
+    { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
     #endif
 };
 

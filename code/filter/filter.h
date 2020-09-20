@@ -20,8 +20,11 @@
 
 extern mp_obj_module_t ulab_filter_module;
 
+#if ULAB_FILTER_HAS_CONVOLVE
 MP_DECLARE_CONST_FUN_OBJ_KW(filter_convolve_obj);
+#endif
+#if ULAB_FILTER_HAS_SOSFILT
 MP_DECLARE_CONST_FUN_OBJ_KW(filter_sosfilt_obj);
-
+#endif
 #endif
 #endif

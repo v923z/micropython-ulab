@@ -287,7 +287,7 @@ mp_obj_t approx_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     mp_obj_t x_obj = args[1].u_obj;
     mp_obj_t y_obj = args[2].u_obj;
     mp_obj_t p0_obj = args[3].u_obj;
-    if(!ndarray_object_is_nditerable(x_obj) || !ndarray_object_is_nditerable(y_obj)) {
+    if(!ndarray_object_is_array_like(x_obj) || !ndarray_object_is_array_like(y_obj)) {
         mp_raise_TypeError(translate("data must be iterable"));
     }
     if(!ndarray_object_is_nditerable(p0_obj)) {

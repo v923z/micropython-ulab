@@ -88,7 +88,7 @@ mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
 
 mp_float_t ndarray_get_float_value(void *, uint8_t );
 mp_float_t ndarray_get_float_index(void *, uint8_t , size_t );
-bool ndarray_object_is_nditerable(mp_obj_t );
+bool ndarray_object_is_array_like(mp_obj_t );
 void fill_array_iterable(mp_float_t *, mp_obj_t );
 size_t *ndarray_shape_vector(size_t , size_t , size_t , size_t );
 

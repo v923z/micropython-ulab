@@ -21,6 +21,8 @@
 
 #if ULAB_FILTER_MODULE
 
+#if ULAB_FILTER_HAS_CONVOLVE
+
 //| """Filtering functions"""
 //|
 //| def convolve(r, c=None):
@@ -92,6 +94,10 @@ static mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
 MP_DEFINE_CONST_FUN_OBJ_KW(filter_convolve_obj, 2, filter_convolve);
 
+#endif
+
+#if ULAB_FILTER_HAS_SOSFILT
+
 static void filter_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_float_t *zf, const size_t len) {
     for(size_t i=0; i < len; i++) {
         mp_float_t xn = *x;
@@ -127,7 +133,7 @@ static mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!ndarray_object_is_nditerable(args[0].u_obj) || !ndarray_object_is_nditerable(args[1].u_obj)) {
+    if(!ndarray_object_is_array_like(args[0].u_obj) || !ndarray_object_is_array_like(args[1].u_obj)) {
         mp_raise_TypeError(translate("sosfilt requires iterable arguments"));
     }
     size_t lenx = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[1].u_obj));
@@ -198,10 +204,16 @@ static mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
 MP_DEFINE_CONST_FUN_OBJ_KW(filter_sosfilt_obj, 2, filter_sosfilt);
 
+#endif
+
 STATIC const mp_rom_map_elem_t ulab_filter_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_filter) },
+    #if ULAB_FILTER_HAS_CONVOLVE
     { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
+    #endif
+    #if ULAB_FILTER_HAS_SOSFILT
     { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&filter_sosfilt_obj },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_filter_globals, ulab_filter_globals_table);

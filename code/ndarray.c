@@ -311,8 +311,7 @@ size_t *ndarray_shape_vector(size_t a, size_t b, size_t c, size_t d) {
     return shape;
 }
 
-// TODO: should be re-named as array_like
-bool ndarray_object_is_nditerable(mp_obj_t o_in) {
+bool ndarray_object_is_array_like(mp_obj_t o_in) {
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) ||
       MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) ||
       MP_OBJ_IS_TYPE(o_in, &mp_type_list) ||
@@ -573,24 +572,24 @@ void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target) {
                     tarray += target->itemsize;
                     sarray += source->strides[ULAB_MAX_DIMS - 1];
                     l++;
-                } while(l <  source->shape[ULAB_MAX_DIMS - 1]);
+                } while(l < source->shape[ULAB_MAX_DIMS - 1]);
             #if ULAB_MAX_DIMS > 1
                 sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
                 sarray += source->strides[ULAB_MAX_DIMS - 2];
                 k++;
-            } while(k <  source->shape[ULAB_MAX_DIMS - 2]);
+            } while(k < source->shape[ULAB_MAX_DIMS - 2]);
             #endif
         #if ULAB_MAX_DIMS > 2
             sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
             sarray += source->strides[ULAB_MAX_DIMS - 3];
             j++;
-        } while(j <  source->shape[ULAB_MAX_DIMS - 3]);
+        } while(j < source->shape[ULAB_MAX_DIMS - 3]);
         #endif
     #if ULAB_MAX_DIMS > 3
         sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
         sarray += source->strides[ULAB_MAX_DIMS - 4];
         i++;
-    } while(i <  source->shape[ULAB_MAX_DIMS - 4]);
+    } while(i < source->shape[ULAB_MAX_DIMS - 4]);
     #endif
 }
 
