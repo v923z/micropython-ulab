@@ -15,21 +15,28 @@
 // Setting this variable to 1 produces numpy-compatible firmware, 
 // i.e., functions can be called at the top level, 
 // without having to import the sub-modules
-#define NUMPY_COMPATIBILITY         (1)
+#define NUMPY_COMPATIBILITY             (1)
 
 // The maximum number of dimensions the firmware should be able to support
 // Possible values lie between 1, and 4, inclusive
-#define ULAB_MAX_DIMS               2
+#define ULAB_MAX_DIMS                   2
 
 // The default threshold for printing. These variables can be overwritten 
 // at run-time via the set_printoptions() function
-#define NDARRAY_PRINT_THRESHOLD     10
-#define NDARRAY_PRINT_EDGEITEMS     3
+#define NDARRAY_PRINT_THRESHOLD         10
+#define NDARRAY_PRINT_EDGEITEMS         3
 
+#define ULAB_HAS_MATH_CONSTANTS         (1)
 
 // the approx module consumes about 4.5 kB of flash space
 #ifndef ULAB_APPROX_MODULE
 #define ULAB_APPROX_MODULE              (1)
+#define ULAB_APPROX_HAS_BISECT          (1)
+#define ULAB_APPROX_HAS_CURVE_FIT       (0) // not fully implemented, set it to 0 for now
+#define ULAB_APPROX_HAS_FMIN            (1)
+#define ULAB_APPROX_HAS_INTERP          (1)
+#define ULAB_APPROX_HAS_NEWTON          (1)
+#define ULAB_APPROX_HAS_TRAPZ           (1)
 #endif
 
 // the compare module consumes about 12 kB of flash space
@@ -91,6 +98,34 @@
 // vectorise (all functions) takes approx. 6 kB of flash space
 #ifndef ULAB_VECTORISE_MODULE
 #define ULAB_VECTORISE_MODULE           (1)
+#define ULAB_VECTORISE_HAS_ACOS         (1)
+#define ULAB_VECTORISE_HAS_ACOSH        (1)
+#define ULAB_VECTORISE_HAS_ARCTAN2      (0)
+#define ULAB_VECTORISE_HAS_AROUND       (1)
+#define ULAB_VECTORISE_HAS_ASIN         (1)
+#define ULAB_VECTORISE_HAS_ASINH        (1)
+#define ULAB_VECTORISE_HAS_ATAN         (1)
+#define ULAB_VECTORISE_HAS_ATANH        (1)
+#define ULAB_VECTORISE_HAS_CEIL         (1)
+#define ULAB_VECTORISE_HAS_COS          (1)
+#define ULAB_VECTORISE_HAS_DEGREES      (1)
+#define ULAB_VECTORISE_HAS_ERF          (1)
+#define ULAB_VECTORISE_HAS_ERFC         (1)
+#define ULAB_VECTORISE_HAS_EXP          (1)
+#define ULAB_VECTORISE_HAS_EXPM1        (1)
+#define ULAB_VECTORISE_HAS_FLOOR        (1)
+#define ULAB_VECTORISE_HAS_GAMMA        (1)
+#define ULAB_VECTORISE_HAS_LGAMMA       (1)
+#define ULAB_VECTORISE_HAS_LOG          (1)
+#define ULAB_VECTORISE_HAS_LOG10        (1)
+#define ULAB_VECTORISE_HAS_LOG2         (1)
+#define ULAB_VECTORISE_HAS_RADIANS      (1)
+#define ULAB_VECTORISE_HAS_SIN          (1)
+#define ULAB_VECTORISE_HAS_SINH         (1)
+#define ULAB_VECTORISE_HAS_SQRT         (1)
+#define ULAB_VECTORISE_HAS_TAN          (1)
+#define ULAB_VECTORISE_HAS_TANH         (1)
+#define ULAB_VECTORISE_HAS_VECTORIZE    (1)
 #endif
 
 // user-defined module

@@ -74,6 +74,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
     return mp_const_none;
 }
 
+#if ULAB_VECTORISE_HAS_ACOS
 //| def acos(a: _ArrayLike) -> ulab.array:
 //|    """Computes the inverse cosine function"""
 //|    ...
@@ -81,7 +82,9 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
 
 MATH_FUN_1(acos, acos);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acos_obj, vectorise_acos);
+#endif
 
+#if ULAB_VECTORISE_HAS_ACOSH
 //| def acosh(a: _ArrayLike) -> ulab.array:
 //|    """Computes the inverse hyperbolic cosine function"""
 //|    ...
@@ -89,8 +92,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acos_obj, vectorise_acos);
 
 MATH_FUN_1(acosh, acosh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acosh_obj, vectorise_acosh);
+#endif
 
-
+#if ULAB_VECTORISE_HAS_ASIN
 //| def asin(a: _ArrayLike) -> ulab.array:
 //|    """Computes the inverse sine function"""
 //|    ...
@@ -98,7 +102,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acosh_obj, vectorise_acosh);
 
 MATH_FUN_1(asin, asin);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asin_obj, vectorise_asin);
+#endif
 
+#if ULAB_VECTORISE_HAS_ASINH
 //| def asinh(a: _ArrayLike) -> ulab.array:
 //|    """Computes the inverse hyperbolic sine function"""
 //|    ...
@@ -106,8 +112,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asin_obj, vectorise_asin);
 
 MATH_FUN_1(asinh, asinh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asinh_obj, vectorise_asinh);
+#endif
 
-
+#if ULAB_VECTORISE_HAS_AROUND
 //| def around(a: _ArrayLike, *, decimals: int = 0) -> ulab.array:
 //|    """Returns a new float array in which each element is rounded to
 //|       ``decimals`` places."""
@@ -140,7 +147,9 @@ static mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_around_obj, 1, vectorise_around);
+#endif
 
+#if ULAB_VECTORISE_HAS_ATAN
 //| def atan(a: _ArrayLike) -> ulab.array:
 //|    """Computes the inverse tangent function; the return values are in the
 //|       range [-pi/2,pi/2]."""
@@ -149,14 +158,15 @@ MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_around_obj, 1, vectorise_around);
 
 MATH_FUN_1(atan, atan);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
+#endif
 
+#if ULAB_VECTORISE_HAS_ATAN2
 //| def atan2(ya: _ArrayLike, xa: _ArrayLike) -> ulab.array:
 //|    """Computes the inverse tangent function of y/x; the return values are in
 //|       the range [-pi, pi]."""
 //|    ...
 //|
 
-/*
 static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
     // the function is implemented for scalars and ndarrays only, with partial 
     // broadcasting: arguments must be either scalars, or ndarrays of equal size/shape
@@ -209,9 +219,9 @@ static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
-*/
+#endif
 
-
+#if ULAB_VECTORISE_HAS_ATANH
 //| def atanh(a: _ArrayLike) -> ulab.array:
 //|    """Computes the inverse hyperbolic tangent function"""
 //|    ...
@@ -219,7 +229,9 @@ MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
 
 MATH_FUN_1(atanh, atanh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atanh_obj, vectorise_atanh);
+#endif
 
+#if ULAB_VECTORISE_HAS_CEIL
 //| def ceil(a: _ArrayLike) -> ulab.array:
 //|    """Rounds numbers up to the next whole number"""
 //|    ...
@@ -227,7 +239,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atanh_obj, vectorise_atanh);
 
 MATH_FUN_1(ceil, ceil);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_ceil_obj, vectorise_ceil);
+#endif
 
+#if ULAB_VECTORISE_HAS_COS
 //| def cos(a: _ArrayLike) -> ulab.array:
 //|    """Computes the cosine function"""
 //|    ...
@@ -235,7 +249,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_ceil_obj, vectorise_ceil);
 
 MATH_FUN_1(cos, cos);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cos_obj, vectorise_cos);
+#endif
 
+#if ULAB_VECTORISE_HAS_COSH
 //| def cosh(a: _ArrayLike) -> ulab.array:
 //|    """Computes the hyperbolic cosine function"""
 //|    ...
@@ -243,7 +259,26 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cos_obj, vectorise_cos);
 
 MATH_FUN_1(cosh, cosh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cosh_obj, vectorise_cosh);
+#endif
 
+#if ULAB_VECTORISE_HAS_DEGREES
+//| def degrees(a: _ArrayLike) -> ulab.array:
+//|    """Converts angles from radians to degrees"""
+//|    ...
+//|
+
+static mp_float_t vectorise_degrees_(mp_float_t value) {
+    return value * MICROPY_FLOAT_CONST(180.0) / MP_PI;
+}
+
+static mp_obj_t vectorise_degrees(mp_obj_t x_obj) {
+    return vectorise_generic_vector(x_obj, vectorise_degrees_);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_degrees_obj, vectorise_degrees);
+#endif
+
+#if ULAB_VECTORISE_HAS_ERF
 //| def erf(a: _ArrayLike) -> ulab.array:
 //|    """Computes the error function, which has applications in statistics"""
 //|    ...
@@ -251,7 +286,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cosh_obj, vectorise_cosh);
 
 MATH_FUN_1(erf, erf);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erf_obj, vectorise_erf);
+#endif
 
+#if ULAB_VECTORISE_HAS_ERFC
 //| def erfc(a: _ArrayLike) -> ulab.array:
 //|    """Computes the complementary error function, which has applications in statistics"""
 //|    ...
@@ -259,7 +296,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erf_obj, vectorise_erf);
 
 MATH_FUN_1(erfc, erfc);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erfc_obj, vectorise_erfc);
+#endif
 
+#if ULAB_VECTORISE_HAS_EXP
 //| def exp(a: _ArrayLike) -> ulab.array:
 //|    """Computes the exponent function."""
 //|    ...
@@ -267,7 +306,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erfc_obj, vectorise_erfc);
 
 MATH_FUN_1(exp, exp);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_exp_obj, vectorise_exp);
+#endif
 
+#if ULAB_VECTORISE_HAS_EXPM1
 //| def expm1(a: _ArrayLike) -> ulab.array:
 //|    """Computes $e^x-1$.  In certain applications, using this function preserves numeric accuracy better than the `exp` function."""
 //|    ...
@@ -275,7 +316,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_exp_obj, vectorise_exp);
 
 MATH_FUN_1(expm1, expm1);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_expm1_obj, vectorise_expm1);
+#endif
 
+#if ULAB_VECTORISE_HAS_FLOOR
 //| def floor(a: _ArrayLike) -> ulab.array:
 //|    """Rounds numbers up to the next whole number"""
 //|    ...
@@ -283,7 +326,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_expm1_obj, vectorise_expm1);
 
 MATH_FUN_1(floor, floor);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_floor_obj, vectorise_floor);
+#endif
 
+#if ULAB_VECTORISE_HAS_GAMMA
 //| def gamma(a: _ArrayLike) -> ulab.array:
 //|    """Computes the gamma function"""
 //|    ...
@@ -291,7 +336,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_floor_obj, vectorise_floor);
 
 MATH_FUN_1(gamma, tgamma);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_gamma_obj, vectorise_gamma);
+#endif
 
+#if ULAB_VECTORISE_HAS_LGAMMA
 //| def lgamma(a: _ArrayLike) -> ulab.array:
 //|    """Computes the natural log of the gamma function"""
 //|    ...
@@ -299,7 +346,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_gamma_obj, vectorise_gamma);
 
 MATH_FUN_1(lgamma, lgamma);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_lgamma_obj, vectorise_lgamma);
+#endif
 
+#if ULAB_VECTORISE_HAS_LOG
 //| def log(a: _ArrayLike) -> ulab.array:
 //|    """Computes the natural log"""
 //|    ...
@@ -307,7 +356,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_lgamma_obj, vectorise_lgamma);
 
 MATH_FUN_1(log, log);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log_obj, vectorise_log);
+#endif
 
+#if ULAB_VECTORISE_HAS_LOG10
 //| def log10(a: _ArrayLike) -> ulab.array:
 //|    """Computes the log base 10"""
 //|    ...
@@ -315,7 +366,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log_obj, vectorise_log);
 
 MATH_FUN_1(log10, log10);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log10_obj, vectorise_log10);
+#endif
 
+#if ULAB_VECTORISE_HAS_LOG2
 //| def log2(a: _ArrayLike) -> ulab.array:
 //|    """Computes the log base 2"""
 //|    ...
@@ -323,7 +376,26 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log10_obj, vectorise_log10);
 
 MATH_FUN_1(log2, log2);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log2_obj, vectorise_log2);
+#endif
 
+#if ULAB_VECTORISE_HAS_RADIANS
+//| def radians(a: _ArrayLike) -> ulab.array:
+//|    """Converts angles from degrees to radians"""
+//|    ...
+//|
+
+static mp_float_t vectorise_radians_(mp_float_t value) {
+    return value * MP_PI / MICROPY_FLOAT_CONST(180.0);
+}
+
+static mp_obj_t vectorise_radians(mp_obj_t x_obj) {
+    return vectorise_generic_vector(x_obj, vectorise_radians_);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(vectorise_radians_obj, vectorise_radians);
+#endif
+
+#if ULAB_VECTORISE_HAS_SIN
 //| def sin(a: _ArrayLike) -> ulab.array:
 //|    """Computes the sine function"""
 //|    ...
@@ -331,7 +403,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log2_obj, vectorise_log2);
 
 MATH_FUN_1(sin, sin);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sin_obj, vectorise_sin);
+#endif
 
+#if ULAB_VECTORISE_HAS_SINH
 //| def sinh(a: _ArrayLike) -> ulab.array:
 //|    """Computes the hyperbolic sine"""
 //|    ...
@@ -339,7 +413,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sin_obj, vectorise_sin);
 
 MATH_FUN_1(sinh, sinh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sinh_obj, vectorise_sinh);
+#endif
 
+#if ULAB_VECTORISE_HAS_SQRT
 //| def sqrt(a: _ArrayLike) -> ulab.array:
 //|    """Computes the square root"""
 //|    ...
@@ -347,7 +423,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sinh_obj, vectorise_sinh);
 
 MATH_FUN_1(sqrt, sqrt);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sqrt_obj, vectorise_sqrt);
+#endif
 
+#if ULAB_VECTORISE_HAS_TAN
 //| def tan(a: _ArrayLike) -> ulab.array:
 //|    """Computes the tangent"""
 //|    ...
@@ -355,14 +433,18 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sqrt_obj, vectorise_sqrt);
 
 MATH_FUN_1(tan, tan);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tan_obj, vectorise_tan);
+#endif
 
+#if ULAB_VECTORISE_HAS_TANH
 //| def tanh(a: _ArrayLike) -> ulab.array:
 //|    """Computes the hyperbolic tangent"""
 //|    ...
 
 MATH_FUN_1(tanh, tanh);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tanh_obj, vectorise_tanh);
+#endif
 
+#if ULAB_VECTORISE_HAS_VECTORIZE
 static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void) n_args;
     (void) n_kw;
@@ -457,35 +539,94 @@ static mp_obj_t vectorise_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_vectorize_obj, 1, vectorise_vectorize);
+#endif
 
 STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_vector) },
+    #if ULAB_VECTORISE_HAS_ACOS
     { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_ACOSH
     { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_arctan2), (mp_obj_t)&vectorise_arctan2_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_ARCTAN2
+    { MP_OBJ_NEW_QSTR(MP_QSTR_arctan2), (mp_obj_t)&vectorise_arctan2_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_AROUND
     { MP_OBJ_NEW_QSTR(MP_QSTR_around), (mp_obj_t)&vectorise_around_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_ASIN
     { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_ASINH
     { MP_OBJ_NEW_QSTR(MP_QSTR_asinh), (mp_obj_t)&vectorise_asinh_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_ATAN
     { MP_OBJ_NEW_QSTR(MP_QSTR_atan), (mp_obj_t)&vectorise_atan_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_ATANH
     { MP_OBJ_NEW_QSTR(MP_QSTR_atanh), (mp_obj_t)&vectorise_atanh_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_CEIL
     { MP_OBJ_NEW_QSTR(MP_QSTR_ceil), (mp_obj_t)&vectorise_ceil_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_COS
     { MP_OBJ_NEW_QSTR(MP_QSTR_cos), (mp_obj_t)&vectorise_cos_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_DEGREES
+    { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&vectorise_degrees_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_ERF
     { MP_OBJ_NEW_QSTR(MP_QSTR_erf), (mp_obj_t)&vectorise_erf_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_ERFC
     { MP_OBJ_NEW_QSTR(MP_QSTR_erfc), (mp_obj_t)&vectorise_erfc_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_EXP
     { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&vectorise_exp_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_EXPM1
     { MP_OBJ_NEW_QSTR(MP_QSTR_expm1), (mp_obj_t)&vectorise_expm1_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_FLOOR
     { MP_OBJ_NEW_QSTR(MP_QSTR_floor), (mp_obj_t)&vectorise_floor_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_GAMMA
     { MP_OBJ_NEW_QSTR(MP_QSTR_gamma), (mp_obj_t)&vectorise_gamma_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_LGAMMA
     { MP_OBJ_NEW_QSTR(MP_QSTR_lgamma), (mp_obj_t)&vectorise_lgamma_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_LOG
     { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&vectorise_log_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_LOG10
     { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&vectorise_log10_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_LOG2
     { MP_OBJ_NEW_QSTR(MP_QSTR_log2), (mp_obj_t)&vectorise_log2_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_RADIANS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_radians), (mp_obj_t)&vectorise_radians_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_SIN
     { MP_OBJ_NEW_QSTR(MP_QSTR_sin), (mp_obj_t)&vectorise_sin_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_SINH
     { MP_OBJ_NEW_QSTR(MP_QSTR_sinh), (mp_obj_t)&vectorise_sinh_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_SQRT
     { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&vectorise_sqrt_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_TAN
     { MP_OBJ_NEW_QSTR(MP_QSTR_tan), (mp_obj_t)&vectorise_tan_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_TANH
     { MP_OBJ_NEW_QSTR(MP_QSTR_tanh), (mp_obj_t)&vectorise_tanh_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_VECTORIZE
     { MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vectorise_vectorize_obj },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_vectorise_globals, ulab_vectorise_globals_table);

@@ -57,22 +57,39 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     for(size_t m=0; m < N; m++){
         // this could be faster with ((c < epsilon) && (c > -epsilon))
         if(MICROPY_FLOAT_C_FUN(fabs)(data[m * (N+1)]) < epsilon) {
-            m_del(mp_float_t, unit, N * N);
-            return false;
+            //look for a line to swap
+            size_t m1=m+1;
+            for(; m1 < N; m1++) {
+                if(!(MICROPY_FLOAT_C_FUN(fabs)(data[m1*N+m]) < epsilon)) {
+                    for(size_t m2=0; m2 < N; m2++) {
+                        mp_float_t swapVal = data[m*N+m2];
+                        data[m*N+m2] = data[m1*N+m2];
+                        data[m1*N+m2] = swapVal;
+                        swapVal = unit[m*N+m2];
+                        unit[m*N+m2] = unit[m1*N+m2];
+                        unit[m1*N+m2] = swapVal;
+                    }
+                    break;
+                }
+            }
+            if (m1 >= N) {
+                m_del(mp_float_t, unit, N*N);
+                return false;
+            }
         }
-        for(size_t n=0; n < N; n++){
+        for(size_t n=0; n < N; n++) {
             if(m != n){
                 elem = data[N * n + m] / data[m * (N+1)];
-                for(size_t k=0; k < N; k++){
+                for(size_t k=0; k < N; k++) {
                     data[N * n + k] -= elem * data[N * m + k];
                     unit[N * n + k] -= elem * unit[N * m + k];
                 }
             }
         }
     }
-    for(size_t m=0; m < N; m++){
+    for(size_t m=0; m < N; m++) {
         elem = data[m * (N+1)];
-        for(size_t n=0; n < N; n++){
+        for(size_t n=0; n < N; n++) {
             data[N * m + n] /= elem;
             unit[N * m + n] /= elem;
         }
@@ -105,8 +122,8 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
             *Larray++ = ndarray_get_float_value(array, ndarray->dtype);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
         }
-        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;\
-        array += ndarray->strides[ULAB_MAX_DIMS - 2];\
+        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;
+        array += ndarray->strides[ULAB_MAX_DIMS - 2];
     }
     Larray -= N*N;
     // make sure the matrix is symmetric
@@ -167,17 +184,34 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
             *tmp++ = ndarray_get_float_value(array, ndarray->dtype);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
         }
-        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;\
-        array += ndarray->strides[ULAB_MAX_DIMS - 2];\
+        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;
+        array += ndarray->strides[ULAB_MAX_DIMS - 2];
     }
 
     mp_float_t c;
+    mp_float_t det_sign = 1.0;
+
     for(size_t m=0; m < N-1; m++){
         if(MICROPY_FLOAT_C_FUN(fabs)(tmp[m * (N+1)]) < epsilon) {
-            m_del(mp_float_t, tmp, N * N);
-            return mp_obj_new_float(0.0);
+            size_t m1 = m + 1;
+            for(; m1 < N; m1++) {
+                if(!(MICROPY_FLOAT_C_FUN(fabs)(tmp[m1*N+m]) < epsilon)) {
+                     //look for a line to swap
+                    for(size_t m2=0; m2 < N; m2++) {
+                        mp_float_t swapVal = tmp[m*N+m2];
+                        tmp[m*N+m2] = tmp[m1*N+m2];
+                        tmp[m1*N+m2] = swapVal;
+                    }
+                    det_sign = -det_sign;
+                    break;
+                }
+            }
+            if (m1 >= N) {
+                m_del(mp_float_t, tmp, N * N);
+                return mp_obj_new_float(0.0);
+            }
         }
-        for(size_t n=0; n < N; n++){
+        for(size_t n=0; n < N; n++) {
             if(m != n) {
                 c = tmp[N * n + m] / tmp[m * (N+1)];
                 for(size_t k=0; k < N; k++){
@@ -186,7 +220,7 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
             }
         }
     }
-    mp_float_t det = 1.0;
+    mp_float_t det = det_sign;
 
     for(size_t m=0; m < N; m++){
         det *= tmp[m * (N+1)];

@@ -36,6 +36,7 @@ STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp
     return mp_obj_get_float(type->call(fun, nparams+1, 0, fargs));
 }
 
+#if ULAB_APPROX_HAS_BISECT
 //| def bisect(
 //|     fun: Callable[[float], float],
 //|     a: float,
@@ -103,7 +104,9 @@ STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_bisect_obj, 3, approx_bisect);
+#endif
 
+#if ULAB_APPROX_HAS_FMIN
 //| def fmin(
 //|     fun: Callable[[float], float],
 //|     x0: float,
@@ -222,8 +225,9 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_fmin_obj, 2, approx_fmin);
+#endif
 
-#if 0
+#if ULAB_APPROX_HAS_CURVE_FIT
 static void approx_jacobi(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t *x, mp_float_t *y, uint16_t len, mp_float_t *params, uint8_t nparams, mp_float_t *jacobi, mp_float_t *grad) {
     /* Calculates the Jacobian and the gradient of the cost function
      *
@@ -328,9 +332,9 @@ mp_obj_t approx_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_curve_fit_obj, 2, approx_curve_fit);
-
 #endif
 
+#if ULAB_APPROX_HAS_INTERP
 //| def interp(
 //|     x: ulab.array,
 //|     xp: ulab.array,
@@ -421,7 +425,9 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
+#endif
 
+#if ULAB_APPROX_HAS_NEWTON
 //| def newton(
 //|     fun: Callable[[float], float],
 //|     x0: float,
@@ -483,7 +489,9 @@ STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_newton_obj, 2, approx_newton);
+#endif
 
+#if ULAB_APPROX_HAS_TRAPZ
 //| def trapz(y: ulab.array, x: Optional[ulab.array] = None, dx: float = 1.0) -> float:
 //|     """
 //|     :param 1D ulab.array y: the values of the dependent variable
@@ -540,15 +548,28 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_trapz_obj, 1, approx_trapz);
+#endif
 
 STATIC const mp_rom_map_elem_t ulab_approx_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_approx) },
+    #if ULAB_APPROX_HAS_BISECT
     { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&approx_bisect_obj },
+    #endif
+    #if ULAB_APPROX_HAS_FMIN
     { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&approx_fmin_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
+    #endif
+    #if ULAB_APPROX_HAS_CURVE_FIT
+    { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
+    #endif
+    #if ULAB_APPROX_HAS_INTERP
     { MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
+    #endif
+    #if ULAB_APPROX_HAS_NEWTON
     { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&approx_newton_obj },
+    #endif
+    #if ULAB_APPROX_HAS_TRAPZ
     { MP_OBJ_NEW_QSTR(MP_QSTR_trapz), (mp_obj_t)&approx_trapz_obj },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_approx_globals, ulab_approx_globals_table);

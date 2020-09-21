@@ -41,6 +41,11 @@ STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
 
+#if ULAB_HAS_MATH_CONSTANTS
+mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MICROPY_FLOAT_CONST(M_E)};
+mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MICROPY_FLOAT_CONST(MP_PI)};
+#endif
+
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #if ULAB_MAX_DIMS > 1
     { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },
@@ -114,6 +119,11 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #endif
     #if ULAB_VECTORISE_MODULE
     { MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vectorise_module) },
+    #endif
+    // math constants
+    #if ULAB_HAS_MATH_CONSTANTS
+    { MP_ROM_QSTR(MP_QSTR_e), MP_ROM_PTR(&ulab_const_float_e_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pi), MP_ROM_PTR(&ulab_const_float_pi_obj) },
     #endif
     // class constants
     { MP_ROM_QSTR(MP_QSTR_bool), MP_ROM_INT(NDARRAY_BOOL) },

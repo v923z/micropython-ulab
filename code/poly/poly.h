@@ -19,12 +19,8 @@
 
 extern mp_obj_module_t ulab_poly_module;
 
-#if ULAB_POLY_HAS_POLYFIT
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj);
-#endif
-#if ULAB_POLY_HAS_POLYVAL
 MP_DECLARE_CONST_FUN_OBJ_2(poly_polyval_obj);
-#endif
 
 #endif
 #endif

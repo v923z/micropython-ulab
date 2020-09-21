@@ -28,10 +28,11 @@
 extern mp_obj_module_t ulab_approx_module;
 
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_bisect_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(approx_newton_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(approx_curve_fit_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_fmin_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_interp_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(approx_newton_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_trapz_obj);
 
-#endif
-#endif
+#endif  /* ULAB_APPROX_MODULE */
+#endif  /* _APPROX_ */
