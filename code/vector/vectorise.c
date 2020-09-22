@@ -121,7 +121,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asinh_obj, vectorise_asinh);
 //|    ...
 //|
 
-static mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_decimals, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 } }
@@ -167,7 +167,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 //|    ...
 //|
 
-static mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
+mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
     // the function is implemented for scalars and ndarrays only, with partial 
     // broadcasting: arguments must be either scalars, or ndarrays of equal size/shape
     if(!(MP_OBJ_IS_INT(x) || mp_obj_is_float(x) || MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) &&
@@ -541,6 +541,7 @@ static mp_obj_t vectorise_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_
 MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_vectorize_obj, 1, vectorise_vectorize);
 #endif
 
+#if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_vector) },
     #if ULAB_VECTORISE_HAS_ACOS
@@ -635,5 +636,6 @@ mp_obj_module_t ulab_vectorise_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_vectorise_globals,
 };
+#endif /* ULAB_NUMPY_COMPATIBILITY */
 
 #endif

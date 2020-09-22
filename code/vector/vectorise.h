@@ -17,14 +17,47 @@
 
 #if ULAB_VECTORISE_MODULE
 
+#if ULAB_NUMPY_COMPATIBILITY
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_acos_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_acosh_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(vectorise_arctan2_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(vectorise_around_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_asin_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_asinh_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_atan_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_atanh_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_ceil_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_cos_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_degrees_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_erf_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_erfc_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_exp_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_expm1_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_floor_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_gamma_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_lgamma_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_log_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_log10_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_log2_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_radians_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_sin_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_sinh_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_sqrt_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_tan_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_tanh_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(vectorise_vectorize_obj);
+#endif /* ULAB_NUMPY_COMPATIBILITY */
+
+#if !ULAB_NUMPY_COMPATIBILITY
+extern mp_obj_module_t ulab_vectorise_module;
+#endif
+
 typedef struct _vectorized_function_obj_t {
     mp_obj_base_t base;
     uint8_t otypes;
     mp_obj_t fun;
     const mp_obj_type_t *type;
 } vectorized_function_obj_t;
-
-extern mp_obj_module_t ulab_vectorise_module;
 
 #if ULAB_MAX_DIMS == 4
 #define ITERATE_VECTOR(type, array, source, sarray) do {\
@@ -109,6 +142,6 @@ extern mp_obj_module_t ulab_vectorise_module;
     static mp_obj_t vectorise_ ## py_name(mp_obj_t x_obj) { \
         return vectorise_generic_vector(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
 }
-    
-#endif
+
+#endif /* ULAB_VECTORISE_MODULE */
 #endif

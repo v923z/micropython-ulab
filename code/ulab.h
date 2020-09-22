@@ -14,18 +14,20 @@
 
 // Setting this variable to 1 produces numpy-compatible firmware, 
 // i.e., functions can be called at the top level, 
-// without having to import the sub-modules
-#define NUMPY_COMPATIBILITY             (1)
+// without having to import the sub-modules (linalg and fft are exceptions,
+// since those must be imported even in numpy)
+#define ULAB_NUMPY_COMPATIBILITY        (1)
 
 // The maximum number of dimensions the firmware should be able to support
 // Possible values lie between 1, and 4, inclusive
 #define ULAB_MAX_DIMS                   2
 
-// The default threshold for printing. These variables can be overwritten 
+// The default threshold for pretty printing. These variables can be overwritten
 // at run-time via the set_printoptions() function
 #define NDARRAY_PRINT_THRESHOLD         10
 #define NDARRAY_PRINT_EDGEITEMS         3
 
+// determines, whether pi, and e are defined in ulab itself
 #define ULAB_HAS_MATH_CONSTANTS         (1)
 
 // the approx module consumes about 4.5 kB of flash space
@@ -40,11 +42,24 @@
 #endif
 
 // the compare module consumes about 12 kB of flash space
-// Functions in compare call the same kernel functions, there 
-// is no point in defining ULAB_COMPARE_HAS_* constants
 #ifndef ULAB_COMPARE_MODULE
 #define ULAB_COMPARE_MODULE             (1)
+#define ULAB_COMPARE_HAS_CLIP           (1)
+#define ULAB_COMPARE_HAS_EQUAL          (1)
+#define ULAB_COMPARE_HAS_NOTEQUAL       (1)
+#define ULAB_COMPARE_HAS_MAXIMUM        (1)
+#define ULAB_COMPARE_HAS_MINIMUM        (1)
 #endif
+
+// These are the array initialisation functions that
+// are included at the top level, hence the missing
+// module constant
+#define ULAB_CREATE_HAS_ARANGE          (1)
+#define ULAB_CREATE_HAS_EYE             (1)
+#define ULAB_CREATE_HAS_LINSPACE        (1)
+#define ULAB_CREATE_HAS_LOGSPACE        (0) // not implemented, set it to 0 for now
+#define ULAB_CREATE_HAS_ONES            (1)
+#define ULAB_CREATE_HAS_ZEROS           (1)
 
 // FFT costs about 2.5 kB of flash space
 // Since all FFT module functions are just interfaces to the same kernel, 

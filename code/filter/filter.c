@@ -41,7 +41,7 @@
 //|    ...
 //|
 
-static mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_v, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -123,7 +123,7 @@ static void filter_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_flo
 //|     ...
 //|
 
-static mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sos, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -203,9 +203,9 @@ static mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(filter_sosfilt_obj, 2, filter_sosfilt);
-
 #endif
 
+#if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_filter_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_filter) },
     #if ULAB_FILTER_HAS_CONVOLVE
@@ -222,5 +222,5 @@ mp_obj_module_t ulab_filter_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_filter_globals,
 };
-
+#endif /* ULAB_NUMPY_COMPATIBILITY */
 #endif

@@ -34,7 +34,7 @@
 //|     ...
 //|
 
-static mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
+mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
     if(!ndarray_object_is_array_like(args[0])) {
         mp_raise_ValueError(translate("input data must be an iterable"));
     }
@@ -153,7 +153,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj, 2, 3, poly_polyfit);
 //|     ...
 //|
 
-static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
+mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     if(!ndarray_object_is_array_like(o_p) || !ndarray_object_is_array_like(o_x)) {
         mp_raise_TypeError(translate("inputs are not iterable"));
     }
@@ -244,6 +244,7 @@ static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
 MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
 #endif
 
+#if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_poly_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_poly) },
     #if ULAB_POLY_HAS_POLYFIT
@@ -260,5 +261,6 @@ mp_obj_module_t ulab_poly_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_poly_globals,
 };
+#endif
 
 #endif

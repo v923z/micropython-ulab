@@ -25,7 +25,9 @@
 #define     APPROX_GAMMA        MICROPY_FLOAT_CONST(0.5)
 #define     APPROX_DELTA        MICROPY_FLOAT_CONST(0.5)
 
+#if !ULAB_NUMPY_COMPATIBILITY
 extern mp_obj_module_t ulab_approx_module;
+#endif
 
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_bisect_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_curve_fit_obj);

@@ -14,7 +14,8 @@
 #include "py/runtime.h"
 #include "ulab_create.h"
 
-mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
+#if ULAB_CREATE_HAS_ONES | ULAB_CREATE_HAS_ZEROS
+static mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} } ,
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
@@ -46,7 +47,10 @@ mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     }
     return MP_OBJ_FROM_PTR(ndarray);
 }
-STATIC ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t dtype) {
+#endif
+
+#if ULAB_CREATE_HAS_ARANGE | ULAB_CREATE_HAS_LINSPACE
+static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t dtype) {
     mp_float_t value = start;
     
     ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
@@ -68,7 +72,9 @@ STATIC ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
     }
     return ndarray;
 }
+#endif
 
+#if ULAB_CREATE_HAS_ARANGE
 //| @overload
 //| def arange(stop: _float, step: _float = 1, dtype: _DType = float) -> array: ...
 //| @overload
@@ -133,8 +139,10 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
+#endif
 
 #if ULAB_MAX_DIMS > 1
+#if ULAB_CREATE_HAS_EYE
 //| def eye(size: int, *, dtype: _DType = float) -> array:
 //|     """Return a new square array of size, with the diagonal elements set to 1
 //|        and the other elements set to 0."""
@@ -184,9 +192,10 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
+#endif /* ULAB_CREATE_HAS_EYE */
+#endif /* ULAB_MAX_DIMS > 1 */
 
-#endif
-
+#if ULAB_CREATE_HAS_LINSPACE
 //| def linspace(
 //|     start: _float,
 //|     stop: _float,
@@ -247,7 +256,9 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
+#endif
 
+#if ULAB_CREATE_HAS_ONES
 //| def ones(shape: Union[int, Tuple[int, int]], *, dtype: _DType = float) -> array:
 //|    """
 //|    .. param: shape
@@ -264,7 +275,9 @@ mp_obj_t create_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
+#endif
 
+#if ULAB_CREATE_HAS_ZEROS
 //| def zeros(shape: Union[int, Tuple[int, int]], *, dtype: _DType = float) -> array:
 //|    """
 //|    .. param: shape
@@ -281,3 +294,4 @@ mp_obj_t create_zeros(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_zeros_obj, 0, create_zeros);
+#endif

@@ -17,7 +17,9 @@
 
 #if ULAB_NUMERICAL_MODULE
 
+#if !ULAB_NUMPY_COMPATIBILITY
 extern mp_obj_module_t ulab_numerical_module;
+#endif
 
 // TODO: implement cumsum
 //mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);

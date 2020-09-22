@@ -130,6 +130,7 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
 
 }
 
+#if ULAB_COMPARE_HAS_CLIP
 //| def clip(
 //|     x1: Union[ulab.array, float],
 //|     x2: Union[ulab.array, float],
@@ -146,7 +147,8 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
 //|     Shorthand for ``ulab.maximum(x2, ulab.minimum(x1, x3))``"""
 //|     ...
 //|
-static mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
+
+mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
     // Note: this function could be made faster by implementing a single-loop comparison in 
     // RUN_COMPARE_LOOP. However, that would add around 2 kB of compile size, while we 
     // would not gain a factor of two in speed, since the two comparisons should still be 
@@ -155,27 +157,35 @@ static mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_3(compare_clip_obj, compare_clip);
+#endif
 
+#if ULAB_COMPARE_HAS_EQUAL
 //| def equal(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> List[bool]:
 //|     """Return an array of bool which is true where x1[i] == x2[i] and false elsewhere"""
 //|     ...
 //|
-static mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
+
+mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
     return compare_equal_helper(x1, x2, MP_BINARY_OP_EQUAL);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_equal_obj, compare_equal);
+#endif
 
+#if ULAB_COMPARE_HAS_NOTEQUAL
 //| def not_equal(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> List[bool]:
 //|     """Return an array of bool which is false where x1[i] == x2[i] and true elsewhere"""
 //|     ...
 //|
-static mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
+
+mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
     return compare_equal_helper(x1, x2, MP_BINARY_OP_NOT_EQUAL);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
+#endif
 
+#if ULAB_COMPARE_HAS_MAXIMUM
 //| def maximum(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> ulab.array:
 //|     """
 //|     Compute the element by element maximum of the arguments.
@@ -185,7 +195,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
 //|     returned"""
 //|     ...
 //|
-static mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
+
+mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return maximum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MAXIMUM);
     if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
@@ -196,7 +207,9 @@ static mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
+#endif
 
+#if ULAB_COMPARE_HAS_MINIMUM
 //| def minimum(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> ulab.array:
 //|     """Compute the element by element minimum of the arguments.
 //|
@@ -206,7 +219,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
 //|     ...
 //|
 
-static mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
+mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return minimum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MINIMUM);
     if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
@@ -217,14 +230,26 @@ static mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
+#endif
 
+#if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_compare_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_compare) },
+    #if ULAB_COMPARE_HAS_CLIP
     { MP_OBJ_NEW_QSTR(MP_QSTR_clip), (mp_obj_t)&compare_clip_obj },
+    #endif
+    #if ULAB_COMPARE_HAS_EQUAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_equal), (mp_obj_t)&compare_equal_obj },
+    #endif
+    #if ULAB_COMPARE_HAS_NOTEQUAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_not_equal), (mp_obj_t)&compare_not_equal_obj },
+    #endif
+    #if ULAB_COMPARE_HAS_MAXIMUM
     { MP_OBJ_NEW_QSTR(MP_QSTR_maximum), (mp_obj_t)&compare_maximum_obj },
+    #endif
+    #if ULAB_COMPARE_HAS_MINIMUM
     { MP_OBJ_NEW_QSTR(MP_QSTR_minimum), (mp_obj_t)&compare_minimum_obj },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_compare_globals, ulab_compare_globals_table);
@@ -233,5 +258,5 @@ mp_obj_module_t ulab_compare_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_compare_globals,
 };
-
+#endif /* ULAB_NUMPY_COMPATIBILITY */
 #endif

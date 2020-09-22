@@ -23,13 +23,15 @@ enum COMPARE_FUNCTION_TYPE {
     COMPARE_CLIP,
 };
 
-extern mp_obj_module_t ulab_compare_module;
-
 MP_DECLARE_CONST_FUN_OBJ_2(compare_equal_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_not_equal_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_minimum_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_maximum_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(compare_clip_obj);
+
+#if !ULAB_NUMPY_COMPATIBILITY
+extern mp_obj_module_t ulab_compare_module;
+#endif
 
 #if ULAB_MAX_DIMS == 1
 #define COMPARE_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
@@ -148,5 +150,5 @@ MP_DECLARE_CONST_FUN_OBJ_3(compare_clip_obj);
     }\
 } while(0)
 
-#endif
+#endif /* ULAB_COMPARE_MODULE */
 #endif

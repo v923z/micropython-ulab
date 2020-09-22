@@ -550,6 +550,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_trapz_obj, 1, approx_trapz);
 #endif
 
+#if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_approx_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_approx) },
     #if ULAB_APPROX_HAS_BISECT
@@ -578,5 +579,5 @@ mp_obj_module_t ulab_approx_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_approx_globals,
 };
-
+#endif /* ULAB_NUMPY_COMPATIBILITY */
 #endif
