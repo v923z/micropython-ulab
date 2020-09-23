@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -12,8 +12,8 @@
 #ifndef __ULAB__
 #define __ULAB__
 
-// Setting this variable to 1 produces numpy-compatible firmware, 
-// i.e., functions can be called at the top level, 
+// Setting this variable to 1 produces numpy-compatible firmware,
+// i.e., functions can be called at the top level,
 // without having to import the sub-modules (linalg and fft are exceptions,
 // since those must be imported even in numpy)
 #define ULAB_NUMPY_COMPATIBILITY        (1)
@@ -62,7 +62,7 @@
 #define ULAB_CREATE_HAS_ZEROS           (1)
 
 // FFT costs about 2.5 kB of flash space
-// Since all FFT module functions are just interfaces to the same kernel, 
+// Since all FFT module functions are just interfaces to the same kernel,
 // with virtually no overhead, there is no point in defining ULAB_FFT_HAS_* constants
 #ifndef ULAB_FFT_MODULE
 #define ULAB_FFT_MODULE                 (1)

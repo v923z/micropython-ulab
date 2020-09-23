@@ -553,7 +553,7 @@ void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target) {
     // Since the target is a new array, it is supposed to be dense
     uint8_t *sarray = (uint8_t *)source->array;
     uint8_t *tarray = (uint8_t *)target->array;
-    
+
     #if ULAB_MAX_DIMS > 3
     size_t i = 0;
     do {
@@ -617,9 +617,9 @@ ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *sha
 ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
     // creates a one-to-one deep copy of the input ndarray or its view
     // the function should work in the general n-dimensional case
-    // In order to make it dtype-agnostic, we copy the memory content 
+    // In order to make it dtype-agnostic, we copy the memory content
     // instead of reading out the values
-    
+
     int32_t *strides = strides_from_shape(source->shape, source->dtype);
 
     uint8_t dtype = source->dtype;
@@ -661,7 +661,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
         // len1 is either the number of rows (for matrices), or the number of elements (row vectors)
         len1 = MP_OBJ_SMALL_INT_VALUE(len_in);
     }
-    
+
     ndarray_obj_t *self;
 
     // TODO: this doesn't allow dtype conversion.
@@ -670,7 +670,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
         self = ndarray_copy_view(ndarray);
         return MP_OBJ_FROM_PTR(self);
     }
-    
+
     // We have to figure out, whether the first element of the iterable is an iterable itself
     // Perhaps, there is a more elegant way of handling this
     mp_obj_iter_buf_t iter_buf1;
@@ -1073,28 +1073,36 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
                         array += ndarray->strides[0];
                         sarray += self->strides[0];
                         l++;
-                    } while(l <  self->shape[0]);
+                    } while(l < self->shape[0]);
                 #if ULAB_MAX_DIMS > 1
                     sarray -= self->strides[0] * self->shape[0];
                     sarray += self->strides[1];
                     k++;
-                } while(k <  self->shape[1]);
+                } while(k < self->shape[1]);
                 #endif
             #if ULAB_MAX_DIMS > 2
                 sarray -= self->strides[1] * self->shape[1];
                 sarray += self->strides[2];
                 j++;
-            } while(j <  self->shape[2]);
+            } while(j < self->shape[2]);
             #endif
         #if ULAB_MAX_DIMS > 3
             sarray -= self->strides[2] * self->shape[2];
             sarray += self->strides[3];
             i++;
-        } while(i <  self->shape[3]);
+        } while(i < self->shape[3]);
         #endif
     }
     return MP_OBJ_FROM_PTR(ndarray);
 }
+
+mp_obj_t ndarray_tobytes(mp_obj_t self_in) {
+    // As opposed to numpy, this function returns a bytearray object with the data pointer (i.e., not a copy)
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bytearray_by_ref(self->len, self->array);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_tobytes_obj, ndarray_tobytes);
 
 // Binary operations
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
@@ -1146,7 +1154,7 @@ bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim
     memset(lstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     memset(rstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     lstrides[ULAB_MAX_DIMS - 1] = lhs->strides[ULAB_MAX_DIMS - 1];
-    rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];    
+    rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];
     for(uint8_t i=ULAB_MAX_DIMS; i > 0; i--) {
         if((lhs->shape[i-1] == rhs->shape[i-1]) || (lhs->shape[i-1] == 0) || (lhs->shape[i-1] == 1) ||
         (rhs->shape[i-1] == 0) || (rhs->shape[i-1] == 1)) {
@@ -1216,12 +1224,12 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             // here we simply swap the operands
             return ndarray_binary_op(MP_BINARY_OP_MORE, rhs, lhs);
             break;
-            
+
         case MP_BINARY_OP_LESS_EQUAL:
             // here we simply swap the operands
             return ndarray_binary_op(MP_BINARY_OP_MORE_EQUAL, rhs, lhs);
             break;
-            
+
         // by separating the associative operators, we can save a lot of flash space,
         // because the operands can simply be swapped for half of the cases
         case MP_BINARY_OP_EQUAL:
@@ -1278,7 +1286,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
                 }
             }
             break;
-            
+
         case MP_BINARY_OP_MORE:
         case MP_BINARY_OP_MORE_EQUAL:
         case MP_BINARY_OP_SUBTRACT:
@@ -1360,7 +1368,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             }
             return MP_OBJ_NULL;
             break;
-            
+
         default:
             return MP_OBJ_NULL; // op not supported
             break;
@@ -1373,14 +1381,14 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
     ndarray_obj_t *ndarray = NULL;
     switch (op) {
-        case MP_UNARY_OP_LEN: 
+        case MP_UNARY_OP_LEN:
             if(self->ndim > 1) {
                 return mp_obj_new_int(self->ndim);
             } else {
                 return mp_obj_new_int(self->len);
             }
             break;
-        
+
         case MP_UNARY_OP_INVERT:
             if(self->dtype == NDARRAY_FLOAT) {
                 mp_raise_ValueError(translate("operation is not supported for given type"));
@@ -1395,7 +1403,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             }
             return MP_OBJ_FROM_PTR(ndarray);
             break;
-        
+
         case MP_UNARY_OP_NEGATIVE:
             ndarray = ndarray_copy_view(self); // from this point, this is a dense copy
             if(self->dtype == NDARRAY_UINT8) {
@@ -1404,7 +1412,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             } else if(self->dtype == NDARRAY_INT8) {
                 int8_t *array = (int8_t *)ndarray->array;
                 for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
-            } else if(self->dtype == NDARRAY_UINT16) {                
+            } else if(self->dtype == NDARRAY_UINT16) {
                 uint16_t *array = (uint16_t *)ndarray->array;
                 for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
             } else if(self->dtype == NDARRAY_INT16) {
@@ -1437,7 +1445,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 mp_float_t *array = (mp_float_t *)ndarray->array;
                 for(size_t i=0; i < self->len; i++, array++) {
                     if(*array < 0) *array = -(*array);
-                }                
+                }
             }
             return MP_OBJ_FROM_PTR(ndarray);
             break;

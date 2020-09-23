@@ -95,10 +95,10 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
 
 mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED| MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

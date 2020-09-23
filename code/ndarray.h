@@ -138,6 +138,8 @@ MP_DECLARE_CONST_FUN_OBJ_1(ndarray_itemsize_obj);
 
 //mp_obj_t ndarray_itemsize(mp_obj_t );
 mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
+mp_obj_t ndarray_tobytes(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tobytes_obj);
 
 mp_obj_t ndarray_reshape(mp_obj_t , mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_2(ndarray_reshape_obj);
