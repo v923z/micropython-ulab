@@ -56,19 +56,19 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
     ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
     if(dtype == NDARRAY_UINT8) {
         uint8_t *array = (uint8_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) array[i] = (uint8_t)value;
+        for(size_t i=0; i < len; i++, value += step) *array++ = (uint8_t)value;
     } else if(dtype == NDARRAY_INT8) {
         int8_t *array = (int8_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) array[i] = (int8_t)value;
+        for(size_t i=0; i < len; i++, value += step) *array++ = (int8_t)value;
     } else if(dtype == NDARRAY_UINT16) {
         uint16_t *array = (uint16_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) array[i] = (uint16_t)value;
+        for(size_t i=0; i < len; i++, value += step) *array++ = (uint16_t)value;
     } else if(dtype == NDARRAY_INT16) {
         int16_t *array = (int16_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) array[i] = (int16_t)value;
+        for(size_t i=0; i < len; i++, value += step) *array++ = (int16_t)value;
     } else {
         mp_float_t *array = (mp_float_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) array[i] = value;
+        for(size_t i=0; i < len; i++, value += step) *array++ = value;
     }
     return ndarray;
 }
@@ -98,7 +98,7 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -129,13 +129,14 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     if(args[3].u_obj != mp_const_none) {
         dtype = (uint8_t)mp_obj_get_int(args[3].u_obj);
     }
-    size_t len;
+    ndarray_obj_t *ndarray;
     if((stop - start)/step < 0) {
-        len = 0;
+        ndarray = ndarray_new_linear_array(0, dtype);
     } else {
-        len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
+        size_t len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
+        ndarray = create_linspace_arange(start, step, len, dtype);
     }
-    return MP_OBJ_FROM_PTR(ndarray_new_linear_array(len, dtype));
+    return MP_OBJ_FROM_PTR(ndarray);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
@@ -151,10 +152,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 
 mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_M, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_k, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },        
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, { .u_int = 0 } },
+        { MP_QSTR_M, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_k, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -203,6 +204,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 //|     dtype: _DType = float,
 //|     num: int = 50,
 //|     endpoint: bool = True
+//|     retstep: bool = False
 //| ) -> array:
 //|     """
 //|     .. param: start
@@ -210,13 +212,15 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 //|     .. param: stop
 //|       Final value in the array
 //|     .. param int: num
-//|       Count of values in the array
+//|       Count of values in the array.
 //|     .. param: dtype
 //|       Type of values in the array
 //|     .. param bool: endpoint
 //|       Whether the ``stop`` value is included.  Note that even when
 //|       endpoint=True, the exact ``stop`` value may not be included due to the
 //|       inaccuracy of floating point arithmetic.
+//      .. param bool: retstep,
+//|       If True, return (`samples`, `step`), where `step` is the spacing between samples.
 //|
 //|     Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly."""
 //|     ...
@@ -224,12 +228,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 
 mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_num, MP_ARG_INT, {.u_int = 50} },
-        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_true} },
-        { MP_QSTR_retstep, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_false} },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_num, MP_ARG_INT, { .u_int = 50 } },
+        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_true } },
+        { MP_QSTR_retstep, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_false } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -256,6 +260,88 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
+#endif
+
+#if ULAB_CREATE_HAS_LOGSPACE
+//| def linspace(
+//|     start: _float,
+//|     stop: _float,
+//|     *,
+//|     dtype: _DType = float,
+//|     num: int = 50,
+//|     endpoint: bool = True,
+//|     base: float = 10.0
+//| ) -> array:
+//|     """
+//|     .. param: start
+//|       First value in the array
+//|     .. param: stop
+//|       Final value in the array
+//|     .. param int: num
+//|       Count of values in the array. Defaults to 50.
+//|     .. param: base
+//|       The base of the log space. The step size between the elements in
+//|       ``ln(samples) / ln(base)`` (or ``log_base(samples)``) is uniform. Defaults to 10.0.
+//|     .. param: dtype
+//|       Type of values in the array
+//|     .. param bool: endpoint
+//|       Whether the ``stop`` value is included.  Note that even when
+//|       endpoint=True, the exact ``stop`` value may not be included due to the
+//|       inaccuracy of floating point arithmetic. Defaults to True.
+//|
+//|     Return a new 1-D array with ``num`` evenly spaced elements on a log scale.
+//|     The sequence starts at ``base ** start``, and ends with ``base ** stop``."""
+//|     ...
+//|
+
+const mp_obj_float_t create_float_const_ten = {{&mp_type_float}, MICROPY_FLOAT_CONST(10.0)};
+
+mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_num, MP_ARG_INT, { .u_int = 50 } },
+        { MP_QSTR_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&create_float_const_ten) } },
+        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_true } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(args[2].u_int < 2) {
+        mp_raise_ValueError(translate("number of points must be at least 2"));
+    }
+    size_t len = (size_t)args[2].u_int;
+    mp_float_t start, step, quotient;
+    start = mp_obj_get_float(args[0].u_obj);
+    uint8_t dtype = args[5].u_int;
+    mp_float_t base = mp_obj_get_float(args[3].u_obj);
+    if(args[4].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-start)/(len-1);
+    else step = (mp_obj_get_float(args[1].u_obj)-start)/len;
+    quotient = MICROPY_FLOAT_C_FUN(pow)(base, step);
+    ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
+    mp_float_t value = MICROPY_FLOAT_C_FUN(pow)(base, start);
+    if(dtype == NDARRAY_UINT8) {
+        uint8_t *array = (uint8_t *)ndarray->array;
+        for(size_t i=0; i < len; i++, value *= quotient) *array++ = (uint8_t)value;
+    } else if(dtype == NDARRAY_INT8) {
+        int8_t *array = (int8_t *)ndarray->array;
+        for(size_t i=0; i < len; i++, value *= quotient) *array++ = (int8_t)value;
+    } else if(dtype == NDARRAY_UINT16) {
+        uint16_t *array = (uint16_t *)ndarray->array;
+        for(size_t i=0; i < len; i++, value *= quotient) *array++ = (uint16_t)value;
+    } else if(dtype == NDARRAY_INT16) {
+        int16_t *array = (int16_t *)ndarray->array;
+        for(size_t i=0; i < len; i++, value *= quotient) *array++ = (int16_t)value;
+    } else {
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        for(size_t i=0; i < len; i++, value *= quotient) *array++ = value;
+    }
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(create_logspace_obj, 2, create_logspace);
 #endif
 
 #if ULAB_CREATE_HAS_ONES

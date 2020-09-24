@@ -92,14 +92,15 @@ bool ndarray_object_is_array_like(mp_obj_t );
 void fill_array_iterable(mp_float_t *, mp_obj_t );
 size_t *ndarray_shape_vector(size_t , size_t , size_t , size_t );
 
-
 void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
 
+#if ULAB_HAS_PRINTOPTIONS
 mp_obj_t ndarray_set_printoptions(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_set_printoptions_obj);
 
 mp_obj_t ndarray_get_printoptions(void);
 MP_DECLARE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj);
+#endif
 
 void ndarray_assign_elements(ndarray_obj_t *, mp_obj_t , uint8_t , size_t *);
 size_t *ndarray_contract_shape(ndarray_obj_t *, uint8_t );
@@ -125,30 +126,52 @@ bool ndarray_can_broadcast(ndarray_obj_t *, ndarray_obj_t *, uint8_t *, size_t *
 mp_obj_t ndarray_binary_op(mp_binary_op_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_unary_op(mp_unary_op_t , mp_obj_t );
 
-mp_obj_t ndarray_shape(mp_obj_t );
-MP_DECLARE_CONST_FUN_OBJ_1(ndarray_shape_obj);
 
-mp_obj_t ndarray_strides(mp_obj_t );
-MP_DECLARE_CONST_FUN_OBJ_1(ndarray_strides_obj);
+// various ndarray methods
+#if NDARRAY_HAS_FLATTEN
+mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_flatten_obj);
+#endif
 
-mp_obj_t ndarray_size(mp_obj_t );
-
+#if NDARRAY_HAS_ITEMSIZE
 mp_obj_t ndarray_itemsize(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_itemsize_obj);
+#endif
 
-//mp_obj_t ndarray_itemsize(mp_obj_t );
-mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
-mp_obj_t ndarray_tobytes(mp_obj_t );
-MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tobytes_obj);
-
+#if NDARRAY_HAS_RESHAPE
 mp_obj_t ndarray_reshape(mp_obj_t , mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_2(ndarray_reshape_obj);
+#endif
 
+#if NDARRAY_HAS_SHAPE
+mp_obj_t ndarray_shape(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_shape_obj);
+#endif
+
+#if NDARRAY_HAS_SIZE
+mp_obj_t ndarray_size(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_size_obj);
+#endif
+
+#if NDARRAY_HAS_STRIDES
+mp_obj_t ndarray_strides(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_strides_obj);
+#endif
+
+#if NDARRAY_HAS_TOBYTES
+mp_obj_t ndarray_tobytes(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tobytes_obj);
+#endif
+
+#if NDARRAY_HAS_TRANSPOSE
 mp_obj_t ndarray_transpose(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
+#endif
 
+#if ULAB_HAS_NDINFO
 mp_obj_t ndarray_info(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_info_obj);
+#endif
 
 mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 //void ndarray_attributes(mp_obj_t , qstr , mp_obj_t *);

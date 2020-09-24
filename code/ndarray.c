@@ -331,6 +331,7 @@ void fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     }
 }
 
+#if ULAB_HAS_PRINTOPTIONS
 mp_obj_t ndarray_set_printoptions(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_threshold, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -358,7 +359,7 @@ mp_obj_t ndarray_get_printoptions(void) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj, ndarray_get_printoptions);
-
+#endif
 
 void ndarray_print_row(const mp_print_t *print, uint8_t dtype, uint8_t *array, size_t stride, size_t n) {
     mp_print_str(print, "[");
@@ -478,7 +479,7 @@ void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t 
 
 bool ndarray_is_dense(ndarray_obj_t *ndarray) {
     // returns true, if the array is dense, false otherwise
-    // the array should dense, if the very first stride can be calculated from shape
+    // the array should be dense, if the very first stride can be calculated from shape
     int32_t stride = ndarray->itemsize;
     for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndarray->ndim; i--) {
         stride *= ndarray->shape[i];
@@ -967,38 +968,7 @@ mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t ndarray, size_t cur, mp_obj_iter_
     return MP_OBJ_FROM_PTR(o);
 }
 
-mp_obj_t ndarray_shape(mp_obj_t self_in) {
-    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t *items = m_new(mp_obj_t, self->ndim);
-    for(uint8_t i=0; i < self->ndim; i++) {
-        items[i] = mp_obj_new_int(self->shape[i]);
-    }
-    mp_obj_t tuple = mp_obj_new_tuple(self->ndim, items);
-    m_del(mp_obj_t, items, self->ndim);
-    return tuple;
-}
-
-mp_obj_t ndarray_strides(mp_obj_t self_in) {
-    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t *items = m_new(mp_obj_t, self->ndim);
-    for(int8_t i=0; i < self->ndim; i++) {
-        items[i] = mp_obj_new_int(self->strides[ULAB_MAX_DIMS - self->ndim + i]);
-    }
-    mp_obj_t tuple = mp_obj_new_tuple(self->ndim, items);
-    m_del(mp_obj_t, items, self->ndim);
-    return tuple;
-}
-
-mp_obj_t ndarray_size(mp_obj_t self_in) {
-    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_int(self->len);
-}
-
-mp_obj_t ndarray_itemsize(mp_obj_t self_in) {
-    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(self->itemsize);
-}
-
+#if NDARRAY_HAS_FLATTEN
 mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_order, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_C)} },
@@ -1096,13 +1066,63 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     return MP_OBJ_FROM_PTR(ndarray);
 }
 
+MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_flatten_obj, 1, ndarray_flatten);
+#endif
+
+#if NDARRAY_HAS_ITEMSIZE
+mp_obj_t ndarray_itemsize(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->itemsize);
+}
+#endif
+
+#if NDARRAY_HAS_SHAPE
+mp_obj_t ndarray_shape(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t *items = m_new(mp_obj_t, self->ndim);
+    for(uint8_t i=0; i < self->ndim; i++) {
+        items[i] = mp_obj_new_int(self->shape[i]);
+    }
+    mp_obj_t tuple = mp_obj_new_tuple(self->ndim, items);
+    m_del(mp_obj_t, items, self->ndim);
+    return tuple;
+}
+#endif
+
+#if NDARRAY_HAS_SIZE
+mp_obj_t ndarray_size(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(self->len);
+}
+#endif
+
+#if NDARRAY_HAS_STRIDES
+mp_obj_t ndarray_strides(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t *items = m_new(mp_obj_t, self->ndim);
+    for(int8_t i=0; i < self->ndim; i++) {
+        items[i] = mp_obj_new_int(self->strides[ULAB_MAX_DIMS - self->ndim + i]);
+    }
+    mp_obj_t tuple = mp_obj_new_tuple(self->ndim, items);
+    m_del(mp_obj_t, items, self->ndim);
+    return tuple;
+}
+#endif
+
+#if NDARRAY_HAS_TOBYTES
 mp_obj_t ndarray_tobytes(mp_obj_t self_in) {
     // As opposed to numpy, this function returns a bytearray object with the data pointer (i.e., not a copy)
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // Piping into a bytearray makes sense for dense arrays only,
+    // so bail out, if that is not the case
+    if(!ndarray_is_dense(self)) {
+        mp_raise_ValueError(translate("tobytes can be invoked for dense arrays only"));
+    }
     return mp_obj_new_bytearray_by_ref(self->len, self->array);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_tobytes_obj, ndarray_tobytes);
+#endif
 
 // Binary operations
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
@@ -1454,6 +1474,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 #if ULAB_MAX_DIMS > 1
+#if NDARRAY_HAS_TRANSPOSE
 mp_obj_t ndarray_transpose(mp_obj_t self_in) {
     // TODO: check, what happens to the offset here, if we have a view
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -1470,7 +1491,9 @@ mp_obj_t ndarray_transpose(mp_obj_t self_in) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
+#endif /* NDARRAY_HAS_TRANSPOSE */
 
+#if NDARRAY_HAS_RESHAPE
 mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
     ndarray_obj_t *source = MP_OBJ_TO_PTR(oin);
     if(!MP_OBJ_IS_TYPE(_shape, &mp_type_tuple)) {
@@ -1504,8 +1527,10 @@ mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
-#endif
+#endif /* NDARRAY_HAS_RESHAPE */
+#endif /* ULAB_MAX_DIMS > 1 */
 
+#if ULAB_HAS_NDINFO
 mp_obj_t ndarray_info(mp_obj_t obj_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj_in);
     if(!MP_OBJ_IS_TYPE(ndarray, &ulab_ndarray_type)) {
@@ -1549,6 +1574,7 @@ mp_obj_t ndarray_info(mp_obj_t obj_in) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_info_obj, ndarray_info);
+#endif
 
 mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);

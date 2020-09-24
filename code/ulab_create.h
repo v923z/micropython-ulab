@@ -32,6 +32,11 @@ mp_obj_t create_linspace(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_linspace_obj);
 #endif
 
+#if ULAB_CREATE_HAS_LINSPACE
+mp_obj_t create_logspace(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(create_logspace_obj);
+#endif
+
 #if ULAB_CREATE_HAS_ONES
 mp_obj_t create_ones(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_ones_obj);

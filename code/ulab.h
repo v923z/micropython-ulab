@@ -24,11 +24,25 @@
 
 // The default threshold for pretty printing. These variables can be overwritten
 // at run-time via the set_printoptions() function
+#define ULAB_HAS_PRINTOPTIONS           (1)
 #define NDARRAY_PRINT_THRESHOLD         10
 #define NDARRAY_PRINT_EDGEITEMS         3
 
 // determines, whether pi, and e are defined in ulab itself
 #define ULAB_HAS_MATH_CONSTANTS         (1)
+
+// determines, whether the ndinfo function is available
+#define ULAB_HAS_NDINFO                 (1)
+
+// determines, which ndarray methods are available
+#define NDARRAY_HAS_FLATTEN             (1)
+#define NDARRAY_HAS_ITEMSIZE            (1)
+#define NDARRAY_HAS_RESHAPE             (1)
+#define NDARRAY_HAS_SHAPE               (1)
+#define NDARRAY_HAS_SIZE                (1)
+#define NDARRAY_HAS_STRIDES             (1)
+#define NDARRAY_HAS_TOBYTES             (1)
+#define NDARRAY_HAS_TRANSPOSE           (1)
 
 // the approx module consumes about 4.5 kB of flash space
 #ifndef ULAB_APPROX_MODULE
@@ -56,8 +70,9 @@
 // module constant
 #define ULAB_CREATE_HAS_ARANGE          (1)
 #define ULAB_CREATE_HAS_EYE             (1)
+#define ULAB_CREATE_HAS_FULL            (0) // not implemented, set it to 0 for now
 #define ULAB_CREATE_HAS_LINSPACE        (1)
-#define ULAB_CREATE_HAS_LOGSPACE        (0) // not implemented, set it to 0 for now
+#define ULAB_CREATE_HAS_LOGSPACE        (1)
 #define ULAB_CREATE_HAS_ONES            (1)
 #define ULAB_CREATE_HAS_ZEROS           (1)
 
