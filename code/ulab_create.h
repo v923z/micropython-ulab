@@ -27,12 +27,17 @@ MP_DECLARE_CONST_FUN_OBJ_KW(create_eye_obj);
 #endif
 #endif
 
+#if ULAB_CREATE_HAS_FULL
+mp_obj_t create_full(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(create_full_obj);
+#endif
+
 #if ULAB_CREATE_HAS_LINSPACE
 mp_obj_t create_linspace(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_linspace_obj);
 #endif
 
-#if ULAB_CREATE_HAS_LINSPACE
+#if ULAB_CREATE_HAS_LOGSPACE
 mp_obj_t create_logspace(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_logspace_obj);
 #endif

@@ -113,6 +113,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
             { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
         #endif
     #endif /* ULAB_MAX_DIMS */
+    #if ULAB_CREATE_HAS_FULL
+        { MP_ROM_QSTR(MP_QSTR_full), (mp_obj_t)&create_full_obj },
+    #endif
     #if ULAB_CREATE_HAS_LINSPACE
         { MP_ROM_QSTR(MP_QSTR_linspace), (mp_obj_t)&create_linspace_obj },
     #endif

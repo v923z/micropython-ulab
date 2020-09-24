@@ -70,13 +70,13 @@
 // module constant
 #define ULAB_CREATE_HAS_ARANGE          (1)
 #define ULAB_CREATE_HAS_EYE             (1)
-#define ULAB_CREATE_HAS_FULL            (0) // not implemented, set it to 0 for now
+#define ULAB_CREATE_HAS_FULL            (1)
 #define ULAB_CREATE_HAS_LINSPACE        (1)
 #define ULAB_CREATE_HAS_LOGSPACE        (1)
 #define ULAB_CREATE_HAS_ONES            (1)
 #define ULAB_CREATE_HAS_ZEROS           (1)
 
-// FFT costs about 2.5 kB of flash space
+// FFT costs about 2.5 kB of flash space, independent of ULAB_MAX_DIMS
 // Since all FFT module functions are just interfaces to the same kernel,
 // with virtually no overhead, there is no point in defining ULAB_FFT_HAS_* constants
 #ifndef ULAB_FFT_MODULE

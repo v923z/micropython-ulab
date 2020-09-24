@@ -17,8 +17,8 @@
 #if ULAB_CREATE_HAS_ONES | ULAB_CREATE_HAS_ZEROS
 static mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} } ,
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } } ,
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -195,6 +195,56 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 #endif /* ULAB_CREATE_HAS_EYE */
 #endif /* ULAB_MAX_DIMS > 1 */
+
+#if ULAB_CREATE_HAS_FULL
+//| def full(shape: Union[int, Tuple[int, int]], fill_value, *, dtype: _DType = float) -> array:
+//|    """
+//|    .. param: shape
+//|       Shape of the array, either an integer (for a 1-D array) or a tuple of integers (for tensors of higher rank)
+//|    .. param: fill_value
+//|       scalar, the value with which the array is filled
+//|    .. param: dtype
+//|       Type of values in the array
+//|
+//|    Return a new array of the given shape with all elements set to 0."""
+//|    ...
+//|
+
+mp_obj_t create_full(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    uint8_t dtype = args[2].u_int;
+    if(!MP_OBJ_IS_INT(args[0].u_obj) && !MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
+        mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
+    }
+    ndarray_obj_t *ndarray = NULL;
+    if(MP_OBJ_IS_INT(args[0].u_obj)) {
+        size_t n = mp_obj_get_int(args[0].u_obj);
+        ndarray = ndarray_new_linear_array(n, dtype);
+    } else if(MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
+        mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0].u_obj);
+        if(tuple->len != 2) {
+            mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
+        }
+        ndarray = ndarray_new_ndarray_from_tuple(tuple, dtype);
+    }
+    mp_obj_t fill_value = args[1].u_obj;
+    for(size_t i=0; i < ndarray->len; i++) {
+        mp_binary_set_val_array(dtype, ndarray->array, i, fill_value);
+    }
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(create_full_obj, 0, create_full);
+#endif
+
 
 #if ULAB_CREATE_HAS_LINSPACE
 //| def linspace(
