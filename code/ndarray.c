@@ -1312,8 +1312,6 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
         case MP_BINARY_OP_SUBTRACT:
         case MP_BINARY_OP_TRUE_DIVIDE:
 //      case MP_BINARY_OP_POWER:
-            // TODO: I believe, this part can be made significantly smaller (compiled size)
-            // by doing only the typecasting in the large ifs, and moving the loops outside
             // These are the upcasting rules
             // float always becomes float
             // operation on identical types preserves type
