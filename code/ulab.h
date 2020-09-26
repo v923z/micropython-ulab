@@ -34,6 +34,18 @@
 // determines, whether the ndinfo function is available
 #define ULAB_HAS_NDINFO                 (1)
 
+// the ndarray binary operators
+#define NDARRAY_HAS_BINARY_OP_ADD           (1)
+#define NDARRAY_HAS_BINARY_OP_EQUAL         (1)
+#define NDARRAY_HAS_BINARY_OP_LESS          (1)
+#define NDARRAY_HAS_BINARY_OP_LESS_EQUAL    (1)
+#define NDARRAY_HAS_BINARY_OP_MORE          (1)
+#define NDARRAY_HAS_BINARY_OP_MORE_EQUAL    (1)
+#define NDARRAY_HAS_BINARY_OP_MULTIPLY      (1)
+#define NDARRAY_HAS_BINARY_OP_NOT_EQUAL     (1)
+#define NDARRAY_HAS_BINARY_OP_SUBTRACT      (1)
+#define NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE   (1) 
+
 // determines, which ndarray methods are available
 #define NDARRAY_HAS_FLATTEN             (1)
 #define NDARRAY_HAS_ITEMSIZE            (1)

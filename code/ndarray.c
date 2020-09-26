@@ -19,6 +19,7 @@
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "ndarray.h"
+#include "ndarray_operators.h"
 
 mp_uint_t ndarray_print_threshold = NDARRAY_PRINT_THRESHOLD;
 mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
@@ -1236,157 +1237,61 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
         m_del(int32_t, rstrides, ULAB_MAX_DIMS);
     }
 
-    uint8_t *larray = (uint8_t *)lhs->array;
-    uint8_t *rarray = (uint8_t *)rhs->array;
-
     switch(op) {
+        #if NDARRAY_HAS_BINARY_OP_LESS
         case MP_BINARY_OP_LESS:
             // here we simply swap the operands
-            return ndarray_binary_op(MP_BINARY_OP_MORE, rhs, lhs);
+            return ndarray_binary_more(rhs, lhs, ndim, shape, rstrides, lstrides, MP_BINARY_OP_MORE);
             break;
-
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_LESS_EQUAL
         case MP_BINARY_OP_LESS_EQUAL:
             // here we simply swap the operands
-            return ndarray_binary_op(MP_BINARY_OP_MORE_EQUAL, rhs, lhs);
+            return ndarray_binary_more(rhs, lhs, ndim, shape, rstrides, lstrides, MP_BINARY_OP_MORE_EQUAL);
             break;
-
+        #endif
         // by separating the associative operators, we can save a lot of flash space,
         // because the operands can simply be swapped for half of the cases
+        #if NDARRAY_HAS_BINARY_OP_EQUAL
         case MP_BINARY_OP_EQUAL:
+            return ndarray_binary_equality(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_EQUAL);
+            break;
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_NOT_EQUAL
         case MP_BINARY_OP_NOT_EQUAL:
+            return ndarray_binary_equality(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_NOT_EQUAL);
+            break;
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_ADD
         case MP_BINARY_OP_ADD:
+            return ndarray_binary_add(lhs, rhs, ndim, shape, lstrides, rstrides);
+            break;
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_MULTIPLY
         case MP_BINARY_OP_MULTIPLY:
-            if(lhs->dtype == NDARRAY_UINT8) {
-                if(rhs->dtype == NDARRAY_UINT8) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_UINT8, uint8_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT8) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_UINT16) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                }
-            } else if(lhs->dtype == NDARRAY_INT8) {
-                if(rhs->dtype == NDARRAY_INT8) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_INT8, int8_t, int8_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_UINT16) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else {
-                    ndarray_binary_op(op, rhs, lhs);
-                }
-            } else if(lhs->dtype == NDARRAY_UINT16) {
-                if(rhs->dtype == NDARRAY_UINT16) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else {
-                    ndarray_binary_op(op, rhs, lhs);
-                }
-            } else if(lhs->dtype == NDARRAY_INT16) {
-                if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else {
-                    ndarray_binary_op(op, rhs, lhs);
-                }
-            } else if(lhs->dtype == NDARRAY_FLOAT) {
-                if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_ASSOC_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else {
-                    ndarray_binary_op(op, rhs, lhs);
-                }
-            }
+            return ndarray_binary_multiply(lhs, rhs, ndim, shape, lstrides, rstrides);
             break;
-
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_MORE
         case MP_BINARY_OP_MORE:
-        case MP_BINARY_OP_MORE_EQUAL:
-        case MP_BINARY_OP_SUBTRACT:
-        case MP_BINARY_OP_TRUE_DIVIDE:
-//      case MP_BINARY_OP_POWER:
-            // These are the upcasting rules
-            // float always becomes float
-            // operation on identical types preserves type
-            // uint8 + int8 => int16
-            // uint8 + int16 => int16
-            // uint8 + uint16 => uint16
-            // int8 + int16 => int16
-            // int8 + uint16 => uint16
-            // uint16 + int16 => float
-            // The parameters of RUN_BINARY_LOOP are
-            // typecode of result, type_out, type_left, type_right, lhs operand, rhs operand, operator
-            if(lhs->dtype == NDARRAY_UINT8) {
-                if(rhs->dtype == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT8, uint8_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                }
-            } else if(lhs->dtype == NDARRAY_INT8) {
-                if(rhs->dtype == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT8, int8_t, int8_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                }
-            } else if(lhs->dtype == NDARRAY_UINT16) {
-                if(rhs->dtype == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                }
-            } else if(lhs->dtype == NDARRAY_INT16) {
-                if(rhs->dtype == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, uint8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, int16_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_INT16, int16_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                }
-            } else if(lhs->dtype == NDARRAY_FLOAT) {
-                if(rhs->dtype == NDARRAY_UINT8) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT8) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, int8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_UINT16) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_INT16) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                } else if(rhs->dtype == NDARRAY_FLOAT) {
-                    RUN_BINARY_LOOP(NDARRAY_FLOAT, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-                }
-            }
-            return MP_OBJ_NULL;
+            return ndarray_binary_more(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_MORE);
             break;
-
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_MORE_EQUAL
+            return ndarray_binary_more(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_MORE_EQUAL);
+        case MP_BINARY_OP_MORE_EQUAL:
+            break;
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_SUBTRACT
+        case MP_BINARY_OP_SUBTRACT:
+            return ndarray_binary_subtract(lhs, rhs, ndim, shape, lstrides, rstrides);
+            break;
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE
+        case MP_BINARY_OP_TRUE_DIVIDE:
+            return ndarray_binary_true_divide(lhs, rhs, ndim, shape, lstrides, rstrides);
+            break;
+        #endif
         default:
             return MP_OBJ_NULL; // op not supported
             break;

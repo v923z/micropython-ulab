@@ -179,16 +179,15 @@ mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t f
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 
 #if ULAB_MAX_DIMS == 1
-#define BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)results->array;\
     size_t l = 0;\
     do {\
-        *((type_out *)(array)) = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
-        (array) += sizeof(type_out);\
+        *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
-    return MP_OBJ_FROM_PTR((results));\
 
 #define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
     size_t l = 0;\
@@ -198,7 +197,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
-    return MP_OBJ_FROM_PTR((results));\
 
 #define ASSIGNMENT_LOOP(view_type, value_type, view, view_array, value, value_array, strides)\
     size_t l = 0;\
@@ -212,13 +210,13 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 #endif /* ULAB_MAX_DIMS == 1 */
 
 #if ULAB_MAX_DIMS == 2
-#define BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)(results)->array;\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            *((type_out *)(array)) = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
-            (array) += sizeof(type_out);\
+            *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
             (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
             (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
             l++;\
@@ -229,7 +227,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
-    return MP_OBJ_FROM_PTR((results));\
 
 #define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
     size_t k = 0;\
@@ -247,7 +244,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
-    return MP_OBJ_FROM_PTR((results));\
 
 #define ASSIGNMENT_LOOP(view_type, value_type, view, view_array, value, value_array, strides)\
     size_t k = 0;\
@@ -269,15 +265,15 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 #endif /* ULAB_MAX_DIMS == 2 */
 
 #if ULAB_MAX_DIMS == 3
-#define BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)results->array;\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                *((type_out *)(array)) = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
-                (array) += sizeof(type_out);\
+                *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
                 (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
                 (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
                 l++;\
@@ -294,7 +290,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
-    return MP_OBJ_FROM_PTR((results));\
 
 #define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
     size_t j = 0;\
@@ -320,7 +315,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
-    return MP_OBJ_FROM_PTR((results));\
 
 #define ASSIGNMENT_LOOP(view_type, value_type, view, view_array, value, value_array, strides)\
     size_t j = 0;\
@@ -350,7 +344,8 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 #endif /* ULAB_MAX_DIMS == 3 */
 
 #if ULAB_MAX_DIMS == 4
-#define BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)results->array;\
     size_t i = 0;\
     do {\
         size_t j = 0;\
@@ -359,8 +354,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
             do {\
                 size_t l = 0;\
                 do {\
-                    *((type_out *)(array)) = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
-                    (array) += sizeof(type_out);\
+                    *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
                     (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
                     (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
                     l++;\
@@ -383,7 +377,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         i++;\
     } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
-    return MP_OBJ_FROM_PTR((results));\
 
 #define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
     size_t i = 0;\
@@ -417,7 +410,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         i++;\
     } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
-    return MP_OBJ_FROM_PTR((results));\
 
 #define ASSIGNMENT_LOOP(view_type, value_type, view, view_array, value, value_array, strides)\
     size_t i = 0;\
@@ -454,76 +446,4 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
     
 #endif /* ULAB_MAX_DIMS == 4 */
 
-#define RUN_ASSOC_BINARY_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
-    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
-        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
-        uint8_t *array = (uint8_t *)results->array;\
-        if((op) == MP_BINARY_OP_ADD) {\
-            BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, +);\
-        } else if((op) == MP_BINARY_OP_MULTIPLY) {\
-            BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, *);\
-        }\
-    } else if(((op) == MP_BINARY_OP_EQUAL) || ((op) == MP_BINARY_OP_NOT_EQUAL)) {\
-        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_UINT8);\
-        uint8_t *array = (uint8_t *)results->array;\
-        if((op) == MP_BINARY_OP_EQUAL) {\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, ==);\
-        } else if((op) == MP_BINARY_OP_NOT_EQUAL){\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, !=);\
-        }\
-    }\
-} while(0)
-
-#define RUN_BINARY_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
-    if(((op) == MP_BINARY_OP_SUBTRACT)) {\
-        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
-        uint8_t *array = (uint8_t *)results->array;\
-        BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, -);\
-    } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
-        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_FLOAT);\
-        uint8_t *array = (uint8_t *)results->array;\
-        BINARY_LOOP(results, array, mp_float_t, type_left, type_right, larray, lstrides, rarray, rstrides, /);\
-    } else if(((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL)) {\
-        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_UINT8);\
-        uint8_t *array = (uint8_t *)results->array;\
-        if((op) == MP_BINARY_OP_MORE) {\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, >);\
-        } else if((op) == MP_BINARY_OP_MORE_EQUAL){\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, >=);\
-        }\
-    }\
-} while(0)
-
-/*
-#define RUN_BINARY_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
-    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY)) {\
-        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
-        uint8_t *array = (uint8_t *)results->array;\
-        if((op) == MP_BINARY_OP_ADD) {\
-            BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, +);\
-        } else if((op) == MP_BINARY_OP_SUBTRACT) {\
-            BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, -);\
-        } else if((op) == MP_BINARY_OP_MULTIPLY) {\
-            BINARY_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, *);\
-        }\
-    } else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
-        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_FLOAT);\
-        uint8_t *array = (uint8_t *)results->array;\
-        BINARY_LOOP(results, array, mp_float_t, type_left, type_right, larray, lstrides, rarray, rstrides, /);\
-    } else if(((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL) || \
-                ((op) == MP_BINARY_OP_EQUAL) || ((op) == MP_BINARY_OP_NOT_EQUAL)) {\
-        ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), NDARRAY_UINT8);\
-        uint8_t *array = (uint8_t *)results->array;\
-        if((op) == MP_BINARY_OP_EQUAL) {\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, ==);\
-        } else if((op) == MP_BINARY_OP_NOT_EQUAL){\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, !=);\
-        } else if((op) == MP_BINARY_OP_MORE) {\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, >);\
-        } else if((op) == MP_BINARY_OP_MORE_EQUAL){\
-            EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, >=);\
-        }\
-    }\
-} while(0)
-*/
 #endif
