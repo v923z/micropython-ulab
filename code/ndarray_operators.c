@@ -1,5 +1,9 @@
+#include <math.h>
+
 #include "py/objtuple.h"
 #include "ndarray.h"
+#include "ndarray_operators.h"
+#include "ulab.h"
 
 /*
 	This file contains the actual implementations of the various
@@ -609,3 +613,79 @@ ndarray_obj_t *ndarray_binary_true_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs
     return MP_OBJ_FROM_PTR(results);
 }
 #endif /* NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE */
+
+#if NDARRAY_HAS_BINARY_OP_POWER
+ndarray_obj_t *ndarray_binary_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
+                                            uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
+
+	// TODO: numpy upcasts the results to int64, if the inputs are of integer type,
+	// while we always return a float array. Is upcasting to int16 sensible for integer types?
+    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
+    uint8_t *larray = (uint8_t *)lhs->array;
+    uint8_t *rarray = (uint8_t *)rhs->array;
+
+    if(lhs->dtype == NDARRAY_UINT8) {
+        if(rhs->dtype == NDARRAY_UINT8) {
+            POWER_LOOP(results, mp_float_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT8) {
+            POWER_LOOP(results, mp_float_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_UINT16) {
+            POWER_LOOP(results, mp_float_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT16) {
+            POWER_LOOP(results, mp_float_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_FLOAT) {
+            POWER_LOOP(results, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides);
+        }
+    } else if(lhs->dtype == NDARRAY_INT8) {
+        if(rhs->dtype == NDARRAY_UINT8) {
+            POWER_LOOP(results, mp_float_t, int8_t, uint8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT8) {
+            POWER_LOOP(results, mp_float_t, int8_t, int8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_UINT16) {
+            POWER_LOOP(results, mp_float_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT16) {
+            POWER_LOOP(results, mp_float_t, int8_t, int16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_FLOAT) {
+            POWER_LOOP(results, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides);
+        }
+    } else if(lhs->dtype == NDARRAY_UINT16) {
+        if(rhs->dtype == NDARRAY_UINT8) {
+            POWER_LOOP(results, mp_float_t, uint16_t, uint8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT8) {
+            POWER_LOOP(results, mp_float_t, uint16_t, int8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_UINT16) {
+            POWER_LOOP(results, mp_float_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT16) {
+            POWER_LOOP(results, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_FLOAT) {
+            POWER_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides);
+        }
+    } else if(lhs->dtype == NDARRAY_INT16) {
+        if(rhs->dtype == NDARRAY_UINT8) {
+            POWER_LOOP(results, mp_float_t, int16_t, uint8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT8) {
+            POWER_LOOP(results, mp_float_t, int16_t, int8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_UINT16) {
+            POWER_LOOP(results, mp_float_t, int16_t, uint16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT16) {
+            POWER_LOOP(results, mp_float_t, int16_t, int16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_FLOAT) {
+            POWER_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides);
+        }
+    } else if(lhs->dtype == NDARRAY_FLOAT) {
+        if(rhs->dtype == NDARRAY_UINT8) {
+            POWER_LOOP(results, mp_float_t, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT8) {
+            POWER_LOOP(results, mp_float_t, mp_float_t, int8_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_UINT16) {
+            POWER_LOOP(results, mp_float_t, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT16) {
+            POWER_LOOP(results, mp_float_t, mp_float_t, int16_t, larray, lstrides, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_FLOAT) {
+            POWER_LOOP(results, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides);
+        }
+    }
+
+    return MP_OBJ_FROM_PTR(results);
+}
+#endif /* NDARRAY_HAS_BINARY_OP_POWER */
