@@ -1198,6 +1198,7 @@ bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim
     return true;
 }
 
+#if NDARRAY_HAS_BINARY_OPS
 mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     // if the ndarray stands on the right hand side of the expression, simply swap the operands
     ndarray_obj_t *lhs, *rhs;
@@ -1303,60 +1304,18 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     }
     return MP_OBJ_NULL;
 }
+#endif /* NDARRAY_HAS_BINARY_OPS */
 
+#if NDARRAY_HAS_UNARY_OPS
 mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
     ndarray_obj_t *ndarray = NULL;
+
     switch (op) {
-        case MP_UNARY_OP_LEN:
-            if(self->ndim > 1) {
-                return mp_obj_new_int(self->ndim);
-            } else {
-                return mp_obj_new_int(self->len);
-            }
-            break;
-
-        case MP_UNARY_OP_INVERT:
-            if(self->dtype == NDARRAY_FLOAT) {
-                mp_raise_ValueError(translate("operation is not supported for given type"));
-            }
-            // we can invert the content byte by byte, no need to distinguish between different dtypes
-            ndarray = ndarray_copy_view(self); // from this point, this is a dense copy
-            uint8_t *array = (uint8_t *)ndarray->array;
-            if(ndarray->boolean) {
-                for(size_t i=0; i < ndarray->len; i++, array++) *array = *array ^ 0x01;
-            } else {
-                for(size_t i=0; i < ndarray->len*itemsize; i++, array++) *array ^= 0xFF;
-            }
-            return MP_OBJ_FROM_PTR(ndarray);
-            break;
-
-        case MP_UNARY_OP_NEGATIVE:
-            ndarray = ndarray_copy_view(self); // from this point, this is a dense copy
-            if(self->dtype == NDARRAY_UINT8) {
-                uint8_t *array = (uint8_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
-            } else if(self->dtype == NDARRAY_INT8) {
-                int8_t *array = (int8_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
-            } else if(self->dtype == NDARRAY_UINT16) {
-                uint16_t *array = (uint16_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
-            } else if(self->dtype == NDARRAY_INT16) {
-                int16_t *array = (int16_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
-            } else {
-                mp_float_t *array = (mp_float_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
-            }
-            return MP_OBJ_FROM_PTR(ndarray);
-            break;
-
-        case MP_UNARY_OP_POSITIVE:
-            return MP_OBJ_FROM_PTR(ndarray_copy_view(self));
-
+        #if NDARRAY_HAS_UNARY_OP_ABS
         case MP_UNARY_OP_ABS:
+            (void)itemsize;
             ndarray = ndarray_copy_view(self);
             // if Booleam, NDARRAY_UINT8, or NDARRAY_UINT16, there is nothing to do
             if(self->dtype == NDARRAY_INT8) {
@@ -1377,9 +1336,65 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             }
             return MP_OBJ_FROM_PTR(ndarray);
             break;
-        default: return MP_OBJ_NULL; // operator not supported
+        #endif
+        #if NDARRAY_HAS_UNARY_OP_INVERT
+        case MP_UNARY_OP_INVERT:
+            if(self->dtype == NDARRAY_FLOAT) {
+                mp_raise_ValueError(translate("operation is not supported for given type"));
+            }
+            // we can invert the content byte by byte, no need to distinguish between different dtypes
+            ndarray = ndarray_copy_view(self); // from this point, this is a dense copy
+            uint8_t *array = (uint8_t *)ndarray->array;
+            if(ndarray->boolean) {
+                for(size_t i=0; i < ndarray->len; i++, array++) *array = *array ^ 0x01;
+            } else {
+                for(size_t i=0; i < ndarray->len*itemsize; i++, array++) *array ^= 0xFF;
+            }
+            return MP_OBJ_FROM_PTR(ndarray);
+            break;
+        #endif
+        #if NDARRAY_HAS_UNARY_OP_LEN
+        case MP_UNARY_OP_LEN:
+            if(self->ndim > 1) {
+                return mp_obj_new_int(self->ndim);
+            } else {
+                return mp_obj_new_int(self->len);
+            }
+            break;
+        #endif
+        #if NDARRAY_HAS_UNARY_OP_NEGATIVE
+        case MP_UNARY_OP_NEGATIVE:
+            ndarray = ndarray_copy_view(self); // from this point, this is a dense copy
+            if(self->dtype == NDARRAY_UINT8) {
+                uint8_t *array = (uint8_t *)ndarray->array;
+                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
+            } else if(self->dtype == NDARRAY_INT8) {
+                int8_t *array = (int8_t *)ndarray->array;
+                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
+            } else if(self->dtype == NDARRAY_UINT16) {
+                uint16_t *array = (uint16_t *)ndarray->array;
+                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
+            } else if(self->dtype == NDARRAY_INT16) {
+                int16_t *array = (int16_t *)ndarray->array;
+                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
+            } else {
+                mp_float_t *array = (mp_float_t *)ndarray->array;
+                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
+            }
+            return MP_OBJ_FROM_PTR(ndarray);
+            break;
+        #endif
+        #if NDARRAY_HAS_UNARY_OP_POSITIVE
+        case MP_UNARY_OP_POSITIVE:
+            return MP_OBJ_FROM_PTR(ndarray_copy_view(self));
+        #endif
+
+        default:
+            return MP_OBJ_NULL; // operator not supported
+            break;
     }
 }
+#endif /* NDARRAY_HAS_UNARY_OPS */
 
 #if ULAB_MAX_DIMS > 1
 #if NDARRAY_HAS_TRANSPOSE

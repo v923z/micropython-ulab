@@ -88,8 +88,12 @@ const mp_obj_type_t ulab_ndarray_type = {
     .make_new = ndarray_make_new,
     .subscr = ndarray_subscr,
     .getiter = ndarray_getiter,
+    #if NDARRAY_HAS_UNARY_OPS
     .unary_op = ndarray_unary_op,
+    #endif
+    #if NDARRAY_HAS_BINARY_OPS
     .binary_op = ndarray_binary_op,
+    #endif
     .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };

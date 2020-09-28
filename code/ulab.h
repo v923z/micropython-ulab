@@ -35,6 +35,7 @@
 #define ULAB_HAS_NDINFO                 (1)
 
 // the ndarray binary operators
+#define NDARRAY_HAS_BINARY_OPS              (1)
 #define NDARRAY_HAS_BINARY_OP_ADD           (1)
 #define NDARRAY_HAS_BINARY_OP_EQUAL         (1)
 #define NDARRAY_HAS_BINARY_OP_LESS          (1)
@@ -46,6 +47,14 @@
 #define NDARRAY_HAS_BINARY_OP_POWER         (1)
 #define NDARRAY_HAS_BINARY_OP_SUBTRACT      (1)
 #define NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE   (1) 
+
+// the ndarray unary operators
+#define NDARRAY_HAS_UNARY_OPS               (1)
+#define NDARRAY_HAS_UNARY_OP_ABS            (1)
+#define NDARRAY_HAS_UNARY_OP_INVERT         (1)
+#define NDARRAY_HAS_UNARY_OP_LEN            (1)
+#define NDARRAY_HAS_UNARY_OP_NEGATIVE       (1)
+#define NDARRAY_HAS_UNARY_OP_POSITIVE       (1)
 
 // determines, which ndarray methods are available
 #define NDARRAY_HAS_FLATTEN             (1)
