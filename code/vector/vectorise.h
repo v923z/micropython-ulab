@@ -69,8 +69,7 @@ typedef struct _vectorized_function_obj_t {
             do {\
                 size_t l = 0;\
                 do {\
-                    *((mp_float_t *)(array)) = f(*((type *)(sarray)));\
-                    (array) += sizeof(mp_float_t);\
+                    *array++ = f(*((type *)(sarray)));\
                     (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
                     l++;\
                 } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
@@ -95,8 +94,7 @@ typedef struct _vectorized_function_obj_t {
         do {\
             size_t l = 0;\
             do {\
-                *((mp_float_t *)(array)) = f(*((type *)(sarray)));\
-                (array) += sizeof(mp_float_t);\
+                *array++ = f(*((type *)(sarray)));\
                 (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
@@ -115,8 +113,7 @@ typedef struct _vectorized_function_obj_t {
     do {\
         size_t l = 0;\
         do {\
-            *((mp_float_t *)(array)) = f(*((type *)(sarray)));\
-            (array) += sizeof(mp_float_t);\
+            *array++ = f(*((type *)(sarray)));\
             (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
             l++;\
         } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
@@ -130,8 +127,7 @@ typedef struct _vectorized_function_obj_t {
 #define ITERATE_VECTOR(type, array, source, sarray) do {\
     size_t l = 0;\
     do {\
-        *((mp_float_t *)(array)) = f(*((type *)(sarray)));\
-        (array) += sizeof(mp_float_t);\
+        *array++ = f(*((type *)(sarray)));\
         (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\

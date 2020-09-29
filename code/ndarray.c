@@ -285,6 +285,33 @@ void ndarray_fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     }
 }
 
+#if ULAB_HAS_FUNCTION_ITERATOR
+size_t *ndarray_new_coords(uint8_t ndim) {
+    size_t *coords = m_new(size_t, ndim);
+    memset(coords, 0, ndim*sizeof(size_t));
+    return coords;
+}
+
+void ndarray_rewind_array(uint8_t ndim, uint8_t *array, size_t *shape, int32_t *strides, size_t *coords) {
+    // resets the data pointer of a single array, whenever an axis is full
+    // since we always iterate over the very last axis, we have to keep track of
+    // the last ndim-2 axes only
+    array -= shape[ULAB_MAX_DIMS - 1] * strides[ULAB_MAX_DIMS - 1];
+    array += strides[ULAB_MAX_DIMS - 2];
+    for(uint8_t i=1; i < ndim-1; i++) {
+        coords[ULAB_MAX_DIMS - 1 - i] += 1;
+        if(coords[ULAB_MAX_DIMS - 1 - i] == shape[ULAB_MAX_DIMS - 1 - i]) { // we are at a dimension boundary
+            array -= shape[ULAB_MAX_DIMS - 1 - i] * strides[ULAB_MAX_DIMS - 1 - i];
+            array += strides[ULAB_MAX_DIMS - 2 - i];
+            coords[ULAB_MAX_DIMS - 1 - i] = 0;
+            coords[ULAB_MAX_DIMS - 2 - i] += 1;
+        } else { // coordinates can change only, if the last coordinate changes
+            break;
+        }
+    }
+}
+#endif
+
 static int32_t *strides_from_shape(size_t *shape, uint8_t dtype) {
     // returns a strides array that corresponds to a dense array with the prescribed shape
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);

@@ -43,7 +43,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
         uint8_t *sarray = (uint8_t *)source->array;
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
-        uint8_t *array = (uint8_t *)ndarray->array;
+        mp_float_t *array = (mp_float_t *)ndarray->array;
         if(source->dtype == NDARRAY_UINT8) {
             ITERATE_VECTOR(uint8_t, array, source, sarray);
         } else if(source->dtype == NDARRAY_INT8) {

@@ -22,6 +22,11 @@
 // Possible values lie between 1, and 4, inclusive
 #define ULAB_MAX_DIMS                   2
 
+// By setting this constant to 1, iteration over array dimensions will be implemented
+// as a function (ndarray_rewind_array), instead of writing out the loops in macros
+// This reduces firmware size at the expense of speed
+#define ULAB_HAS_FUNCTION_ITERATOR      (0)
+
 // The default threshold for pretty printing. These variables can be overwritten
 // at run-time via the set_printoptions() function
 #define ULAB_HAS_PRINTOPTIONS           (1)
