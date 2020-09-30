@@ -27,6 +27,13 @@
 // This reduces firmware size at the expense of speed
 #define ULAB_HAS_FUNCTION_ITERATOR      (0)
 
+// If NDARRAY_IS_ITERABLE is 1, the ndarray object defines its own iterator function
+// This option saves approx. 250 bytes of flash space
+#define NDARRAY_IS_ITERABLE             (1)
+
+// Slicing can be switched off by setting this variable to 0
+#define NDARRAY_IS_SLICEABLE            (1)
+
 // The default threshold for pretty printing. These variables can be overwritten
 // at run-time via the set_printoptions() function
 #define ULAB_HAS_PRINTOPTIONS           (1)

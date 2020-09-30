@@ -86,8 +86,12 @@ const mp_obj_type_t ulab_ndarray_type = {
     .name = MP_QSTR_ndarray,
     .print = ndarray_print,
     .make_new = ndarray_make_new,
+    #if NDARRAY_IS_SLICEABLE
     .subscr = ndarray_subscr,
+    #endif
+    #if NDARRAY_IS_ITERABLE
     .getiter = ndarray_getiter,
+    #endif
     #if NDARRAY_HAS_UNARY_OPS
     .unary_op = ndarray_unary_op,
     #endif

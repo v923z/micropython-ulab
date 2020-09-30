@@ -770,6 +770,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
 }
 #endif
 
+#if NDARRAY_IS_SLICEABLE
 static size_t slice_length(mp_bound_slice_t slice) {
     ssize_t len, correction = 1;
     if(slice.step > 0) correction = -1;
@@ -948,6 +949,9 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
     return mp_const_none;
 }
+#endif /* NDARRAY_IS_SLICEABLE */
+
+#if NDARRAY_IS_ITERABLE
 
 // itarray iterator
 mp_obj_t ndarray_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
@@ -995,6 +999,7 @@ mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t ndarray, size_t cur, mp_obj_iter_
     o->cur = cur;
     return MP_OBJ_FROM_PTR(o);
 }
+#endif /* NDARRAY_IS_ITERABLE */
 
 #if NDARRAY_HAS_FLATTEN
 mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -1014,7 +1019,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     ndarray_obj_t *ndarray = ndarray_new_linear_array(self->len, self->dtype);
     uint8_t *array = (uint8_t *)ndarray->array;
 
-    if(memcmp(order, "C", 1) == 0) {
+    if(memcmp(order, "C", 1) == 0) { // C-type ordering
         #if ULAB_MAX_DIMS > 3
         size_t i = 0;
         do {
@@ -1052,7 +1057,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
             i++;
         } while(i <  self->shape[ULAB_MAX_DIMS - 4]);
         #endif
-    } else {
+    } else { // 'F', Fortran-type ordering
         #if ULAB_MAX_DIMS > 3
         size_t i = 0;
         do {
