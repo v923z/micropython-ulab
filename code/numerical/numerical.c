@@ -540,9 +540,8 @@ static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
         dtype = NDARRAY_INT16;
     } else if(((a->dtype == NDARRAY_INT8) && (b->dtype == NDARRAY_UINT16)) || ((a->dtype == NDARRAY_UINT16) && (b->dtype == NDARRAY_INT8))) {
         dtype = NDARRAY_UINT16;
-    } else if(((a->dtype == NDARRAY_UINT16) && (b->dtype == NDARRAY_INT16)) || ((a->dtype == NDARRAY_INT16) && (b->dtype == NDARRAY_UINT16))) {
-        dtype = NDARRAY_FLOAT;
     }
+
     ndarray_obj_t *ndarray = ndarray_new_linear_array(3, dtype);
     if(dtype == NDARRAY_UINT8) {
         uint8_t *array = (uint8_t *)ndarray->array;
