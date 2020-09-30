@@ -568,6 +568,7 @@ extern mp_obj_module_t ulab_numerical_module;
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmax_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmin_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argsort_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(numerical_cross_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_diff_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_flip_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_max_obj);

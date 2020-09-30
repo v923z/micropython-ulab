@@ -489,6 +489,84 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 #endif
 
+#if ULAB_NUMERICAL_HAS_CROSS
+//| def cross(a: ulab.array, b: ulab.array) -> ulab.array:
+//|     """Return the cross product of two vectors of length 3"""
+//|     ...
+//|
+
+static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
+    if (!MP_OBJ_IS_TYPE(_a, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_b, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("arguments must be ndarrays"));
+    }
+    ndarray_obj_t *a = MP_OBJ_TO_PTR(_a);
+    ndarray_obj_t *b = MP_OBJ_TO_PTR(_b);
+    if((a->ndim != 1) || (b->ndim != 1) || (a->len != b->len) || (a->len != 3)) {
+        mp_raise_ValueError(translate("cross is defined for 1D arrays of length 3"));
+    }
+
+    mp_float_t *results = m_new(mp_float_t, 3);
+    results[0] = ndarray_get_float_index(a->array, a->dtype, 1) * ndarray_get_float_index(b->array, b->dtype, 2);
+    results[0] -= ndarray_get_float_index(a->array, a->dtype, 2) * ndarray_get_float_index(b->array, b->dtype, 1);
+    results[1] = -ndarray_get_float_index(a->array, a->dtype, 0) * ndarray_get_float_index(b->array, b->dtype, 2);
+    results[1] += ndarray_get_float_index(a->array, a->dtype, 2) * ndarray_get_float_index(b->array, b->dtype, 0);
+    results[2] = ndarray_get_float_index(a->array, a->dtype, 0) * ndarray_get_float_index(b->array, b->dtype, 1);
+    results[2] -= ndarray_get_float_index(a->array, a->dtype, 1) * ndarray_get_float_index(b->array, b->dtype, 0);
+
+    /* The upcasting happens here with the rules
+
+        - if one of the operarands is a float, the result is always float
+        - operation on identical types preserves type
+
+        uint8 + int8 => int16
+        uint8 + int16 => int16
+        uint8 + uint16 => uint16
+        int8 + int16 => int16
+        int8 + uint16 => uint16
+        uint16 + int16 => float
+
+    */
+
+    uint8_t dtype = NDARRAY_FLOAT;
+    if(a->dtype == b->dtype) {
+        dtype = a->dtype;
+    } else if(((a->dtype == NDARRAY_UINT8) && (b->dtype == NDARRAY_INT8)) || ((a->dtype == NDARRAY_INT8) && (b->dtype == NDARRAY_UINT8))) {
+        dtype = NDARRAY_INT16;
+    } else if(((a->dtype == NDARRAY_UINT8) && (b->dtype == NDARRAY_INT16)) || ((a->dtype == NDARRAY_INT16) && (b->dtype == NDARRAY_UINT8))) {
+        dtype = NDARRAY_INT16;
+    } else if(((a->dtype == NDARRAY_UINT8) && (b->dtype == NDARRAY_UINT16)) || ((a->dtype == NDARRAY_UINT16) && (b->dtype == NDARRAY_UINT8))) {
+        dtype = NDARRAY_UINT16;
+    } else if(((a->dtype == NDARRAY_INT8) && (b->dtype == NDARRAY_INT16)) || ((a->dtype == NDARRAY_INT16) && (b->dtype == NDARRAY_INT8))) {
+        dtype = NDARRAY_INT16;
+    } else if(((a->dtype == NDARRAY_INT8) && (b->dtype == NDARRAY_UINT16)) || ((a->dtype == NDARRAY_UINT16) && (b->dtype == NDARRAY_INT8))) {
+        dtype = NDARRAY_UINT16;
+    } else if(((a->dtype == NDARRAY_UINT16) && (b->dtype == NDARRAY_INT16)) || ((a->dtype == NDARRAY_INT16) && (b->dtype == NDARRAY_UINT16))) {
+        dtype = NDARRAY_FLOAT;
+    }
+    ndarray_obj_t *ndarray = ndarray_new_linear_array(3, dtype);
+    if(dtype == NDARRAY_UINT8) {
+        uint8_t *array = (uint8_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = (uint8_t)results[i];
+    } else if(dtype == NDARRAY_INT8) {
+        int8_t *array = (int8_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = (int8_t)results[i];
+    } else if(dtype == NDARRAY_UINT16) {
+        uint16_t *array = (uint16_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = (uint16_t)results[i];
+    } else if(dtype == NDARRAY_INT16) {
+        int16_t *array = (int16_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = (int16_t)results[i];
+    } else {
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = results[i];
+    }
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(numerical_cross_obj, numerical_cross);
+
+#endif /* ULAB_NUMERICAL_HAS_CROSS */
+
 #if ULAB_NUMERICAL_HAS_DIFF
 //| def diff(array: ulab.array, *, axis: int = 1) -> ulab.array:
 //|     """Return the numerical derivative of successive elements of the array, as
@@ -917,6 +995,9 @@ STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     #endif
     #if ULAB_NUMERICAL_HAS_ARGSORT
     { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_CROSS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cross), (mp_obj_t)&numerical_cross_obj },
     #endif
     #if ULAB_NUMERICAL_HAS_DIFF
     { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },

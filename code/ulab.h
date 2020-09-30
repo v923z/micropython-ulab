@@ -140,12 +140,13 @@
 // numerical is about 12 kB
 #ifndef ULAB_NUMERICAL_MODULE
 #define ULAB_NUMERICAL_MODULE           (1)
-#define ULAB_NUMERICAL_HAS_MINMAX       (1)
 #define ULAB_NUMERICAL_HAS_ARGMINMAX    (1)
 #define ULAB_NUMERICAL_HAS_ARGSORT      (1)
+#define ULAB_NUMERICAL_HAS_CROSS        (1)
 #define ULAB_NUMERICAL_HAS_DIFF         (1)
 #define ULAB_NUMERICAL_HAS_FLIP         (1)
 #define ULAB_NUMERICAL_HAS_MEAN         (1)
+#define ULAB_NUMERICAL_HAS_MINMAX       (1)
 #define ULAB_NUMERICAL_HAS_ROLL         (1)
 #define ULAB_NUMERICAL_HAS_SORT         (1)
 #define ULAB_NUMERICAL_HAS_STD          (1)

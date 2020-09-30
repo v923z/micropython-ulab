@@ -210,6 +210,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
             #if ULAB_NUMERICAL_HAS_ARGSORT
                 { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
             #endif
+            #if ULAB_NUMERICAL_HAS_CROSS
+                { MP_OBJ_NEW_QSTR(MP_QSTR_cross), (mp_obj_t)&numerical_cross_obj },
+            #endif
             #if ULAB_NUMERICAL_HAS_DIFF
                 { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
             #endif
