@@ -175,7 +175,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_x);
         uint8_t *sarray = (uint8_t *)source->array;
         ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
-        mp_float_t *narray = (mp_float_t *)ndarray->array;
+        mp_float_t *array = (mp_float_t *)ndarray->array;
         
         // TODO: these loops are really nothing, but the re-impplementation of 
         // ITERATE_VECTOR from vectorise.c. We could pass a function pointer here
@@ -199,7 +199,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
                             y *= _x;
                             y += p[m+1];
                         }
-                        *narray++ = y;
+                        *array++ = y;
                         sarray += source->strides[ULAB_MAX_DIMS - 1];
                         l++;
                     } while(l < source->shape[ULAB_MAX_DIMS - 1]);
@@ -224,7 +224,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     } else {
         // o_x had better be a one-dimensional standard iterable
         ndarray = ndarray_new_linear_array(mp_obj_get_int(mp_obj_len_maybe(o_x)), NDARRAY_FLOAT);
-        mp_float_t *narray = (mp_float_t *)ndarray->array;
+        mp_float_t *array = (mp_float_t *)ndarray->array;
         mp_obj_iter_buf_t x_buf;
         mp_obj_t x_item, x_iterable = mp_getiter(o_x, &x_buf);
         while ((x_item = mp_iternext(x_iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -234,7 +234,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
                 y *= _x;
                 y += p[j+1];
             }
-            *narray++ = y;
+            *array++ = y;
         }
     }
     m_del(mp_float_t, p, plen);

@@ -75,12 +75,15 @@ typedef struct _vectorized_function_obj_t {
                 } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
                 (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS-1];\
                 (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
+                k++;\
             } while(k < (source)->shape[ULAB_MAX_DIMS-2]);\
             (sarray) -= (source)->strides[ULAB_MAX_DIMS - 2] * (source)->shape[ULAB_MAX_DIMS-2];\
             (sarray) += (source)->strides[ULAB_MAX_DIMS - 3];\
+            j++;\
         } while(j < (source)->shape[ULAB_MAX_DIMS-3]);\
         (sarray) -= (source)->strides[ULAB_MAX_DIMS - 3] * (source)->shape[ULAB_MAX_DIMS-3];\
         (sarray) += (source)->strides[ULAB_MAX_DIMS - 4];\
+        i++;\
     } while(i < (source)->shape[ULAB_MAX_DIMS-4]);\
 } while(0)
 
@@ -100,9 +103,11 @@ typedef struct _vectorized_function_obj_t {
             } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
             (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS-1];\
             (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
+            k++;\
         } while(k < (source)->shape[ULAB_MAX_DIMS-2]);\
         (sarray) -= (source)->strides[ULAB_MAX_DIMS - 2] * (source)->shape[ULAB_MAX_DIMS-2];\
         (sarray) += (source)->strides[ULAB_MAX_DIMS - 3];\
+        j++;\
     } while(j < (source)->shape[ULAB_MAX_DIMS-3]);\
 } while(0)
 #endif
@@ -119,6 +124,7 @@ typedef struct _vectorized_function_obj_t {
         } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
         (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS-1];\
         (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
+        k++;\
     } while(k < (source)->shape[ULAB_MAX_DIMS-2]);\
 } while(0)
 #endif

@@ -265,15 +265,15 @@ mp_float_t ndarray_get_float_value(void *data, uint8_t typecode) {
     // Returns a float value from an arbitrary data type
     // The value in question is supposed to be located at the head of the pointer
     if(typecode == NDARRAY_UINT8) {
-        return *(mp_float_t *)((uint8_t *)data);
+        return (mp_float_t)(*(uint8_t *)data);
     } else if(typecode == NDARRAY_INT8) {
-        return *(mp_float_t *)((int8_t *)data);
+        return (mp_float_t)(*(int8_t *)data);
     } else if(typecode == NDARRAY_UINT16) {
-        return *(mp_float_t *)((uint16_t *)data);
+        return (mp_float_t)(*(uint16_t *)data);
     } else if(typecode == NDARRAY_INT16) {
-        return *(mp_float_t *)((int16_t *)data);
+        return (mp_float_t)(*(int16_t *)data);
     } else {
-        return *(mp_float_t *)((mp_float_t *)data);
+        return *((mp_float_t *)data);
     }
 }
 
