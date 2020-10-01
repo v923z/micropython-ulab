@@ -12,6 +12,17 @@
 #ifndef __ULAB__
 #define __ULAB__
 
+// The pre-processor constants in this file determine how ulab behaves:
+//
+// - how many dimensions ulab can handle
+// - which functions are included in the compiled firmware
+// - whether the python syntax is numpy-like, or modular
+// - whether arrays can be sliced and iterated over
+// - which binary/unary operators are supported
+//
+// A considerable amount of flash space can be saved by removing (setting
+// the corresponding constants to 0) the unnecessary functions and features.
+
 // Setting this variable to 1 produces numpy-compatible firmware,
 // i.e., functions can be called at the top level,
 // without having to import the sub-modules (linalg and fft are exceptions,

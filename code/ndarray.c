@@ -306,7 +306,7 @@ void ndarray_rewind_array(uint8_t ndim, uint8_t *array, size_t *shape, int32_t *
             coords[ULAB_MAX_DIMS - 1 - i] = 0;
             coords[ULAB_MAX_DIMS - 2 - i] += 1;
         } else { // coordinates can change only, if the last coordinate changes
-            break;
+            return;
         }
     }
 }
@@ -1311,8 +1311,8 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             break;
         #endif
         #if NDARRAY_HAS_BINARY_OP_MORE_EQUAL
-            return ndarray_binary_more(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_MORE_EQUAL);
         case MP_BINARY_OP_MORE_EQUAL:
+            return ndarray_binary_more(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_MORE_EQUAL);
             break;
         #endif
         #if NDARRAY_HAS_BINARY_OP_SUBTRACT

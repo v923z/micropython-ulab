@@ -559,6 +559,7 @@ static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
         mp_float_t *array = (mp_float_t *)ndarray->array;
         for(uint8_t i=0; i < 3; i++) array[i] = results[i];
     }
+    m_del(mp_float_t, results, 3);
     return MP_OBJ_FROM_PTR(ndarray);
 }
 
