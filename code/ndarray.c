@@ -389,29 +389,42 @@ mp_obj_t ndarray_get_printoptions(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj, ndarray_get_printoptions);
 #endif
 
-void ndarray_print_row(const mp_print_t *print, uint8_t dtype, uint8_t *array, size_t stride, size_t n) {
+mp_obj_t ndarray_get_item(ndarray_obj_t *ndarray, void *array) {
+    // returns a proper micropython item from an array
+    if(!ndarray->boolean) {
+        return mp_binary_get_val_array(ndarray->dtype, array, 0);
+    } else {
+        if(*(uint8_t *)array) {
+            return mp_const_true;
+        } else {
+            return mp_const_false;
+        }
+    }
+}
+
+void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, uint8_t *array, size_t stride, size_t n) {
     mp_print_str(print, "[");
     if((n <= ndarray_print_threshold) || (n <= 2*ndarray_print_edgeitems)) { // if the array is short, print everything
-        mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+        mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         array += stride;
         for(size_t i=1; i < n; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+            mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         }
     } else {
-        mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+        mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         array += stride;
         for(size_t i=1; i < ndarray_print_edgeitems; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+            mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         }
         mp_printf(print, ", ..., ");
         array += stride * (n - 2 *  ndarray_print_edgeitems);
-        mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+        mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         array += stride;
         for(size_t i=1; i < ndarray_print_edgeitems; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, mp_binary_get_val_array(dtype, array, 0), PRINT_REPR);
+            mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         }
     }
     mp_print_str(print, "]");
@@ -444,7 +457,7 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "[");
             do {
             #endif
-                ndarray_print_row(print, self->dtype, array, self->strides[ULAB_MAX_DIMS-1], self->shape[ULAB_MAX_DIMS-1]);
+                ndarray_print_row(print, self, array, self->strides[ULAB_MAX_DIMS-1], self->shape[ULAB_MAX_DIMS-1]);
             #if ULAB_MAX_DIMS > 1
                 array += self->strides[ULAB_MAX_DIMS-2];
                 k++;
@@ -955,7 +968,7 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 
 // itarray iterator
 mp_obj_t ndarray_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
-    return ndarray_new_ndarray_iterator(o_in, 0, iter_buf);
+    return ndarray_new_ndarray_iterator(o_in, iter_buf);
 }
 
 typedef struct _mp_obj_ndarray_it_t {
@@ -968,17 +981,20 @@ typedef struct _mp_obj_ndarray_it_t {
 mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     mp_obj_ndarray_it_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(self->ndarray);
+    uint8_t *array = (uint8_t *)ndarray->array;
+
     size_t iter_end = ndarray->shape[ULAB_MAX_DIMS-ndarray->ndim];
     if(self->cur < iter_end) {
         // separating this case out saves 50 bytes for 1D arrays
         #if ULAB_MAX_DIMS == 1
-        int32_t pos = self->cur * ndarray->strides[ULAB_MAX_DIMS - 1] / ndarray->itemsize;
-        return mp_binary_get_val_array(ndarray->dtype, ndarray->array, pos);
+        array += self->cur * ndarray->strides[0];
+        self->cur++;
+        return ndarray_get_item(ndarray, array);
         #else
         if(ndarray->ndim == 1) { // we have a linear array
-            int32_t pos = self->cur * ndarray->strides[ULAB_MAX_DIMS - 1] / ndarray->itemsize;
+            array += self->cur * ndarray->strides[ULAB_MAX_DIMS - 1];
             self->cur++;
-            return mp_binary_get_val_array(ndarray->dtype, ndarray->array, pos);
+            return ndarray_get_item(ndarray, array);
         } else { // we have a tensor, return the reduced view
             size_t offset = self->cur * ndarray->strides[ULAB_MAX_DIMS - ndarray->ndim];
             self->cur++;
@@ -990,13 +1006,13 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
     }
 }
 
-mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t ndarray, size_t cur, mp_obj_iter_buf_t *iter_buf) {
+mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t ndarray, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_ndarray_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_obj_ndarray_it_t *o = (mp_obj_ndarray_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = ndarray_iternext;
     o->ndarray = ndarray;
-    o->cur = cur;
+    o->cur = 0;
     return MP_OBJ_FROM_PTR(o);
 }
 #endif /* NDARRAY_IS_ITERABLE */

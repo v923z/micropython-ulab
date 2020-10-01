@@ -84,7 +84,7 @@ typedef struct _ndarray_obj_t {
     void *array;
 } ndarray_obj_t;
 
-mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
+mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , mp_obj_iter_buf_t *);
 
 mp_float_t ndarray_get_float_value(void *, uint8_t );
 mp_float_t ndarray_get_float_index(void *, uint8_t , size_t );
