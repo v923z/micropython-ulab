@@ -844,15 +844,31 @@ ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *
     return ndarray_new_view(ndarray, ndim, shape, strides, offset);
 }
 
-bool ndarray_view_broadcast(ndarray_obj_t *view, ndarray_obj_t *values, int32_t *strides) {
-    // returns True or False, depending on, whether the `values` array
-    //  can be broadcast to the shape of the `view` array
-    memset(strides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
+    // returns True or False, depending on, whether the two arrays can be broadcast together
+    // numpy's broadcasting rules are as follows:
+    //
+    // 1. the two shapes are either equal
+    // 2. one of the shapes is 1
+    memset(lstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    memset(rstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    lstrides[ULAB_MAX_DIMS - 1] = lhs->strides[ULAB_MAX_DIMS - 1];
+    rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];
     for(uint8_t i=ULAB_MAX_DIMS; i > 0; i--) {
-        if((values->shape[i-1] == view->shape[i-1])) {
-            strides[i-1] = values->strides[i-1];
-        } else if(values->shape[i-1] == 1) {
-            strides[i-1] = 0;
+        if((lhs->shape[i-1] == rhs->shape[i-1]) || (lhs->shape[i-1] == 0) || (lhs->shape[i-1] == 1) ||
+        (rhs->shape[i-1] == 0) || (rhs->shape[i-1] == 1)) {
+            shape[i-1] = MAX(lhs->shape[i-1], rhs->shape[i-1]);
+            if(shape[i-1] > 0) (*ndim)++;
+            if(lhs->shape[i-1] < 2) {
+                lstrides[i-1] = 0;
+            } else {
+                lstrides[i-1] = lhs->strides[i-1];
+            }
+            if(rhs->shape[i-1] < 2) {
+                rstrides[i-1] = 0;
+            } else {
+                rstrides[i-1] = rhs->strides[i-1];
+            }
         } else {
             return false;
         }
@@ -861,74 +877,82 @@ bool ndarray_view_broadcast(ndarray_obj_t *view, ndarray_obj_t *values, int32_t 
 }
 
 void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
-    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    if(!ndarray_view_broadcast(view, values, strides)) {
+    uint8_t ndim = 0;
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    if(!ndarray_can_broadcast(view, values, &ndim, shape, lstrides, rstrides)) {
         mp_raise_ValueError(translate("operands could not be broadcast together"));
-        m_del(int32_t, strides, ULAB_MAX_DIMS);
+        m_del(size_t, shape, ULAB_MAX_DIMS);
+        m_del(int32_t, lstrides, ULAB_MAX_DIMS);
+        m_del(int32_t, rstrides, ULAB_MAX_DIMS);
     }
 
-    uint8_t *viarray = (uint8_t *)view->array;
-    uint8_t *vaarray = (uint8_t *)values->array;
+    uint8_t *rarray = (uint8_t *)values->array;
+    // since in ASSIGNMENT_LOOP the array has a type, we have to divide the strides by the itemsize
+    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
+        lstrides[i] /= view->itemsize;
+    }
 
     if(view->dtype == NDARRAY_UINT8) {
         if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(uint8_t, uint8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint8_t, uint8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(uint8_t, int8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint8_t, int8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(uint8_t, uint16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint8_t, uint16_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(uint8_t, int16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint8_t, int16_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(uint8_t, mp_float_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint8_t, mp_float_t, lstrides, rarray, rstrides);
         }
     } else if(view->dtype == NDARRAY_INT8) {
         if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(int8_t, uint8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int8_t, uint8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(int8_t, int8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int8_t, int8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(int8_t, uint16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int8_t, uint16_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(int8_t, int16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int8_t, int16_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(int8_t, mp_float_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int8_t, mp_float_t, lstrides, rarray, rstrides);
         }
     } else if(view->dtype == NDARRAY_UINT16) {
         if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(uint16_t, uint8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint16_t, uint8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(uint16_t, int8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint16_t, int8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(uint16_t, uint16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint16_t, uint16_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(uint16_t, int16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint16_t, int16_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(uint16_t, mp_float_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, uint16_t, mp_float_t, lstrides, rarray, rstrides);
         }
     } else if(view->dtype == NDARRAY_INT16) {
         if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(int16_t, uint8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int16_t, uint8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(int16_t, int8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int16_t, int8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(int16_t, uint16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int16_t, uint16_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(int16_t, int16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int16_t, int16_t,  lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(int16_t, mp_float_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, int16_t, mp_float_t,  lstrides, rarray, rstrides);
         }
-    } else {
+    } else { // the dtype must be an mp_float_t now
         if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(mp_float_t, uint8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, mp_float_t, uint8_t, lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(mp_float_t, int8_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, mp_float_t, int8_t,  lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(mp_float_t, uint16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, mp_float_t, uint16_t,  lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(mp_float_t, int16_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, mp_float_t, int16_t,  lstrides, rarray, rstrides);
         } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(mp_float_t, mp_float_t, view, viarray, values, vaarray, strides);
+            ASSIGNMENT_LOOP(view, mp_float_t, mp_float_t,  lstrides, rarray, rstrides);
         }
     }
 }
@@ -1221,38 +1245,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
         mp_raise_TypeError(translate("wrong operand type"));
     }
     return ndarray;
-}
-
-bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
-    // returns True or False, depending on, whether the two arrays can be broadcast together
-    // numpy's broadcasting rules are as follows:
-    //
-    // 1. the two shapes are either equal
-    // 2. one of the shapes is 1
-    memset(lstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    memset(rstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    lstrides[ULAB_MAX_DIMS - 1] = lhs->strides[ULAB_MAX_DIMS - 1];
-    rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];
-    for(uint8_t i=ULAB_MAX_DIMS; i > 0; i--) {
-        if((lhs->shape[i-1] == rhs->shape[i-1]) || (lhs->shape[i-1] == 0) || (lhs->shape[i-1] == 1) ||
-        (rhs->shape[i-1] == 0) || (rhs->shape[i-1] == 1)) {
-            shape[i-1] = MAX(lhs->shape[i-1], rhs->shape[i-1]);
-            if(shape[i-1] > 0) (*ndim)++;
-            if(lhs->shape[i-1] < 2) {
-                lstrides[i-1] = 0;
-            } else {
-                lstrides[i-1] = lhs->strides[i-1];
-            }
-            if(rhs->shape[i-1] < 2) {
-                rstrides[i-1] = 0;
-            } else {
-                rstrides[i-1] = rhs->strides[i-1];
-            }
-        } else {
-            return false;
-        }
-    }
-    return true;
 }
 
 #if NDARRAY_HAS_BINARY_OPS
