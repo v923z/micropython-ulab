@@ -53,6 +53,9 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
             { MP_ROM_QSTR(MP_QSTR_transpose), MP_ROM_PTR(&ndarray_transpose_obj) },
         #endif
     #endif
+    #if NDARRAY_HAS_COPY
+        { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&ndarray_copy_obj) },
+    #endif
     #if NDARRAY_HAS_FLATTEN
         { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },
     #endif

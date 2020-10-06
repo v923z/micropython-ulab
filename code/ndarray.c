@@ -673,6 +673,15 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
     return ndarray;
 }
 
+#if NDARRAY_HAS_COPY
+mp_obj_t ndarray_copy(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_FROM_PTR(ndarray_copy_view(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_copy_obj, ndarray_copy);
+#endif
+
 ndarray_obj_t *ndarray_new_linear_array(size_t len, uint8_t dtype) {
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     shape[ULAB_MAX_DIMS-1] = len;

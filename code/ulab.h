@@ -80,6 +80,7 @@
 #define NDARRAY_HAS_UNARY_OP_POSITIVE       (1)
 
 // determines, which ndarray methods are available
+#define NDARRAY_HAS_COPY                (1)
 #define NDARRAY_HAS_FLATTEN             (1)
 #define NDARRAY_HAS_ITEMSIZE            (1)
 #define NDARRAY_HAS_RESHAPE             (1)
