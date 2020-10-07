@@ -69,7 +69,14 @@
 #define NDARRAY_HAS_BINARY_OP_NOT_EQUAL     (1)
 #define NDARRAY_HAS_BINARY_OP_POWER         (1)
 #define NDARRAY_HAS_BINARY_OP_SUBTRACT      (1)
-#define NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE   (1) 
+#define NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE   (1)
+
+#define NDARRAY_HAS_INPLACE_OPS             (1)
+#define NDARRAY_HAS_INPLACE_ADD             (1)
+#define NDARRAY_HAS_INPLACE_MULTIPLY        (1)
+#define NDARRAY_HAS_INPLACE_POWER           (1)
+#define NDARRAY_HAS_INPLACE_SUBTRACT        (1)
+#define NDARRAY_HAS_INPLACE_TRUE_DIVIDE     (1)
 
 // the ndarray unary operators
 #define NDARRAY_HAS_UNARY_OPS               (1)

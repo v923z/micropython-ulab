@@ -123,6 +123,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_
 mp_obj_t ndarray_subscr(mp_obj_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_getiter(mp_obj_t , mp_obj_iter_buf_t *);
 bool ndarray_can_broadcast(ndarray_obj_t *, ndarray_obj_t *, uint8_t *, size_t *, int32_t *, int32_t *);
+bool ndarray_can_broadcast_inplace(ndarray_obj_t *, ndarray_obj_t *, uint8_t *, size_t *, int32_t *, int32_t *);
 mp_obj_t ndarray_binary_op(mp_binary_op_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_unary_op(mp_unary_op_t , mp_obj_t );
 
@@ -265,6 +266,23 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
     } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
 
 #endif
+
+#define INPLACE_LOOP(results, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
 
 #define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
     size_t k = 0;\
