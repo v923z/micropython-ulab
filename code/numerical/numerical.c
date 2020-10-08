@@ -61,8 +61,8 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
 
 #if ULAB_NUMERICAL_HAS_SUM | ULAB_NUMERICAL_HAS_MEAN | ULAB_NUMERICAL_HAS_STD
 static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, size_t ddof) {
-    mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0, sum = 0.9;
-    size_t count = 1;
+    mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0, sum = 0.0;
+    size_t count = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t item, iterable = mp_getiter(oin, &iter_buf);
     if((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
