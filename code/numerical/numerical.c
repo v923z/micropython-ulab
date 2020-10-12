@@ -98,6 +98,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
 
     if(axis == mp_const_none) { // work with the flattened array
         // pass for now...
+        mp_raise_NotImplementedError(translate("operation is not implemented for flattened array"));
     } else {
         int8_t ax = mp_obj_get_int(axis);
         if(ax < 0) ax += ndarray->ndim;

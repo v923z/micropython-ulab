@@ -986,7 +986,47 @@ void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
     }
 }
 
+static mp_obj_t ndarray_from_boolean_index(ndarray_obj_t *ndarray, ndarray_obj_t *index) {
+    // returns a 1D array, indexed by a Boolean array
+    if(ndarray->len != index->len) {
+        mp_raise_ValueError(translate("array and index length must be equal"));
+    }
+    uint8_t *iarray = (uint8_t *)index->array;
+    // first we have to find out how many trues there are
+    size_t count = 0;
+    for(size_t i=0; i < index->len; i++) {
+        count += *iarray;
+        iarray += index->strides[ULAB_MAX_DIMS - 1];
+    }
+    ndarray_obj_t *results = ndarray_new_linear_array(count, ndarray->dtype);
+    uint8_t *rarray = (uint8_t *)results->array;
+    uint8_t *array = (uint8_t *)ndarray->array;
+    // re-wind the index array
+    iarray = index->array;
+    for(size_t i=0; i < index->len; i++) {
+        if(*iarray) {
+            memcpy(rarray, array, results->itemsize);
+            rarray += results->itemsize;
+            count++;
+        }
+        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+        iarray += index->strides[ULAB_MAX_DIMS - 1];
+    }
+    return MP_OBJ_FROM_PTR(results);
+}
+
 static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t *values) {
+    if(MP_OBJ_IS_TYPE(index, &ulab_ndarray_type)) {
+        ndarray_obj_t *nindex = MP_OBJ_TO_PTR(index);
+        if((nindex->ndim > 1) || (nindex->boolean == false)) {
+            mp_raise_NotImplementedError(translate("operation is implemented for 1D Boolean arrays only"));
+        }
+        if(values == NULL) { // return value(s)
+            return ndarray_from_boolean_index(ndarray, nindex);
+        } else { // assign value(s)
+            mp_raise_NotImplementedError(translate("operation is not implemented"));
+        }
+    }
     if(MP_OBJ_IS_TYPE(index, &mp_type_tuple) || MP_OBJ_IS_INT(index) || MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
         mp_obj_tuple_t *tuple;
         if(MP_OBJ_IS_TYPE(index, &mp_type_tuple)) {
