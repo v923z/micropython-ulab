@@ -1015,6 +1015,92 @@ static mp_obj_t ndarray_from_boolean_index(ndarray_obj_t *ndarray, ndarray_obj_t
     return MP_OBJ_FROM_PTR(results);
 }
 
+static mp_obj_t ndarray_assign_from_boolean_index(ndarray_obj_t *ndarray, ndarray_obj_t *index, ndarray_obj_t *values) {
+    // assigns values to a Boolean-indexed array
+    // first we have to find out how many trues there are
+    uint8_t *iarray = (uint8_t *)index->array;
+    size_t count = 0;
+    for(size_t i=0; i < index->len; i++) {
+        count += *iarray;
+        iarray += index->strides[ULAB_MAX_DIMS - 1];
+    }
+    // re-wind the index array
+    iarray = index->array;
+    uint8_t *varray = (uint8_t *)values->array;
+    size_t vstride;
+    size_t istride = index->strides[ULAB_MAX_DIMS - 1];
+
+    if(count == values->len) {
+        // there are as many values as true indices
+        vstride = values->strides[ULAB_MAX_DIMS - 1];
+    } else {
+        // there is a single value
+        vstride = 0;
+    }
+    if(ndarray->dtype == NDARRAY_UINT8) {
+        if(values->dtype == NDARRAY_UINT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint8_t, uint8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint8_t, int8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_UINT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint8_t, uint16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint8_t, int16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_FLOAT) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint8_t, mp_float_t, ndarray, iarray, istride, varray, vstride);
+        }
+    } else if(ndarray->dtype == NDARRAY_INT8) {
+        if(values->dtype == NDARRAY_UINT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(int8_t, uint8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(int8_t, int8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_UINT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(int8_t, uint16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(int8_t, int16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_FLOAT) {
+            BOOLEAN_ASSIGNMENT_LOOP(int8_t, mp_float_t, ndarray, iarray, istride, varray, vstride);
+        }
+    } else if(ndarray->dtype == NDARRAY_UINT16) {
+        if(values->dtype == NDARRAY_UINT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint16_t, uint8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint16_t, int8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_UINT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint16_t, uint16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint16_t, int16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_FLOAT) {
+            BOOLEAN_ASSIGNMENT_LOOP(uint16_t, mp_float_t, ndarray, iarray, istride, varray, vstride);
+        }
+    } else if(ndarray->dtype == NDARRAY_INT16) {
+        if(values->dtype == NDARRAY_UINT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(int16_t, uint8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(int16_t, int8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_UINT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(int16_t, uint16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(int16_t, int16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_FLOAT) {
+            BOOLEAN_ASSIGNMENT_LOOP(int16_t, mp_float_t, ndarray, iarray, istride, varray, vstride);
+        }
+    } else {
+        if(values->dtype == NDARRAY_UINT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(mp_float_t, uint8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT8) {
+            BOOLEAN_ASSIGNMENT_LOOP(mp_float_t, int8_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_UINT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(mp_float_t, uint16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_INT16) {
+            BOOLEAN_ASSIGNMENT_LOOP(mp_float_t, int16_t, ndarray, iarray, istride, varray, vstride);
+        } else if(values->dtype == NDARRAY_FLOAT) {
+            BOOLEAN_ASSIGNMENT_LOOP(mp_float_t, mp_float_t, ndarray, iarray, istride, varray, vstride);
+        }
+    }
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
 static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t *values) {
     if(MP_OBJ_IS_TYPE(index, &ulab_ndarray_type)) {
         ndarray_obj_t *nindex = MP_OBJ_TO_PTR(index);
@@ -1024,7 +1110,7 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
         if(values == NULL) { // return value(s)
             return ndarray_from_boolean_index(ndarray, nindex);
         } else { // assign value(s)
-            mp_raise_NotImplementedError(translate("operation is not implemented"));
+            ndarray_assign_from_boolean_index(ndarray, index, values);
         }
     }
     if(MP_OBJ_IS_TYPE(index, &mp_type_tuple) || MP_OBJ_IS_INT(index) || MP_OBJ_IS_TYPE(index, &mp_type_slice)) {

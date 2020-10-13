@@ -186,6 +186,18 @@ mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t f
 
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 
+
+#define BOOLEAN_ASSIGNMENT_LOOP(type_left, type_right, ndarray, iarray, istride, varray, vstride)\
+    type_left *array = (type_left *)(ndarray)->array;\
+    for(size_t i=0; i < (ndarray)->len; i++) {\
+        if(*(iarray)) {\
+            *array = (type_left)(*((type_right *)(varray)));\
+        }\
+        array += (ndarray)->strides[ULAB_MAX_DIMS - 1] / (ndarray)->itemsize;\
+        (iarray) += (istride);\
+        (varray) += (vstride);\
+    } while(0)
+
 #if ULAB_MAX_DIMS == 1
 #define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
     type_out *array = (type_out *)results->array;\
