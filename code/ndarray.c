@@ -877,21 +877,17 @@ bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim
 }
 
 #if NDARRAY_HAS_INPLACE_OPS
-bool ndarray_can_broadcast_inplace(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
+bool ndarray_can_broadcast_inplace(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides) {
     // returns true or false, depending on, whether the two arrays can be broadcast together inplace
     // this means that the right hand side always must be "smaller" than the left hand side, i.e.
     // the broadcasting rules are as follows:
     //
     // 1. the two shapes are either equal
     // 2. the shapes on the right hand side is 1
-    memset(lstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     memset(rstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    lstrides[ULAB_MAX_DIMS - 1] = lhs->strides[ULAB_MAX_DIMS - 1];
     rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];
     for(uint8_t i=ULAB_MAX_DIMS; i > 0; i--) {
         if((lhs->shape[i-1] == rhs->shape[i-1]) || (rhs->shape[i-1] == 0) || (rhs->shape[i-1] == 1)) {
-            shape[i-1] = lhs->shape[i-1];
-            if(shape[i-1] > 0) (*ndim)++;
             if(rhs->shape[i-1] < 2) {
                 rstrides[i-1] = 0;
             } else {
@@ -901,6 +897,7 @@ bool ndarray_can_broadcast_inplace(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8
             return false;
         }
     }
+    printf("strides: %d, %d\n", rstrides[ULAB_MAX_DIMS - 1], rstrides[ULAB_MAX_DIMS - 2]);
     return true;
 }
 #endif
@@ -1436,7 +1433,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     uint8_t broadcastable;
     if((op == MP_BINARY_OP_INPLACE_ADD) || (op == MP_BINARY_OP_INPLACE_MULTIPLY) || (op == MP_BINARY_OP_INPLACE_POWER) ||
         (op == MP_BINARY_OP_INPLACE_SUBTRACT) || (op == MP_BINARY_OP_INPLACE_TRUE_DIVIDE)) {
-        broadcastable = ndarray_can_broadcast_inplace(lhs, rhs, &ndim, shape, lstrides, rstrides);
+        broadcastable = ndarray_can_broadcast_inplace(lhs, rhs, rstrides);
     } else {
         broadcastable = ndarray_can_broadcast(lhs, rhs, &ndim, shape, lstrides, rstrides);
     }
@@ -1451,27 +1448,27 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
         // first the in-place operators
         #if NDARRAY_HAS_INPLACE_ADD
         case MP_BINARY_OP_INPLACE_ADD:
-            return ndarray_inplace_ams(lhs, rhs, ndim, shape, lstrides, rstrides, op);
+            return ndarray_inplace_ams(lhs, rhs, rstrides, op);
             break;
         #endif
         #if NDARRAY_HAS_INPLACE_MULTIPLY
         case MP_BINARY_OP_INPLACE_MULTIPLY:
-            return ndarray_inplace_ams(lhs, rhs, ndim, shape, lstrides, rstrides, op);
+            return ndarray_inplace_ams(lhs, rhs, rstrides, op);
             break;
         #endif
         #if NDARRAY_HAS_INPLACE_POWER
         case MP_BINARY_OP_INPLACE_POWER:
-            return ndarray_inplace_power(lhs, rhs, ndim, shape, lstrides, rstrides);
+            return ndarray_inplace_power(lhs, rhs, rstrides);
             break;
         #endif
         #if NDARRAY_HAS_INPLACE_SUBTRACT
         case MP_BINARY_OP_INPLACE_SUBTRACT:
-            return ndarray_inplace_ams(lhs, rhs, ndim, shape, lstrides, rstrides, op);
+            return ndarray_inplace_ams(lhs, rhs, rstrides, op);
             break;
         #endif
         #if NDARRAY_HAS_INPLACE_TRUE_DIVIDE
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
-            return ndarray_inplace_divide(lhs, rhs, ndim, shape, lstrides, rstrides);
+            return ndarray_inplace_divide(lhs, rhs, rstrides);
             break;
         #endif
         // end if in-place operators

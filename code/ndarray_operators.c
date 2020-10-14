@@ -694,8 +694,7 @@ mp_obj_t ndarray_binary_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 #endif /* NDARRAY_HAS_BINARY_OP_POWER */
 
 #if NDARRAY_HAS_INPLACE_ADD || NDARRAY_HAS_INPLACE_MULTIPLY || NDARRAY_HAS_INPLACE_SUBTRACT
-mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
-                                        uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides, uint8_t optype) {
+mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides, uint8_t optype) {
 
     if((lhs->dtype != NDARRAY_FLOAT) && (rhs->dtype == NDARRAY_FLOAT)) {
         mp_raise_TypeError(translate("cannot cast output with casting rule"));
@@ -705,17 +704,17 @@ mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 
     #if NDARRAY_HAS_INPLACE_ADD
     if(optype == MP_BINARY_OP_INPLACE_ADD) {
-		UNWRAP_INPLACE_OPERATOR(lhs, larray, lstrides, rarray, rstrides, +=);
+		UNWRAP_INPLACE_OPERATOR(lhs, larray, rarray, rstrides, +=);
     }
     #endif
     #if NDARRAY_HAS_INPLACE_ADD
     if(optype == MP_BINARY_OP_INPLACE_MULTIPLY) {
-        UNWRAP_INPLACE_OPERATOR(lhs, larray, lstrides, rarray, rstrides, *=);
+        UNWRAP_INPLACE_OPERATOR(lhs, larray, rarray, rstrides, *=);
     }
     #endif
     #if NDARRAY_HAS_INPLACE_SUBTRACT
     if(optype == MP_BINARY_OP_INPLACE_SUBTRACT) {
-        UNWRAP_INPLACE_OPERATOR(lhs, larray, lstrides, rarray, rstrides, -=);
+        UNWRAP_INPLACE_OPERATOR(lhs, larray, rarray, rstrides, -=);
     }
     #endif
 
@@ -724,8 +723,7 @@ mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 #endif /* NDARRAY_HAS_INPLACE_ADD || NDARRAY_HAS_INPLACE_MULTIPLY || NDARRAY_HAS_INPLACE_SUBTRACT */
 
 #if NDARRAY_HAS_INPLACE_TRUE_DIVIDE
-mp_obj_t ndarray_inplace_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
-                                        uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
+mp_obj_t ndarray_inplace_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides) {
 
     if((lhs->dtype != NDARRAY_FLOAT)) {
         mp_raise_TypeError(translate("results cannot be cast to specified type"));
@@ -734,23 +732,22 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *rarray = (uint8_t *)rhs->array;
 
     if(rhs->dtype == NDARRAY_UINT8) {
-        INPLACE_LOOP(lhs, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides, /=);
+        INPLACE_LOOP(lhs, mp_float_t, uint8_t, larray, rarray, rstrides, /=);
     } else if(rhs->dtype == NDARRAY_INT8) {
-        INPLACE_LOOP(lhs, mp_float_t, int8_t, larray, lstrides, rarray, rstrides, /=);
+        INPLACE_LOOP(lhs, mp_float_t, int8_t, larray, rarray, rstrides, /=);
     } else if(lhs->dtype == NDARRAY_UINT16) {
-        INPLACE_LOOP(lhs, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides, /=);
+        INPLACE_LOOP(lhs, mp_float_t, uint16_t, larray, rarray, rstrides, /=);
     } else if(rhs->dtype == NDARRAY_INT16) {
-        INPLACE_LOOP(lhs, mp_float_t, int16_t, larray, lstrides, rarray, rstrides, /=);
+        INPLACE_LOOP(lhs, mp_float_t, int16_t, larray, rarray, rstrides, /=);
     } else if(lhs->dtype == NDARRAY_FLOAT) {
-        INPLACE_LOOP(lhs, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, /=);
+        INPLACE_LOOP(lhs, mp_float_t, mp_float_t, larray, rarray, rstrides, /=);
     }
     return MP_OBJ_FROM_PTR(lhs);
 }
 #endif /* NDARRAY_HAS_INPLACE_DIVIDE */
 
 #if NDARRAY_HAS_INPLACE_POWER
-mp_obj_t ndarray_inplace_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
-                                        uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
+mp_obj_t ndarray_inplace_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides) {
 
     if((lhs->dtype != NDARRAY_FLOAT)) {
         mp_raise_TypeError(translate("results cannot be cast to specified type"));
@@ -759,15 +756,15 @@ mp_obj_t ndarray_inplace_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *rarray = (uint8_t *)rhs->array;
 
     if(rhs->dtype == NDARRAY_UINT8) {
-        INPLACE_POWER(lhs, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides);
+        INPLACE_POWER(lhs, mp_float_t, uint8_t, larray, rarray, rstrides);
     } else if(rhs->dtype == NDARRAY_INT8) {
-        INPLACE_POWER(lhs, mp_float_t, int8_t, larray, lstrides, rarray, rstrides);
+        INPLACE_POWER(lhs, mp_float_t, int8_t, larray, rarray, rstrides);
     } else if(lhs->dtype == NDARRAY_UINT16) {
-        INPLACE_POWER(lhs, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides);
+        INPLACE_POWER(lhs, mp_float_t, uint16_t, larray, rarray, rstrides);
     } else if(rhs->dtype == NDARRAY_INT16) {
-        INPLACE_POWER(lhs, mp_float_t, int16_t, larray, lstrides, rarray, rstrides);
+        INPLACE_POWER(lhs, mp_float_t, int16_t, larray, rarray, rstrides);
     } else if(lhs->dtype == NDARRAY_FLOAT) {
-        INPLACE_POWER(lhs, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides);
+        INPLACE_POWER(lhs, mp_float_t, mp_float_t, larray, rarray, rstrides);
     }
     return MP_OBJ_FROM_PTR(lhs);
 }
