@@ -897,7 +897,6 @@ bool ndarray_can_broadcast_inplace(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32
             return false;
         }
     }
-    printf("strides: %d, %d\n", rstrides[ULAB_MAX_DIMS - 1], rstrides[ULAB_MAX_DIMS - 2]);
     return true;
 }
 #endif
