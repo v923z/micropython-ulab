@@ -792,58 +792,7 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
 }
 #endif
 
-#if NDARRAY_IS_SLICEABLE
-static size_t slice_length(mp_bound_slice_t slice) {
-    ssize_t len, correction = 1;
-    if(slice.step > 0) correction = -1;
-    len = (ssize_t)(slice.stop - slice.start + (slice.step + correction)) / slice.step;
-    if(len < 0) return 0;
-    return (size_t)len;
-}
-
-static mp_bound_slice_t generate_slice(mp_int_t n, mp_obj_t index) {
-    // micropython seems to have difficulties with negative steps
-    mp_bound_slice_t slice;
-    if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-        mp_obj_slice_indices(index, n, &slice);
-    } else if(MP_OBJ_IS_INT(index)) {
-        mp_int_t _index = mp_obj_get_int(index);
-        if(_index < 0) {
-            _index += n;
-        }
-        if((_index >= n) || (_index < 0)) {
-            mp_raise_msg(&mp_type_IndexError, translate("index is out of bounds"));
-        }
-        slice.start = _index;
-        slice.stop = _index + 1;
-        slice.step = 1;
-    } else {
-        mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
-    }
-    return slice;
-}
-
-ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *tuple) {
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    uint8_t ndim = ndarray->ndim;
-    for(uint8_t i=0; i < ndim; i++) {
-        // copy from the end
-        shape[ULAB_MAX_DIMS - 1 - i] = ndarray->shape[ULAB_MAX_DIMS  - 1 - i];
-        strides[ULAB_MAX_DIMS - 1 - i] = ndarray->strides[ULAB_MAX_DIMS  - 1 - i];
-    }
-    int32_t offset = 0;
-    for(uint8_t i=0; i  < tuple->len; i++) {
-        mp_bound_slice_t slice = generate_slice(shape[ULAB_MAX_DIMS - ndim + i], tuple->items[i]);
-        shape[ULAB_MAX_DIMS - ndim + i] = slice_length(slice);
-        offset += ndarray->strides[ULAB_MAX_DIMS - ndim + i] * (int32_t)slice.start;
-        strides[ULAB_MAX_DIMS - ndim + i] = (int32_t)slice.step * ndarray->strides[ULAB_MAX_DIMS - ndim + i];
-    }
-    return ndarray_new_view(ndarray, ndim, shape, strides, offset);
-}
-
+// broadcasting is used at a number of places, always include
 bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
     // returns True or False, depending on, whether the two arrays can be broadcast together
     // numpy's broadcasting rules are as follows:
@@ -900,6 +849,58 @@ bool ndarray_can_broadcast_inplace(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32
     return true;
 }
 #endif
+
+#if NDARRAY_IS_SLICEABLE
+static size_t slice_length(mp_bound_slice_t slice) {
+    ssize_t len, correction = 1;
+    if(slice.step > 0) correction = -1;
+    len = (ssize_t)(slice.stop - slice.start + (slice.step + correction)) / slice.step;
+    if(len < 0) return 0;
+    return (size_t)len;
+}
+
+static mp_bound_slice_t generate_slice(mp_int_t n, mp_obj_t index) {
+    // micropython seems to have difficulties with negative steps
+    mp_bound_slice_t slice;
+    if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+        mp_obj_slice_indices(index, n, &slice);
+    } else if(MP_OBJ_IS_INT(index)) {
+        mp_int_t _index = mp_obj_get_int(index);
+        if(_index < 0) {
+            _index += n;
+        }
+        if((_index >= n) || (_index < 0)) {
+            mp_raise_msg(&mp_type_IndexError, translate("index is out of bounds"));
+        }
+        slice.start = _index;
+        slice.stop = _index + 1;
+        slice.step = 1;
+    } else {
+        mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
+    }
+    return slice;
+}
+
+ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *tuple) {
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    uint8_t ndim = ndarray->ndim;
+    for(uint8_t i=0; i < ndim; i++) {
+        // copy from the end
+        shape[ULAB_MAX_DIMS - 1 - i] = ndarray->shape[ULAB_MAX_DIMS  - 1 - i];
+        strides[ULAB_MAX_DIMS - 1 - i] = ndarray->strides[ULAB_MAX_DIMS  - 1 - i];
+    }
+    int32_t offset = 0;
+    for(uint8_t i=0; i  < tuple->len; i++) {
+        mp_bound_slice_t slice = generate_slice(shape[ULAB_MAX_DIMS - ndim + i], tuple->items[i]);
+        shape[ULAB_MAX_DIMS - ndim + i] = slice_length(slice);
+        offset += ndarray->strides[ULAB_MAX_DIMS - ndim + i] * (int32_t)slice.start;
+        strides[ULAB_MAX_DIMS - ndim + i] = (int32_t)slice.step * ndarray->strides[ULAB_MAX_DIMS - ndim + i];
+    }
+    return ndarray_new_view(ndarray, ndim, shape, strides, offset);
+}
 
 void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
     uint8_t ndim = 0;
