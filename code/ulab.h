@@ -184,7 +184,7 @@
 #define ULAB_VECTORISE_MODULE           (1)
 #define ULAB_VECTORISE_HAS_ACOS         (1)
 #define ULAB_VECTORISE_HAS_ACOSH        (1)
-#define ULAB_VECTORISE_HAS_ARCTAN2      (0)
+#define ULAB_VECTORISE_HAS_ARCTAN2      (1)
 #define ULAB_VECTORISE_HAS_AROUND       (1)
 #define ULAB_VECTORISE_HAS_ASIN         (1)
 #define ULAB_VECTORISE_HAS_ASINH        (1)

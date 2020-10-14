@@ -193,66 +193,85 @@ MATH_FUN_1(atan, atan);
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 #endif
 
-#if ULAB_VECTORISE_HAS_ATAN2
-//| def atan2(ya: _ArrayLike, xa: _ArrayLike) -> ulab.array:
+#if ULAB_VECTORISE_HAS_ARCTAN2
+//| def arctan2(ya: _ArrayLike, xa: _ArrayLike) -> ulab.array:
 //|    """Computes the inverse tangent function of y/x; the return values are in
 //|       the range [-pi, pi]."""
 //|    ...
 //|
 
-mp_obj_t vectorise_arctan2(mp_obj_t x, mp_obj_t y) {
-    // the function is implemented for scalars and ndarrays only, with partial 
-    // broadcasting: arguments must be either scalars, or ndarrays of equal size/shape
-    if(!(MP_OBJ_IS_INT(x) || mp_obj_is_float(x) || MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) &&
-        !(MP_OBJ_IS_INT(y) || mp_obj_is_float(y) || MP_OBJ_IS_TYPE(y, &ulab_ndarray_type))) {
-        mp_raise_TypeError(translate("arctan2 is implemented for scalars and ndarrays only"));
+mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
+    ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x);
+    ndarray_obj_t *ndarray_y = ndarray_from_mp_obj(y);
+    
+    uint8_t ndim = 0;
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    int32_t *xstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    int32_t *ystrides = m_new(int32_t, ULAB_MAX_DIMS);
+    if(!ndarray_can_broadcast(ndarray_x, ndarray_y, &ndim, shape, xstrides, ystrides)) {
+        mp_raise_ValueError(translate("operands could not be broadcast together"));
+        m_del(size_t, shape, ULAB_MAX_DIMS);
+        m_del(int32_t, xstrides, ULAB_MAX_DIMS);
+        m_del(int32_t, ystrides, ULAB_MAX_DIMS);
     }
-    ndarray_obj_t *ndarray_x, *ndarray_y;
-    if(MP_OBJ_IS_INT(x) || mp_obj_is_float(x)) {
-        ndarray_x = ndarray_new_linear_array(1, NDARRAY_FLOAT);
-        mp_float_t *array_x = (mp_float_t *)ndarray_x->array;
-        *array_x = mp_obj_get_float(x);
-    } else {
-        ndarray_x = MP_OBJ_TO_PTR(x);
-    }
-    if(MP_OBJ_IS_INT(y) || mp_obj_is_float(y)) {
-        ndarray_y = ndarray_new_linear_array(1, NDARRAY_FLOAT);
-        mp_float_t *array_y = (mp_float_t *)ndarray_y->array;
-        *array_y = mp_obj_get_float(y);
-    } else {
-        ndarray_y = MP_OBJ_TO_PTR(y);
-    }
-    // check, whether partial broadcasting is possible here
-    if((ndarray_x->m != ndarray_y->m) || (ndarray_x->n != ndarray_y->n)) {
-        if((ndarray_x->array->len != 1) && (ndarray_y->array->len != 1)) {
-            mp_raise_ValueError(translate("operands could not be broadcast together"));
-        }
-    }
-    size_t xinc = 0, yinc = 0;
-    size_t m = MAX(ndarray_x->m, ndarray_y->m);
-    size_t n = MAX(ndarray_x->n, ndarray_y->n);
-    size_t len = MAX(ndarray_x->array->len, ndarray_y->array->len);
-    if(ndarray_x->array->len != 1) {
-        xinc = 1;
-    }
-    if(ndarray_y->array->len != 1) {
-        yinc = 1;
-    }
-    size_t posx = 0, posy = 0;
-    ndarray_obj_t *result = create_new_ndarray(m, n, NDARRAY_FLOAT);
-    mp_float_t *array_r = (mp_float_t *)result->array->items;
-    for(size_t i=0; i < len; i++) {
-        mp_float_t value_x = ndarray_get_float_value(ndarray_x->array->items, ndarray_x->array->typecode, posx);
-        mp_float_t value_y = ndarray_get_float_value(ndarray_y->array->items, ndarray_y->array->typecode, posy);
-        *array_r++ = MICROPY_FLOAT_C_FUN(atan2)(value_x, value_y);
-        posx += xinc;
-        posy += yinc;
-    }
-    return MP_OBJ_FROM_PTR(result);
+
+    uint8_t *xarray = (uint8_t *)ndarray_x->array;
+    uint8_t *yarray = (uint8_t *)ndarray_y->array;
+    
+    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
+    mp_float_t *rarray = (mp_float_t *)results->array;
+
+    #if ULAB_MAX_DIMS > 3
+    size_t i = 0;
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        size_t j = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            size_t k = 0;
+            do {
+            #endif
+                size_t l = 0;
+                do {
+                    mp_float_t _x = ndarray_get_float_value(xarray, ndarray_x->dtype);
+                    mp_float_t _y = ndarray_get_float_value(yarray, ndarray_y->dtype);
+                    *rarray++ = MICROPY_FLOAT_C_FUN(atan2)(_y, _x);
+                    xarray += xstrides[ULAB_MAX_DIMS - 1];
+                    yarray += ystrides[ULAB_MAX_DIMS - 1];
+                    l++;
+                } while(l < results->shape[ULAB_MAX_DIMS - 1]);
+            #if ULAB_MAX_DIMS > 1
+                xarray -= xstrides[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];
+                xarray += xstrides[ULAB_MAX_DIMS - 2];
+                yarray -= ystrides[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];
+                yarray += ystrides[ULAB_MAX_DIMS - 2];
+                k++;
+            } while(k < results->shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            xarray -= xstrides[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];
+            xarray += xstrides[ULAB_MAX_DIMS - 3];
+            yarray -= ystrides[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];
+            yarray += ystrides[ULAB_MAX_DIMS - 3];
+            j++;
+        } while(j < results->shape[ULAB_MAX_DIMS - 3]);
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        xarray -= xstrides[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];
+        xarray += xstrides[ULAB_MAX_DIMS - 4];
+        yarray -= ystrides[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];
+        yarray += ystrides[ULAB_MAX_DIMS - 4];
+        i++;
+    } while(i < results->shape[ULAB_MAX_DIMS - 4]);
+    #endif
+    
+    return MP_OBJ_FROM_PTR(results);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
-#endif
+#endif /* ULAB_VECTORISE_HAS_ARCTAN2 */
 
 #if ULAB_VECTORISE_HAS_ATANH
 //| def atanh(a: _ArrayLike) -> ulab.array:
