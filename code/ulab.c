@@ -123,6 +123,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_CREATE_HAS_ARANGE
         { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
     #endif
+    #if ULAB_CREATE_HAS_CONCATENATE
+        { MP_ROM_QSTR(MP_QSTR_concatenate), (mp_obj_t)&create_concatenate_obj },
+    #endif
     #if ULAB_MAX_DIMS > 1
         #if ULAB_CREATE_HAS_EYE
             { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },

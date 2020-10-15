@@ -122,6 +122,7 @@
 // are included at the top level, hence the missing
 // module constant
 #define ULAB_CREATE_HAS_ARANGE          (1)
+#define ULAB_CREATE_HAS_CONCATENATE     (1)
 #define ULAB_CREATE_HAS_EYE             (1)
 #define ULAB_CREATE_HAS_FULL            (1)
 #define ULAB_CREATE_HAS_LINSPACE        (1)

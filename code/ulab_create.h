@@ -20,6 +20,11 @@ mp_obj_t create_arange(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_arange_obj);
 #endif
 
+#if ULAB_CREATE_HAS_CONCATENATE
+mp_obj_t create_concatenate(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(create_concatenate_obj);
+#endif
+
 #if ULAB_MAX_DIMS > 1
 #if ULAB_CREATE_HAS_EYE
 mp_obj_t create_eye(size_t , const mp_obj_t *, mp_map_t *);
