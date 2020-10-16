@@ -31,7 +31,7 @@
 
 // The maximum number of dimensions the firmware should be able to support
 // Possible values lie between 1, and 4, inclusive
-#define ULAB_MAX_DIMS                   2
+#define ULAB_MAX_DIMS                   1
 
 // By setting this constant to 1, iteration over array dimensions will be implemented
 // as a function (ndarray_rewind_array), instead of writing out the loops in macros
