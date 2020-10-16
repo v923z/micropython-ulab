@@ -191,7 +191,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     }
 
     for(uint8_t i=1; i < ndarrays->len; i++) {
-        _ndarray = MP_OBJ_TO_PTR(ndarrays->items[0]);
+        _ndarray = MP_OBJ_TO_PTR(ndarrays->items[i]);
         // check, whether the arrays are compatible
         if((dtype != _ndarray->dtype) || (ndim != _ndarray->ndim)) {
             mp_raise_ValueError(translate("input arrays are not compatible"));
