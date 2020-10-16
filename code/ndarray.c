@@ -704,6 +704,65 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
 STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
 
+    if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+        ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0]);
+        if(dtype == source->dtype) {
+            return ndarray_copy_view(source);
+        }
+        ndarray_obj_t *target = ndarray_new_dense_ndarray(source->ndim, source->shape, dtype);
+        if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
+            // floats must be treated separately, because they can't directly be converted to integer types
+            uint8_t *sarray = (uint8_t *)source->array;
+            uint8_t *tarray = (uint8_t *)target->array;
+            #if ULAB_MAX_DIMS > 3
+            size_t i = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 2
+                size_t j = 0;
+                do {
+                #endif
+                    #if ULAB_MAX_DIMS > 1
+                    size_t k = 0;
+                    do {
+                    #endif
+                        size_t l = 0;
+                        do {
+                            mp_obj_t item;
+                            if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
+                                // floats must be treated separately, because they can't directly be converted to integer types
+                                mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
+                                item = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(floor)(f));
+                            } else {
+                                item = mp_binary_get_val_array(source->dtype, sarray, 0);
+                            }
+                            mp_binary_set_val_array(dtype, tarray, 0, item);
+                            tarray += target->itemsize;
+                            sarray += source->strides[ULAB_MAX_DIMS - 1];
+                            l++;
+                        } while(l < source->shape[ULAB_MAX_DIMS - 1]);
+                    #if ULAB_MAX_DIMS > 1
+                        sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
+                        sarray += source->strides[ULAB_MAX_DIMS - 2];
+                        k++;
+                    } while(k < source->shape[ULAB_MAX_DIMS - 2]);
+                    #endif
+                #if ULAB_MAX_DIMS > 2
+                    sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
+                    sarray += source->strides[ULAB_MAX_DIMS - 3];
+                    j++;
+                } while(j < source->shape[ULAB_MAX_DIMS - 3]);
+                #endif
+            #if ULAB_MAX_DIMS > 3
+                sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
+                sarray += source->strides[ULAB_MAX_DIMS - 4];
+                i++;
+            } while(i < source->shape[ULAB_MAX_DIMS - 4]);
+            #endif
+        }
+        return MP_OBJ_FROM_PTR(target);
+    }
+
     mp_obj_t len_in = mp_obj_len_maybe(args[0]);
     size_t len1 = 0, len2 = 0;
     if (len_in == MP_OBJ_NULL) {
@@ -712,15 +771,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
         // len1 is either the number of rows (for matrices), or the number of elements (row vectors)
         len1 = MP_OBJ_SMALL_INT_VALUE(len_in);
     }
-
     ndarray_obj_t *self;
-
-    // TODO: this doesn't allow dtype conversion.
-    if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
-        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0]);
-        self = ndarray_copy_view(ndarray);
-        return MP_OBJ_FROM_PTR(self);
-    }
 
     // We have to figure out, whether the first element of the iterable is an iterable itself
     // Perhaps, there is a more elegant way of handling this

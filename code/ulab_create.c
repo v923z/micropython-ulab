@@ -170,40 +170,38 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         mp_raise_TypeError(translate("first argument must be a tuple of ndarrays"));
     }
     int8_t axis = (int8_t)args[1].u_int;
-    uint8_t ndim = 0, dtype = NDARRAY_FLOAT;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     mp_obj_tuple_t *ndarrays = MP_OBJ_TO_PTR(args[0].u_obj);
 
     // first check, whether the arrays are compatible
-    for(uint8_t i=0; i < ndarrays->len; i++) {
-        ndarray_obj_t *_ndarray = MP_OBJ_TO_PTR(ndarrays->items[i]);
-        if(i == 0) {
-            dtype = _ndarray->dtype;
-            ndim = _ndarray->ndim;
-            if(axis < 0) {
-                axis += ndim;
-            }
-            if((axis < 0) || (axis >= ndim)) {
-                mp_raise_ValueError(translate("wrong axis specified"));
-            }
-            // shift axis
-            axis = ULAB_MAX_DIMS - ndim + axis;
-            for(uint8_t j=0; j < ULAB_MAX_DIMS; j++) {
-                shape[j] = _ndarray->shape[j];
-            }
-        } else {
-            // check, whether the arrays are compatible
-            if((dtype != _ndarray->dtype) || (ndim != _ndarray->ndim)) {
-                mp_raise_ValueError(translate("input arrays are not compatible"));
-            }
-            for(uint8_t j=0; j < ULAB_MAX_DIMS; j++) {
-                if(j == axis) {
-                    shape[j] += _ndarray->shape[j];
-                } else {
-                    if(shape[j] != _ndarray->shape[j]) {
-                        mp_raise_ValueError(translate("input arrays are not compatible"));
-                    }
+    ndarray_obj_t *_ndarray = MP_OBJ_TO_PTR(ndarrays->items[0]);
+    uint8_t dtype = _ndarray->dtype;
+    uint8_t ndim = _ndarray->ndim;
+    if(axis < 0) {
+        axis += ndim;
+    }
+    if((axis < 0) || (axis >= ndim)) {
+        mp_raise_ValueError(translate("wrong axis specified"));
+    }
+    // shift axis
+    axis = ULAB_MAX_DIMS - ndim + axis;
+    for(uint8_t j=0; j < ULAB_MAX_DIMS; j++) {
+        shape[j] = _ndarray->shape[j];
+    }
+
+    for(uint8_t i=1; i < ndarrays->len; i++) {
+        _ndarray = MP_OBJ_TO_PTR(ndarrays->items[0]);
+        // check, whether the arrays are compatible
+        if((dtype != _ndarray->dtype) || (ndim != _ndarray->ndim)) {
+            mp_raise_ValueError(translate("input arrays are not compatible"));
+        }
+        for(uint8_t j=0; j < ULAB_MAX_DIMS; j++) {
+            if(j == axis) {
+                shape[j] += _ndarray->shape[j];
+            } else {
+                if(shape[j] != _ndarray->shape[j]) {
+                    mp_raise_ValueError(translate("input arrays are not compatible"));
                 }
             }
         }
