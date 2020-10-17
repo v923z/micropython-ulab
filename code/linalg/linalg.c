@@ -508,7 +508,7 @@ static mp_obj_t linalg_norm(mp_obj_t _x) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
 
-//| def size(array: ulab.array) -> int:
+//| def size(array: ulab.array, *, axis: Optional[int] = None) -> int:
 //|     """Return the total number of elements in the array, as an integer."""
 //|     ...
 //|

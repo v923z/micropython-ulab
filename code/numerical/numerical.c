@@ -445,7 +445,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 #endif
 
 #if ULAB_NUMERICAL_HAS_ARGSORT
-//| def argsort(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
+//| def argsort(array: ulab.array, *, axis: int = -1) -> ulab.array:
 //|     """Returns an array which gives indices into the input array from least to greatest."""
 //|     ...
 //|
@@ -453,7 +453,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -632,7 +632,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(numerical_cross_obj, numerical_cross);
 #endif /* ULAB_NUMERICAL_HAS_CROSS */
 
 #if ULAB_NUMERICAL_HAS_DIFF
-//| def diff(array: ulab.array, *, axis: int = 1) -> ulab.array:
+//| def diff(array: ulab.array, *, n: int = 1, axis: int = -1) -> ulab.array:
 //|     """Return the numerical derivative of successive elements of the array, as
 //|        an array.  axis=None is not supported."""
 //|     ...
@@ -660,9 +660,12 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_ValueError(translate("index out of range"));
     }
 
-    uint8_t N = args[1].u_int;
+    if((args[1].u_int < 0) || (args[1].u_int > 9)) {
+        mp_raise_ValueError(translate("differentiation order out of range"));
+    }
+    uint8_t N = (uint8_t)args[1].u_int;
     uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
-    if((N < 0) || (N > 9) || (N > ndarray->shape[index])) {
+    if(N > ndarray->shape[index]) {
         mp_raise_ValueError(translate("differentiation order out of range"));
     }
 
@@ -962,7 +965,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 #endif
 
 #if ULAB_NUMERICAL_HAS_SORT
-//| def sort(array: ulab.array, *, axis: Optional[int] = 0) -> ulab.array:
+//| def sort(array: ulab.array, *, axis: int = -1) -> ulab.array:
 //|     """Sort the array along the given axis, or along all axes if axis is None.
 //|        The array is modified in place."""
 //|     ...
@@ -971,7 +974,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1001,7 +1004,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace
 */
 
 #if ULAB_NUMERICAL_HAS_STD
-//| def std(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
+//| def std(array: _ArrayLike, *, axis: Optional[int] = None, ddof: int = 0) -> float:
 //|     """Return the standard deviation of the array, as a number if axis is None, otherwise as an array."""
 //|     ...
 //|

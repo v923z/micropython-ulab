@@ -193,6 +193,7 @@
 #define ULAB_VECTORISE_HAS_ATANH        (1)
 #define ULAB_VECTORISE_HAS_CEIL         (1)
 #define ULAB_VECTORISE_HAS_COS          (1)
+#define ULAB_VECTORISE_HAS_COSH         (1)
 #define ULAB_VECTORISE_HAS_DEGREES      (1)
 #define ULAB_VECTORISE_HAS_ERF          (1)
 #define ULAB_VECTORISE_HAS_ERFC         (1)

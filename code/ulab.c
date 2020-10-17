@@ -44,8 +44,8 @@
 STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
 #if ULAB_HAS_MATH_CONSTANTS
-mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MICROPY_FLOAT_CONST(M_E)};
-mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MICROPY_FLOAT_CONST(MP_PI)};
+mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MP_E};
+mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
 #endif
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
@@ -300,6 +300,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
             #endif
             #if ULAB_VECTORISE_HAS_COS
                 { MP_OBJ_NEW_QSTR(MP_QSTR_cos), (mp_obj_t)&vectorise_cos_obj },
+            #endif
+            #if ULAB_VECTORISE_HAS_COSH
+                { MP_OBJ_NEW_QSTR(MP_QSTR_cosh), (mp_obj_t)&vectorise_cosh_obj },
             #endif
             #if ULAB_VECTORISE_HAS_DEGREES
                 { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&vectorise_degrees_obj },

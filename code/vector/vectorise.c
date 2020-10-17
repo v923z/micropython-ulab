@@ -20,13 +20,10 @@
 #include "py/objarray.h"
 #include "vectorise.h"
 
-#ifndef MP_PI
-#define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
-#endif
-    
 #if ULAB_VECTORISE_MODULE
 
 //| """Element-by-element functions
+//|
 //| These functions can operate on numbers, 1-D iterables, 1-D arrays, or 2-D arrays by
 //| applying the function to every element in the array.  This is typically
 //| much more efficient than expressing the same operation as a Python loop."""
@@ -625,6 +622,9 @@ STATIC const mp_rom_map_elem_t ulab_vectorise_globals_table[] = {
     #endif
     #if ULAB_VECTORISE_HAS_COS
     { MP_OBJ_NEW_QSTR(MP_QSTR_cos), (mp_obj_t)&vectorise_cos_obj },
+    #endif
+    #if ULAB_VECTORISE_HAS_COSH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cosh), (mp_obj_t)&vectorise_cosh_obj },
     #endif
     #if ULAB_VECTORISE_HAS_DEGREES
     { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&vectorise_degrees_obj },

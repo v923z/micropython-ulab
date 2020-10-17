@@ -25,25 +25,33 @@ mp_uint_t ndarray_print_threshold = NDARRAY_PRINT_THRESHOLD;
 mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 
 //| """Manipulate numeric data similar to numpy
+//|
 //| `ulab` is a numpy-like module for micropython, meant to simplify and
 //| speed up common mathematical operations on arrays. The primary goal was to
 //| implement a small subset of numpy that might be useful in the context of a
 //| microcontroller. This means low-level data processing of linear (array) and
 //| two-dimensional (matrix) data.
+//|
 //| `ulab` is adapted from micropython-ulab, and the original project's
 //| documentation can be found at
 //| https://micropython-ulab.readthedocs.io/en/latest/
+//|
 //| `ulab` is modeled after numpy, and aims to be a compatible subset where
 //| possible.  Numpy's documentation can be found at
 //| https://docs.scipy.org/doc/numpy/index.html"""
 //|
-//| from typing import List
+//| from typing import Dict
 //|
 //| _DType = int
-//| """`ulab.int8`, `ulab.uint8`, `ulab.int16`, `ulab.uint16`, or `ulab.float`"""
+//| """`ulab.int8`, `ulab.uint8`, `ulab.int16`, `ulab.uint16`, `ulab.float` or `ulab.bool`"""
 //|
-//| _Index = Union[int, slice, List[bool], Tuple[Union[int, slice, List[bool]], Union[int, slice, List[bool]]]]
 //| _float = float
+//| """Type alias of the bulitin float"""
+//|
+//| _bool = bool
+//| """Type alias of the bulitin bool"""
+//|
+//| _Index = Union[int, slice, ulab.array, Tuple[Union[int, slice], ...]]
 //|
 
 //| class array:
@@ -51,26 +59,29 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|
 //|     def __init__(
 //|         self,
-//|         values: Union[array, Iterable[_float], Iterable[Iterable[_float]]],
+//|         values: Union[array, Iterable[Union[_float, _bool, Iterable[Any]]]],
 //|         *,
-//|         dtype: _DType = float
+//|         dtype: _DType = ulab.float
 //|     ) -> None:
 //|         """:param sequence values: Sequence giving the initial content of the array.
-//|           :param dtype: The type of array values, ``int8``, ``uint8``, ``int16``, ``uint16``, or ``float``
+//|           :param ~ulab._DType dtype: The type of array values, `ulab.int8`, `ulab.uint8`, `ulab.int16`, `ulab.uint16`, `ulab.float` or `ulab.bool`
 //|
-//|           The `values` sequence can either be another ~ulab.array, sequence of numbers
+//|           The ``values`` sequence can either be another ~ulab.array, sequence of numbers
 //|           (in which case a 1-dimensional array is created), or a sequence where each
 //|           subsequence has the same length (in which case a 2-dimensional array is
 //|           created).
-//|           Passing a ~ulab.array and a different dtype can be used to convert an array
+//|
+//|           Passing a `ulab.array` and a different dtype can be used to convert an array
 //|           from one dtype to another.
+//|
 //|           In many cases, it is more convenient to create an array from a function
 //|           like `zeros` or `linspace`.
+//|
 //|           `ulab.array` implements the buffer protocol, so it can be used in many
 //|           places an `array.array` can be used."""
 //|         ...
 //|
-//|     shape: Union[Tuple[int], Tuple[int, int]]
+//|     shape: Tuple[int, ...]
 //|     """The size of the array, a tuple of length 1 or 2"""
 //|
 //|     size: int
@@ -79,7 +90,14 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|     itemsize: int
 //|     """The size of a single item in the array"""
 //|
-//|     def flatten(self, *, order: str = "C") -> array:
+//|     strides: Tuple[int, ...]
+//|     """Tuple of bytes to step in each dimension, a tuple of length 1 or 2"""
+//|
+//|     def copy(self) -> ulab.array:
+//|         """Return a copy of the array"""
+//|         ...
+//|
+//|     def flatten(self, *, order: str = "C") -> ulab.array:
 //|         """:param order: Whether to flatten by rows ('C') or columns ('F')
 //|
 //|            Returns a new `ulab.array` object which is always 1 dimensional.
@@ -88,7 +106,7 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|            to the typical storage organization of the C and Fortran languages."""
 //|         ...
 //|
-//|     def reshape(self, shape: Tuple[int, int]) -> array:
+//|     def reshape(self, shape: Tuple[int, ...]) -> ulab.array:
 //|         """Returns an array containing the same data with a new shape."""
 //|         ...
 //|
@@ -96,60 +114,64 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|         """:param axis: Whether to sort elements within rows (0), columns (1), or elements (None)"""
 //|         ...
 //|
-//|     def transpose(self) -> array:
+//|     def tobytes(self) -> bytearray:
+//|         """Return the raw data bytes in the array"""
+//|         ...
+//|
+//|     def transpose(self) -> ulab.array:
 //|         """Swap the rows and columns of a 2-dimensional array"""
 //|         ...
 //|
-//|     def __add__(self, other: Union[array, _float]) -> array:
+//|     def __add__(self, other: Union[array, _float]) -> ulab.array:
 //|         """Adds corresponding elements of the two arrays, or adds a number to all
 //|            elements of the array.  If both arguments are arrays, their sizes must match."""
 //|         ...
-//|     def __radd__(self, other: _float) -> array: ...
+//|     def __radd__(self, other: _float) -> ulab.array: ...
 //|
-//|     def __sub__(self, other: Union[array, _float]) -> array:
+//|     def __sub__(self, other: Union[array, _float]) -> ulab.array:
 //|         """Subtracts corresponding elements of the two arrays, or subtracts a number from all
 //|            elements of the array.  If both arguments are arrays, their sizes must match."""
 //|         ...
-//|     def __rsub__(self, other: _float) -> array: ...
+//|     def __rsub__(self, other: _float) -> ulab.array: ...
 //|
-//|     def __mul__(self, other: Union[array, _float]) -> array:
+//|     def __mul__(self, other: Union[array, _float]) -> ulab.array:
 //|         """Multiplies corresponding elements of the two arrays, or multiplies
 //|            all elements of the array by a number.  If both arguments are arrays,
 //|            their sizes must match."""
 //|         ...
-//|     def __rmul__(self, other: _float) -> array: ...
+//|     def __rmul__(self, other: _float) -> ulab.array: ...
 //|
-//|     def __div__(self, other: Union[array, _float]) -> array:
+//|     def __div__(self, other: Union[array, _float]) -> ulab.array:
 //|         """Multiplies corresponding elements of the two arrays, or divides
 //|            all elements of the array by a number.  If both arguments are arrays,
 //|            their sizes must match."""
 //|         ...
-//|     def __rdiv__(self, other: _float) -> array: ...
+//|     def __rdiv__(self, other: _float) -> ulab.array: ...
 //|
-//|     def __pow__(self, other: Union[array, _float]) -> array:
+//|     def __pow__(self, other: Union[array, _float]) -> ulab.array:
 //|         """Computes the power (x**y) of corresponding elements of the the two arrays,
 //|            or one number and one array.  If both arguments are arrays, their sizes
 //|            must match."""
 //|         ...
-//|     def __rpow__(self, other: _float) -> array: ...
+//|     def __rpow__(self, other: _float) -> ulab.array: ...
 //|
-//|     def __inv__(self) -> array:
+//|     def __inv__(self) -> ulab.array:
 //|         ...
-//|     def __neg__(self) -> array:
+//|     def __neg__(self) -> ulab.array:
 //|         ...
-//|     def __pos__(self) -> array:
+//|     def __pos__(self) -> ulab.array:
 //|         ...
-//|     def __abs__(self) -> array:
+//|     def __abs__(self) -> ulab.array:
 //|         ...
-//|     def __len__(self) -> array:
+//|     def __len__(self) -> int:
 //|         ...
-//|     def __lt__(self, other: Union[array, _float]) -> List[bool]:
+//|     def __lt__(self, other: Union[array, _float]) -> ulab.array:
 //|         ...
-//|     def __le__(self, other: Union[array, _float]) -> List[bool]:
+//|     def __le__(self, other: Union[array, _float]) -> ulab.array:
 //|         ...
-//|     def __gt__(self, other: Union[array, _float]) -> List[bool]:
+//|     def __gt__(self, other: Union[array, _float]) -> ulab.array:
 //|         ...
-//|     def __ge__(self, other: Union[array, _float]) -> List[bool]:
+//|     def __ge__(self, other: Union[array, _float]) -> ulab.array:
 //|         ...
 //|
 //|     def __iter__(self) -> Union[Iterator[array], Iterator[_float]]:
@@ -164,6 +186,7 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|         ...
 //|
 //| _ArrayLike = Union[array, List[_float], Tuple[_float], range]
+//| """`ulab.array`, list of `float`, tuple of `float` or `range`"""
 //|
 //| int8: _DType
 //| """Type code for signed integers in the range -128 .. 127 inclusive, like the 'b' typecode of `array.array`"""
@@ -179,6 +202,20 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|
 //| uint16: _DType
 //| """Type code for unsigned integers in the range 0 .. 65535 inclusive, like the 'h' typecode of `array.array`"""
+//|
+//| bool: _DType
+//| """Type code for boolean values"""
+//|
+//| def get_printoptions() -> Dict[str, int]:
+//|     """Get printing options"""
+//|     ...
+//|
+//| def set_printoptions(threshold: Optional[int] = None, edgeitems: Optional[int] = None) -> None:
+//|     """Set printing options"""
+//|     ...
+//|
+//| def ndinfo(array: ulab.array) -> None:
+//|     ...
 //|
 
 #ifdef OPENMV

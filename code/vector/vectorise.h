@@ -28,6 +28,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(vectorise_atan_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_atanh_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_ceil_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_cos_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vectorise_cosh_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_degrees_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_erf_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_erfc_obj);
