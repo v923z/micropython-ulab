@@ -141,29 +141,14 @@ mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_flatten_obj);
 #endif
 
-#if NDARRAY_HAS_ITEMSIZE
 mp_obj_t ndarray_itemsize(mp_obj_t );
-MP_DECLARE_CONST_FUN_OBJ_1(ndarray_itemsize_obj);
-#endif
+mp_obj_t ndarray_size(mp_obj_t );
+mp_obj_t ndarray_shape(mp_obj_t );
+mp_obj_t ndarray_strides(mp_obj_t );
 
 #if NDARRAY_HAS_RESHAPE
 mp_obj_t ndarray_reshape(mp_obj_t , mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_2(ndarray_reshape_obj);
-#endif
-
-#if NDARRAY_HAS_SHAPE
-mp_obj_t ndarray_shape(mp_obj_t );
-MP_DECLARE_CONST_FUN_OBJ_1(ndarray_shape_obj);
-#endif
-
-#if NDARRAY_HAS_SIZE
-mp_obj_t ndarray_size(mp_obj_t );
-MP_DECLARE_CONST_FUN_OBJ_1(ndarray_size_obj);
-#endif
-
-#if NDARRAY_HAS_STRIDES
-mp_obj_t ndarray_strides(mp_obj_t );
-MP_DECLARE_CONST_FUN_OBJ_1(ndarray_strides_obj);
 #endif
 
 #if NDARRAY_HAS_TOBYTES
