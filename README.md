@@ -1,9 +1,9 @@
 # ulab
 
 `ulab` is a `numpy`-like array manipulation library for `micropython` and `CircuitPython`.
-The module is written in C, defines compact containers for numerical
-data, and is fast. The library is a software-only standard `micropython` user module,
-i.e., it has no hardware dependencies, and can be compiled for any platform. 
+The module is written in C, defines compact containers for numerical data of one to four
+dimensions, and is fast. The library is a software-only standard `micropython` user module,
+i.e., it has no hardware dependencies, and can be compiled for any platform.
 The `float` implementation of `micropython` (`float`, or `double`) is automatically detected.
 
 # Supported functions
@@ -11,22 +11,24 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 
 ## ndarray
 
-`ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, and `**` binary 
-operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that operate element-wise. Type-aware `ndarray`s can 
-be initialised from any `micropython` iterable, lists of iterables, or by means of the `arange`, `eye`, `linspace`, 
-`ones`, or `zeros`  functions. 
+`ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, `**`,
+`+=`, `-=`, `*=`, `/=`, `**=` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that
+operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of
+iterables, or by means of the `arange`, `concatenate`, `eye`, `full`, `linspace`, `logspace`, `ones`, or
+`zeros`  functions.
 
-`ndarray`s can be iterated on, and have a number of their own methods, such as `shape`, `reshape`, `transpose`, `size`, and `itemsize`.
+`ndarray`s can be iterated on, and have a number of their own methods, such as `flatten`, `shape`,
+`reshape`, `strides`, `transpose`, `size`, `tobytes`, and `itemsize`.
 
-## Modules
+## Customising the firmware
 
-In addition to the `ndarray`'s operators and methods, seven modules define a great number of functions that can 
-take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules 
-can be excluded from the compiled firmware with a pre-processor switch. 
+In addition to the `ndarray`'s operators and methods, seven modules define a great number of functions that can
+take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules
+or even individual functions can be excluded from the compiled firmware with pre-processor switches.
 
 ### approx
 
-The `approx` sub-module contains the implementation of the `interp`, and `trapz` functions of `numpy`, and `newton`, `bisect`, 
+The `approx` sub-module contains the implementation of the `interp`, and `trapz` functions of `numpy`, and `newton`, `bisect`,
 and `fmin` from `scipy`.
 
 ### compare
@@ -35,7 +37,7 @@ The `compare` sub-module contains the implementation of the `equal`, `not_equal`
 
 ### fft
 
-The `fft` sub-module implements the fast Fourier transform, and its inverse for one-dimensional `ndarray`s, 
+The `fft` sub-module implements the fast Fourier transform, and its inverse for one-dimensional `ndarray`s,
 as well as the `spectrogram` function from `scipy`.
 
 ### filter
@@ -45,13 +47,13 @@ as well as the cascaded second-order sections filter, `sosfilt` from `scipy`.
 
 ### linalg
 
-The `linalg` sub-module implements functions for matrix inversion, dot product, and the calculation of the 
-determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace. 
+The `linalg` sub-module implements functions for matrix inversion, dot product, and the calculation of the
+determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace.
 
 ### numerical
 
-The `numerical` sub-module defines the `roll`, `flip`, `diff`, `sort` and `argsort` functions for `ndarray`s, and, 
-in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as 
+The `numerical` sub-module defines the `cross`, `diff`, `flip`, `roll`, `sort` and `argsort` functions for `ndarray`s, and,
+in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as
 well as generic one-dimensional iterables.
 
 ### poly
@@ -60,13 +62,13 @@ The `poly` sub-module defines the `polyval`, and `polyfit` functions from `numpy
 
 ### vector
 
-The `vector` sub-module implements all functions of the `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`) 
-of `micropython` for `ndarray`s and iterables. In addition, it also provided tools for vectorising generic, 
-user-defined `python` functions. 
+The `vector` sub-module implements all functions of `micropython`'s `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`),
+and the `degrees` and `radians` for `ndarray`s and iterables. In addition, it also provided tools for vectorising generic,
+user-defined `python` functions.
 
 ### user
 
-The `user` sub-module is meant as a user-extendable module, and contains a dummy function only. 
+The `user` sub-module is meant as a user-extendable module, and contains a dummy function only.
 
 # Finding help
 
@@ -78,25 +80,26 @@ A number of practical examples are listed in the excellent
 
 # Firmware
 
-Compiled firmware for many hardware platforms can be downloaded from Roberto Colistete's 
-gitlab repository: for the [pyboad](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/Pyboard/Firmware/), and 
-for [ESP8266](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/ESP8266/Firmware). 
+Compiled firmware for many hardware platforms can be downloaded from Roberto Colistete's
+gitlab repository: for the [pyboard](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/Pyboard/Firmware/), and
+for [ESP8266](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/ESP8266/Firmware).
 Since a number of features can be set in the firmware (threading, support for SD card, LEDs, user switch etc.), and it is
 impossible to create something that suits everyone, these releases should only be used for
 quick testing of `ulab`. Otherwise, compilation from the source is required with
 the appropriate settings, which are usually defined in the `mpconfigboard.h` file of the port
 in question.
 
-`ulab` is also included in the following compiled `micropython` variants and derivatives: 
+`ulab` is also included in the following compiled `micropython` variants and derivatives:
 
 1. `CircuitPython` for SAMD51 and nRF microcontrollers https://github.com/adafruit/circuitpython
 1. `MicroPython for K210` https://github.com/loboris/MicroPython_K210_LoBo
 1. `MaixPy` https://github.com/sipeed/MaixPy
 1. `OpenMV` https://github.com/openmv/openmv
+1. `pycom` https://pycom.io/
 
 ## Compiling
 
-If you want to try the latest version of `ulab` on `micropython` or one of its forks, the firmware can be compiled 
+If you want to try the latest version of `ulab` on `micropython` or one of its forks, the firmware can be compiled
 from the source by following these steps:
 
 First, you have to clone the `micropython` repository by running
@@ -104,7 +107,7 @@ First, you have to clone the `micropython` repository by running
 ```
 git clone https://github.com/micropython/micropython.git
 ```
-on the command line. This will create a new repository with the name `micropython`. Staying there, clone the `ulab` repository with 
+on the command line. This will create a new repository with the name `micropython`. Staying there, clone the `ulab` repository with
 
 ```
 git clone https://github.com/v923z/micropython-ulab.git ulab
@@ -120,7 +123,7 @@ If this step was successful, you can try to run the `make` command in the port's
 ```
 make BOARD=PYBV11 USER_C_MODULES=../../../ulab all
 ```
-which will prepare the firmware for pyboard.v.11. Similarly, 
+which will prepare the firmware for pyboard.v.11. Similarly,
 ```
 make BOARD=PYBD_SF6 USER_C_MODULES=../../../ulab all
 ```
@@ -130,7 +133,7 @@ Provided that you managed to compile the firmware, you would upload that by runn
 ```
 dfu-util --alt 0 -D firmware.dfu
 ```
-or 
+or
 ```
 python pydfu.py -u firmware.dfu
 ```
