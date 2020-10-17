@@ -404,6 +404,10 @@ mp_obj_t ndarray_get_item(ndarray_obj_t *ndarray, void *array) {
 
 void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, uint8_t *array, size_t stride, size_t n) {
     mp_print_str(print, "[");
+    if(n == 0) {
+        mp_print_str(print, "]");
+        return;
+    }
     if((n <= ndarray_print_threshold) || (n <= 2*ndarray_print_edgeitems)) { // if the array is short, print everything
         mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         array += stride;
@@ -536,7 +540,7 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     ndarray->dense = 1;
     ndarray->dtype = dtype;
     ndarray->ndim = ndim;
-    ndarray->len = 1;
+    ndarray->len = ndim == 0 ? 0 : 1;
     ndarray->itemsize = mp_binary_get_size('@', dtype, NULL);
     int32_t *_strides;
     if(strides == NULL) {
@@ -644,14 +648,16 @@ ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *sha
     ndarray->dtype = source->dtype;
     ndarray->ndim = ndim;
     ndarray->itemsize = source->itemsize;
-    ndarray->len = 1;
+    ndarray->len = ndim == 0 ? 0 : 1;
     for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndim; i--) {
         ndarray->shape[i-1] = shape[i-1];
         ndarray->strides[i-1] = strides[i-1];
         ndarray->len *= shape[i-1];
     }
     uint8_t *pointer = (uint8_t *)source->array;
-    pointer += offset;
+    if(ndim > 0) {
+        pointer += offset;
+    }
     ndarray->array = pointer;
     return ndarray;
 }
@@ -684,6 +690,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_copy_obj, ndarray_copy);
 
 ndarray_obj_t *ndarray_new_linear_array(size_t len, uint8_t dtype) {
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    if(len == 0) {
+        return ndarray_new_dense_ndarray(0, shape, dtype);
+    }
     shape[ULAB_MAX_DIMS-1] = len;
     return ndarray_new_dense_ndarray(1, shape, dtype);
 }
@@ -954,6 +963,9 @@ ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *
 }
 
 void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
+    if(values->len == 0) {
+        return;
+    }
     uint8_t ndim = 0;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
@@ -1175,11 +1187,7 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
         }
         ndarray_obj_t *view = ndarray_view_from_slices(ndarray, tuple);
         if(values == NULL) { // return value(s)
-            if(view->len == 1) {
-                return mp_binary_get_val_array(view->dtype, view->array, 0);
-            } else {
-                return MP_OBJ_FROM_PTR(view);
-            }
+            return MP_OBJ_FROM_PTR(view);
         } else { // assign value(s)
             ndarray_assign_view(view, values);
         }
@@ -1493,6 +1501,54 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
         m_del(size_t, shape, ULAB_MAX_DIMS);
         m_del(int32_t, lstrides, ULAB_MAX_DIMS);
         m_del(int32_t, rstrides, ULAB_MAX_DIMS);
+    }
+    // the empty arrays have to be treated separately
+    uint8_t dtype = NDARRAY_INT16;
+    ndarray_obj_t *nd;
+    if((lhs->ndim == 0) || (rhs->ndim == 0)) {
+        switch(op) {
+            case MP_BINARY_OP_INPLACE_ADD:
+            case MP_BINARY_OP_INPLACE_MULTIPLY:
+            case MP_BINARY_OP_INPLACE_SUBTRACT:
+            case MP_BINARY_OP_ADD:
+            case MP_BINARY_OP_MULTIPLY:
+            case MP_BINARY_OP_SUBTRACT:
+                // here we don't have to list those cases that result in an int16,
+                // because dtype is initialised with that NDARRAY_INT16
+                if(lhs->dtype == rhs->dtype) {
+                    dtype = rhs->dtype;
+                } else if((lhs->dtype == NDARRAY_FLOAT) || (rhs->dtype == NDARRAY_FLOAT)) {
+                    dtype = NDARRAY_FLOAT;
+                } else if(((lhs->dtype == NDARRAY_UINT8) && (rhs->dtype == NDARRAY_UINT16)) ||
+                            ((lhs->dtype == NDARRAY_INT8) && (rhs->dtype == NDARRAY_UINT16)) ||
+                            ((rhs->dtype == NDARRAY_UINT8) && (lhs->dtype == NDARRAY_UINT16)) ||
+                            ((rhs->dtype == NDARRAY_INT8) && (lhs->dtype == NDARRAY_UINT16))) {
+                    dtype = NDARRAY_UINT16;
+                }
+                return MP_OBJ_FROM_PTR(ndarray_new_linear_array(0, dtype));
+                break;
+
+            case MP_BINARY_OP_INPLACE_POWER:
+            case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
+            case MP_BINARY_OP_POWER:
+            case MP_BINARY_OP_TRUE_DIVIDE:
+                return MP_OBJ_FROM_PTR(ndarray_new_linear_array(0, NDARRAY_FLOAT));
+                break;
+
+            case MP_BINARY_OP_LESS:
+            case MP_BINARY_OP_LESS_EQUAL:
+            case MP_BINARY_OP_MORE:
+            case MP_BINARY_OP_MORE_EQUAL:
+            case MP_BINARY_OP_EQUAL:
+            case MP_BINARY_OP_NOT_EQUAL:
+                nd = ndarray_new_linear_array(0, NDARRAY_UINT8);
+                nd->boolean = true;
+                return MP_OBJ_FROM_PTR(nd);
+
+            default:
+                return mp_const_none;
+                break;
+        }
     }
 
     switch(op) {
