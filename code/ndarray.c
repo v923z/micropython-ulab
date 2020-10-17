@@ -461,13 +461,13 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
             #if ULAB_MAX_DIMS > 1
                 array += self->strides[ULAB_MAX_DIMS-2];
                 k++;
-                ndarray_print_bracket(print, k, self->shape[ULAB_MAX_DIMS-2], ",\n\t");
+                ndarray_print_bracket(print, k, self->shape[ULAB_MAX_DIMS-2], ",\n       ");
             } while(k < self->shape[ULAB_MAX_DIMS-2]);
             #endif
         #if ULAB_MAX_DIMS > 2
             ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "]");
             j++;
-            ndarray_print_bracket(print, j, self->shape[ULAB_MAX_DIMS-3], ",\n\n\t");
+            ndarray_print_bracket(print, j, self->shape[ULAB_MAX_DIMS-3], ",\n\n       ");
             array -= self->strides[ULAB_MAX_DIMS-2] * self->shape[ULAB_MAX_DIMS-2];
             array += self->strides[ULAB_MAX_DIMS-3];
         } while(j < self->shape[ULAB_MAX_DIMS-3]);
@@ -477,7 +477,7 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         array -= self->strides[ULAB_MAX_DIMS-3] * self->shape[ULAB_MAX_DIMS-3];
         array += self->strides[ULAB_MAX_DIMS-4];
         i++;
-        ndarray_print_bracket(print, i, self->shape[ULAB_MAX_DIMS-4], ",\n\n\t");
+        ndarray_print_bracket(print, i, self->shape[ULAB_MAX_DIMS-4], ",\n\n       ");
     } while(i < self->shape[ULAB_MAX_DIMS-4]);
     #endif
 

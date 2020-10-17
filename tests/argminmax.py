@@ -1,4 +1,4 @@
-import ulab
+import ulab as np
 
 # Adapted from https://docs.python.org/3.8/library/itertools.html#itertools.permutations
 def permutations(iterable, r=None):
@@ -28,26 +28,26 @@ def permutations(iterable, r=None):
 
 # Combinations expected to throw
 try:
-    print(ulab.numerical.argmin([]))
+    print(np.argmin([]))
 except ValueError:
     print("ValueError")
 
 try:
-    print(ulab.numerical.argmax([]))
+    print(np.argmax([]))
 except ValueError:
     print("ValueError")
 
 # Combinations expected to succeed
-print(ulab.numerical.argmin([1]))
-print(ulab.numerical.argmax([1]))
-print(ulab.numerical.argmin(ulab.array([1])))
-print(ulab.numerical.argmax(ulab.array([1])))
+print(np.argmin([1]))
+print(np.argmax([1]))
+print(np.argmin(np.array([1])))
+print(np.argmax(np.array([1])))
 
 print()
 print("max tests")
 for p in permutations((100,200,300)):
-    m1 = ulab.numerical.argmax(p)
-    m2 = ulab.numerical.argmax(ulab.array(p))
+    m1 = np.argmax(p)
+    m2 = np.argmax(np.array(p))
     print(p, m1, m2)
     if m1 != m2 or p[m1] != max(p):
         print("FAIL", p, m1, m2, max(p))
@@ -55,8 +55,8 @@ for p in permutations((100,200,300)):
 print()
 print("min tests")
 for p in permutations((100,200,300)):
-    m1 = ulab.numerical.argmin(p)
-    m2 = ulab.numerical.argmin(ulab.array(p))
+    m1 = np.argmin(p)
+    m2 = np.argmin(np.array(p))
     print(p, m1, m2)
     if m1 != m2 or p[m1] != min(p):
         print("FAIL", p, m1, m2, min(p))

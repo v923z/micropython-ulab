@@ -297,10 +297,7 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     } else {
         m = mp_obj_get_int(args[1].u_rom_obj);
     }
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    shape[ULAB_MAX_DIMS - 2] = m;
-    shape[ULAB_MAX_DIMS - 1] = n;
-    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, shape, dtype);
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, m, n), dtype);
     mp_obj_t one = mp_obj_new_int(1);
     size_t i = 0;
     if((args[2].u_int >= 0)) {

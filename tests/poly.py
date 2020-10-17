@@ -1,27 +1,25 @@
-import ulab
-from ulab import poly
-from ulab import vector
+import ulab as np
 
 # polynom evaluation
-x = ulab.linspace(0, 10, num=9)
+x = np.linspace(0, 10, num=9)
 p = [1, 2, 3]
-y = poly.polyval(p, x)
+y = np.polyval(p, x)
 print(y)
 
 # linear fit
-x = ulab.linspace(-5, 5, num=11)
-y = x + vector.sin(x)
-p = poly.polyfit(x, y, 1)
+x = np.linspace(-5, 5, num=11)
+y = x + np.sin(x)
+p = np.polyfit(x, y, 1)
 print(p)
 
 # quadratic fit
-x = ulab.linspace(-5, 5, num=11)
-y = x*x + vector.sin(x)*3.0
-p = poly.polyfit(x, y, 2)
+x = np.linspace(-5, 5, num=11)
+y = x*x + np.sin(x)*3.0
+p = np.polyfit(x, y, 2)
 print(p)
 
 # cubic fit
-x = ulab.linspace(-5, 5, num=11)
-y = x*x*x + vector.sin(x)*10.0
-p = poly.polyfit(x, y, 3)
+x = np.linspace(-5, 5, num=11)
+y = x*x*x + np.sin(x)*10.0
+p = np.polyfit(x, y, 3)
 print(p)

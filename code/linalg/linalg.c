@@ -47,7 +47,6 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     // initially, this is the unit matrix: the contents of this matrix is what
     // will be returned after all the transformations
     mp_float_t *unit = m_new(mp_float_t, N*N);
-
     mp_float_t elem = 1.0;
     // initialise the unit matrix
     memset(unit, 0, sizeof(mp_float_t)*N*N);
@@ -58,9 +57,9 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
         // this could be faster with ((c < epsilon) && (c > -epsilon))
         if(MICROPY_FLOAT_C_FUN(fabs)(data[m * (N+1)]) < epsilon) {
             //look for a line to swap
-            size_t m1=m+1;
+            size_t m1 = m + 1;
             for(; m1 < N; m1++) {
-                if(!(MICROPY_FLOAT_C_FUN(fabs)(data[m1*N+m]) < epsilon)) {
+                if(!(MICROPY_FLOAT_C_FUN(fabs)(data[m1*N + m]) < epsilon)) {
                     for(size_t m2=0; m2 < N; m2++) {
                         mp_float_t swapVal = data[m*N+m2];
                         data[m*N+m2] = data[m1*N+m2];
@@ -187,6 +186,9 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
         array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;
         array += ndarray->strides[ULAB_MAX_DIMS - 2];
     }
+
+    // re-wind the pointer
+    tmp -= N*N;
 
     mp_float_t c;
     mp_float_t det_sign = 1.0;
@@ -449,7 +451,6 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
     ndarray_obj_t *ndarray = linalg_object_is_square(o_in);
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
-
     ndarray_obj_t *inverted = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, N, N), NDARRAY_FLOAT);
     mp_float_t *iarray = (mp_float_t *)inverted->array;
 
@@ -461,9 +462,10 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
         array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;
         array += ndarray->strides[ULAB_MAX_DIMS - 2];
     }
+    // re-wind the pointer
+    iarray -= N*N;
+
     if(!linalg_invert_matrix(iarray, N)) {
-        // TODO: I am not sure this is needed here. Otherwise,
-        // how should we free up the unused RAM of inverted?
         mp_raise_ValueError(translate("input matrix is singular"));
     }
     return MP_OBJ_FROM_PTR(inverted);

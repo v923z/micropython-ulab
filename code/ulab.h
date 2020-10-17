@@ -27,7 +27,7 @@
 // i.e., functions can be called at the top level,
 // without having to import the sub-modules (linalg and fft are exceptions,
 // since those must be imported even in numpy)
-#define ULAB_NUMPY_COMPATIBILITY        (0)
+#define ULAB_NUMPY_COMPATIBILITY        (1)
 
 // The maximum number of dimensions the firmware should be able to support
 // Possible values lie between 1, and 4, inclusive

@@ -1,12 +1,12 @@
 array([1.0, 1.0, 1.0], dtype=float)
 array([[1.0, 1.0, 1.0],
-	 [1.0, 1.0, 1.0]], dtype=float)
+       [1.0, 1.0, 1.0]], dtype=float)
 array([0.0, 0.0, 0.0], dtype=float)
 array([[0.0, 0.0, 0.0],
-	 [0.0, 0.0, 0.0]], dtype=float)
+       [0.0, 0.0, 0.0]], dtype=float)
 array([[1.0, 0.0, 0.0],
-	 [0.0, 1.0, 0.0],
-	 [0.0, 0.0, 1.0]], dtype=float)
+       [0.0, 1.0, 0.0],
+       [0.0, 0.0, 1.0]], dtype=float)
 array([1], dtype=int8)
 array([1, 1], dtype=uint8)
 array([1, 1, 1], dtype=int16)

@@ -206,20 +206,83 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         mp_raise_ValueError(translate("attempt to get (arg)min/(arg)max of empty sequence"));
     }
 
-    uint8_t *array = (uint8_t *)ndarray->array;
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
-
     if(axis == mp_const_none) {
-        // pass for now
+        // work with the flattened array
+        uint8_t *array = (uint8_t *)ndarray->array;
+        mp_float_t best_value = ndarray_get_float_value(array, ndarray->dtype);
+        mp_float_t value;
+        size_t index = 0, best_index = 0;
+        
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        value = ndarray_get_float_value(array, ndarray->dtype);
+                        if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) {
+                            if(best_value < value) {
+                                best_value = value;
+                                best_index = index;
+                            }
+                        } else {
+                            if(best_value > value) {
+                                best_value = value;
+                                best_index = index;
+                            }                            
+                        }
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                        index++;
+                    } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                    array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+                array += ndarray->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < ndarray->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            sarray -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+            sarray += ndarray->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+        
+        if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
+            return mp_obj_new_int(best_index);
+        } else {
+            if(ndarray->dtype == NDARRAY_FLOAT) {
+                return mp_obj_new_float(best_value);
+            } else {
+                return MP_OBJ_NEW_SMALL_INT((uint32_t)best_value);
+            }
+        }
     } else {
         int8_t ax = mp_obj_get_int(axis);
         if(ax < 0) ax += ndarray->ndim;
         if((ax < 0) || (ax > ndarray->ndim - 1)) {
-            mp_raise_ValueError(translate("index out of range"));
+            mp_raise_ValueError(translate("axis is out of bounds"));
         }
+        
+        uint8_t *array = (uint8_t *)ndarray->array;
+        size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+        int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+        memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
         numerical_reduce_axes(ndarray, ax, shape, strides);
         uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
 
