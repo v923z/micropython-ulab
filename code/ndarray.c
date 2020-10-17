@@ -950,7 +950,7 @@ ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *
         offset += ndarray->strides[ULAB_MAX_DIMS - ndim + i] * (int32_t)slice.start;
         strides[ULAB_MAX_DIMS - ndim + i] = (int32_t)slice.step * ndarray->strides[ULAB_MAX_DIMS - ndim + i];
     }
-    return ndarray_new_view(ndarray, ndim, shape, strides, offset);
+    return ndarray_new_view(ndarray, ndim-tuple->len, shape, strides, offset);
 }
 
 void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
