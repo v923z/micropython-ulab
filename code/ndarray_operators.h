@@ -74,7 +74,7 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 ({  size_t l = 0;\
     do {\
         *((type_left *)(larray)) = MICROPY_FLOAT_C_FUN(pow)(*((type_left *)(larray)), *((type_right *)(rarray)));\
-        (larray) += (results)->strides)[ULAB_MAX_DIMS - 1];\
+        (larray) += (results)->strides[ULAB_MAX_DIMS - 1];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
