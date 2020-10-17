@@ -290,27 +290,26 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     size_t n = args[0].u_int, m;
-    size_t k = args[2].u_int;
+    size_t k = args[2].u_int > 0 ? (size_t)args[2].u_int : (size_t)(-args[2].u_int);
     uint8_t dtype = args[3].u_int;
     if(args[1].u_rom_obj == mp_const_none) {
         m = n;
     } else {
         m = mp_obj_get_int(args[1].u_rom_obj);
     }
-
-    size_t shape[] = {0, 0, m, n};
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    shape[ULAB_MAX_DIMS - 2] = m;
+    shape[ULAB_MAX_DIMS - 1] = n;
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, shape, dtype);
     mp_obj_t one = mp_obj_new_int(1);
     size_t i = 0;
-    if((k >= 0) && (k < n)) {
+    if((args[2].u_int >= 0)) {
         while(k < n) {
             mp_binary_set_val_array(dtype, ndarray->array, i*n+k, one);
             k++;
             i++;
         }
-    } else if((k < 0) && (-k < m)) {
-        k = -k;
-        i = 0;
+    } else {
         while(k < m) {
             mp_binary_set_val_array(dtype, ndarray->array, k*n+i, one);
             k++;
