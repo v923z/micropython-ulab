@@ -1325,7 +1325,7 @@ mp_obj_t ndarray_flatten(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
                     size_t l = 0;
                     do {
                         memcpy(array, sarray, self->itemsize);
-                        array += ndarray->strides[0];
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
                         sarray += self->strides[0];
                         l++;
                     } while(l < self->shape[0]);
