@@ -13,10 +13,8 @@ for num in range(1,4):
                 ll = len(sl)
                 try:
                     sa = list(a[start:end:stride])
-                    la = len(sa)
                 except IndexError as e:
                     sa = str(e)
-                    la = -1
                 print("%2d [% d:% d:% d]     %-24r %-24r%s" % (
                     num, start, end, stride, sl, sa, " ***" if sa != sl else ""))
 
