@@ -1,3 +1,9 @@
+Fri, 23 Oct 2020
+
+version 0.54.4
+
+    fixed indexing error in slices
+
 Mon, 17 Aug 2020
 
 version 0.54.3
