@@ -135,7 +135,7 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_xatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
         { MP_QSTR_fatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
-        { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 200} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -150,15 +150,10 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     // parameters controlling convergence conditions
     mp_float_t xatol = mp_obj_get_float(args[2].u_obj);
     mp_float_t fatol = mp_obj_get_float(args[3].u_obj);
-    uint16_t maxiter;
-    if(args[4].u_obj == mp_const_none) {
-        maxiter = 200;
-    } else {
-        if(args[4].u_obj < 0) {
-            mp_raise_TypeError(translate("maxiter must be > 0"));
-        }
-        maxiter = (uint16_t)mp_obj_get_int(args[4].u_obj);
+    if(args[4].u_int <= 0) {
+        mp_raise_ValueError(translate("maxiter must be > 0"));
     }
+    uint16_t maxiter = (uint16_t)args[4].u_int;
 
     mp_float_t x0 = mp_obj_get_float(args[1].u_obj);
     mp_float_t x1 = x0 != MICROPY_FLOAT_CONST(0.0) ? (MICROPY_FLOAT_CONST(1.0) + APPROX_NONZDELTA) * x0 : APPROX_ZDELTA;
@@ -475,7 +470,7 @@ STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_float_t dx, df, fx;
     dx = x > MICROPY_FLOAT_CONST(0.0) ? APPROX_EPS * x : -APPROX_EPS * x;
     mp_obj_t *fargs = m_new(mp_obj_t, 1);
-    if(args[4].u_int < 0) {
+    if(args[4].u_int <= 0) {
         mp_raise_ValueError(translate("maxiter must be > 0"));
     }
     for(uint16_t i=0; i < args[4].u_int; i++) {

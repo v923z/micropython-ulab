@@ -79,9 +79,9 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
 
 #if ULAB_CREATE_HAS_ARANGE
 //| @overload
-//| def arange(stop: _float, step: _float = 1, dtype: _DType = float) -> array: ...
+//| def arange(stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.array: ...
 //| @overload
-//| def arange(start: _float, stop: _float, step: _float = 1, dtype: _DType = float) -> array:
+//| def arange(start: _float, stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.array:
 //|     """
 //|     .. param: start
 //|       First value in the array, optional, defaults to 0
@@ -146,9 +146,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 #endif
 
 #if ULAB_CREATE_HAS_CONCATENATE
-//| def concatenate((a1, a2, ...), axis: int = 0) -> array:
+//| def concatenate(arrays: Tuple[ulab.array], *, axis: int = 0) -> ulab.array:
 //|     """
-//|     .. param: (a1, a2, ...)
+//|     .. param: arrays
 //|       tuple of ndarrays
 //|     .. param: axis
 //|       axis along which the arrays will be joined
@@ -272,7 +272,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_concatenate_obj, 1, create_concatenate);
 
 #if ULAB_MAX_DIMS > 1
 #if ULAB_CREATE_HAS_EYE
-//| def eye(size: int, *, dtype: _DType = float) -> array:
+//| def eye(size: int, *, M: Optional[int] = None, k: int = 0, dtype: _DType = ulab.float) -> ulab.array:
 //|     """Return a new square array of size, with the diagonal elements set to 1
 //|        and the other elements set to 0."""
 //|     ...
@@ -321,7 +321,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 #endif /* ULAB_MAX_DIMS > 1 */
 
 #if ULAB_CREATE_HAS_FULL
-//| def full(shape: Union[int, Tuple[int, int]], fill_value, *, dtype: _DType = float) -> array:
+//| def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[_float, _bool], *, dtype: _DType = ulab.float) -> ulab.array:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of integers (for tensors of higher rank)
@@ -375,11 +375,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_full_obj, 0, create_full);
 //|     start: _float,
 //|     stop: _float,
 //|     *,
-//|     dtype: _DType = float,
+//|     dtype: _DType = ulab.float,
 //|     num: int = 50,
-//|     endpoint: bool = True
-//|     retstep: bool = False
-//| ) -> array:
+//|     endpoint: _bool = True,
+//|     retstep: _bool = False
+//| ) -> ulab.array:
 //|     """
 //|     .. param: start
 //|       First value in the array
@@ -437,15 +437,15 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 #endif
 
 #if ULAB_CREATE_HAS_LOGSPACE
-//| def linspace(
+//| def logspace(
 //|     start: _float,
 //|     stop: _float,
 //|     *,
-//|     dtype: _DType = float,
+//|     dtype: _DType = ulab.float,
 //|     num: int = 50,
-//|     endpoint: bool = True,
-//|     base: float = 10.0
-//| ) -> array:
+//|     endpoint: _bool = True,
+//|     base: _float = 10.0
+//| ) -> ulab.array:
 //|     """
 //|     .. param: start
 //|       First value in the array
@@ -519,7 +519,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_logspace_obj, 2, create_logspace);
 #endif
 
 #if ULAB_CREATE_HAS_ONES
-//| def ones(shape: Union[int, Tuple[int, int]], *, dtype: _DType = float) -> array:
+//| def ones(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.array:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
@@ -538,7 +538,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 #endif
 
 #if ULAB_CREATE_HAS_ZEROS
-//| def zeros(shape: Union[int, Tuple[int, int]], *, dtype: _DType = float) -> array:
+//| def zeros(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.array:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
