@@ -151,7 +151,7 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     if(args[4].u_obj == mp_const_none) {
         maxiter = 200;
     } else {
-        if(args[4].u_obj < 0) {
+        if(mp_obj_get_int(args[4].u_obj) < 0) {
             mp_raise_TypeError(translate("maxiter must be > 0"));
         }
         maxiter = (uint16_t)mp_obj_get_int(args[4].u_obj);

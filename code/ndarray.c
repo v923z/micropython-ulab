@@ -765,6 +765,13 @@ static mp_obj_t iterate_slice_list(ndarray_obj_t *ndarray, size_t m, size_t n,
 static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t *values) {
     mp_bound_slice_t row_slice = simple_slice(0, 0, 1), column_slice = simple_slice(0, 0, 1);
 
+    if(!MP_OBJ_IS_TYPE(index, &mp_type_tuple) &&
+        !MP_OBJ_IS_TYPE(index, &mp_type_list) &&
+        !MP_OBJ_IS_TYPE(index, &mp_type_slice) &&
+        !MP_OBJ_IS_INT(index)) {
+        mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
+    }
+    
     size_t m = 0, n = 0;
     if(MP_OBJ_IS_INT(index) && (ndarray->m == 1) && (values == NULL)) {
         // we have a row vector, and don't want to assign
