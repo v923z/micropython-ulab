@@ -13,17 +13,17 @@ on:
     types: [rerequested]
 
 jobs:
-  test:
+  micropython:
     runs-on: ubuntu-16.04
     steps:
     - name: Dump GitHub context
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Set up Python 3.5
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.5
+        python-version: 3.8
 
     - name: Versions
       run: |
@@ -60,3 +60,30 @@ jobs:
         done
       if: failure()
 
+  circuitpython:
+    runs-on: ubuntu-16.04
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+    - name: Set up Python 3.5
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+
+    - name: Checkout ulab
+      uses: actions/checkout@v1
+
+    - name: Install requirements
+      run: |
+        sudo apt install librsvg2-bin gettext
+        pip install "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter astroid isort polib black
+
+    - name: Run build-cp.sh
+      run: ./build-cp.sh
