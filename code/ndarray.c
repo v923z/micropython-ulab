@@ -769,7 +769,7 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
         !MP_OBJ_IS_TYPE(index, &mp_type_list) &&
         !MP_OBJ_IS_TYPE(index, &mp_type_slice) &&
         !MP_OBJ_IS_INT(index)) {
-        mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
+        mp_raise_TypeError(translate("indices must be integers, slices, or Boolean lists"));
     }
     
     size_t m = 0, n = 0;
@@ -814,7 +814,7 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
            !(MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_list) ||
             MP_OBJ_IS_TYPE(tuple->items[1], &mp_type_slice) ||
             MP_OBJ_IS_INT(tuple->items[1]))) {
-                mp_raise_msg(&mp_type_IndexError, translate("indices must be integers, slices, or Boolean lists"));
+                mp_raise_TypeError(translate("indices must be integers, slices, or Boolean lists"));
         }
         if(MP_OBJ_IS_TYPE(tuple->items[0], &mp_type_list)) { // rows are indexed by Boolean list
             m = true_length(tuple->items[0]);

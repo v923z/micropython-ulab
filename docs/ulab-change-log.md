@@ -1,3 +1,9 @@
+Sat, 25 Oct 2020
+
+version 0.54.5
+
+    wrong type in slices raise TypeError exception
+
 Fri, 23 Oct 2020
 
 version 0.54.4
