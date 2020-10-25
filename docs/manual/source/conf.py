@@ -14,15 +14,17 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+#import sphinx_rtd_theme
+
 
 # -- Project information -----------------------------------------------------
 
-project = 'micropython-ulab'
+project = 'The ulab book'
 copyright = '2019-2020, Zoltán Vörös'
 author = 'Zoltán Vörös'
 
 # The full version, including alpha/beta/rc tags
-release = '0.54.0'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -42,13 +44,6 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 
-# -- Options for HTML output -------------------------------------------------
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-html_theme = 'sphinx_rtd_theme'
-
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -61,7 +56,6 @@ copyright=author
 language='en'
 
 latex_documents = [
-(master_doc, 'ulab-manual.tex', 'Micropython ulab documentation', 
+(master_doc, 'the-ulab-book.tex', 'The $\mu$lab book',
 'Zoltán Vörös', 'manual'),
 ]
-   
