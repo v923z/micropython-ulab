@@ -167,7 +167,7 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|         ...
 //|
 //| _ArrayLike = Union[array, List[_float], Tuple[_float], range]
-//| """`ulab.array`, `List[float]`, `Tuple[float]` or `range`"""
+//| """`ulab.array`, ``List[float]``, ``Tuple[float]`` or `range`"""
 //|
 //| int8: _DType
 //| """Type code for signed integers in the range -128 .. 127 inclusive, like the 'b' typecode of `array.array`"""
