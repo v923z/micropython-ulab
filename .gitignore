@@ -1,3 +1,5 @@
 /micropython
 /*.exp
 /*.out
+/docs/manual/build/
+/docs/manual/source/**/*.pyi

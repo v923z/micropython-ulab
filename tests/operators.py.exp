@@ -6,11 +6,11 @@ array([3.0, 3.0, 3.0], dtype=float)
 array([-1.0, -1.0, -1.0], dtype=float)
 array([2.0, 2.0, 2.0], dtype=float)
 array([0.5, 0.5, 0.5], dtype=float)
-[False, False, False]
-[True, True, True]
-[False, False, False]
-[True, True, True]
-[False, False, False]
-[False, False, False]
-[True, True, True]
-[True, True, True]
+array([False, False, False], dtype=bool)
+array([True, True, True], dtype=bool)
+array([False, False, False], dtype=bool)
+array([True, True, True], dtype=bool)
+array([False, False, False], dtype=bool)
+array([False, False, False], dtype=bool)
+array([True, True, True], dtype=bool)
+array([True, True, True], dtype=bool)

@@ -9,6 +9,7 @@
  * Copyright (c) 2019-2020 Zoltán Vörös
  *               2020 Jeff Epler for Adafruit Industries
  *               2020 Scott Shawcroft for Adafruit Industries
+ *               2020 Taku Fukada
 */
 
 #include "py/obj.h"
@@ -19,6 +20,7 @@
 
 #if ULAB_POLY_MODULE
 
+#if ULAB_POLY_HAS_POLYFIT
 //| """Polynomial functions"""
 //|
 //| from ulab import _ArrayLike
@@ -33,11 +35,8 @@
 //|     ...
 //|
 
-static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
-    if((n_args != 2) && (n_args != 3)) {
-        mp_raise_ValueError(translate("number of arguments must be 2, or 3"));
-    }
-    if(!ndarray_object_is_nditerable(args[0])) {
+mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
+    if(!ndarray_object_is_array_like(args[0])) {
         mp_raise_ValueError(translate("input data must be an iterable"));
     }
     size_t lenx = 0, leny = 0;
@@ -60,7 +59,7 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
         y = m_new(mp_float_t, leny);
         fill_array_iterable(y, args[0]);
     } else /* n_args == 3 */ {
-        if(!ndarray_object_is_nditerable(args[1])) {
+        if(!ndarray_object_is_array_like(args[1])) {
             mp_raise_ValueError(translate("input data must be an iterable"));
         }
         lenx = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
@@ -124,8 +123,8 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
     // XT is no longer needed
     m_del(mp_float_t, XT, (deg+1)*leny);
     
-    ndarray_obj_t *beta = create_new_ndarray(deg+1, 1, NDARRAY_FLOAT);
-    mp_float_t *betav = (mp_float_t *)beta->array->items;
+    ndarray_obj_t *beta = ndarray_new_linear_array(deg+1, NDARRAY_FLOAT);
+    mp_float_t *betav = (mp_float_t *)beta->array;
     // x[0..(deg+1)] contains now the product X^T * y; we can get rid of y
     m_del(float, y, leny);
     
@@ -147,65 +146,114 @@ static mp_obj_t poly_polyfit(size_t  n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj, 2, 3, poly_polyfit);
+#endif
 
+#if ULAB_POLY_HAS_POLYVAL
 //| def polyval(p: _ArrayLike, x: _ArrayLike) -> ulab.array:
 //|     """Evaluate the polynomial p at the points x.  x must be an array."""
 //|     ...
 //|
 
-static mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
-    // TODO: return immediately, if o_p is not an iterable
-    // TODO: there is a bug here: matrices won't work, 
-    // because there is a single iteration loop
-    size_t m, n;
-    if(MP_OBJ_IS_TYPE(o_x, &ulab_ndarray_type)) {
-        ndarray_obj_t *ndx = MP_OBJ_TO_PTR(o_x);
-        m = ndx->m;
-        n = ndx->n;
-    } else {
-        mp_obj_array_t *ix = MP_OBJ_TO_PTR(o_x);
-        m = 1;
-        n = ix->len;
+mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
+    if(!ndarray_object_is_array_like(o_p) || !ndarray_object_is_array_like(o_x)) {
+        mp_raise_TypeError(translate("inputs are not iterable"));
     }
-    // polynomials are going to be of type float, except, when both 
-    // the coefficients and the independent variable are integers
-    ndarray_obj_t *out = create_new_ndarray(m, n, NDARRAY_FLOAT);
-    mp_obj_iter_buf_t x_buf;
-    mp_obj_t x_item, x_iterable = mp_getiter(o_x, &x_buf);
-
-    mp_obj_iter_buf_t p_buf;
-    mp_obj_t p_item, p_iterable;
-
-    mp_float_t x, y;
-    mp_float_t *outf = (mp_float_t *)out->array->items;
+    // p had better be a one-dimensional standard iterable
     uint8_t plen = mp_obj_get_int(mp_obj_len_maybe(o_p));
     mp_float_t *p = m_new(mp_float_t, plen);
-    p_iterable = mp_getiter(o_p, &p_buf);
+    mp_obj_iter_buf_t p_buf;
+    mp_obj_t p_item, p_iterable = mp_getiter(o_p, &p_buf);
     uint8_t i = 0;    
     while((p_item = mp_iternext(p_iterable)) != MP_OBJ_STOP_ITERATION) {
         p[i] = mp_obj_get_float(p_item);
         i++;
     }
-    i = 0;
-    while ((x_item = mp_iternext(x_iterable)) != MP_OBJ_STOP_ITERATION) {
-        x = mp_obj_get_float(x_item);
-        y = p[0];
-        for(uint8_t j=0; j < plen-1; j++) {
-            y *= x;
-            y += p[j+1];
+
+    // polynomials are going to be of type float, except, when both 
+    // the coefficients and the independent variable are integers
+    ndarray_obj_t *ndarray;
+    if(MP_OBJ_IS_TYPE(o_x, &ulab_ndarray_type)) {
+        ndarray_obj_t *source = MP_OBJ_TO_PTR(o_x);
+        uint8_t *sarray = (uint8_t *)source->array;
+        ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        
+        // TODO: these loops are really nothing, but the re-impplementation of 
+        // ITERATE_VECTOR from vectorise.c. We could pass a function pointer here
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        mp_float_t y = p[0];
+                        mp_float_t _x = ndarray_get_float_value(sarray, source->dtype);
+                        for(uint8_t m=0; m < plen-1; m++) {
+                            y *= _x;
+                            y += p[m+1];
+                        }
+                        *array++ = y;
+                        sarray += source->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l < source->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
+                    sarray += source->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < source->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
+                sarray += source->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < source->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
+            sarray += source->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < source->shape[ULAB_MAX_DIMS - 4]);
+        #endif        
+    } else {
+        // o_x had better be a one-dimensional standard iterable
+        ndarray = ndarray_new_linear_array(mp_obj_get_int(mp_obj_len_maybe(o_x)), NDARRAY_FLOAT);
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        mp_obj_iter_buf_t x_buf;
+        mp_obj_t x_item, x_iterable = mp_getiter(o_x, &x_buf);
+        while ((x_item = mp_iternext(x_iterable)) != MP_OBJ_STOP_ITERATION) {
+            mp_float_t _x = mp_obj_get_float(x_item);
+            mp_float_t y = p[0];
+            for(uint8_t j=0; j < plen-1; j++) {
+                y *= _x;
+                y += p[j+1];
+            }
+            *array++ = y;
         }
-        outf[i++] = y;
     }
     m_del(mp_float_t, p, plen);
-    return MP_OBJ_FROM_PTR(out);
+    return MP_OBJ_FROM_PTR(ndarray);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
+#endif
 
+#if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_poly_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_poly) },
+    #if ULAB_POLY_HAS_POLYFIT
     { MP_OBJ_NEW_QSTR(MP_QSTR_polyfit), (mp_obj_t)&poly_polyfit_obj },
+    #endif
+    #if ULAB_POLY_HAS_POLYVAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_poly_globals, ulab_poly_globals_table);
@@ -214,5 +262,6 @@ mp_obj_module_t ulab_poly_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_poly_globals,
 };
+#endif
 
 #endif

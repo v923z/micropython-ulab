@@ -17,10 +17,12 @@
 
 #if ULAB_POLY_MODULE
 
+#if !ULAB_NUMPY_COMPATIBILITY
 extern mp_obj_module_t ulab_poly_module;
-
-MP_DECLARE_CONST_FUN_OBJ_2(poly_polyval_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj);
-
 #endif
+
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(poly_polyval_obj);
+
+#endif /* ULAB_POLY_MODULE */
 #endif

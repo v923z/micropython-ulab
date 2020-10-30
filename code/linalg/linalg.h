@@ -32,12 +32,12 @@ bool linalg_invert_matrix(mp_float_t *, size_t );
 extern mp_obj_module_t ulab_linalg_module;
 
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_cholesky_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(linalg_size_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(linalg_inv_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(linalg_dot_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(linalg_norm_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_det_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_eig_obj);
-
+MP_DECLARE_CONST_FUN_OBJ_1(linalg_inv_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(linalg_trace_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(linalg_dot_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(linalg_norm_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(linalg_size_obj);
 #endif
 #endif

@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
  *               2020 Scott Shawcroft for Adafruit Industries
+ *               2020 Taku Fukada
 */
 
 #include <math.h>
@@ -35,132 +36,141 @@ enum NUMERICAL_FUNCTION_TYPE {
 //| """Numerical and Statistical functions
 //|
 //| Most of these functions take an "axis" argument, which indicates whether to
-//| operate over the flattened array (None), rows (0), or columns (1)."""
+//| operate over the flattened array (None), or a particular axis (integer)."""
 //|
 //| from ulab import _ArrayLike
 //|
 
-static void axis_sorter(ndarray_obj_t *ndarray, mp_obj_t axis, size_t *m, size_t *n, size_t *N, 
-                 size_t *increment, size_t *len, size_t *start_inc) {
-    if(axis == mp_const_none) { // flatten the array
-        *m = 1;
-        *n = 1;
-        *len = ndarray->array->len;
-        *N = 1;
-        *increment = 1;
-        *start_inc = ndarray->array->len;
-    } else if((mp_obj_get_int(axis) == 1)) { // along the horizontal axis
-        *m = ndarray->m;
-        *n = 1;
-        *len = ndarray->n;
-        *N = ndarray->m;
-        *increment = 1;
-        *start_inc = ndarray->n;
-    } else { // along vertical axis
-        *m = 1;
-        *n = ndarray->n;
-        *len = ndarray->m;
-        *N = ndarray->n;
-        *increment = ndarray->n;
-        *start_inc = 1;
-    }    
+static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *shape, int32_t *strides) {
+    // removes the values corresponding to a single axis from the shape and strides array
+    uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + axis;
+    if((ndarray->ndim == 1) && (axis == 0)) {
+        index = 0;
+        shape[ULAB_MAX_DIMS - 1] = 0;
+        return;
+    }
+    for(uint8_t i = ULAB_MAX_DIMS - 1; i > 0; i--) {
+        if(i > index) {
+            shape[i] = ndarray->shape[i];
+            strides[i] = ndarray->strides[i];
+        } else {
+            shape[i] = ndarray->shape[i-1];
+            strides[i] = ndarray->strides[i-1];
+        }
+    }
 }
 
+#if ULAB_NUMERICAL_HAS_SUM | ULAB_NUMERICAL_HAS_MEAN | ULAB_NUMERICAL_HAS_STD
 static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, size_t ddof) {
-    mp_float_t value, sum = 0.0, sq_sum = 0.0;
+    mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0, sum = 0.0;
+    size_t count = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t item, iterable = mp_getiter(oin, &iter_buf);
-    mp_int_t len = mp_obj_get_int(mp_obj_len(oin));
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+    if((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         value = mp_obj_get_float(item);
         sum += value;
+        M = m = value;
+        count++;
     }
-    if(optype ==  NUMERICAL_SUM) {
+    while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        value = mp_obj_get_float(item);
+        sum += value;
+        m = M + (value - M) / count;
+        s = S + (value - M) * (value - m);
+        M = m;
+        S = s;
+        count++;
+    }
+    if(optype == NUMERICAL_SUM) {
         return mp_obj_new_float(sum);
     } else if(optype == NUMERICAL_MEAN) {
-        return mp_obj_new_float(sum/len);
+        return count > 0 ? mp_obj_new_float(m) : mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
     } else { // this should be the case of the standard deviation
-        // TODO: note that we could get away with a single pass, if we used the Weldorf algorithm
-        // That should save a fair amount of time, because we would have to extract the values only once
-        iterable = mp_getiter(oin, &iter_buf);
-        sum /= len; // this is now the mean!
-        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            value = mp_obj_get_float(item) - sum;
-            sq_sum += value * value;
-        }
-        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(sq_sum/(len-ddof)));
+        return count > ddof ? mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(count * s / (count - ddof))) : mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
     }
 }
 
-STATIC mp_obj_t numerical_sum_mean_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
-    size_t m, n, increment, start, start_inc, N, len; 
-    axis_sorter(ndarray, axis, &m, &n, &N, &increment, &len, &start_inc);
-    ndarray_obj_t *results = create_new_ndarray(m, n, NDARRAY_FLOAT);
-    mp_float_t sum, sq_sum;
-    mp_float_t *farray = (mp_float_t *)results->array->items;
-    for(size_t j=0; j < N; j++) { // result index
-        start = j * start_inc;
-        sum = sq_sum = 0.0;
-        if(ndarray->array->typecode == NDARRAY_UINT8) {
-            RUN_SUM(ndarray, uint8_t, optype, len, start, increment);
-        } else if(ndarray->array->typecode == NDARRAY_INT8) {
-            RUN_SUM(ndarray, int8_t, optype, len, start, increment);
-        } else if(ndarray->array->typecode == NDARRAY_UINT16) {
-            RUN_SUM(ndarray, uint16_t, optype, len, start, increment);
-        } else if(ndarray->array->typecode == NDARRAY_INT16) {
-            RUN_SUM(ndarray, int16_t, optype, len, start, increment);
-        } else { // this will be mp_float_t, no need to check
-            RUN_SUM(ndarray, mp_float_t, optype, len, start, increment);
+static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype, size_t ddof) {
+    uint8_t *array = (uint8_t *)ndarray->array;
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+
+    if(axis == mp_const_none) { // work with the flattened array
+        // pass for now...
+        mp_raise_NotImplementedError(translate("operation is not implemented for flattened array"));
+    } else {
+        int8_t ax = mp_obj_get_int(axis);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
         }
+        numerical_reduce_axes(ndarray, ax, shape, strides);
+        uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        // Take MAX(...) here, so that we can include the 1-dimensional case
+        ndarray_obj_t *results = NULL;
+        uint8_t *rarray = NULL;
+
         if(optype == NUMERICAL_SUM) {
-            farray[j] = sum;
-        } else { // this is the case of the mean
-            farray[j] = sum / len;
+             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, ndarray->dtype);
+             rarray = (uint8_t *)results->array;
+            // TODO: numpy promotes the output to the highest integer type
+            if(ndarray->dtype == NDARRAY_UINT8) {
+                RUN_SUM(ndarray, uint8_t, array, results, rarray, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_INT8) {
+                RUN_SUM(ndarray, int8_t, array, results, rarray, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_UINT16) {
+                RUN_SUM(ndarray, uint16_t, array, results, rarray, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_INT16) {
+                RUN_SUM(ndarray, int16_t, array, results, rarray, shape, strides, index);
+            } else {
+                RUN_SUM(ndarray, mp_float_t, array, results, rarray, shape, strides, index);
+            }
+        } else if(optype == NUMERICAL_MEAN) {
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
+            mp_float_t *r = (mp_float_t *)results->array;
+            if(ndarray->dtype == NDARRAY_UINT8) {
+                RUN_MEAN(ndarray, uint8_t, array, results, r, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_INT8) {
+                RUN_MEAN(ndarray, int8_t, array, results, r, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_UINT16) {
+                RUN_MEAN(ndarray, uint16_t, array, results, r, shape, strides, index);
+            } else if(ndarray->dtype == NDARRAY_INT16) {
+                RUN_MEAN(ndarray, int16_t, array, results, r, shape, strides, index);
+            } else {
+                RUN_MEAN(ndarray, mp_float_t, array, results, r, shape, strides, index);
+            }
+        } else { // this case is certainly the standard deviation
+            mp_float_t div = (mp_float_t)(ndarray->shape[index] - ddof);
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
+            mp_float_t *r = (mp_float_t *)results->array;
+            if(ndarray->dtype == NDARRAY_UINT8) {
+                RUN_STD(ndarray, uint8_t, array, results, r, shape, strides, index, div);
+            } else if(ndarray->dtype == NDARRAY_INT8) {
+                RUN_STD(ndarray, int8_t, array, results, r, shape, strides, index, div);
+            } else if(ndarray->dtype == NDARRAY_UINT16) {
+                RUN_STD(ndarray, uint16_t, array, results, r, shape, strides, index, div);
+            } else if(ndarray->dtype == NDARRAY_INT16) {
+                RUN_STD(ndarray, int16_t, array, results, r, shape, strides, index, div);
+            } else {
+                RUN_STD(ndarray, mp_float_t, array, results, r, shape, strides, index, div);
+            }
         }
-    }
-    if(results->array->len == 1) {
-        return mp_obj_new_float(farray[0]);
-    }
-    return MP_OBJ_FROM_PTR(results);
-}
-
-static mp_obj_t numerical_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, size_t ddof) {
-    size_t m, n, increment, start, start_inc, N, len; 
-    mp_float_t sum, sum_sq;
-    
-    axis_sorter(ndarray, axis, &m, &n, &N, &increment, &len, &start_inc);
-    if(ddof > len) {
-        mp_raise_ValueError(translate("ddof must be smaller than length of data set"));
-    }
-    ndarray_obj_t *results = create_new_ndarray(m, n, NDARRAY_FLOAT);
-    mp_float_t *farray = (mp_float_t *)results->array->items;
-    for(size_t j=0; j < N; j++) { // result index
-        start = j * start_inc;
-        sum = 0.0;
-        sum_sq = 0.0;
-        if(ndarray->array->typecode == NDARRAY_UINT8) {
-            RUN_STD(ndarray, uint8_t, len, start, increment);
-        } else if(ndarray->array->typecode == NDARRAY_INT8) {
-            RUN_STD(ndarray, int8_t, len, start, increment);
-        } else if(ndarray->array->typecode == NDARRAY_UINT16) {
-            RUN_STD(ndarray, uint16_t, len, start, increment);
-        } else if(ndarray->array->typecode == NDARRAY_INT16) {
-            RUN_STD(ndarray, int16_t, len, start, increment);
-        } else { // this will be mp_float_t, no need to check
-            RUN_STD(ndarray, mp_float_t, len, start, increment);
+        if(ndarray->ndim == 1) { // return a scalar here
+            return mp_binary_get_val_array(results->dtype, results->array, 0);
         }
-        farray[j] = MICROPY_FLOAT_C_FUN(sqrt)(sum_sq/(len - ddof));
+        return MP_OBJ_FROM_PTR(results);
     }
-    if(results->array->len == 1) {
-        return mp_obj_new_float(farray[0]);
-    }
-    return MP_OBJ_FROM_PTR(results);
+    return mp_const_none;
 }
+#endif
 
+#if ULAB_NUMERICAL_HAS_ARGMINMAX
 static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
-	if(MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(oin)) == 0) {
-		mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
-	}
+    if(MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(oin)) == 0) {
+        mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
+    }
     size_t idx = 0, best_idx = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(oin, &iter_buf);
@@ -168,77 +178,146 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
     uint8_t op = 0; // argmin, min
     if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) op = 1;
     item = mp_iternext(iterable);
-	mp_obj_t best_obj = item;
+    mp_obj_t best_obj = item;
     mp_float_t value, best_value = mp_obj_get_float(item);
     value = best_value;
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-		idx++;
-		value = mp_obj_get_float(item);
-		if((op == 0) && (value < best_value)) {
-			best_obj = item;
-			best_idx = idx;
-			best_value = value;
-		} else if((op == 1) && (value > best_value)) {
-			best_obj = item;
-			best_idx = idx;
-			best_value = value;
-		}
+        idx++;
+        value = mp_obj_get_float(item);
+        if((op == 0) && (value < best_value)) {
+            best_obj = item;
+            best_idx = idx;
+            best_value = value;
+        } else if((op == 1) && (value > best_value)) {
+            best_obj = item;
+            best_idx = idx;
+            best_value = value;
+        }
     }
     if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
         return MP_OBJ_NEW_SMALL_INT(best_idx);
     } else {
         return best_obj;
-    }    
+    }
 }
 
 static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
-    size_t m, n, increment, start, start_inc, N, len;
-    axis_sorter(ndarray, axis, &m, &n, &N, &increment, &len, &start_inc);
-    ndarray_obj_t *results;
-    if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
-        if(ndarray->array->len == 0) {
-			mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
-		}
-        results = create_new_ndarray(m, n, NDARRAY_UINT16);
-    } else {
-        results = create_new_ndarray(m, n, ndarray->array->typecode);
+    // TODO: treat the flattened array
+    if(ndarray->len == 0) {
+        mp_raise_ValueError(translate("attempt to get (arg)min/(arg)max of empty sequence"));
     }
-    
-    for(size_t j=0; j < N; j++) { // result index
-        start = j * start_inc;
-        if((optype == NUMERICAL_MAX) || (optype == NUMERICAL_MIN)) {
-            if(ndarray->array->typecode == NDARRAY_UINT8) {
-                RUN_ARGMIN(ndarray, results, uint8_t, uint8_t, len, start, increment, optype, j);
-            } else if(ndarray->array->typecode == NDARRAY_INT8) {
-                RUN_ARGMIN(ndarray, results, int8_t, int8_t, len, start, increment, optype, j);
-            } else if(ndarray->array->typecode == NDARRAY_UINT16) {
-                RUN_ARGMIN(ndarray, results, uint16_t, uint16_t, len, start, increment, optype, j);
-            } else if(ndarray->array->typecode == NDARRAY_INT16) {
-                RUN_ARGMIN(ndarray, results, int16_t, int16_t, len, start, increment, optype, j);
+
+    if(axis == mp_const_none) {
+        // work with the flattened array
+        uint8_t *array = (uint8_t *)ndarray->array;
+        mp_float_t best_value = ndarray_get_float_value(array, ndarray->dtype);
+        mp_float_t value;
+        size_t index = 0, best_index = 0;
+        
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        value = ndarray_get_float_value(array, ndarray->dtype);
+                        if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) {
+                            if(best_value < value) {
+                                best_value = value;
+                                best_index = index;
+                            }
+                        } else {
+                            if(best_value > value) {
+                                best_value = value;
+                                best_index = index;
+                            }                            
+                        }
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                        index++;
+                    } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                    array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+                array += ndarray->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < ndarray->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            sarray -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+            sarray += ndarray->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+        
+        if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
+            return mp_obj_new_int(best_index);
+        } else {
+            if(ndarray->dtype == NDARRAY_FLOAT) {
+                return mp_obj_new_float(best_value);
             } else {
-                RUN_ARGMIN(ndarray, results, mp_float_t, mp_float_t, len, start, increment, optype, j);
-            }
-        } else { // argmin/argmax
-            if(ndarray->array->typecode == NDARRAY_UINT8) {
-                RUN_ARGMIN(ndarray, results, uint8_t, uint16_t, len, start, increment, optype, j);
-            } else if(ndarray->array->typecode == NDARRAY_INT8) {
-                RUN_ARGMIN(ndarray, results, int8_t, uint16_t, len, start, increment, optype, j);
-            } else if(ndarray->array->typecode == NDARRAY_UINT16) {
-                RUN_ARGMIN(ndarray, results, uint16_t, uint16_t, len, start, increment, optype, j);
-            } else if(ndarray->array->typecode == NDARRAY_INT16) {
-                RUN_ARGMIN(ndarray, results, int16_t, uint16_t, len, start, increment, optype, j);
-            } else {
-                RUN_ARGMIN(ndarray, results, mp_float_t, uint16_t, len, start, increment, optype, j);
+                return MP_OBJ_NEW_SMALL_INT((uint32_t)best_value);
             }
         }
-    }
-	if(results->array->len == 1) {
-        return mp_binary_get_val_array(results->array->typecode, results->array->items, 0);
-	}
-    return MP_OBJ_FROM_PTR(results);
-}
+    } else {
+        int8_t ax = mp_obj_get_int(axis);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("axis is out of bounds"));
+        }
+        
+        uint8_t *array = (uint8_t *)ndarray->array;
+        size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+        int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+        memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+        numerical_reduce_axes(ndarray, ax, shape, strides);
+        uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
 
-STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t optype) {
+        ndarray_obj_t *results = NULL;
+
+        if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_INT16);
+        } else {
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, ndarray->dtype);
+        }
+
+        uint8_t *rarray = (uint8_t *)results->array;
+
+        if(ndarray->dtype == NDARRAY_UINT8) {
+            RUN_ARGMIN(ndarray, uint8_t, array, results, rarray, shape, strides, index, optype);
+        } else if(ndarray->dtype == NDARRAY_INT8) {
+            RUN_ARGMIN(ndarray, int8_t, array, results, rarray, shape, strides, index, optype);
+        } else if(ndarray->dtype == NDARRAY_UINT16) {
+            RUN_ARGMIN(ndarray, uint16_t, array, results, rarray, shape, strides, index, optype);
+        } else if(ndarray->dtype == NDARRAY_INT16) {
+            RUN_ARGMIN(ndarray, int16_t, array, results, rarray, shape, strides, index, optype);
+        } else {
+            RUN_ARGMIN(ndarray, mp_float_t, array, results, rarray, shape, strides, index, optype);
+        }
+        if(results->len == 1) {
+            return mp_binary_get_val_array(results->dtype, results->array, 0);
+        }
+        return MP_OBJ_FROM_PTR(results);
+    }
+    return mp_const_none;
+}
+#endif
+
+static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t optype) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} } ,
         { MP_QSTR_axis, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -246,15 +325,14 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
+
     mp_obj_t oin = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
-    if((axis != mp_const_none) && (mp_obj_get_int(axis) != 0) && (mp_obj_get_int(axis) != 1)) {
-        // this seems to pass with False, and True...
-        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
+    if((axis != mp_const_none) && (!MP_OBJ_IS_INT(axis))) {
+        mp_raise_TypeError(translate("axis must be None, or an integer"));
     }
-    
-    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || 
+
+    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) ||
         MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
         switch(optype) {
             case NUMERICAL_MIN:
@@ -278,7 +356,7 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
                 return numerical_argmin_argmax_ndarray(ndarray, axis, optype);
             case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
-                return numerical_sum_mean_ndarray(ndarray, axis, optype);
+                return numerical_sum_mean_std_ndarray(ndarray, axis, optype, 0);
             default:
                 mp_raise_NotImplementedError(translate("operation is not implemented on ndarrays"));
         }
@@ -288,6 +366,7 @@ STATIC mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 
+#if ULAB_NUMERICAL_HAS_SORT
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
     if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
@@ -297,44 +376,42 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     if(inplace == 1) {
         ndarray = MP_OBJ_TO_PTR(oin);
     } else {
-        mp_obj_t out = ndarray_copy(oin);
-        ndarray = MP_OBJ_TO_PTR(out);
+        ndarray = ndarray_copy_view(MP_OBJ_TO_PTR(oin));
     }
-    size_t increment, start_inc, end, N;
-    if(axis == mp_const_none) { // flatten the array
-        ndarray->m = 1;
-        ndarray->n = ndarray->array->len;
-        increment = 1;
-        start_inc = ndarray->n;
-        end = ndarray->n;
-        N = ndarray->n;
-    } else if((mp_obj_get_int(axis) == -1) || 
-              (mp_obj_get_int(axis) == 1)) { // sort along the horizontal axis
-        increment = 1;
-        start_inc = ndarray->n;
-        end = ndarray->array->len;
-        N = ndarray->n;
-    } else if(mp_obj_get_int(axis) == 0) { // sort along vertical axis
-        increment = ndarray->n;
-        start_inc = 1;
-        end = ndarray->n;
-        N = ndarray->m;
-    } else {
-        mp_raise_ValueError(translate("axis must be -1, 0, None, or 1"));
-    }
-    
-    size_t q, k, p, c;
 
-    for(size_t start=0; start < end; start+=start_inc) {
-        q = N;
-        k = (q >> 1);
-        if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
-            HEAPSORT(uint8_t, ndarray);
-        } else if((ndarray->array->typecode == NDARRAY_INT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
-            HEAPSORT(uint16_t, ndarray);
-        } else {
-            HEAPSORT(mp_float_t, ndarray);
+    int8_t ax = 0;
+    if(axis == mp_const_none) {
+        // flatten the array
+        for(uint8_t i=0; i < ULAB_MAX_DIMS - 1; i++) {
+            ndarray->shape[i] = 0;
+            ndarray->strides[i] = 0;
         }
+        ndarray->shape[ULAB_MAX_DIMS - 1] = ndarray->len;
+        ndarray->strides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
+        ndarray->ndim = 1;
+    } else {
+        ax = mp_obj_get_int(axis);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
+        }
+    }
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+    numerical_reduce_axes(ndarray, ax, shape, strides);
+    ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+    // we work with the typed array, so re-scale the stride
+    int32_t increment = ndarray->strides[ax] / ndarray->itemsize;
+
+    uint8_t *array = (uint8_t *)ndarray->array;
+    if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
+        HEAPSORT(ndarray, uint8_t, array, shape, strides, ax, increment, ndarray->shape[ax]);
+    } else if((ndarray->dtype == NDARRAY_INT16) || (ndarray->dtype == NDARRAY_INT16)) {
+        HEAPSORT(ndarray, uint16_t, array, shape, strides, ax, increment, ndarray->shape[ax]);
+    } else {
+        HEAPSORT(ndarray, mp_float_t, array, shape, strides, ax, increment, ndarray->shape[ax]);
     }
     if(inplace == 1) {
         return mp_const_none;
@@ -342,13 +419,15 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
         return MP_OBJ_FROM_PTR(ndarray);
     }
 }
+#endif
 
+#if ULAB_NUMERICAL_HAS_ARGMINMAX
 //| def argmax(array: _ArrayLike, *, axis: Optional[int] = None) -> int:
 //|     """Return the index of the maximum element of the 1D array"""
 //|     ...
 //|
 
-static mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMAX);
 }
 
@@ -364,16 +443,18 @@ static mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
+#endif
 
-//| def argsort(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
+#if ULAB_NUMERICAL_HAS_ARGSORT
+//| def argsort(array: ulab.array, *, axis: int = -1) -> ulab.array:
 //|     """Returns an array which gives indices into the input array from least to greatest."""
 //|     ...
 //|
 
-static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -381,74 +462,184 @@ static mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_TypeError(translate("argsort argument must be an ndarray"));
     }
 
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
-    size_t increment, start_inc, end, N, m, n;
-    if(args[1].u_obj == mp_const_none) { // flatten the array
-        m = 1;
-        n = ndarray->array->len;
-        increment = 1;
-        start_inc = ndarray->n;
-        end = ndarray->n;
-        N = n;
-    } else if((mp_obj_get_int(args[1].u_obj) == -1) || (mp_obj_get_int(args[1].u_obj) == 1)) { // sort along the horizontal axis
-        m = ndarray->m;
-        n = ndarray->n;
-        increment = 1;
-        start_inc = n;
-        end = ndarray->array->len;
-        N = n;
-    } else if(mp_obj_get_int(args[1].u_obj) == 0) { // sort along vertical axis
-        m = ndarray->m;
-        n = ndarray->n;
-        increment = n;
-        start_inc = 1;
-        end = n;
-        N = m;
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);    
+    if(args[1].u_obj == mp_const_none) {
+        // bail out, though dense arrays could still be sorted
+        mp_raise_NotImplementedError(translate("argsort is not implemented for flattened arrays"));
+    }
+    // Since we are returning an NDARRAY_UINT16 array, bail out, 
+    // if the axis is longer than what we can hold
+    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
+        if(ndarray->shape[i] > 65535) {
+            mp_raise_ValueError(translate("axis too long"));
+        }
+    }
+    int8_t ax = mp_obj_get_int(args[1].u_obj);
+    if(ax < 0) ax += ndarray->ndim;
+    if((ax < 0) || (ax > ndarray->ndim - 1)) {
+        mp_raise_ValueError(translate("index out of range"));
+    }
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+    numerical_reduce_axes(ndarray, ax, shape, strides);
+
+    // We could return an NDARRAY_UINT8 array, if all lengths are shorter than 256
+    ndarray_obj_t *indices = ndarray_new_ndarray(ndarray->ndim, ndarray->shape, NULL, NDARRAY_UINT16);
+    int32_t *istrides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(istrides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+    numerical_reduce_axes(indices, ax, shape, istrides);
+    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
+        istrides[i] /= sizeof(uint16_t);
+    }
+    
+    ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+    // we work with the typed array, so re-scale the stride
+    int32_t increment = ndarray->strides[ax] / ndarray->itemsize;
+    uint16_t iincrement = indices->strides[ax] / sizeof(uint16_t);
+
+    uint8_t *array = (uint8_t *)ndarray->array;
+    uint16_t *iarray = (uint16_t *)indices->array;
+
+    // fill in the index values
+    #if ULAB_MAX_DIMS > 3
+    size_t j = 0;
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        size_t k = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            size_t l = 0;
+            do {
+            #endif
+            uint16_t m = 0;
+                do {
+                    *iarray = m++;
+                    iarray += iincrement;
+                } while(m < indices->shape[ax]);
+            #if ULAB_MAX_DIMS > 1
+                iarray -= iincrement * indices->shape[ax];
+                iarray += istrides[ULAB_MAX_DIMS - 1];
+                l++;
+            } while(l < shape[ULAB_MAX_DIMS - 1]);
+            iarray -= istrides[ULAB_MAX_DIMS - 1] * shape[ULAB_MAX_DIMS - 1];
+            iarray += istrides[ULAB_MAX_DIMS - 2];
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            k++;
+        } while(k < shape[ULAB_MAX_DIMS - 2]);
+        iarray -= istrides[ULAB_MAX_DIMS - 2] * shape[ULAB_MAX_DIMS - 2];
+        iarray += istrides[ULAB_MAX_DIMS - 3];
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        j++;
+    } while(j < shape[ULAB_MAX_DIMS - 3]);
+    #endif
+    // reset the array
+    iarray = indices->array;
+    
+    if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
+        HEAP_ARGSORT(ndarray, uint8_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
+    } else if((ndarray->dtype == NDARRAY_UINT16) || (ndarray->dtype == NDARRAY_INT16)) {
+        HEAP_ARGSORT(ndarray, uint16_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
     } else {
-        mp_raise_ValueError(translate("axis must be -1, 0, None, or 1"));
-    }
-
-    if((m > 65535) || (n > 65535)) {
-        mp_raise_ValueError(translate("sorted axis can't be longer than 65535"));
-    }
-    // at the expense of flash, we could save RAM by creating 
-    // an NDARRAY_UINT16 ndarray only, if needed, otherwise, NDARRAY_UINT8
-    ndarray_obj_t *indices = create_new_ndarray(m, n, NDARRAY_UINT16);
-    uint16_t *index_array = (uint16_t *)indices->array->items;
-    // initialise the index array
-    // if array is flat: 0 to indices->n
-    // if sorting vertically, identical indices are arranged row-wise
-    // if sorting horizontally, identical indices are arranged colunn-wise
-    for(uint16_t start=0; start < end; start+=start_inc) {
-        for(uint16_t s=0; s < N; s++) {
-            index_array[start+s*increment] = s;
-        }
-    }
-
-    size_t q, k, p, c;
-    for(size_t start=0; start < end; start+=start_inc) {
-        q = N; 
-        k = (q >> 1);
-        if((ndarray->array->typecode == NDARRAY_UINT8) || (ndarray->array->typecode == NDARRAY_INT8)) {
-            HEAP_ARGSORT(uint8_t, ndarray, index_array);
-        } else if((ndarray->array->typecode == NDARRAY_INT16) || (ndarray->array->typecode == NDARRAY_INT16)) {
-            HEAP_ARGSORT(uint16_t, ndarray, index_array);
-        } else {
-            HEAP_ARGSORT(mp_float_t, ndarray, index_array);
-        }
+        HEAP_ARGSORT(ndarray, mp_float_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
     }
     return MP_OBJ_FROM_PTR(indices);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
+#endif
 
-//| def diff(array: ulab.array, *, axis: int = 1) -> ulab.array:
+#if ULAB_NUMERICAL_HAS_CROSS
+//| def cross(a: ulab.array, b: ulab.array) -> ulab.array:
+//|     """Return the cross product of two vectors of length 3"""
+//|     ...
+//|
+
+static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
+    if (!MP_OBJ_IS_TYPE(_a, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_b, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("arguments must be ndarrays"));
+    }
+    ndarray_obj_t *a = MP_OBJ_TO_PTR(_a);
+    ndarray_obj_t *b = MP_OBJ_TO_PTR(_b);
+    if((a->ndim != 1) || (b->ndim != 1) || (a->len != b->len) || (a->len != 3)) {
+        mp_raise_ValueError(translate("cross is defined for 1D arrays of length 3"));
+    }
+
+    mp_float_t *results = m_new(mp_float_t, 3);
+    results[0] = ndarray_get_float_index(a->array, a->dtype, 1) * ndarray_get_float_index(b->array, b->dtype, 2);
+    results[0] -= ndarray_get_float_index(a->array, a->dtype, 2) * ndarray_get_float_index(b->array, b->dtype, 1);
+    results[1] = -ndarray_get_float_index(a->array, a->dtype, 0) * ndarray_get_float_index(b->array, b->dtype, 2);
+    results[1] += ndarray_get_float_index(a->array, a->dtype, 2) * ndarray_get_float_index(b->array, b->dtype, 0);
+    results[2] = ndarray_get_float_index(a->array, a->dtype, 0) * ndarray_get_float_index(b->array, b->dtype, 1);
+    results[2] -= ndarray_get_float_index(a->array, a->dtype, 1) * ndarray_get_float_index(b->array, b->dtype, 0);
+
+    /* The upcasting happens here with the rules
+
+        - if one of the operarands is a float, the result is always float
+        - operation on identical types preserves type
+
+        uint8 + int8 => int16
+        uint8 + int16 => int16
+        uint8 + uint16 => uint16
+        int8 + int16 => int16
+        int8 + uint16 => uint16
+        uint16 + int16 => float
+
+    */
+
+    uint8_t dtype = NDARRAY_FLOAT;
+    if(a->dtype == b->dtype) {
+        dtype = a->dtype;
+    } else if(((a->dtype == NDARRAY_UINT8) && (b->dtype == NDARRAY_INT8)) || ((a->dtype == NDARRAY_INT8) && (b->dtype == NDARRAY_UINT8))) {
+        dtype = NDARRAY_INT16;
+    } else if(((a->dtype == NDARRAY_UINT8) && (b->dtype == NDARRAY_INT16)) || ((a->dtype == NDARRAY_INT16) && (b->dtype == NDARRAY_UINT8))) {
+        dtype = NDARRAY_INT16;
+    } else if(((a->dtype == NDARRAY_UINT8) && (b->dtype == NDARRAY_UINT16)) || ((a->dtype == NDARRAY_UINT16) && (b->dtype == NDARRAY_UINT8))) {
+        dtype = NDARRAY_UINT16;
+    } else if(((a->dtype == NDARRAY_INT8) && (b->dtype == NDARRAY_INT16)) || ((a->dtype == NDARRAY_INT16) && (b->dtype == NDARRAY_INT8))) {
+        dtype = NDARRAY_INT16;
+    } else if(((a->dtype == NDARRAY_INT8) && (b->dtype == NDARRAY_UINT16)) || ((a->dtype == NDARRAY_UINT16) && (b->dtype == NDARRAY_INT8))) {
+        dtype = NDARRAY_UINT16;
+    }
+
+    ndarray_obj_t *ndarray = ndarray_new_linear_array(3, dtype);
+    if(dtype == NDARRAY_UINT8) {
+        uint8_t *array = (uint8_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = (uint8_t)results[i];
+    } else if(dtype == NDARRAY_INT8) {
+        int8_t *array = (int8_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = (int8_t)results[i];
+    } else if(dtype == NDARRAY_UINT16) {
+        uint16_t *array = (uint16_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = (uint16_t)results[i];
+    } else if(dtype == NDARRAY_INT16) {
+        int16_t *array = (int16_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = (int16_t)results[i];
+    } else {
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        for(uint8_t i=0; i < 3; i++) array[i] = results[i];
+    }
+    m_del(mp_float_t, results, 3);
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(numerical_cross_obj, numerical_cross);
+
+#endif /* ULAB_NUMERICAL_HAS_CROSS */
+
+#if ULAB_NUMERICAL_HAS_DIFF
+//| def diff(array: ulab.array, *, n: int = 1, axis: int = -1) -> ulab.array:
 //|     """Return the numerical derivative of successive elements of the array, as
 //|        an array.  axis=None is not supported."""
 //|     ...
 //|
 
-static mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_n, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 } },
@@ -457,74 +648,79 @@ static mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
+
     if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("diff argument must be an ndarray"));
     }
-    
-    ndarray_obj_t *in = MP_OBJ_TO_PTR(args[0].u_obj);
-    size_t increment, N, M;
-    if((args[2].u_int == -1) || (args[2].u_int == 1)) { // differentiate along the horizontal axis
-        increment = 1;
-    } else if(args[2].u_int == 0) { // differtiate along vertical axis
-        increment = in->n;
-    } else {
-        mp_raise_ValueError(translate("axis must be -1, 0, or 1"));
-    }
-    if((args[1].u_int < 0) || (args[1].u_int > 9)) {
-        mp_raise_ValueError(translate("n must be between 0, and 9"));
-    }
-    uint8_t n = args[1].u_int;
-    int8_t *stencil = m_new(int8_t, n+1);
-    stencil[0] = 1;
-    for(uint8_t i=1; i < n+1; i++) {
-        stencil[i] = -stencil[i-1]*(n-i+1)/i;
+
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    int8_t ax = args[2].u_int;
+    if(ax < 0) ax += ndarray->ndim;
+
+    if((ax < 0) || (ax > ndarray->ndim - 1)) {
+        mp_raise_ValueError(translate("index out of range"));
     }
 
-    ndarray_obj_t *out;
-    
-    if(increment == 1) { // differentiate along the horizontal axis 
-        if(n >= in->n) {
-            out = create_new_ndarray(in->m, 0, in->array->typecode);
-            m_del(uint8_t, stencil, n);
-            return MP_OBJ_FROM_PTR(out);
-        }
-        N = in->n - n;
-        M = in->m;
-    } else { // differentiate along vertical axis
-        if(n >= in->m) {
-            out = create_new_ndarray(0, in->n, in->array->typecode);
-            m_del(uint8_t, stencil, n);
-            return MP_OBJ_FROM_PTR(out);
-        }
-        M = in->m - n;
-        N = in->n;
+    if((args[1].u_int < 0) || (args[1].u_int > 9)) {
+        mp_raise_ValueError(translate("differentiation order out of range"));
     }
-    out = create_new_ndarray(M, N, in->array->typecode);
-    if(in->array->typecode == NDARRAY_UINT8) {
-        CALCULATE_DIFF(in, out, uint8_t, M, N, in->n, increment);
-    } else if(in->array->typecode == NDARRAY_INT8) {
-        CALCULATE_DIFF(in, out, int8_t, M, N, in->n, increment);
-    }  else if(in->array->typecode == NDARRAY_UINT16) {
-        CALCULATE_DIFF(in, out, uint16_t, M, N, in->n, increment);
-    } else if(in->array->typecode == NDARRAY_INT16) {
-        CALCULATE_DIFF(in, out, int16_t, M, N, in->n, increment);
+    uint8_t N = (uint8_t)args[1].u_int;
+    uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+    if(N > ndarray->shape[index]) {
+        mp_raise_ValueError(translate("differentiation order out of range"));
+    }
+
+    int8_t *stencil = m_new(int8_t, N+1);
+    stencil[0] = 1;
+    for(uint8_t i=1; i < N+1; i++) {
+        stencil[i] = -stencil[i-1]*(N-i+1)/i;
+    }
+
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
+        shape[i] = ndarray->shape[i];
+        if(i == index) {
+            shape[i] -= N;
+        }
+    }
+    uint8_t *array = (uint8_t *)ndarray->array;
+    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, shape, ndarray->dtype);
+    uint8_t *rarray = (uint8_t *)results->array;
+
+    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    memset(strides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
+    numerical_reduce_axes(ndarray, ax, shape, strides);
+
+    if(ndarray->dtype == NDARRAY_UINT8) {
+        RUN_DIFF(ndarray, uint8_t, array, results, rarray, shape, strides, index, stencil, N);
+    } else if(ndarray->dtype == NDARRAY_INT8) {
+        RUN_DIFF(ndarray, int8_t, array, results, rarray, shape, strides, index, stencil, N);
+    }  else if(ndarray->dtype == NDARRAY_UINT16) {
+        RUN_DIFF(ndarray, uint16_t, array, results, rarray, shape, strides, index, stencil, N);
+    } else if(ndarray->dtype == NDARRAY_INT16) {
+        RUN_DIFF(ndarray, int16_t, array, results, rarray, shape, strides, index, stencil, N);
     } else {
-        CALCULATE_DIFF(in, out, mp_float_t, M, N, in->n, increment);
+        RUN_DIFF(ndarray, mp_float_t, array, results, rarray, shape, strides, index, stencil, N);
     }
-    m_del(int8_t, stencil, n);
-    return MP_OBJ_FROM_PTR(out);
+    m_del(int8_t, stencil, N+1);
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(int32_t, strides, ULAB_MAX_DIMS);
+    return MP_OBJ_FROM_PTR(results);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
+#endif
 
+#if ULAB_NUMERICAL_HAS_FLIP
 //| def flip(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
 //|     """Returns a new array that reverses the order of the elements along the
 //|        given axis, or along all axes if axis is None."""
 //|     ...
 //|
 
-static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -532,80 +728,79 @@ static mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
+
     if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("flip argument must be an ndarray"));
     }
-    if((args[1].u_obj != mp_const_none) && 
-           (mp_obj_get_int(args[1].u_obj) != 0) && 
-           (mp_obj_get_int(args[1].u_obj) != 1)) {
-        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
-    }
 
-    ndarray_obj_t *in = MP_OBJ_TO_PTR(args[0].u_obj);
-    mp_obj_t oout = ndarray_copy(args[0].u_obj);
-    ndarray_obj_t *out = MP_OBJ_TO_PTR(oout);
-    uint8_t _sizeof = mp_binary_get_size('@', in->array->typecode, NULL);
-    uint8_t *array_in = (uint8_t *)in->array->items;
-    uint8_t *array_out = (uint8_t *)out->array->items;    
-    size_t len;
-    if((args[1].u_obj == mp_const_none) || (mp_obj_get_int(args[1].u_obj) == 1)) { // flip horizontally
-        uint16_t M = in->m;
-        len = in->n;
-        if(args[1].u_obj == mp_const_none) { // flip flattened array
-            len = in->array->len;
-            M = 1;
+    ndarray_obj_t *results = NULL;
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    if(args[1].u_obj == mp_const_none) { // flip the flattened array
+        results = ndarray_new_linear_array(ndarray->len, ndarray->dtype);
+        ndarray_copy_array(ndarray, results);
+        uint8_t *rarray = (uint8_t *)results->array;
+        rarray += (results->len - 1) * results->itemsize;
+        results->array = rarray;
+        results->strides[ULAB_MAX_DIMS - 1] = -results->strides[ULAB_MAX_DIMS - 1];
+    } else if(MP_OBJ_IS_INT(args[1].u_obj)){
+        int8_t ax = mp_obj_get_int(args[1].u_obj);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
         }
-        for(size_t m=0; m < M; m++) {
-            for(size_t n=0; n < len; n++) {
-                memcpy(array_out+_sizeof*(m*len+n), array_in+_sizeof*((m+1)*len-n-1), _sizeof);
-            }
-        }
-    } else { // flip vertically
-        for(size_t m=0; m < in->m; m++) {
-            for(size_t n=0; n < in->n; n++) {
-                memcpy(array_out+_sizeof*(m*in->n+n), array_in+_sizeof*((in->m-m-1)*in->n+n), _sizeof);
-            }
-        }
+        ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        int32_t offset = (ndarray->shape[ax] - 1) * ndarray->strides[ax];
+        results = ndarray_new_view(ndarray, ndarray->ndim, ndarray->shape, ndarray->strides, offset);
+        results->strides[ax] = -results->strides[ax];
+    } else {
+        mp_raise_TypeError(translate("wrong axis index"));
     }
-    return out;
+    return results;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_flip_obj, 1, numerical_flip);
+#endif
 
+#if ULAB_NUMERICAL_HAS_MINMAX
 //| def max(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the maximum element of the 1D array"""
 //|     ...
 //|
 
-static mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MAX);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_max_obj, 1, numerical_max);
+#endif
 
+#if ULAB_NUMERICAL_HAS_MEAN
 //| def mean(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the mean element of the 1D array, as a number if axis is None, otherwise as an array."""
 //|     ...
 //|
 
-static mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MEAN);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
+#endif
 
+#if ULAB_NUMERICAL_HAS_MINMAX
 //| def min(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the minimum element of the 1D array"""
 //|     ...
 //|
 
-static mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MIN);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
+#endif
 
+#if ULAB_NUMERICAL_HAS_ROLL
 //| def roll(array: ulab.array, distance: int, *, axis: Optional[int] = None) -> None:
 //|     """Shift the content of a vector by the positions given as the second
 //|        argument. If the ``axis`` keyword is supplied, the shift is applied to
@@ -613,7 +808,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
 //|     ...
 //|
 
-static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none  } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -622,89 +817,165 @@ static mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
-    mp_obj_t oin = args[0].u_obj;
-    int16_t shift = mp_obj_get_int(args[1].u_obj);
-    if((args[2].u_obj != mp_const_none) && 
-           (mp_obj_get_int(args[2].u_obj) != 0) && 
-           (mp_obj_get_int(args[2].u_obj) != 1)) {
-        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
-    }
 
-    ndarray_obj_t *in = MP_OBJ_TO_PTR(oin);
-    uint8_t _sizeof = mp_binary_get_size('@', in->array->typecode, NULL);
-    size_t len;
-    int16_t _shift;
-    uint8_t *array = (uint8_t *)in->array->items;
-    // TODO: transpose the matrix, if axis == 0. Though, that is hard on the RAM...
-    if(shift < 0) {
-        _shift = -shift;
-    } else {
-        _shift = shift;
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("roll argument must be an ndarray"));
     }
-    if((args[2].u_obj == mp_const_none) || (mp_obj_get_int(args[2].u_obj) == 1)) { // shift horizontally
-        uint16_t M;
-        if(args[2].u_obj == mp_const_none) {
-            len = in->array->len;
-            M = 1;
-        } else {
-            len = in->n;
-            M = in->m;
-        }
-        _shift = _shift % len;
-        if(shift < 0) _shift = len - _shift;
-        // TODO: if(shift > len/2), we should move in the opposite direction. That would save RAM
-        _shift *= _sizeof;
-        uint8_t *tmp = m_new(uint8_t, _shift);
-        for(size_t m=0; m < M; m++) {
-            memmove(tmp, &array[m*len*_sizeof], _shift);
-            memmove(&array[m*len*_sizeof], &array[m*len*_sizeof+_shift], len*_sizeof-_shift);
-            memmove(&array[(m+1)*len*_sizeof-_shift], tmp, _shift);
-        }
-        m_del(uint8_t, tmp, _shift);
-        return mp_const_none;
-    } else {
-        len = in->m;
-        // temporary buffer
-        uint8_t *_data = m_new(uint8_t, _sizeof*len);
-        
-        _shift = _shift % len;
-        if(shift < 0) _shift = len - _shift;
-        _shift *= _sizeof;
-        uint8_t *tmp = m_new(uint8_t, _shift);
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    uint8_t *array = ndarray->array;
+    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, ndarray->shape, ndarray->dtype);
 
-        for(size_t n=0; n < in->n; n++) {
-            for(size_t m=0; m < len; m++) {
-                // this loop should fill up the temporary buffer
-                memmove(&_data[m*_sizeof], &array[(m*in->n+n)*_sizeof], _sizeof);
-            }
-            // now, the actual shift
-            memmove(tmp, _data, _shift);
-            memmove(_data, &_data[_shift], len*_sizeof-_shift);
-            memmove(&_data[len*_sizeof-_shift], tmp, _shift);
-            for(size_t m=0; m < len; m++) {
-                // this loop should dump the content of the temporary buffer into data
-                memmove(&array[(m*in->n+n)*_sizeof], &_data[m*_sizeof], _sizeof);
-            }            
+    int32_t shift = mp_obj_get_int(args[1].u_obj);
+    int32_t _shift = shift < 0 ? -shift : shift;
+
+    size_t counter;
+    uint8_t *rarray = (uint8_t *)results->array;
+
+    if(args[2].u_obj == mp_const_none) { // roll the flattened array
+        _shift = _shift % results->len;
+        if(shift > 0) { // shift to the right
+            rarray += _shift * results->itemsize;
+            counter = results->len - _shift;
+        } else { // shift to the left
+            rarray += (results->len - _shift) * results->itemsize;
+            counter = _shift;
         }
-        m_del(uint8_t, tmp, _shift);
-        m_del(uint8_t, _data, _sizeof*len);
-        return mp_const_none;
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        memcpy(rarray, array, ndarray->itemsize);
+                        rarray += results->itemsize;
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                        if(counter > 0) counter--;
+                        if(counter == 0) {
+                            rarray = results->array;
+                        }
+                    } while(l <  ndarray->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                    array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k <  ndarray->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+                array += ndarray->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j <  ndarray->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+            array += ndarray->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+    } else if(MP_OBJ_IS_INT(args[2].u_obj)){
+        int8_t ax = mp_obj_get_int(args[2].u_obj);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
+        }
+        size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+        int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+        memset(strides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
+        numerical_reduce_axes(ndarray, ax, shape, strides);
+
+        size_t *rshape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(rshape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+        int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
+        memset(rstrides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
+        numerical_reduce_axes(results, ax, rshape, rstrides);
+
+        ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        uint8_t *_rarray;
+        _shift = _shift % results->shape[ax];
+
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    _rarray = rarray;
+                    rarray += _shift * results->strides[ax];
+                    counter = results->shape[ax] - _shift;
+                    if((shift < 0) && (_shift > 0)) {
+                        rarray += (results->shape[ax] - _shift) * results->strides[ax];
+                        counter = _shift;
+                    }
+                    do {
+                        memcpy(rarray, array, ndarray->itemsize);
+                        array += ndarray->strides[ax];
+                        rarray += results->strides[ax];
+                        if(--counter == 0) {
+                            rarray = _rarray;
+                        }
+                        l++;
+                    } while(l < ndarray->shape[ax]);
+                #if ULAB_MAX_DIMS > 1
+                    rarray = _rarray;
+                    rarray += rstrides[ULAB_MAX_DIMS - 1];
+                    array -= ndarray->strides[ax] * ndarray->shape[ax];
+                    array += strides[ULAB_MAX_DIMS - 1];
+                    k++;
+                } while(k < shape[ULAB_MAX_DIMS - 1]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                rarray -= rstrides[ULAB_MAX_DIMS - 1] * rshape[ULAB_MAX_DIMS-1];
+                rarray += rstrides[ULAB_MAX_DIMS - 2];
+                array -= strides[ULAB_MAX_DIMS - 1] * shape[ULAB_MAX_DIMS-1];
+                array += strides[ULAB_MAX_DIMS - 2];
+                j++;
+            } while(j < shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            rarray -= rstrides[ULAB_MAX_DIMS - 2] * rshape[ULAB_MAX_DIMS-2];
+            rarray += rstrides[ULAB_MAX_DIMS - 3];
+            array -= strides[ULAB_MAX_DIMS - 2] * shape[ULAB_MAX_DIMS-2];
+            array += strides[ULAB_MAX_DIMS - 3];
+            i++;
+        } while(i < shape[ULAB_MAX_DIMS - 3]);
+        #endif
+    } else {
+        mp_raise_TypeError(translate("wrong axis index"));
     }
+    return results;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
+#endif
 
-//| def sort(array: ulab.array, *, axis: Optional[int] = 0) -> ulab.array:
+#if ULAB_NUMERICAL_HAS_SORT
+//| def sort(array: ulab.array, *, axis: int = -1) -> ulab.array:
 //|     """Sort the array along the given axis, or along all axes if axis is None.
 //|        The array is modified in place."""
 //|     ...
 //|
 
-static mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -714,7 +985,9 @@ static mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_obj, 1, numerical_sort);
+#endif
 
+/*
 // method of an ndarray
 static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -729,13 +1002,15 @@ static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace);
+*/
 
-//| def std(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
+#if ULAB_NUMERICAL_HAS_STD
+//| def std(array: _ArrayLike, *, axis: Optional[int] = None, ddof: int = 0) -> float:
 //|     """Return the standard deviation of the array, as a number if axis is None, otherwise as an array."""
 //|     ...
 //|
 
-static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } } ,
         { MP_QSTR_axis, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -744,19 +1019,19 @@ static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
+
     mp_obj_t oin = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
     size_t ddof = args[2].u_int;
     if((axis != mp_const_none) && (mp_obj_get_int(axis) != 0) && (mp_obj_get_int(axis) != 1)) {
         // this seems to pass with False, and True...
-        mp_raise_ValueError(translate("axis must be None, 0, or 1"));
+        mp_raise_ValueError(translate("axis must be None, or an integer"));
     }
     if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
         return numerical_sum_mean_std_iterable(oin, NUMERICAL_STD, ddof);
     } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
-        return numerical_std_ndarray(ndarray, axis, ddof);
+        return numerical_sum_mean_std_ndarray(ndarray, axis, NUMERICAL_STD, ddof);
     } else {
         mp_raise_TypeError(translate("input must be tuple, list, range, or ndarray"));
     }
@@ -764,32 +1039,61 @@ static mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
+#endif
 
+#if ULAB_NUMERICAL_HAS_SUM
 //| def sum(array: _ArrayLike, *, axis: Optional[int] = None) -> Union[float, int, ulab.array]:
 //|     """Return the sum of the array, as a number if axis is None, otherwise as an array."""
 //|     ...
 //|
 
-static mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_SUM);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sum_obj, 1, numerical_sum);
+#endif
 
+#if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_numerical) },
+    #if ULAB_NUMERICAL_HAS_ARGMINMAX
     { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_ARGSORT
     { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_CROSS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cross), (mp_obj_t)&numerical_cross_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_DIFF
     { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_FLIP
     { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_MINMAX
     { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_MEAN
     { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_MINMAX
     { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_ROLL
     { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_SORT
     { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_STD
     { MP_OBJ_NEW_QSTR(MP_QSTR_std), (mp_obj_t)&numerical_std_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_SUM
     { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_numerical_globals, ulab_numerical_globals_table);
@@ -798,5 +1102,5 @@ mp_obj_module_t ulab_numerical_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_numerical_globals,
 };
-
+#endif /* ULAB_NUMPY_COMPATIBILITY */
 #endif

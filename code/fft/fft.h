@@ -14,10 +14,6 @@
 #include "../ulab.h"
 #include "../ndarray.h"
 
-#ifndef MP_PI
-#define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
-#endif
-
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
 enum FFT_TYPE {

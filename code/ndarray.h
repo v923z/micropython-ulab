@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -17,8 +17,14 @@
 #include "py/objstr.h"
 #include "py/objlist.h"
 
-#define NDARRAY_PRINT_THRESHOLD  	10
-#define NDARRAY_PRINT_EDGEITEMS		3
+#include "ulab.h"
+
+#ifndef MP_PI
+#define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
+#endif
+#ifndef MP_E
+#define MP_E MICROPY_FLOAT_CONST(2.71828182845904523536)
+#endif
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define FLOAT_TYPECODE 'f'
@@ -55,40 +61,67 @@ void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *, mp_obj_t *, mp_obj_t *);
 
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
+#define NDARRAY_NUMERIC   0
+#define NDARRAY_BOOLEAN   1
+
+#define NDARRAY_NDARRAY_TYPE    1
+#define NDARRAY_ITERABLE_TYPE   2
+
 extern const mp_obj_type_t ulab_ndarray_type;
 
 enum NDARRAY_TYPE {
+    NDARRAY_BOOL = '?', // this must never be assigned to the dtype!
     NDARRAY_UINT8 = 'B',
     NDARRAY_INT8 = 'b',
-    NDARRAY_UINT16 = 'H', 
+    NDARRAY_UINT16 = 'H',
     NDARRAY_INT16 = 'h',
     NDARRAY_FLOAT = FLOAT_TYPECODE,
 };
 
 typedef struct _ndarray_obj_t {
     mp_obj_base_t base;
-    size_t m, n;
+    uint8_t dense;
+    uint8_t dtype;
+    uint8_t itemsize;
+    uint8_t boolean;
+    uint8_t ndim;
     size_t len;
-    mp_obj_array_t *array;
-    size_t bytes;
+    size_t shape[ULAB_MAX_DIMS];
+    int32_t strides[ULAB_MAX_DIMS];
+    void *array;
 } ndarray_obj_t;
 
-mp_obj_t mp_obj_new_ndarray_iterator(mp_obj_t , size_t , mp_obj_iter_buf_t *);
+mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , mp_obj_iter_buf_t *);
 
-mp_float_t ndarray_get_float_value(void *, uint8_t , size_t );
-bool ndarray_object_is_nditerable(mp_obj_t );
+mp_float_t ndarray_get_float_value(void *, uint8_t );
+mp_float_t ndarray_get_float_index(void *, uint8_t , size_t );
+bool ndarray_object_is_array_like(mp_obj_t );
 void fill_array_iterable(mp_float_t *, mp_obj_t );
+size_t *ndarray_shape_vector(size_t , size_t , size_t , size_t );
 
+void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
+
+#if ULAB_HAS_PRINTOPTIONS
 mp_obj_t ndarray_set_printoptions(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_set_printoptions_obj);
+
 mp_obj_t ndarray_get_printoptions(void);
 MP_DECLARE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj);
-void ndarray_print_row(const mp_print_t *, mp_obj_array_t *, size_t , size_t );
-void ndarray_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
-void ndarray_assign_elements(mp_obj_array_t *, mp_obj_t , uint8_t , size_t *);
-ndarray_obj_t *create_new_ndarray(size_t , size_t , uint8_t );
+#endif
 
-mp_obj_t ndarray_copy(mp_obj_t );
+void ndarray_assign_elements(ndarray_obj_t *, mp_obj_t , uint8_t , size_t *);
+size_t *ndarray_contract_shape(ndarray_obj_t *, uint8_t );
+int32_t *ndarray_contract_strides(ndarray_obj_t *, uint8_t );
+
+ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t , size_t *, uint8_t );
+ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *, uint8_t );
+ndarray_obj_t *ndarray_new_ndarray(uint8_t , size_t *, int32_t *, uint8_t );
+ndarray_obj_t *ndarray_new_linear_array(size_t , uint8_t );
+ndarray_obj_t *ndarray_new_view(ndarray_obj_t *, uint8_t , size_t *, int32_t *, int32_t );
+bool ndarray_is_dense(ndarray_obj_t *);
+ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *);
+void ndarray_copy_array(ndarray_obj_t *, ndarray_obj_t *);
+
 #ifdef CIRCUITPY
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 #else
@@ -96,73 +129,588 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_
 #endif
 mp_obj_t ndarray_subscr(mp_obj_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_getiter(mp_obj_t , mp_obj_iter_buf_t *);
+bool ndarray_can_broadcast(ndarray_obj_t *, ndarray_obj_t *, uint8_t *, size_t *, int32_t *, int32_t *);
+bool ndarray_can_broadcast_inplace(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 mp_obj_t ndarray_binary_op(mp_binary_op_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_unary_op(mp_unary_op_t , mp_obj_t );
 
-mp_obj_t ndarray_shape(mp_obj_t );
-mp_obj_t ndarray_size(mp_obj_t );
-mp_obj_t ndarray_itemsize(mp_obj_t );
-mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
+size_t *ndarray_new_coords(uint8_t );
+void ndarray_rewind_array(uint8_t , uint8_t *, size_t *, int32_t *, size_t *);
 
+// various ndarray methods
+#if NDARRAY_HAS_COPY
+mp_obj_t ndarray_copy(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_copy_obj);
+#endif
+
+#if NDARRAY_HAS_FLATTEN
+mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_flatten_obj);
+#endif
+
+mp_obj_t ndarray_itemsize(mp_obj_t );
+mp_obj_t ndarray_size(mp_obj_t );
+mp_obj_t ndarray_shape(mp_obj_t );
+mp_obj_t ndarray_strides(mp_obj_t );
+
+#if NDARRAY_HAS_RESHAPE
 mp_obj_t ndarray_reshape(mp_obj_t , mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_2(ndarray_reshape_obj);
+#endif
 
+#if NDARRAY_HAS_TOBYTES
+mp_obj_t ndarray_tobytes(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tobytes_obj);
+#endif
+
+#if NDARRAY_HAS_TRANSPOSE
 mp_obj_t ndarray_transpose(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
+#endif
+
+#if ULAB_HAS_NDINFO
+mp_obj_t ndarray_info(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_info_obj);
+#endif
 
 mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 //void ndarray_attributes(mp_obj_t , qstr , mp_obj_t *);
 
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
 
-#define CREATE_SINGLE_ITEM(outarray, type, typecode, value) do {\
-    ndarray_obj_t *tmp = create_new_ndarray(1, 1, (typecode));\
-    type *tmparr = (type *)tmp->array->items;\
-    tmparr[0] = (type)(value);\
-    (outarray) = MP_OBJ_FROM_PTR(tmp);\
-} while(0)
 
-/*  
-    mp_obj_t row = mp_obj_new_list(n, NULL);
-    mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);
-    
-    should work outside the loop, but it doesn't. Go figure! 
-*/
+#define BOOLEAN_ASSIGNMENT_LOOP(type_left, type_right, ndarray, iarray, istride, varray, vstride)\
+    type_left *array = (type_left *)(ndarray)->array;\
+    for(size_t i=0; i < (ndarray)->len; i++) {\
+        if(*(iarray)) {\
+            *array = (type_left)(*((type_right *)(varray)));\
+        }\
+        array += (ndarray)->strides[ULAB_MAX_DIMS - 1] / (ndarray)->itemsize;\
+        (iarray) += (istride);\
+        (varray) += (vstride);\
+    } while(0)
 
-#define RUN_BINARY_LOOP(typecode, type_out, type_left, type_right, ol, or, op, m, n, len, linc, rinc) do {\
-    type_left *left = (type_left *)(ol)->array->items;\
-    type_right *right = (type_right *)(or)->array->items;\
-    if(((op) == MP_BINARY_OP_ADD) || ((op) == MP_BINARY_OP_SUBTRACT) || ((op) == MP_BINARY_OP_MULTIPLY) || ((op) == MP_BINARY_OP_POWER)) {\
-        ndarray_obj_t *out = create_new_ndarray((m), (n), (typecode));\
-        type_out *(odata) = (type_out *)out->array->items;\
-        if((op) == MP_BINARY_OP_ADD) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left + *right; }\
-		else if((op) == MP_BINARY_OP_MULTIPLY) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left * *right; }\
-        else if((op) == MP_BINARY_OP_POWER) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = (type_out)MICROPY_FLOAT_C_FUN(pow)(*left, *right); }\
-        else if((op) == MP_BINARY_OP_SUBTRACT) { for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) *odata++ = *left - *right; }\
-        return MP_OBJ_FROM_PTR(out);\
-	} else if((op) == MP_BINARY_OP_TRUE_DIVIDE) {\
-        ndarray_obj_t *out = create_new_ndarray((m), (n), NDARRAY_FLOAT);\
-        mp_float_t *odata = (mp_float_t *)out->array->items;\
-        for(size_t i=0; i < (len); i++, left+=linc, right+=rinc) {*odata++ = (mp_float_t)(*left)/(mp_float_t)(*right);}\
-        return MP_OBJ_FROM_PTR(out);\
-	} else if(((op) == MP_BINARY_OP_LESS) || ((op) == MP_BINARY_OP_LESS_EQUAL) ||  \
-             ((op) == MP_BINARY_OP_MORE) || ((op) == MP_BINARY_OP_MORE_EQUAL) || \
-             ((op) == MP_BINARY_OP_EQUAL) || ((op) == MP_BINARY_OP_NOT_EQUAL)) {\
-        mp_obj_t out_list = mp_obj_new_list(0, NULL);\
-        for(size_t i=0; i < m; i++) {\
-            mp_obj_t row = mp_obj_new_list(n, NULL);\
-            mp_obj_list_t *row_ptr = MP_OBJ_TO_PTR(row);\
-			if((op) == MP_BINARY_OP_LESS) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left < *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_LESS_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left <= *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_MORE) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left > *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_MORE_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left >= *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left == *right ? mp_const_true : mp_const_false; }\
-			else if((op) == MP_BINARY_OP_NOT_EQUAL) { for(size_t j=0; j < n; j++, left+=linc, right+=rinc) row_ptr->items[j] = *left != *right ? mp_const_true : mp_const_false; }\
-            if(m == 1) return row;\
-            mp_obj_list_append(out_list, row);\
-		}\
-        return out_list;\
-    }\
-} while(0)
+#if ULAB_HAS_FUNCTION_ITERATOR
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)(results)->array;\
+    size_t *lcoords = ndarray_new_coords((results)->ndim);\
+    size_t *rcoords = ndarray_new_coords((results)->ndim);\
+    for(size_t i=0; i < (results)->len/(results)->shape[ULAB_MAX_DIMS -1]; i++) {\
+        size_t l = 0;\
+        do {\
+            *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        ndarray_rewind_array((results)->ndim, (larray), (results)->shape, (lstrides), lcoords);\
+        ndarray_rewind_array((results)->ndim, (rarray), (results)->shape, (rstrides), rcoords);\
+    } while(0)
+
+#define INPLACE_LOOP(results, type_left, type_right, larray, rarray, rstrides, OPERATOR)\
+    size_t *lcoords = ndarray_new_coords((results)->ndim);\
+    size_t *rcoords = ndarray_new_coords((results)->ndim);\
+    for(size_t i=0; i < (results)->len/(results)->shape[ULAB_MAX_DIMS -1]; i++) {\
+        size_t l = 0;\
+        do {\
+            *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+            (larray) += (results)->strides[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        ndarray_rewind_array((results)->ndim, (larray), (results)->shape, (results)->strides, lcoords);\
+        ndarray_rewind_array((results)->ndim, (rarray), (results)->shape, (rstrides), rcoords);\
+    } while(0)
+
+#define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    size_t *lcoords = ndarray_new_coords((results)->ndim);\
+    size_t *rcoords = ndarray_new_coords((results)->ndim);\
+    for(size_t i=0; i < (results)->len/(results)->shape[ULAB_MAX_DIMS -1]; i++) {\
+        size_t l = 0;\
+        do {\
+            *(array)++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray)) ? 1 : 0;\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        ndarray_rewind_array((results)->ndim, (larray), (results)->shape, (lstrides), lcoords);\
+        ndarray_rewind_array((results)->ndim, (rarray), (results)->shape, (rstrides), rcoords);\
+    } while(0)
+
+#define POWER_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides)\
+    type_out *array = (type_out *)(results)->array;\
+    size_t *lcoords = ndarray_new_coords((results)->ndim);\
+    size_t *rcoords = ndarray_new_coords((results)->ndim);\
+    for(size_t i=0; i < (results)->len/(results)->shape[ULAB_MAX_DIMS -1]; i++) {\
+        size_t l = 0;\
+        do {\
+            *array++ = MICROPY_FLOAT_C_FUN(pow)(*((type_left *)(larray)), *((type_right *)(rarray)));\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        ndarray_rewind_array((results)->ndim, (larray), (results)->shape, (lstrides), lcoords);\
+        ndarray_rewind_array((results)->ndim, (rarray), (results)->shape, (rstrides), rcoords);\
+    } while(0)
+
+#else
+
+#if ULAB_MAX_DIMS == 1
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)results->array;\
+    size_t l = 0;\
+    do {\
+        *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+
+#define INPLACE_LOOP(results, type_left, type_right, larray, rarray, rstrides, OPERATOR)\
+    size_t l = 0;\
+    do {\
+        *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+        (larray) += (results)->strides[ULAB_MAX_DIMS - 1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+
+#define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    size_t l = 0;\
+    do {\
+        *(array)++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray)) ? 1 : 0;\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+
+#define POWER_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides)\
+    type_out *array = (type_out *)results->array;\
+    size_t l = 0;\
+    do {\
+        *array++ = MICROPY_FLOAT_C_FUN(pow)(*((type_left *)(larray)), *((type_right *)(rarray)));\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+
+#endif /* ULAB_MAX_DIMS == 1 */
+
+#if ULAB_MAX_DIMS == 2
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)(results)->array;\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+
+#define INPLACE_LOOP(results, type_left, type_right, larray, rarray, rstrides, OPERATOR)\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+            (larray) += (results)->strides[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        (larray) -= (results)->strides[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (larray) += (results)->strides[ULAB_MAX_DIMS - 2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+
+#define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            *(array)++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray)) ? 1 : 0;\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+
+#define POWER_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides)\
+    type_out *array = (type_out *)(results)->array;\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            *array++ = MICROPY_FLOAT_C_FUN(pow)(*((type_left *)(larray)), *((type_right *)(rarray)));\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+
+#endif /* ULAB_MAX_DIMS == 2 */
+
+#if ULAB_MAX_DIMS == 3
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)results->array;\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+            k++;\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+
+#define INPLACE_LOOP(results, type_left, type_right, larray, rarray, rstrides, OPERATOR)\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+                (larray) += (results)->strides[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+            (larray) -= (results)->strides[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (larray) += (results)->strides[ULAB_MAX_DIMS - 2];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+            k++;\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (larray) -= (results)->strides[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (larray) += (results)->strides[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+
+#define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                *(array)++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray)) ? 1 : 0;\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+            k++;\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+
+#define POWER_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides)\
+    type_out *array = (type_out *)results->array;\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                *array++ = MICROPY_FLOAT_C_FUN(pow)(*((type_left *)(larray)), *((type_right *)(rarray)));\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+            k++;\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+
+#endif /* ULAB_MAX_DIMS == 3 */
+
+#if ULAB_MAX_DIMS == 4
+#define BINARY_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    type_out *array = (type_out *)results->array;\
+    size_t i = 0;\
+    do {\
+        size_t j = 0;\
+        do {\
+            size_t k = 0;\
+            do {\
+                size_t l = 0;\
+                do {\
+                    *array++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+                    (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                    (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                    l++;\
+                } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+                (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+                k++;\
+            } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+            j++;\
+        } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
+        i++;\
+    } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
+
+#define INPLACE_LOOP(results, type_left, type_right, larray, rarray, rstrides, OPERATOR)\
+    size_t i = 0;\
+    do {\
+        size_t j = 0;\
+        do {\
+            size_t k = 0;\
+            do {\
+                size_t l = 0;\
+                do {\
+                    *((type_left *)(larray)) OPERATOR *((type_right *)(rarray));\
+                    (larray) += (results)->strides[ULAB_MAX_DIMS - 1];\
+                    (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                    l++;\
+                } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+                (larray) -= (results)->strides[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (larray) += (results)->strides[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+                k++;\
+            } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (results)->strides[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (larray) += (results)->strides[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+            j++;\
+        } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+        (larray) -= (results)->strides[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (larray) += (results)->strides[ULAB_MAX_DIMS - 4];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
+        i++;\
+    } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
+
+#define EQUALITY_LOOP(results, array, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
+    size_t i = 0;\
+    do {\
+        size_t j = 0;\
+        do {\
+            size_t k = 0;\
+            do {\
+                size_t l = 0;\
+                do {\
+                    *(array)++ = *((type_left *)(larray)) OPERATOR *((type_right *)(rarray)) ? 1 : 0;\
+                    (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                    (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                    l++;\
+                } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+                (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+                k++;\
+            } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+            j++;\
+        } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
+        i++;\
+    } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
+
+#define POWER_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides)\
+    type_out *array = (type_out *)results->array;\
+    size_t i = 0;\
+    do {\
+        size_t j = 0;\
+        do {\
+            size_t k = 0;\
+            do {\
+                size_t l = 0;\
+                do {\
+                    *array++ = MICROPY_FLOAT_C_FUN(pow)(*((type_left *)(larray)), *((type_right *)(rarray)));\
+                    (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                    (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                    l++;\
+                } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+                (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+                k++;\
+            } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+            j++;\
+        } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
+        i++;\
+    } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
+
+#endif /* ULAB_MAX_DIMS == 4 */
+#endif /* ULAB_HAS_FUNCTION_ITERATOR */
+
+
+#if ULAB_MAX_DIMS == 1
+#define ASSIGNMENT_LOOP(results, type_left, type_right, lstrides, rarray, rstrides)\
+    type_left *larray = (type_left *)(results)->array;\
+    size_t l = 0;\
+    do {\
+        *larray = (type_left)(*((type_right *)(rarray)));\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+
+#endif /* ULAB_MAX_DIMS == 1 */
+
+#if ULAB_MAX_DIMS == 2
+#define ASSIGNMENT_LOOP(results, type_left, type_right, lstrides, rarray, rstrides)\
+    type_left *larray = (type_left *)(results)->array;\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            *larray = (type_left)(*((type_right *)(rarray)));\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+
+#endif /* ULAB_MAX_DIMS == 2 */
+
+#if ULAB_MAX_DIMS == 3
+#define ASSIGNMENT_LOOP(results, type_left, type_right, lstrides, rarray, rstrides)\
+    type_left *larray = (type_left *)(results)->array;\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                *larray = (type_left)(*((type_right *)(rarray)));\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+            k++;\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+
+#endif /* ULAB_MAX_DIMS == 3 */
+
+#if ULAB_MAX_DIMS == 4
+#define ASSIGNMENT_LOOP(results, type_left, type_right, lstrides, rarray, rstrides)\
+    type_left *larray = (type_left *)(results)->array;\
+    size_t i = 0;\
+    do {\
+        size_t j = 0;\
+        do {\
+            size_t k = 0;\
+            do {\
+                size_t l = 0;\
+                do {\
+                    *larray = (type_left)(*((type_right *)(rarray)));\
+                    (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
+                    (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+                    l++;\
+                } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+                (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+                k++;\
+            } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+            j++;\
+        } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
+        i++;\
+    } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
+
+#endif /* ULAB_MAX_DIMS == 4 */
 
 #endif
