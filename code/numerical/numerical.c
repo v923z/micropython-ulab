@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
  *               2020 Scott Shawcroft for Adafruit Industries
+ *               2020 Taku Fukada
 */
 
 #include <math.h>

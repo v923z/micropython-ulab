@@ -7,6 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019-2020 Zoltán Vörös
+ *               2020 Taku Fukada
 */
 
 #include <unistd.h>

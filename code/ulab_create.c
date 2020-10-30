@@ -7,6 +7,7 @@
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *               2019-2020 Zoltán Vörös
+ *               2020 Taku Fukada
 */
 
 #include <math.h>

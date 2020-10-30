@@ -7,6 +7,7 @@
  *
  * Copyright (c) 2020 Zoltán Vörös
  *               2020 Diego Elio Pettenò
+ *               2020 Taku Fukada
 */
 
 #include <math.h>
