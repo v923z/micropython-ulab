@@ -1,3 +1,24 @@
+Sat, 31 Oct 2020
+
+version 1.1.0
+
+    added the diagonal function
+
+Fri, 30 Oct 2020
+
+version 1.0.0
+
+    added :
+        support for tensors of rank 4
+        proper broadcasting
+        views
+        .tobytes()
+        concatenate
+        cross
+        full
+        logspace
+        in-place operators
+
 Sat, 25 Oct 2020
 
 version 0.54.5

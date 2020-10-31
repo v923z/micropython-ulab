@@ -271,6 +271,67 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(create_concatenate_obj, 1, create_concatenate);
 #endif
 
+#if ULAB_CREATE_HAS_DIAGONAL
+//| def diagonal(a: ulab.array, *, offset: int = 0) -> ulab.array:
+//|     """
+//|     .. param: a
+//|       an ndarray
+//|     .. param: offset
+//|       Offset of the diagonal from the main diagonal. Can be positive or negative.
+//|
+//|     Return specified diagonals."""
+//|     ...
+//|
+mp_obj_t create_diagonal(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("input must be an ndarray"));
+    }
+    ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
+    if(source->ndim != 2) {
+        mp_raise_TypeError(translate("input must be a tensor of rank 2"));
+    }
+    int32_t offset = args[1].u_int;
+    size_t len = 0;
+    uint8_t *sarray = (uint8_t *)source->array;
+    if(offset < 0) { // move the pointer "vertically"
+        sarray -= offset * source->strides[ULAB_MAX_DIMS - 2];
+        if(-offset < (int32_t)source->shape[ULAB_MAX_DIMS - 2]) {
+            len = source->shape[ULAB_MAX_DIMS - 1] + offset;
+        }
+    } else { // move the pointer "horizontally"
+        if(offset < (int32_t)source->shape[ULAB_MAX_DIMS - 1]) {
+            len = source->shape[ULAB_MAX_DIMS - 1] - offset;
+        }
+        sarray += offset * source->strides[ULAB_MAX_DIMS - 1];
+    }
+
+    if(len == 0) {
+        mp_raise_ValueError(translate("offset is too large"));
+    }
+
+    ndarray_obj_t *target = ndarray_new_linear_array(len, source->dtype);
+    uint8_t *tarray = (uint8_t *)target->array;
+
+    for(size_t i=0; i < len; i++) {
+        memcpy(tarray, sarray, source->itemsize);
+        sarray += source->strides[ULAB_MAX_DIMS - 2];
+        sarray += source->strides[ULAB_MAX_DIMS - 1];
+        tarray += source->itemsize;
+    }
+    return MP_OBJ_FROM_PTR(target);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(create_diagonal_obj, 1, create_diagonal);
+#endif /* ULAB_CREATE_HAS_DIAGONAL */
+
 #if ULAB_MAX_DIMS > 1
 #if ULAB_CREATE_HAS_EYE
 //| def eye(size: int, *, M: Optional[int] = None, k: int = 0, dtype: _DType = ulab.float) -> ulab.array:
