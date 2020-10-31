@@ -32,7 +32,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 1.0.0
+#define ULAB_VERSION 1.1.0
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
@@ -125,6 +125,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #endif
     #if ULAB_CREATE_HAS_CONCATENATE
         { MP_ROM_QSTR(MP_QSTR_concatenate), (mp_obj_t)&create_concatenate_obj },
+    #endif
+    #if ULAB_CREATE_HAS_DIAGONAL
+        { MP_ROM_QSTR(MP_QSTR_diagonal), (mp_obj_t)&create_diagonal_obj },
     #endif
     #if ULAB_MAX_DIMS > 1
         #if ULAB_CREATE_HAS_EYE
