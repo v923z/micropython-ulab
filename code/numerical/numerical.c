@@ -257,8 +257,8 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
             } while(j < ndarray->shape[ULAB_MAX_DIMS - 3]);
             #endif
         #if ULAB_MAX_DIMS > 3
-            sarray -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
-            sarray += ndarray->strides[ULAB_MAX_DIMS - 4];
+            array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+            array += ndarray->strides[ULAB_MAX_DIMS - 4];
             i++;
         } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
         #endif
