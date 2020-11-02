@@ -58,7 +58,7 @@ latex_maketitle = r'''
 \Huge\textbf{The $\mu$lab book}
 \vskip 0.5em
 \LARGE
-\textbf{Release 1.0.0}
+\textbf{Release 1.2.0}
 \vskip 5em
 \huge\textbf{Zoltán Vörös}
 \end{flushright}

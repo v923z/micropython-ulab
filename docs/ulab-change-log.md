@@ -1,3 +1,9 @@
+Mon, 2 Nov 2020
+
+version 1.1.3
+
+    fixed small glitch in diagonal, and ndarray_make_new_core
+
 Sun, 1 Nov 2020
 
 version 1.1.1

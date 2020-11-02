@@ -14,7 +14,7 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 `ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, `**`,
 `+=`, `-=`, `*=`, `/=`, `**=` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that
 operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of
-iterables, or by means of the `arange`, `concatenate`, `eye`, `full`, `linspace`, `logspace`, `ones`, or
+iterables, or by means of the `arange`, `concatenate`, `diag`, `eye`, `full`, `linspace`, `logspace`, `ones`, or
 `zeros`  functions.
 
 `ndarray`s can be iterated on, and have a number of their own methods, such as `flatten`, `shape`,
