@@ -1,3 +1,9 @@
+Sun, 1 Nov 2020
+
+version 1.1.1
+
+    fixed compilation error for 4D
+
 Sat, 31 Oct 2020
 
 version 1.1.0
