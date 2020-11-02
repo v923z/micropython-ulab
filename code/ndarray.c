@@ -462,14 +462,26 @@ mp_obj_t ndarray_dtype(mp_obj_t self_in) {
 }
 
 #else
-
 // this is the cheap implementation of tbe dtype
 mp_obj_t ndarray_dtype(mp_obj_t self_in) {
-    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_int(self->dtype);
+    uint8_t dtype;
+    if(MP_OBJ_IS_TYPE(self_in, &ulab_ndarray_type)) {
+        ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+        dtype = self->dtype;
+    } else { // we assume here that the input is a single character
+        GET_STR_DATA_LEN(self_in, _dtype, len);
+        if((len != 1) || ((*_dtype != NDARRAY_BOOL) && (*_dtype != NDARRAY_UINT8)
+            && (*_dtype != NDARRAY_INT8) && (*_dtype != NDARRAY_UINT16)
+            && (*_dtype != NDARRAY_INT16) && (*_dtype != NDARRAY_FLOAT))) {
+            mp_raise_TypeError(translate("data type not understood"));
+        }
+        dtype = *_dtype;
+    }
+    return mp_obj_new_int(dtype);
 }
 #endif /* ULAB_HAS_DTYPE_OBJECT */
 
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_dtype_obj, ndarray_dtype);
 #endif /* NDARRAY_HAS_DTYPE */
 
 #if ULAB_HAS_PRINTOPTIONS
