@@ -25,9 +25,9 @@ mp_obj_t create_concatenate(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_concatenate_obj);
 #endif
 
-#if ULAB_CREATE_HAS_DIAGONAL
-mp_obj_t create_diagonal(size_t , const mp_obj_t *, mp_map_t *);
-MP_DECLARE_CONST_FUN_OBJ_KW(create_diagonal_obj);
+#if ULAB_CREATE_HAS_DIAG
+mp_obj_t create_diag(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(create_diag_obj);
 #endif
 
 #if ULAB_MAX_DIMS > 1
