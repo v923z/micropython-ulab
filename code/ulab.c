@@ -126,8 +126,8 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_CREATE_HAS_CONCATENATE
         { MP_ROM_QSTR(MP_QSTR_concatenate), (mp_obj_t)&create_concatenate_obj },
     #endif
-    #if ULAB_CREATE_HAS_DIAGONAL
-        { MP_ROM_QSTR(MP_QSTR_diagonal), (mp_obj_t)&create_diagonal_obj },
+    #if ULAB_CREATE_HAS_DIAG
+        { MP_ROM_QSTR(MP_QSTR_diag), (mp_obj_t)&create_diag_obj },
     #endif
     #if ULAB_MAX_DIMS > 1
         #if ULAB_CREATE_HAS_EYE
