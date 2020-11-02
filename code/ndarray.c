@@ -281,7 +281,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
     result->stop = stop;
     result->step = step;
 }
-#endif
+#endif /* OPENMV */
 
 mp_float_t ndarray_get_float_index(void *data, uint8_t typecode, size_t index) {
     // Returns a float value from an arbitrary data type
@@ -397,6 +397,81 @@ void fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     }
 }
 
+#if NDARRAY_HAS_DTYPE
+#if ULAB_HAS_DTYPE_OBJECT
+void ndarray_dtype_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
+    dtype_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_print_str(print, "dtype('");
+    if(self->dtype == NDARRAY_BOOLEAN) {
+        mp_print_str(print, "bool')");
+    } else if(self->dtype == NDARRAY_UINT8) {
+        mp_print_str(print, "uint8')");
+    } else if(self->dtype == NDARRAY_INT8) {
+        mp_print_str(print, "int8')");
+    } else if(self->dtype == NDARRAY_UINT16) {
+        mp_print_str(print, "uint16')");
+    } else if(self->dtype == NDARRAY_INT16) {
+        mp_print_str(print, "int16')");
+    } else {
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        mp_print_str(print, "float32')");
+        #else
+        mp_print_str(print, "float64')");
+        #endif
+    }
+}
+
+mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void) type;
+    mp_arg_check_num(n_args, n_kw, 0, 1, true);
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_OBJ, { .u_obj = mp_const_none } },
+    };
+    mp_arg_val_t _args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, _args);
+
+    dtype_obj_t *dtype = m_new_obj(dtype_obj_t);
+    dtype->base.type = &ulab_dtype_type;
+
+    if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+        // return the dtype of the array
+        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0]);
+        dtype->dtype = ndarray->dtype;
+    } else {
+        uint8_t _dtype = mp_obj_get_int(_args[0].u_obj);
+        if((_dtype != NDARRAY_BOOL) && (_dtype != NDARRAY_UINT8)
+            && (_dtype != NDARRAY_INT8) && (_dtype != NDARRAY_UINT16)
+            && (_dtype != NDARRAY_INT16) && (_dtype != NDARRAY_FLOAT)) {
+            mp_raise_TypeError(translate("data type not understood"));
+        }
+        dtype->dtype = _dtype;
+    }
+    return dtype;
+}
+
+mp_obj_t ndarray_dtype(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    dtype_obj_t *dtype = m_new_obj(dtype_obj_t);
+    dtype->base.type = &ulab_dtype_type;
+    dtype->dtype = self->dtype;
+    return dtype;
+}
+
+#else
+
+// this is the cheap implementation of tbe dtype
+mp_obj_t ndarray_dtype(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(self->dtype);
+}
+#endif /* ULAB_HAS_DTYPE_OBJECT */
+
+#endif /* NDARRAY_HAS_DTYPE */
+
 #if ULAB_HAS_PRINTOPTIONS
 mp_obj_t ndarray_set_printoptions(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -440,7 +515,7 @@ mp_obj_t ndarray_get_item(ndarray_obj_t *ndarray, void *array) {
     }
 }
 
-void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, uint8_t *array, size_t stride, size_t n) {
+static void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, uint8_t *array, size_t stride, size_t n) {
     mp_print_str(print, "[");
     if(n == 0) {
         mp_print_str(print, "]");
@@ -472,7 +547,7 @@ void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, uint8_t
     mp_print_str(print, "]");
 }
 
-void ndarray_print_bracket(const mp_print_t *print, const size_t condition, const size_t shape, const char *string) {
+static void ndarray_print_bracket(const mp_print_t *print, const size_t condition, const size_t shape, const char *string) {
     if(condition < shape) {
         mp_print_str(print, string);
     }
@@ -534,8 +609,12 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         mp_print_str(print, ", dtype=uint16)");
     } else if(self->dtype == NDARRAY_INT16) {
         mp_print_str(print, ", dtype=int16)");
-    } else if(self->dtype == NDARRAY_FLOAT) {
-        mp_print_str(print, ", dtype=float)");
+    } else {
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        mp_print_str(print, ", dtype=float32)");
+        #else
+        mp_print_str(print, ", dtype=float64)");
+        #endif
     }
 }
 
@@ -738,14 +817,24 @@ ndarray_obj_t *ndarray_new_linear_array(size_t len, uint8_t dtype) {
 STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NDARRAY_FLOAT } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY, {.u_obj = MP_ROM_INT(NDARRAY_FLOAT) } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    uint8_t dtype = args[1].u_int;
-    return dtype;
+    uint8_t _dtype;
+    #if ULAB_HAS_DTYPE_OBJECT
+    if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_dtype_type)) { //
+        dtype_obj_t *dtype = MP_OBJ_TO_PTR(args[1].u_obj);
+        _dtype = dtype->dtype;
+    } else {
+        _dtype = mp_obj_get_int(args[1].u_obj);
+    }
+    #else
+    _dtype = mp_obj_get_int(args[1].u_obj);
+    #endif
+    return _dtype;
 }
 
 STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -1835,7 +1924,6 @@ mp_obj_t ndarray_info(mp_obj_t obj_in) {
     if(!MP_OBJ_IS_TYPE(ndarray, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("function is defined for ndarrays only"));
     }
-//    uint8_t *array = (uint8_t *)ndarray->array;
     mp_printf(MP_PYTHON_PRINTER, "class: ndarray\n");
     mp_printf(MP_PYTHON_PRINTER, "shape: (");
     if(ndarray->ndim == 1) {

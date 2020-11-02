@@ -91,6 +91,23 @@ typedef struct _ndarray_obj_t {
     void *array;
 } ndarray_obj_t;
 
+#if ULAB_HAS_DTYPE_OBJECT
+extern const mp_obj_type_t ulab_dtype_type;
+
+typedef struct _dtype_obj_t {
+    mp_obj_base_t base;
+    uint8_t dtype;
+} dtype_obj_t;
+
+void ndarray_dtype_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
+
+#ifdef CIRCUITPY
+mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+#else
+mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_t *);
+#endif /* CIRCUITPY */
+#endif /* ULAB_HAS_DTYPE_OBJECT */
+
 mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , mp_obj_iter_buf_t *);
 
 mp_float_t ndarray_get_float_value(void *, uint8_t );
@@ -141,6 +158,11 @@ void ndarray_rewind_array(uint8_t , uint8_t *, size_t *, int32_t *, size_t *);
 #if NDARRAY_HAS_COPY
 mp_obj_t ndarray_copy(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_copy_obj);
+#endif
+
+#if NDARRAY_HAS_DTYPE
+mp_obj_t ndarray_dtype(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_dtype_obj);
 #endif
 
 #if NDARRAY_HAS_FLATTEN

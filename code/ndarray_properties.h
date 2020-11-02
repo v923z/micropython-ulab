@@ -27,6 +27,16 @@ typedef struct _mp_obj_property_t {
     mp_obj_t proxy[3]; // getter, setter, deleter
 } mp_obj_property_t;
 
+#if NDARRAY_HAS_DTYPE
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_get_dtype_obj, ndarray_dtype);
+STATIC const mp_obj_property_t ndarray_dtype_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&ndarray_get_dtype_obj,
+              mp_const_none,
+              mp_const_none },
+};
+#endif /* NDARRAY_HAS_DTYPE */
+
 #if NDARRAY_HAS_ITEMSIZE
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_get_itemsize_obj, ndarray_itemsize);
 STATIC const mp_obj_property_t ndarray_itemsize_obj = {

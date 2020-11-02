@@ -57,6 +57,10 @@
 // determines, whether the ndinfo function is available
 #define ULAB_HAS_NDINFO                 (1)
 
+// determines, whether the dtype is an object, or simply a character
+// the object implementation is numpythonic, but requires more space
+#define ULAB_HAS_DTYPE_OBJECT           (0)
+
 // the ndarray binary operators
 #define NDARRAY_HAS_BINARY_OPS              (1)
 #define NDARRAY_HAS_BINARY_OP_ADD           (1)
@@ -88,6 +92,7 @@
 
 // determines, which ndarray methods are available
 #define NDARRAY_HAS_COPY                (1)
+#define NDARRAY_HAS_DTYPE               (1)
 #define NDARRAY_HAS_FLATTEN             (1)
 #define NDARRAY_HAS_ITEMSIZE            (1)
 #define NDARRAY_HAS_RESHAPE             (1)
