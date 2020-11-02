@@ -304,11 +304,11 @@ mp_obj_t create_diagonal(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     if(offset < 0) { // move the pointer "vertically"
         sarray -= offset * source->strides[ULAB_MAX_DIMS - 2];
         if(-offset < (int32_t)source->shape[ULAB_MAX_DIMS - 2]) {
-            len = source->shape[ULAB_MAX_DIMS - 1] + offset;
+            len = MIN(source->shape[ULAB_MAX_DIMS - 2] + offset, source->shape[ULAB_MAX_DIMS - 1]);
         }
     } else { // move the pointer "horizontally"
         if(offset < (int32_t)source->shape[ULAB_MAX_DIMS - 1]) {
-            len = source->shape[ULAB_MAX_DIMS - 1] - offset;
+            len = MIN(source->shape[ULAB_MAX_DIMS - 1] - offset, source->shape[ULAB_MAX_DIMS - 2]);
         }
         sarray += offset * source->strides[ULAB_MAX_DIMS - 1];
     }
