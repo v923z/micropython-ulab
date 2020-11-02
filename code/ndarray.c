@@ -847,8 +847,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
     }
     #if ULAB_MAX_DIMS > 1
     else {
-        size_t shape[2] = {len1, len2};
-        self = ndarray_new_dense_ndarray(2, shape, dtype);
+        self = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, len1, len2), dtype);
     }
     #endif
     size_t idx = 0;
