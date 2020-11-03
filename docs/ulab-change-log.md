@@ -1,3 +1,9 @@
+Tue, 3 Nov 2020
+
+version 1.2.0
+
+    added median function
+
 Mon, 2 Nov 2020
 
 version 1.1.3
