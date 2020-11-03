@@ -1,5 +1,11 @@
 Tue, 3 Nov 2020
 
+version 1.2.1
+
+    fixed pointer issue in eig, and corrected the docs
+
+Tue, 3 Nov 2020
+
 version 1.2.0
 
     added median function
