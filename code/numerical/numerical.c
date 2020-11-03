@@ -805,21 +805,77 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("median argument must be an ndarray"));
     }
-
+    
     ndarray_obj_t *ndarray = numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
 
-    if(args[1].u_obj == mp_const_none) {
+    if((args[1].u_obj == mp_const_none) || (ndarray->ndim == 1)) {
         // at this point, the array holding the sorted values should be flat
         uint8_t *array = (uint8_t *)ndarray->array;
         size_t len = ndarray->len;
         array += (len >> 1) * ndarray->itemsize;
         mp_float_t median = ndarray_get_float_value(array, ndarray->dtype);
         if(!(len & 0x01)) { // len is an even number
-            array += ndarray->itemsize;
+            array -= ndarray->itemsize;
             median += ndarray_get_float_value(array, ndarray->dtype);
             median *= 0.5;
         }
         return mp_obj_new_float(median);
+    } else {
+        int8_t ax = mp_obj_get_int(args[1].u_obj);
+        if(ax < 0) ax += ndarray->ndim;
+        // here we can save the exception, because if the axis is out of range,
+        // then numerical_sort_helper has already taken care of the issue
+        size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+        int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+        memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+        numerical_reduce_axes(ndarray, ax, shape, strides);
+        ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim-1, shape, NDARRAY_FLOAT);
+        mp_float_t *rarray = (mp_float_t *)results->array;
+        
+        uint8_t *array = (uint8_t *)ndarray->array;
+
+        size_t len = ndarray->shape[ax];
+        
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                size_t k = 0;
+                do {
+                    array += ndarray->strides[ax] * (len >> 1);
+                    mp_float_t median = ndarray_get_float_value(array, ndarray->dtype);
+                    if(!(len & 0x01)) { // len is an even number
+                        array -= ndarray->strides[ax];
+                        median += ndarray_get_float_value(array, ndarray->dtype);
+                        median *= 0.5;
+                        array += ndarray->strides[ax];
+                    }
+                    array -= ndarray->strides[ax] * (len >> 1);
+                    array += strides[ULAB_MAX_DIMS - 1];
+                    *rarray = median;
+                    rarray++;
+                    k++;
+                } while(k < shape[ULAB_MAX_DIMS - 1]);
+            #if ULAB_MAX_DIMS > 2
+                array -= strides[ULAB_MAX_DIMS - 1] * shape[ULAB_MAX_DIMS - 1];
+                array += strides[ULAB_MAX_DIMS - 2];
+                j++;
+            } while(j < shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            array -= strides[ULAB_MAX_DIMS - 2] * shape[ULAB_MAX_DIMS-2];
+            array += strides[ULAB_MAX_DIMS - 3];
+            i++;
+        } while(i < shape[ULAB_MAX_DIMS - 3]);
+        #endif
+        
+        return MP_OBJ_FROM_PTR(results);
     }
     return mp_const_none;
 }
