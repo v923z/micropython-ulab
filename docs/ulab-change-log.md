@@ -1,3 +1,9 @@
+Tue, 3 Nov 2020
+
+version 1.1.4
+
+    fixed norm and shape
+
 Mon, 2 Nov 2020
 
 version 1.1.3
