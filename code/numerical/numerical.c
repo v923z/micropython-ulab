@@ -802,9 +802,26 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("median argument must be an ndarray"));
+    }
 
     ndarray_obj_t *ndarray = numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
-    return MP_OBJ_FROM_PTR(ndarray);
+
+    if(args[1].u_obj == mp_const_none) {
+        // at this point, the array holding the sorted values should be flat
+        uint8_t *array = (uint8_t *)ndarray->array;
+        size_t len = ndarray->len;
+        array += (len >> 1) * ndarray->itemsize;
+        mp_float_t median = ndarray_get_float_value(array, ndarray->dtype);
+        if(!(len & 0x01)) { // len is an even number
+            array += ndarray->itemsize;
+            median += ndarray_get_float_value(array, ndarray->dtype);
+            median *= 0.5;
+        }
+        return mp_obj_new_float(median);
+    }
+    return mp_const_none;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_median_obj, 1, numerical_median);

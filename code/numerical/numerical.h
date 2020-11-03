@@ -115,7 +115,7 @@ extern mp_obj_module_t ulab_numerical_module;
     }\
 })
 
-#define HEAPSORT1(ndarray, type, array, shape, index, increment, N)\
+#define HEAPSORT1(type, array, increment, N)\
 ({\
     type *_array = (type *)array;\
     type tmp;\
@@ -208,7 +208,7 @@ extern mp_obj_module_t ulab_numerical_module;
 } while(0)
 
 #define HEAPSORT(ndarray, type, array, shape, strides, index, increment, N) do {\
-    HEAPSORT1((ndarray), type, (array), (shape), (index), (increment), (N));\
+    HEAPSORT1(type, (array), (increment), (N));\
 } while(0)
 
 #define HEAP_ARGSORT(ndarray, type, array, shape, strides, index, increment, N, iarray, istrides, iincrement) do {\
@@ -271,7 +271,7 @@ extern mp_obj_module_t ulab_numerical_module;
 #define HEAPSORT(ndarray, type, array, shape, strides, index, increment, N) do {\
     size_t l = 0;\
     do {\
-        HEAPSORT1((ndarray), type, (array), (shape), (index), (increment), (N));\
+        HEAPSORT1(type, (array), (increment), (N));\
         (array) += (strides)[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
@@ -375,7 +375,7 @@ extern mp_obj_module_t ulab_numerical_module;
     do {\
         size_t l = 0;\
         do {\
-            HEAPSORT1((ndarray), type, (array), (shape), (index), (increment), (N));\
+            HEAPSORT1(type, (array), (increment), (N));\
             (array) += (strides)[ULAB_MAX_DIMS - 1];\
             l++;\
         } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
@@ -523,7 +523,7 @@ extern mp_obj_module_t ulab_numerical_module;
         do {\
             size_t l = 0;\
             do {\
-                HEAPSORT1((ndarray), type, (array), (shape), (index), (increment), (N));\
+                HEAPSORT1(type, (array), (increment), (N));\
                 (array) += (strides)[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
