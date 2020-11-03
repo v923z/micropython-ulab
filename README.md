@@ -52,7 +52,7 @@ determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace.
 
 ### numerical
 
-The `numerical` sub-module defines the `cross`, `diff`, `flip`, `roll`, `sort` and `argsort` functions for `ndarray`s, and,
+The `numerical` sub-module defines the `cross`, `diff`, `flip`, `median`, `roll`, `sort` and `argsort` functions for `ndarray`s, and,
 in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as
 well as generic one-dimensional iterables.
 
