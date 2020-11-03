@@ -32,7 +32,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 1.1.4
+#define ULAB_VERSION 1.2.0
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
@@ -237,6 +237,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
             #endif
             #if ULAB_NUMERICAL_HAS_MEAN
                 { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
+            #endif
+            #if ULAB_NUMERICAL_HAS_MEDIAN
+                { MP_OBJ_NEW_QSTR(MP_QSTR_median), (mp_obj_t)&numerical_median_obj },
             #endif
             #if ULAB_NUMERICAL_HAS_MINMAX
                 { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },

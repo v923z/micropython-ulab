@@ -4,26 +4,26 @@ Introduction
 Enter ulab
 ----------
 
-``ulab`` is a ``numpy``-like module for ``micropython``, meant to
-simplify and speed up common mathematical operations on arrays. Our goal
-was to implement a small subset of ``numpy`` that might be useful in the
-context of a microcontroller. This means low-level data processing of
-array data of up to four dimensions.
+``ulab`` is a ``numpy``-like module for ``micropython`` and its
+derivatives, meant to simplify and speed up common mathematical
+operations on arrays. ``ulab`` implements a small subset of ``numpy``.
+The functions were chosen such that they might be useful in the context
+of a microcontroller. However, the project is a living one, and
+suggestions for new functions are always welcome.
 
 This document discusses how you can use the library, starting from
 building your own firmware, through questions like what affects the
 firmware size, what are the trade-offs, and what are the most important
 differences to ``numpy``. The document is organised as follows:
 
-The second chapter (the first after this one) helps you with firmware
-customisation.
+The chapter after this one helps you with firmware customisation.
 
 The third chapter gives a very concise summary of the ``ulab`` functions
 and array methods. This chapter can be used as a quick reference.
 
-The fourth chapter is an in-depth review of most functions. Here you can
-find usage examples, benchmarks, as well as a thorough discussion of
-such concepts as broadcasting, and views versus copies.
+The chapters after that are an in-depth review of most functions. Here
+you can find usage examples, benchmarks, as well as a thorough
+discussion of such concepts as broadcasting, and views versus copies.
 
 The final chapter of this book can be regarded as the programming
 manual. The inner working of ``ulab`` is dissected here, and you will
@@ -43,21 +43,22 @@ catastrophic system failure, if these data are not processed in time,
 because the microcontroller is supposed to interact with the outside
 world in a timely fashion. In fact, this latter objective was the
 initiator of this project: I needed the Fourier transform of a signal
-coming from the ADC of the pyboard, and all available options were
+coming from the ADC of the ``pyboard``, and all available options were
 simply too slow.
 
 In addition to speed, another issue that one has to keep in mind when
 working with embedded systems is the amount of available RAM: I believe,
-everything here could be implemented in pure python with relatively
-little effort (in fact, there are a couple of python-only
+everything here could be implemented in pure ``python`` with relatively
+little effort (in fact, there are a couple of ``python``-only
 implementations of ``numpy`` functions out there), but the price we
-would have to pay for that is not only speed, but RAM, too. python code,
-if is not frozen, and compiled into the firmware, has to be compiled at
-runtime, which is not exactly a cheap process. On top of that, if
-numbers are stored in a list or tuple, which would be the high-level
-container, then they occupy 8 bytes, no matter, whether they are all
-smaller than 100, or larger than one hundred million. This is obviously
-a waste of resources in an environment, where resources are scarce.
+would have to pay for that is not only speed, but RAM, too. ``python``
+code, if is not frozen, and compiled into the firmware, has to be
+compiled at runtime, which is not exactly a cheap process. On top of
+that, if numbers are stored in a list or tuple, which would be the
+high-level container, then they occupy 8 bytes, no matter, whether they
+are all smaller than 100, or larger than one hundred million. This is
+obviously a waste of resources in an environment, where resources are
+scarce.
 
 Finally, there is a reason for using ``micropython`` in the first place.
 Namely, that a microcontroller can be programmed in a very elegant, and
@@ -71,7 +72,7 @@ are implemented in a way that
 
 1. conforms to ``numpy`` as much as possible
 2. is so frugal with RAM as possible,
-3. and yet, fast. Much faster than pure python. Think of a speed-up of
+3. and yet, fast. Much faster than pure python. Think of speed-ups of
    30-50!
 
 The main points of ``ulab`` are
@@ -79,8 +80,8 @@ The main points of ``ulab`` are
 -  compact, iterable and slicable containers of numerical data in one to
    four dimensions. These containers support all the relevant unary and
    binary operators (e.g., ``len``, ==, +, \*, etc.)
--  vectorised computations on micropython iterables and numerical arrays
-   (in ``numpy``-speak, universal functions)
+-  vectorised computations on ``micropython`` iterables and numerical
+   arrays (in ``numpy``-speak, universal functions)
 -  computing statistical properties (mean, standard deviation etc.) on
    arrays
 -  basic linear algebra routines (matrix inversion, multiplication,
@@ -88,14 +89,17 @@ The main points of ``ulab`` are
    decomposition and so on)
 -  polynomial fits to numerical data, and evaluation of polynomials
 -  fast Fourier transforms
+-  filtering of data (convolution and second-order filters)
 -  function minimasation, fitting, and numerical approximation routines
 
 ``ulab`` implements close to a hundred functions and array methods. At
 the time of writing this manual (for version 1.0.0), the library adds
-approximately 100 kB of extra compiled code to the micropython
+approximately 100 kB of extra compiled code to the ``micropython``
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
-can easily shave tens of kB off the firmware. See the section on
-`customising ulab <#Custom_builds>`__.
+can easily shave tens of kB off the firmware. In fact, if only a small
+sub-set of functions are needed, you can get away with less than 10 kB
+of flash space. See the section on `customising
+ulab <#Custom_builds>`__.
 
 Resources and legal matters
 ---------------------------
@@ -406,8 +410,8 @@ number of data types. As an example, the innocent-looking expression
 
 requires 25 loops in C, because the ``dtypes`` of both ``a``, and ``b``
 can assume 5 different values, and the addition has to be resolved for
-all possible cases. A hint: each binary operator costs between 3 and 4
-kB in two dimensions.
+all possible cases. Hint: each binary operator costs between 3 and 4 kB
+in two dimensions.
 
 The ulab version string
 -----------------------
@@ -469,17 +473,22 @@ firmware is calling ``dir`` with ``ulab`` as its argument.
     
     import ulab as np
     
-    print(dir(np))
+    print('class-level functions: \n', dir(np))
     
     # since fft and linalg are sub-modules, print them separately
-    print(dir(np.fft))
-    print(dir(np.linalg))
+    print('\nfunctions included in the fft module: \n', dir(np.fft))
+    print('\nfunctions included in the linalg module: \n', dir(np.linalg))
 
 .. parsed-literal::
 
-    ['__class__', '__name__', 'bool', 'sort', 'sum', '__version__', 'acos', 'acosh', 'arange', 'arctan2', 'argmax', 'argmin', 'argsort', 'around', 'array', 'asin', 'asinh', 'atan', 'atanh', 'bisect', 'ceil', 'clip', 'concatenate', 'convolve', 'cos', 'cross', 'degrees', 'diff', 'e', 'equal', 'erf', 'erfc', 'exp', 'expm1', 'eye', 'fft', 'flip', 'float', 'floor', 'fmin', 'full', 'gamma', 'get_printoptions', 'int16', 'int8', 'interp', 'lgamma', 'linalg', 'linspace', 'log', 'log10', 'log2', 'logspace', 'max', 'maximum', 'mean', 'min', 'minimum', 'ndinfo', 'newton', 'not_equal', 'ones', 'pi', 'polyfit', 'polyval', 'radians', 'roll', 'set_printoptions', 'sin', 'sinh', 'sosfilt', 'sqrt', 'std', 'tan', 'tanh', 'trapz', 'uint16', 'uint8', 'vectorize', 'zeros']
-    ['__class__', '__name__', 'fft', 'ifft', 'spectrogram']
-    ['__class__', '__name__', 'cholesky', 'det', 'dot', 'eig', 'inv', 'norm', 'size', 'trace']
+    class-level functions: 
+     ['__class__', '__name__', 'bool', 'sort', 'sum', '__version__', 'acos', 'acosh', 'arange', 'arctan2', 'argmax', 'argmin', 'argsort', 'around', 'array', 'asin', 'asinh', 'atan', 'atanh', 'bisect', 'ceil', 'clip', 'concatenate', 'convolve', 'cos', 'cosh', 'cross', 'degrees', 'diff', 'e', 'equal', 'erf', 'erfc', 'exp', 'expm1', 'eye', 'fft', 'flip', 'float', 'floor', 'fmin', 'full', 'gamma', 'get_printoptions', 'int16', 'int8', 'interp', 'lgamma', 'linalg', 'linspace', 'log', 'log10', 'log2', 'logspace', 'max', 'maximum', 'mean', 'min', 'minimum', 'ndinfo', 'newton', 'not_equal', 'ones', 'pi', 'polyfit', 'polyval', 'radians', 'roll', 'set_printoptions', 'sin', 'sinh', 'sosfilt', 'sqrt', 'std', 'tan', 'tanh', 'trapz', 'uint16', 'uint8', 'user', 'vectorize', 'zeros']
+    
+    functions included in the fft module: 
+     ['__class__', '__name__', 'fft', 'ifft', 'spectrogram']
+    
+    functions included in the linalg module: 
+     ['__class__', '__name__', 'cholesky', 'det', 'dot', 'eig', 'inv', 'norm', 'size', 'trace']
     
     
 

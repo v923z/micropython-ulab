@@ -1,5 +1,11 @@
 Tue, 3 Nov 2020
 
+version 1.2.0
+
+    added median function
+
+Tue, 3 Nov 2020
+
 version 1.1.4
 
     fixed norm and shape

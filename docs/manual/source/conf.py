@@ -27,7 +27,7 @@ copyright = '2019-2020, Zoltán Vörös and contributors'
 author = 'Zoltán Vörös'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1.3'
+release = '1.2.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -58,7 +58,7 @@ latex_maketitle = r'''
 \Huge\textbf{The $\mu$lab book}
 \vskip 0.5em
 \LARGE
-\textbf{Release 1.1.3}
+\textbf{Release 1.2.0}
 \vskip 5em
 \huge\textbf{Zoltán Vörös}
 \end{flushright}
