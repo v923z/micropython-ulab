@@ -475,6 +475,45 @@ and ``append`` keywords that can be found in ``numpy``.
     
 
 
+median
+------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.median.html
+
+The function computes the median along the specified axis, and returns
+the median of the array elements. If the ``axis`` keyword argument is
+``None``, the arrays is flattened first. The ``dtype`` of the results is
+always float.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array(range(12), dtype=np.int8).reshape((3, 4))
+    print('a:\n', a)
+    print('\nmedian of the flattened array: ', np.median(a))
+    print('\nmedian along the vertical axis: ', np.median(a, axis=0))
+    print('\nmedian along the horizontal axis: ', np.median(a, axis=1))
+
+.. parsed-literal::
+
+    a:
+     array([[0, 1, 2, 3],
+           [4, 5, 6, 7],
+           [8, 9, 10, 11]], dtype=int8)
+    
+    median of the flattened array:  5.5
+    
+    median along the vertical axis:  array([4.0, 5.0, 6.0, 7.0], dtype=float)
+    
+    median along the horizontal axis:  array([1.5, 5.5, 9.5], dtype=float)
+    
+    
+
+
 sort
 ----
 

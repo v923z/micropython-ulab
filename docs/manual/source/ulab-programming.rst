@@ -3,12 +3,11 @@ Programming ulab
 
 Earlier we have seen, how ``ulab``\ ’s functions and methods can be
 accessed in ``micropython``. This last section of the book explains, how
-these functions are implemented. This should serve at least two
-purposes. First, it should become clear, what the trade-offs are, and
-that would allow the user to optimise the code in ``python``.
-
-Second, by the end of the section, one should be able to extend
-``ulab``, and write their own functions.
+these functions are implemented. By the end of this chapter, not only
+would you be able to extend ``ulab``, and write your own
+``numpy``-compatible functions, but through a deeper understanding of
+the inner workings of the functions, you would be able to see what the
+trade-offs are at the ``python`` level.
 
 Code organisation
 -----------------
@@ -33,17 +32,17 @@ General comments
 ``ndarrays`` are efficient containers of numerical data of the same type
 (i.e., signed/unsigned chars, signed/unsigned integers or
 ``mp_float_t``\ s, which, depending on the platform, are either C
-``float``\ s, of C ``double``\ s). Beyond storing the actual data, the
-type definition has eight additional members (on top of the ``base``
-type). Namely, ``dense``, which tells us, whether the array is dense or
-sparse (more on this later), the ``dtype``, which tells us, how the
-bytes are to be interpreted. Moreover, the ``itemsize``, which stores
-the size of a single entry in the array, ``boolean``, an unsigned
-integer, which determines, whether the arrays is to be treated as a set
-of Booleans, or as numerical data, ``ndim``, the number of dimensions
-(``uint8_t``), ``len``, the length of the array, the shape
-(``*size_t``), the strides (``*size_t``). The length is the product of
-the numbers in ``shape``.
+``float``\ s, or C ``double``\ s). Beyond storing the actual data in the
+void pointer ``*array``, the type definition has eight additional
+members (on top of the ``base`` type). Namely, ``dense``, which tells
+us, whether the array is dense or sparse (more on this later), the
+``dtype``, which tells us, how the bytes are to be interpreted.
+Moreover, the ``itemsize``, which stores the size of a single entry in
+the array, ``boolean``, an unsigned integer, which determines, whether
+the arrays is to be treated as a set of Booleans, or as numerical data,
+``ndim``, the number of dimensions (``uint8_t``), ``len``, the length of
+the array, the shape (``*size_t``), the strides (``*int32_t``). The
+length is simply the product of the numbers in ``shape``.
 
 The type definition is as follows:
 
@@ -108,7 +107,10 @@ reasons that will become clear later, the numbers in ``shape`` and in
 i.e., if the number of possible dimensions is ``ULAB_MAX_DIMS``, then
 ``shape[ULAB_MAX_DIMS-1]`` is the length of the last axis,
 ``shape[ULAB_MAX_DIMS-2]`` is the length of the last but one axis, and
-so on.
+so on. If the number of actual dimensions, ``ndim < ULAB_MAX_DIMS``, the
+first ``ULAB_MAX_DIMS - ndim`` entries in ``shape`` and ``strides`` will
+be equal to zero, but they could, in fact, be assigned any value,
+because these will never be accessed in an operation.
 
 With this definition of the strides, the linear combination in
 :math:`P(n_1, n_2, ..., n_{k-1}, n_k)` is a one-to-one mapping from the

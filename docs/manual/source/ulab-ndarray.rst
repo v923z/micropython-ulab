@@ -740,6 +740,96 @@ entries of the source array are *copied* into the target array.
     
 
 
+.dtype
+~~~~~~
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.dtype.htm
+
+The ``.dtype`` property returns the ``dtype`` of an array. This can then
+be used for initialising another array with the matching type. ``ulab``
+implements two versions of ``dtype``; one that is ``numpy``-like, i.e.,
+one, which returns a ``dtype`` object, and one that is significantly
+cheaper in terms of flash space, but does not define a the ``dtype``
+object, and returns a single character (number) instead.
+
+**WARNING**: in ``circuitpython``:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    b = np.array([5, 6, 7], dtype=a.dtype)
+    print('a: ', a)
+    print('dtype of a: ', a.dtype)
+    print('\nb: ', b)
+
+.. parsed-literal::
+
+    a:  array([1, 2, 3, 4], dtype=int8)
+    dtype of a:  dtype('int8')
+    
+    b:  array([5, 6, 7], dtype=int8)
+    
+    
+
+
+**WARNING:** in ``micropython``:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    b = np.array([5, 6, 7], dtype=a.dtype())
+    print('a: ', a)
+    print('dtype of a: ', a.dtype())
+    print('\nb: ', b)
+
+.. parsed-literal::
+
+    a:  array([1, 2, 3, 4], dtype=int8)
+    dtype of a:  dtype('int8')
+    
+    b:  array([5, 6, 7], dtype=int8)
+    
+    
+
+
+If the ``ulab.h`` header file sets the pre-processor constant
+``ULAB_HAS_DTYPE_OBJECT`` to 0, then the output of the previous snippet
+will be
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    b = np.array([5, 6, 7], dtype=a.dtype())
+    print('a: ', a)
+    print('dtype of a: ', a.dtype())
+    print('\nb: ', b)
+
+.. parsed-literal::
+
+    a:  array([1, 2, 3, 4], dtype=int8)
+    dtype of a:  98
+    
+    b:  array([5, 6, 7], dtype=int8)
+    
+    
+
+
+Here 98 is nothing but the ASCII value of the character ``b``, which is
+the type code for signed 8-bit integers.
+
 .flatten
 ~~~~~~~~
 
