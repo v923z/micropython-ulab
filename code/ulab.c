@@ -238,6 +238,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
             #if ULAB_NUMERICAL_HAS_MEAN
                 { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
             #endif
+            #if ULAB_NUMERICAL_HAS_MEDIAN
+                { MP_OBJ_NEW_QSTR(MP_QSTR_median), (mp_obj_t)&numerical_median_obj },
+            #endif
             #if ULAB_NUMERICAL_HAS_MINMAX
                 { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
             #endif
