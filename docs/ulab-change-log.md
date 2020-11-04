@@ -1,3 +1,9 @@
+Wed, 4 Nov 2020
+
+version 1.3
+
+    added dtype function/method/property
+
 Sun, 1 Nov 2020
 
 version 1.1.1

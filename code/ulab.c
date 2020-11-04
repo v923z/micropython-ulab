@@ -32,7 +32,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 1.2.0
+#define ULAB_VERSION 1.3.0
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
@@ -128,8 +128,10 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_HAS_DTYPE_OBJECT
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ulab_dtype_type },
     #else
+        #if NDARRAY_HAS_DTYPE
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ndarray_dtype_obj },
-    #endif
+        #endif /* NDARRAY_HAS_DTYPE */
+    #endif /* ULAB_HAS_DTYPE_OBJECT */
     #if ULAB_HAS_PRINTOPTIONS
         { MP_ROM_QSTR(MP_QSTR_set_printoptions), (mp_obj_t)&ndarray_set_printoptions_obj },
         { MP_ROM_QSTR(MP_QSTR_get_printoptions), (mp_obj_t)&ndarray_get_printoptions_obj },
