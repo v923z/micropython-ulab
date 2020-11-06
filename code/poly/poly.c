@@ -16,6 +16,8 @@
 #include "py/runtime.h"
 #include "py/objarray.h"
 #include "../linalg/linalg.h"
+
+#include "../ulab_tools.h"
 #include "poly.h"
 
 #if ULAB_POLY_MODULE
@@ -178,6 +180,8 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
         ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
         
+        mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
+
         // TODO: these loops are really nothing, but the re-impplementation of 
         // ITERATE_VECTOR from vectorise.c. We could pass a function pointer here
         #if ULAB_MAX_DIMS > 3
@@ -195,7 +199,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
                     size_t l = 0;
                     do {
                         mp_float_t y = p[0];
-                        mp_float_t _x = ndarray_get_float_value(sarray, source->dtype);
+                        mp_float_t _x = func(sarray);
                         for(uint8_t m=0; m < plen-1; m++) {
                             y *= _x;
                             y += p[m+1];

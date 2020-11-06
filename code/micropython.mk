@@ -3,6 +3,7 @@ USERMODULES_DIR := $(USERMOD_DIR)
 
 # Add all C files to SRC_USERMOD.
 SRC_USERMOD += $(USERMODULES_DIR)/ndarray_operators.c
+SRC_USERMOD += $(USERMODULES_DIR)/ulab_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/ndarray.c
 SRC_USERMOD += $(USERMODULES_DIR)/ulab_create.c
 SRC_USERMOD += $(USERMODULES_DIR)/linalg/linalg.c

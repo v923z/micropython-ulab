@@ -19,6 +19,8 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/misc.h"
+
+#include "../ulab_tools.h"
 #include "numerical.h"
 
 #if ULAB_NUMERICAL_MODULE
@@ -209,11 +211,12 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
 
     if(axis == mp_const_none) {
         // work with the flattened array
+        mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
         uint8_t *array = (uint8_t *)ndarray->array;
-        mp_float_t best_value = ndarray_get_float_value(array, ndarray->dtype);
+        mp_float_t best_value = func(array);
         mp_float_t value;
         size_t index = 0, best_index = 0;
-        
+
         #if ULAB_MAX_DIMS > 3
         size_t i = 0;
         do {
@@ -228,7 +231,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
                 #endif
                     size_t l = 0;
                     do {
-                        value = ndarray_get_float_value(array, ndarray->dtype);
+                        value = func(array);
                         if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) {
                             if(best_value < value) {
                                 best_value = value;
