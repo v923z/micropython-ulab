@@ -313,8 +313,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
 static mp_obj_t linalg_eig(mp_obj_t oin) {
     ndarray_obj_t *in = linalg_object_is_square(oin);
     uint8_t *iarray = (uint8_t *)in->array;
-    mp_float_t *array = m_new(mp_float_t, in->len);
-    size_t S = in->shape[ULAB_MAX_DIMS - 2];
+    size_t S = in->shape[ULAB_MAX_DIMS - 1];
+    mp_float_t *array = m_new(mp_float_t, S*S);
     for(size_t i=0; i < S; i++) { // rows
         for(size_t j=0; j < S; j++) { // columns
             *array++ = ndarray_get_float_value(iarray, in->dtype);
@@ -323,6 +323,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
         iarray -= in->strides[ULAB_MAX_DIMS - 1] * S;
         iarray += in->strides[ULAB_MAX_DIMS - 2];
     }
+    array -= S * S;
     // make sure the matrix is symmetric
     for(size_t m=0; m < S; m++) {
         for(size_t n=m+1; n < S; n++) {

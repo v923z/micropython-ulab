@@ -287,19 +287,20 @@ stabilisation routines for robots.
     
     a = np.array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
     x, y = linalg.eig(a)
-    print('eigenvectors of a:\n', x)
-    print('\neigenvalues of a:\n', y)
+    print('eigenvectors of a:\n', y)
+    print('\neigenvalues of a:\n', x)
 
 .. parsed-literal::
 
     eigenvectors of a:
-     array([-1.165288, 0.8029362, 5.585626, 13.77673], dtype=float)
+     array([[0.8151560042509081, -0.4499411232970823, -0.1644660242574522, 0.3256141906686505],
+           [0.2211334179893007, 0.7846992598235538, 0.08372081379922657, 0.5730077734355189],
+           [-0.1340114162071679, -0.3100776411558949, 0.8742786816656, 0.3486109343758527],
+           [-0.5183258053659028, -0.292663481927148, -0.4489749870391468, 0.6664142156731531]], dtype=float)
     
     eigenvalues of a:
-     array([[0.8151754, -0.4499267, -0.1643907, 0.3256237],
-    	 [0.2211193, 0.7847154, 0.08373602, 0.5729892],
-    	 [-0.1340859, -0.3100657, 0.8742685, 0.3486182],
-    	 [-0.5182822, -0.2926556, -0.4490192, 0.6664218]], dtype=float)
+     array([-1.165288365404889, 0.8029365530314914, 5.585625756072663, 13.77672605630074], dtype=float)
+    
     
 
 
@@ -311,19 +312,19 @@ The same matrix diagonalised with ``numpy`` yields:
     
     a = array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
     x, y = eig(a)
-    print('eigenvectors of a:\n', x)
-    print('\neigenvalues of a:\n', y)
+    print('eigenvectors of a:\n', y)
+    print('\neigenvalues of a:\n', x)
 
 .. parsed-literal::
 
     eigenvectors of a:
-     [13.77672606 -1.16528837  0.80293655  5.58562576]
-    
-    eigenvalues of a:
      [[ 0.32561419  0.815156    0.44994112 -0.16446602]
      [ 0.57300777  0.22113342 -0.78469926  0.08372081]
      [ 0.34861093 -0.13401142  0.31007764  0.87427868]
      [ 0.66641421 -0.51832581  0.29266348 -0.44897499]]
+    
+    eigenvalues of a:
+     [13.77672606 -1.16528837  0.80293655  5.58562576]
 
 
 When comparing results, we should keep two things in mind:
