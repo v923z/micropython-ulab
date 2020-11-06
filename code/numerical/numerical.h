@@ -61,8 +61,8 @@ extern mp_obj_module_t ulab_numerical_module;
         sum += *((type *)(array));\
         (array) += (ndarray)->strides[(index)];\
     }\
-    memcpy((rarray), &sum, (ndarray)->itemsize);\
-    (rarray) += (ndarray)->itemsize;\
+    memcpy((rarray), &sum, (results)->itemsize);\
+    (rarray) += (results)->itemsize;\
 })
 
 // The mean could be calculated by simply dividing the sum by
@@ -70,10 +70,10 @@ extern mp_obj_module_t ulab_numerical_module;
 #define RUN_MEAN1(ndarray, type, array, results, r, index)\
 ({\
     mp_float_t M, m;\
-    M = m = *(mp_float_t *)((type *)(array));\
+    M = m = (mp_float_t)(*(type *)(array));\
     for(size_t i=1; i < (ndarray)->shape[(index)]; i++) {\
         (array) += (ndarray)->strides[(index)];\
-        mp_float_t value = *(mp_float_t *)((type *)(array));\
+        mp_float_t value = (mp_float_t)(*(type *)(array));\
         m = M + (value - M) / (mp_float_t)(i+1);\
         M = m;\
     }\
@@ -87,10 +87,10 @@ extern mp_obj_module_t ulab_numerical_module;
 #define RUN_STD1(ndarray, type, array, results, r, index, div)\
 ({\
     mp_float_t M, m, S = 0.0, s = 0.0;\
-    M = m = *(mp_float_t *)((type *)(array));\
+    M = m = (mp_float_t)(*(type *)(array));\
     for(size_t i=1; i < (ndarray)->shape[(index)]; i++) {\
         (array) += (ndarray)->strides[(index)];\
-        mp_float_t value = *(mp_float_t *)((type *)(array));\
+        mp_float_t value = (mp_float_t)(*(type *)(array));\
         m = M + (value - M) / (mp_float_t)i;\
         s = S + (value - M) * (value - m);\
         M = m;\
