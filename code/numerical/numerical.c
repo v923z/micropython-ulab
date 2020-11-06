@@ -48,7 +48,7 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
     uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + axis;
     if((ndarray->ndim == 1) && (axis == 0)) {
         index = 0;
-        shape[ULAB_MAX_DIMS - 1] = 0;
+        shape[ULAB_MAX_DIMS - 1] = 1;
         return;
     }
     for(uint8_t i = ULAB_MAX_DIMS - 1; i > 0; i--) {
