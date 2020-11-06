@@ -20,6 +20,8 @@
 #include "py/binary.h"
 #include "py/obj.h"
 #include "py/objarray.h"
+
+#include "../ulab_tools.h"
 #include "fft.h"
 
 #if ULAB_FFT_MODULE
@@ -101,8 +103,10 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
     mp_float_t *data_re = (mp_float_t *)out_re->array;
 
     uint8_t *array = (uint8_t *)re->array;
+    mp_float_t (*func)(void *) = ndarray_get_float_function(re->dtype);
+
     for(size_t i=0; i < len; i++) {
-        *data_re++ = ndarray_get_float_value(array, re->dtype);
+        *data_re++ = func(array);
         array += re->strides[ULAB_MAX_DIMS - 1];
     }
     data_re -= len;
@@ -113,15 +117,16 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
         ndarray_obj_t *im = MP_OBJ_TO_PTR(arg_im);
         #if ULAB_MAX_DIMS > 1
         if(im->ndim != 1) {
-            mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));         
+            mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));
         }
         #endif
         if (re->len != im->len) {
             mp_raise_ValueError(translate("real and imaginary parts must be of equal length"));
         }
         array = (uint8_t *)im->array;
+        func = ndarray_get_float_function(im->dtype);
         for(size_t i=0; i < len; i++) {
-           *data_im++ = ndarray_get_float_value(array, im->dtype);
+           *data_im++ = func(array);
            array += im->strides[ULAB_MAX_DIMS - 1];
         }
         data_im -= len;
