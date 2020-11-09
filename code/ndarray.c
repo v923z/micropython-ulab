@@ -727,56 +727,54 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
             return ndarray_copy_view(source);
         }
         ndarray_obj_t *target = ndarray_new_dense_ndarray(source->ndim, source->shape, dtype);
-        if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
-            // floats must be treated separately, because they can't directly be converted to integer types
-            uint8_t *sarray = (uint8_t *)source->array;
-            uint8_t *tarray = (uint8_t *)target->array;
-            #if ULAB_MAX_DIMS > 3
-            size_t i = 0;
+        uint8_t *sarray = (uint8_t *)source->array;
+        uint8_t *tarray = (uint8_t *)target->array;
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
             do {
             #endif
-                #if ULAB_MAX_DIMS > 2
-                size_t j = 0;
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
                 do {
                 #endif
-                    #if ULAB_MAX_DIMS > 1
-                    size_t k = 0;
+                    size_t l = 0;
                     do {
-                    #endif
-                        size_t l = 0;
-                        do {
-                            mp_obj_t item;
-                            if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
-                                // floats must be treated separately, because they can't directly be converted to integer types
-                                mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
-                                item = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(floor)(f));
-                            } else {
-                                item = mp_binary_get_val_array(source->dtype, sarray, 0);
-                            }
-                            mp_binary_set_val_array(dtype, tarray, 0, item);
-                            tarray += target->itemsize;
-                            sarray += source->strides[ULAB_MAX_DIMS - 1];
-                            l++;
-                        } while(l < source->shape[ULAB_MAX_DIMS - 1]);
-                    #if ULAB_MAX_DIMS > 1
-                        sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
-                        sarray += source->strides[ULAB_MAX_DIMS - 2];
-                        k++;
-                    } while(k < source->shape[ULAB_MAX_DIMS - 2]);
-                    #endif
-                #if ULAB_MAX_DIMS > 2
-                    sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
-                    sarray += source->strides[ULAB_MAX_DIMS - 3];
-                    j++;
-                } while(j < source->shape[ULAB_MAX_DIMS - 3]);
+                        mp_obj_t item;
+                        // floats must be treated separately, because they can't directly be converted to integer types
+                        if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
+                            // floats must be treated separately, because they can't directly be converted to integer types
+                            mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
+                            item = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(floor)(f));
+                        } else {
+                            item = mp_binary_get_val_array(source->dtype, sarray, 0);
+                        }
+                        mp_binary_set_val_array(dtype, tarray, 0, item);
+                        tarray += target->itemsize;
+                        sarray += source->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l < source->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
+                    sarray += source->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < source->shape[ULAB_MAX_DIMS - 2]);
                 #endif
-            #if ULAB_MAX_DIMS > 3
-                sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
-                sarray += source->strides[ULAB_MAX_DIMS - 4];
-                i++;
-            } while(i < source->shape[ULAB_MAX_DIMS - 4]);
+            #if ULAB_MAX_DIMS > 2
+                sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
+                sarray += source->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < source->shape[ULAB_MAX_DIMS - 3]);
             #endif
-        }
+        #if ULAB_MAX_DIMS > 3
+            sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
+            sarray += source->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < source->shape[ULAB_MAX_DIMS - 4]);
+        #endif
         return MP_OBJ_FROM_PTR(target);
     }
 
