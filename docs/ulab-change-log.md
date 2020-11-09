@@ -1,5 +1,11 @@
 Mon, 9 Nov 2020
 
+version 1.2.5
+
+    fixed array casting glitch in make_new_core
+
+Mon, 9 Nov 2020
+
 version 1.2.4
 
     sum/mean/std can flatten the arrays now
@@ -84,31 +90,31 @@ Wed, 29 Jul 2020
 version 0.54.1
 
     changed to size_t for the length of arrays
-    
+
 Thu, 23 Jul 2020
 
 version 0.54.0
 
     added norm to linalg
-    
+
 Wed, 22 Jul 2020
 
 version 0.53.2
 
     added circuitpython documentation stubs to the source files
-    
+
 Wed, 22 Jul 2020
 
 version 0.53.1
 
     fixed arange with negative steps
-    
+
 Mon, 20 Jul 2020
 
 version 0.53.0
 
     added arange to create.c
-    
+
 Thu, 16 Jul 2020
 
 version 0.52.0
@@ -138,13 +144,13 @@ Mon, 1 Jun 2020
 version 0.50.1
 
     fixes error in numerical max/min
-    
+
 Mon, 18 May 2020
 
 version 0.50.0
 
     move interp to the approx sub-module
-    
+
 Wed, 06 May 2020
 
 version 0.46.0
@@ -178,7 +184,7 @@ Sat, 2 May 2020
 version 0.45.0
 
 	add equal/not_equal to the compare module
-	
+
 Tue, 21 Apr 2020
 
 version 0.42.0
@@ -262,13 +268,13 @@ Tue, 10 Mar 2020
 version 0.37.0
 
 	added Cholesky decomposition to linalg.c
-	
+
 Thu, 27 Feb 2020
 
 version 0.36.0
 
 	moved zeros, ones, eye and linspace into separate module (they are still bound at the top level)
-	
+
 Thu, 27 Feb 2020
 
 version 0.35.0
@@ -304,7 +310,7 @@ Mon, 17 Feb 2020
 version 0.32.1
 
     temporary fix for issue #40
-    
+
 Tue, 11 Feb 2020
 
 version 0.32.0
@@ -316,7 +322,7 @@ Mon, 10 Feb 2020
 version 0.31.0
 
     removed asbytearray, and added buffer protocol to ndarrays, fixed bad error in filter.c
-    
+
 Sun, 09 Feb 2020
 
 version 0.30.2
@@ -328,13 +334,13 @@ Sat, 08 Feb 2020
 version 0.30.1
 
     fixed typecode error, added variable inspection, and replaced ternary operators in filter.c
-    
+
 Fri, 07 Feb 2020
 
 version 0.30.0
 
     ulab functions can arbitrarily be excluded from the firmware via the ulab.h configuration file
-    
+
 Thu, 06 Feb 2020
 
 version 0.27.0
@@ -388,7 +394,7 @@ Tue, 6 Nov 2019
 version 0.26
 
     added in-place sorting (method of ndarray), and argsort
-    
+
 Mon, 4 Nov 2019
 
 version 0.25
@@ -400,7 +406,7 @@ Thu, 31 Oct 2019
 version 0.24
 
     added diff to numerical.c
-    
+
 Tue, 29 Oct 2019
 
 version 0.23
@@ -430,7 +436,7 @@ Wed, 16 Oct 2019
 
 version 0.20
 
-    Added flip function to numerical.c, and moved the size function to linalg. In addition, 
+    Added flip function to numerical.c, and moved the size function to linalg. In addition,
     size is a function now, and not a method.
 
 Tue, 15 Oct 2019
@@ -461,27 +467,27 @@ Fri, 11 Oct 2019
 
 version 0.161
 
-    fixed bad error in iterator, and make_new_ndarray 
-    
+    fixed bad error in iterator, and make_new_ndarray
+
 Thu, 10 Oct 2019
 
 varsion 0.16
 
     changed ndarray to array in ulab.c, so as to conform to numpy's notation
     extended subscr method to include slices (partially works)
-    
+
 Tue, 8 Oct 2019
 
 version 0.15
 
     added inv, neg, pos, and abs unary operators to ndarray.c
-    
+
 Mon, 7 Oct 2019
 
 version 0.14
 
     made the internal binary_op function tighter, and added keyword arguments to linspace
-    
+
 Sat, 4 Oct 2019
 
 version 0.13
@@ -497,5 +503,5 @@ version 0.12
 Thu, 3 Oct 2019
 
 version 0.11
-    
+
     binary operators are now based on macros
