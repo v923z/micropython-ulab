@@ -99,9 +99,72 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
     memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
 
-    if(axis == mp_const_none) { // work with the flattened array
-        // pass for now...
-        mp_raise_NotImplementedError(translate("operation is not implemented for flattened array"));
+    if(axis == mp_const_none) {
+        // work with the flattened array
+        if((optype == NUMERICAL_STD) && (ddof > ndarray->len)) {
+            // if there are too many degrees of freedom, there is no point in calculating anything
+            return mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
+        }
+        mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+        mp_float_t M = 0.0, m = 0.0, S = 0.0, s = 0.0;
+        size_t count = 0;
+
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        count++;
+                        mp_float_t value = func(array);
+                        m = M + (value - M) / (mp_float_t)count;
+                        if(optype == NUMERICAL_STD) {
+                            s = S + (value - M) * (value - m);
+                            S = s;
+                        }
+                        M = m;
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                    array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+                array += ndarray->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < ndarray->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+            array += ndarray->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+        if(optype == NUMERICAL_SUM) {
+            // numpy returns an integer for integer input types
+            if(ndarray->dtype == NDARRAY_FLOAT) {
+                return mp_obj_new_float(M * ndarray->len);
+            } else {
+                return mp_obj_new_int((int32_t)(M * ndarray->len));
+            }
+        } else if(optype == NUMERICAL_MEAN) {
+            return mp_obj_new_float(M);
+        } else { // this must be the case of the standard deviation
+            // we have already made certain that ddof < ndarray->len holds
+            return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(S / (ndarray->len - ddof)));
+        }
     } else {
         int8_t ax = mp_obj_get_int(axis);
         if(ax < 0) ax += ndarray->ndim;
@@ -144,8 +207,12 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 RUN_MEAN(ndarray, mp_float_t, array, results, r, shape, strides, index);
             }
         } else { // this case is certainly the standard deviation
-            mp_float_t div = (mp_float_t)(ndarray->shape[index] - ddof);
             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
+            // we can return the 0 array here, if the degrees of freedom is larger than the length of the axis
+            if(ndarray->shape[index] <= ddof) {
+                return MP_OBJ_FROM_PTR(results);
+            }
+            mp_float_t div = (mp_float_t)(ndarray->shape[index] - ddof);
             mp_float_t *r = (mp_float_t *)results->array;
             if(ndarray->dtype == NDARRAY_UINT8) {
                 RUN_STD(ndarray, uint8_t, array, results, r, shape, strides, index, div);
