@@ -1,3 +1,9 @@
+Mon, 9 Nov 2020
+
+version 1.2.4
+
+    sum/mean/std can flatten the arrays now
+
 Tue, 3 Nov 2020
 
 version 1.2.1
