@@ -663,9 +663,7 @@ ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *sha
         ndarray->len *= shape[i-1];
     }
     uint8_t *pointer = (uint8_t *)source->array;
-    if(ndim > 0) {
-        pointer += offset;
-    }
+    pointer += offset;
     ndarray->array = pointer;
     return ndarray;
 }
@@ -945,12 +943,14 @@ static mp_bound_slice_t generate_slice(mp_int_t n, mp_obj_t index) {
     return slice;
 }
 
-ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *tuple) {
+static ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *tuple) {
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
     memset(strides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+
     uint8_t ndim = ndarray->ndim;
+    
     for(uint8_t i=0; i < ndim; i++) {
         // copy from the end
         shape[ULAB_MAX_DIMS - 1 - i] = ndarray->shape[ULAB_MAX_DIMS  - 1 - i];
@@ -958,10 +958,28 @@ ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *
     }
     int32_t offset = 0;
     for(uint8_t i=0; i  < tuple->len; i++) {
-        mp_bound_slice_t slice = generate_slice(shape[ULAB_MAX_DIMS - ndim + i], tuple->items[i]);
-        shape[ULAB_MAX_DIMS - ndim + i] = slice_length(slice);
-        offset += ndarray->strides[ULAB_MAX_DIMS - ndim + i] * (int32_t)slice.start;
-        strides[ULAB_MAX_DIMS - ndim + i] = (int32_t)slice.step * ndarray->strides[ULAB_MAX_DIMS - ndim + i];
+        if(MP_OBJ_IS_INT(tuple->items[i])) {
+            // if item is an int, the dimension will first be reduced ...
+            ndim--;
+            int32_t k = mp_obj_get_int(tuple->items[i]);
+            if(k < 0) {
+                k += ndarray->shape[ULAB_MAX_DIMS - ndarray->ndim + i];
+            }
+            if((k >= (int32_t)ndarray->shape[ULAB_MAX_DIMS - ndarray->ndim + i]) || (k < 0)) {
+                mp_raise_msg(&mp_type_IndexError, translate("index is out of bounds"));
+            }
+            offset += ndarray->strides[ULAB_MAX_DIMS - ndarray->ndim + i] * k;
+            // ... and then we have to shift the shapes to the right
+            for(uint8_t j=0; j < i; j++) {
+                shape[ULAB_MAX_DIMS - ndarray->ndim + i - j] = shape[ULAB_MAX_DIMS - ndarray->ndim + i - j - 1];
+                strides[ULAB_MAX_DIMS - ndarray->ndim + i - j] = strides[ULAB_MAX_DIMS - ndarray->ndim + i - j - 1];
+            }
+        } else {
+            mp_bound_slice_t slice = generate_slice(shape[ULAB_MAX_DIMS - ndarray->ndim + i], tuple->items[i]);
+            shape[ULAB_MAX_DIMS - ndarray->ndim + i] = slice_length(slice);
+            offset += ndarray->strides[ULAB_MAX_DIMS - ndarray->ndim + i] * (int32_t)slice.start;
+            strides[ULAB_MAX_DIMS - ndarray->ndim + i] = (int32_t)slice.step * ndarray->strides[ULAB_MAX_DIMS - ndarray->ndim + i];
+        }
     }
     return ndarray_new_view(ndarray, ndim, shape, strides, offset);
 }
@@ -1191,7 +1209,12 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
         }
         ndarray_obj_t *view = ndarray_view_from_slices(ndarray, tuple);
         if(values == NULL) { // return value(s)
-            return MP_OBJ_FROM_PTR(view);
+            // if the view has been reduced to nothing, return a single value
+            if(view->ndim == 0) {
+                return mp_binary_get_val_array(view->dtype, view->array, 0);
+            } else {
+                return MP_OBJ_FROM_PTR(view);
+            }
         } else { // assign value(s)
             ndarray_assign_view(view, values);
         }
