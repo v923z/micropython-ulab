@@ -1,3 +1,9 @@
+Tue, 10 Nov 2020
+
+version 1.2.6
+
+    fixed slicing
+
 Mon, 9 Nov 2020
 
 version 1.2.5
