@@ -173,7 +173,6 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
         }
         numerical_reduce_axes(ndarray, ax, shape, strides);
         uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
-        // Take MAX(...) here, so that we can include the 1-dimensional case
         ndarray_obj_t *results = NULL;
         uint8_t *rarray = NULL;
 
@@ -190,7 +189,16 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             } else if(ndarray->dtype == NDARRAY_INT16) {
                 RUN_SUM(ndarray, int16_t, array, results, rarray, shape, strides, index);
             } else {
-                RUN_SUM(ndarray, mp_float_t, array, results, rarray, shape, strides, index);
+                // for floats, the sum might be inaccurate with the naive summation
+                // call mean, and multiply with the number of samples
+                mp_float_t *r = (mp_float_t *)results->array;
+                RUN_MEAN(ndarray, mp_float_t, array, results, r, shape, strides, index);
+                mp_float_t norm = (mp_float_t)ndarray->shape[index];
+                // re-wind the array here
+                r = (mp_float_t *)results->array;
+                for(size_t i=0; i < results->len; i++) {
+                    *r++ *= norm;
+                }
             }
         } else if(optype == NUMERICAL_MEAN) {
             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);

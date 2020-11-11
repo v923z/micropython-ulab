@@ -1,3 +1,9 @@
+Wed, 11 Nov 2020
+
+version 1.2.8
+
+    improved the accuracy of sum for float types
+
 Tue, 10 Nov 2020
 
 version 1.2.6
