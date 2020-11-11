@@ -1,5 +1,11 @@
 Wed, 11 Nov 2020
 
+version 1.3
+
+    added dtype function/method/property
+
+Wed, 11 Nov 2020
+
 version 1.2.8
 
     improved the accuracy of sum for float types

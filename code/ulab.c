@@ -32,7 +32,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 1.2.8
+#define ULAB_VERSION 1.3.0
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
@@ -49,6 +49,7 @@ mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
 #endif
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
+    // these are the methods and properties of an ndarray
     #if ULAB_MAX_DIMS > 1
         #if NDARRAY_HAS_RESHAPE
             { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },
@@ -59,6 +60,9 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #endif
     #if NDARRAY_HAS_COPY
         { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&ndarray_copy_obj) },
+    #endif
+    #if NDARRAY_HAS_DTYPE
+        { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
     #endif
     #if NDARRAY_HAS_FLATTEN
         { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },
@@ -109,10 +113,26 @@ const mp_obj_type_t ulab_ndarray_type = {
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 
+#if ULAB_HAS_DTYPE_OBJECT
+const mp_obj_type_t ulab_dtype_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_dtype,
+    .print = ndarray_dtype_print,
+    .make_new = ndarray_dtype_make_new,
+};
+#endif
+
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
+    #if ULAB_HAS_DTYPE_OBJECT
+        { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ulab_dtype_type },
+    #else
+        #if NDARRAY_HAS_DTYPE
+        { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ndarray_dtype_obj },
+        #endif /* NDARRAY_HAS_DTYPE */
+    #endif /* ULAB_HAS_DTYPE_OBJECT */
     #if ULAB_HAS_PRINTOPTIONS
         { MP_ROM_QSTR(MP_QSTR_set_printoptions), (mp_obj_t)&ndarray_set_printoptions_obj },
         { MP_ROM_QSTR(MP_QSTR_get_printoptions), (mp_obj_t)&ndarray_get_printoptions_obj },

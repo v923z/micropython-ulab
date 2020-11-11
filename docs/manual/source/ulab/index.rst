@@ -348,11 +348,18 @@
    Join a sequence of arrays along an existing axis.
 
 
+.. function:: diagonal(a: ulab.array, *, offset: int = 0) -> ulab.array
+
+   .. param: a
+     an ndarray
+   .. param: offset
+
 .. function:: diag(a: ulab.array, *, k: int = 0) -> ulab.array
 
    .. param: a
      an ndarray
    .. param: k
+
      Offset of the diagonal from the main diagonal. Can be positive or negative.
 
    Return specified diagonals.
