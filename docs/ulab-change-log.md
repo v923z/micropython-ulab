@@ -1,3 +1,9 @@
+Wed, 11 Nov 2020
+
+version 1.2.7
+
+    improved the accuracy of trapz
+
 Tue, 10 Nov 2020
 
 version 1.2.6
