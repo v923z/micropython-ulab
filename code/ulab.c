@@ -49,6 +49,7 @@ mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
 #endif
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
+    // these are the methods and properties of an ndarray
     #if ULAB_MAX_DIMS > 1
         #if NDARRAY_HAS_RESHAPE
             { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },

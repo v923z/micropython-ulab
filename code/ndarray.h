@@ -160,16 +160,12 @@ mp_obj_t ndarray_copy(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_copy_obj);
 #endif
 
-#if NDARRAY_HAS_DTYPE
-mp_obj_t ndarray_dtype(mp_obj_t );
-MP_DECLARE_CONST_FUN_OBJ_1(ndarray_dtype_obj);
-#endif
-
 #if NDARRAY_HAS_FLATTEN
 mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_flatten_obj);
 #endif
 
+mp_obj_t ndarray_dtype(mp_obj_t );
 mp_obj_t ndarray_itemsize(mp_obj_t );
 mp_obj_t ndarray_size(mp_obj_t );
 mp_obj_t ndarray_shape(mp_obj_t );

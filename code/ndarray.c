@@ -480,8 +480,6 @@ mp_obj_t ndarray_dtype(mp_obj_t self_in) {
     return mp_obj_new_int(dtype);
 }
 #endif /* ULAB_HAS_DTYPE_OBJECT */
-
-MP_DEFINE_CONST_FUN_OBJ_1(ndarray_dtype_obj, ndarray_dtype);
 #endif /* NDARRAY_HAS_DTYPE */
 
 #if ULAB_HAS_PRINTOPTIONS
