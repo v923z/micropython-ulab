@@ -313,8 +313,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(linalg_dot_obj, linalg_dot);
 static mp_obj_t linalg_eig(mp_obj_t oin) {
     ndarray_obj_t *in = linalg_object_is_square(oin);
     uint8_t *iarray = (uint8_t *)in->array;
-    mp_float_t *array = m_new(mp_float_t, in->len);
-    size_t S = in->shape[ULAB_MAX_DIMS - 2];
+    size_t S = in->shape[ULAB_MAX_DIMS - 1];
+    mp_float_t *array = m_new(mp_float_t, S*S);
     for(size_t i=0; i < S; i++) { // rows
         for(size_t j=0; j < S; j++) { // columns
             *array++ = ndarray_get_float_value(iarray, in->dtype);
@@ -323,6 +323,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
         iarray -= in->strides[ULAB_MAX_DIMS - 1] * S;
         iarray += in->strides[ULAB_MAX_DIMS - 2];
     }
+    array -= S * S;
     // make sure the matrix is symmetric
     for(size_t m=0; m < S; m++) {
         for(size_t n=m+1; n < S; n++) {
@@ -488,22 +489,24 @@ static mp_obj_t linalg_norm(mp_obj_t _x) {
         mp_raise_TypeError(translate("argument must be ndarray"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(_x);
-    if((ndarray->ndim != 1) || (ndarray->ndim != 2)) {
+    if((ndarray->ndim != 1) && (ndarray->ndim != 2)) {
         mp_raise_ValueError(translate("norm is defined for 1D and 2D arrays"));
     }
-    mp_float_t dot = 0.0, v;
+    mp_float_t dot = 0.0;
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t k = 0;
     do {
         size_t l = 0;
         do {
-            v = ndarray_get_float_value(array, ndarray->dtype);
+            mp_float_t v = ndarray_get_float_value(array, ndarray->dtype);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
             dot += v*v;
+            l++;
         } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
-        array -= ndarray->strides[ULAB_MAX_DIMS - 2] + ndarray->shape[ULAB_MAX_DIMS - 2];
-        array += ndarray->strides[ULAB_MAX_DIMS - 1];
-    } while(k < ndarray->shape[ULAB_MAX_DIMS - 1]);
+        array -= ndarray->strides[ULAB_MAX_DIMS - 1] + ndarray->shape[ULAB_MAX_DIMS - 1];
+        array += ndarray->strides[ULAB_MAX_DIMS - 2];
+        k++;
+    } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
     return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot));
 }
 

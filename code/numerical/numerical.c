@@ -19,6 +19,8 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/misc.h"
+
+#include "../ulab_tools.h"
 #include "numerical.h"
 
 #if ULAB_NUMERICAL_MODULE
@@ -46,7 +48,7 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
     uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + axis;
     if((ndarray->ndim == 1) && (axis == 0)) {
         index = 0;
-        shape[ULAB_MAX_DIMS - 1] = 0;
+        shape[ULAB_MAX_DIMS - 1] = 1;
         return;
     }
     for(uint8_t i = ULAB_MAX_DIMS - 1; i > 0; i--) {
@@ -97,9 +99,72 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
     memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
 
-    if(axis == mp_const_none) { // work with the flattened array
-        // pass for now...
-        mp_raise_NotImplementedError(translate("operation is not implemented for flattened array"));
+    if(axis == mp_const_none) {
+        // work with the flattened array
+        if((optype == NUMERICAL_STD) && (ddof > ndarray->len)) {
+            // if there are too many degrees of freedom, there is no point in calculating anything
+            return mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
+        }
+        mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+        mp_float_t M = 0.0, m = 0.0, S = 0.0, s = 0.0;
+        size_t count = 0;
+
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        count++;
+                        mp_float_t value = func(array);
+                        m = M + (value - M) / (mp_float_t)count;
+                        if(optype == NUMERICAL_STD) {
+                            s = S + (value - M) * (value - m);
+                            S = s;
+                        }
+                        M = m;
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                    array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+                array += ndarray->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < ndarray->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+            array += ndarray->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+        if(optype == NUMERICAL_SUM) {
+            // numpy returns an integer for integer input types
+            if(ndarray->dtype == NDARRAY_FLOAT) {
+                return mp_obj_new_float(M * ndarray->len);
+            } else {
+                return mp_obj_new_int((int32_t)(M * ndarray->len));
+            }
+        } else if(optype == NUMERICAL_MEAN) {
+            return mp_obj_new_float(M);
+        } else { // this must be the case of the standard deviation
+            // we have already made certain that ddof < ndarray->len holds
+            return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(S / (ndarray->len - ddof)));
+        }
     } else {
         int8_t ax = mp_obj_get_int(axis);
         if(ax < 0) ax += ndarray->ndim;
@@ -108,7 +173,6 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
         }
         numerical_reduce_axes(ndarray, ax, shape, strides);
         uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
-        // Take MAX(...) here, so that we can include the 1-dimensional case
         ndarray_obj_t *results = NULL;
         uint8_t *rarray = NULL;
 
@@ -125,7 +189,16 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             } else if(ndarray->dtype == NDARRAY_INT16) {
                 RUN_SUM(ndarray, int16_t, array, results, rarray, shape, strides, index);
             } else {
-                RUN_SUM(ndarray, mp_float_t, array, results, rarray, shape, strides, index);
+                // for floats, the sum might be inaccurate with the naive summation
+                // call mean, and multiply with the number of samples
+                mp_float_t *r = (mp_float_t *)results->array;
+                RUN_MEAN(ndarray, mp_float_t, array, results, r, shape, strides, index);
+                mp_float_t norm = (mp_float_t)ndarray->shape[index];
+                // re-wind the array here
+                r = (mp_float_t *)results->array;
+                for(size_t i=0; i < results->len; i++) {
+                    *r++ *= norm;
+                }
             }
         } else if(optype == NUMERICAL_MEAN) {
             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
@@ -142,8 +215,12 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 RUN_MEAN(ndarray, mp_float_t, array, results, r, shape, strides, index);
             }
         } else { // this case is certainly the standard deviation
-            mp_float_t div = (mp_float_t)(ndarray->shape[index] - ddof);
             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
+            // we can return the 0 array here, if the degrees of freedom is larger than the length of the axis
+            if(ndarray->shape[index] <= ddof) {
+                return MP_OBJ_FROM_PTR(results);
+            }
+            mp_float_t div = (mp_float_t)(ndarray->shape[index] - ddof);
             mp_float_t *r = (mp_float_t *)results->array;
             if(ndarray->dtype == NDARRAY_UINT8) {
                 RUN_STD(ndarray, uint8_t, array, results, r, shape, strides, index, div);
@@ -209,11 +286,12 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
 
     if(axis == mp_const_none) {
         // work with the flattened array
+        mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
         uint8_t *array = (uint8_t *)ndarray->array;
-        mp_float_t best_value = ndarray_get_float_value(array, ndarray->dtype);
+        mp_float_t best_value = func(array);
         mp_float_t value;
         size_t index = 0, best_index = 0;
-        
+
         #if ULAB_MAX_DIMS > 3
         size_t i = 0;
         do {
@@ -228,7 +306,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
                 #endif
                     size_t l = 0;
                     do {
-                        value = ndarray_get_float_value(array, ndarray->dtype);
+                        value = func(array);
                         if((optype == NUMERICAL_ARGMAX) || (optype == NUMERICAL_MAX)) {
                             if(best_value < value) {
                                 best_value = value;
@@ -319,8 +397,8 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
 
 static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t optype) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} } ,
-        { MP_QSTR_axis, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} } ,
+        { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -396,6 +474,7 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
             mp_raise_ValueError(translate("index out of range"));
         }
     }
+
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
@@ -453,8 +532,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 
 mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -787,6 +866,101 @@ mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 #endif
 
+#if ULAB_NUMERICAL_HAS_MEDIAN
+//| def median(array: ulab.array, *, axis: int = -1) -> ulab.array:
+//|     """Find the median value in an array along the given axis, or along all axes if axis is None."""
+//|     ...
+//|
+
+mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("median argument must be an ndarray"));
+    }
+    
+    ndarray_obj_t *ndarray = numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
+
+    if((args[1].u_obj == mp_const_none) || (ndarray->ndim == 1)) {
+        // at this point, the array holding the sorted values should be flat
+        uint8_t *array = (uint8_t *)ndarray->array;
+        size_t len = ndarray->len;
+        array += (len >> 1) * ndarray->itemsize;
+        mp_float_t median = ndarray_get_float_value(array, ndarray->dtype);
+        if(!(len & 0x01)) { // len is an even number
+            array -= ndarray->itemsize;
+            median += ndarray_get_float_value(array, ndarray->dtype);
+            median *= 0.5;
+        }
+        return mp_obj_new_float(median);
+    } else {
+        int8_t ax = mp_obj_get_int(args[1].u_obj);
+        if(ax < 0) ax += ndarray->ndim;
+        // here we can save the exception, because if the axis is out of range,
+        // then numerical_sort_helper has already taken care of the issue
+        size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+        int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+        memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
+        numerical_reduce_axes(ndarray, ax, shape, strides);
+        ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim-1, shape, NDARRAY_FLOAT);
+        mp_float_t *rarray = (mp_float_t *)results->array;
+        
+        uint8_t *array = (uint8_t *)ndarray->array;
+
+        size_t len = ndarray->shape[ax];
+        
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                size_t k = 0;
+                do {
+                    array += ndarray->strides[ax] * (len >> 1);
+                    mp_float_t median = ndarray_get_float_value(array, ndarray->dtype);
+                    if(!(len & 0x01)) { // len is an even number
+                        array -= ndarray->strides[ax];
+                        median += ndarray_get_float_value(array, ndarray->dtype);
+                        median *= 0.5;
+                        array += ndarray->strides[ax];
+                    }
+                    array -= ndarray->strides[ax] * (len >> 1);
+                    array += strides[ULAB_MAX_DIMS - 1];
+                    *rarray = median;
+                    rarray++;
+                    k++;
+                } while(k < shape[ULAB_MAX_DIMS - 1]);
+            #if ULAB_MAX_DIMS > 2
+                array -= strides[ULAB_MAX_DIMS - 1] * shape[ULAB_MAX_DIMS - 1];
+                array += strides[ULAB_MAX_DIMS - 2];
+                j++;
+            } while(j < shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            array -= strides[ULAB_MAX_DIMS - 2] * shape[ULAB_MAX_DIMS-2];
+            array += strides[ULAB_MAX_DIMS - 3];
+            i++;
+        } while(i < shape[ULAB_MAX_DIMS - 3]);
+        #endif
+        
+        return MP_OBJ_FROM_PTR(results);
+    }
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(numerical_median_obj, 1, numerical_median);
+#endif
+
 #if ULAB_NUMERICAL_HAS_MINMAX
 //| def min(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the minimum element of the 1D array"""
@@ -974,8 +1148,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 
 mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1078,6 +1252,9 @@ STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
     #endif
     #if ULAB_NUMERICAL_HAS_MEAN
     { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
+    #endif
+    #if ULAB_NUMERICAL_HAS_MEDIAN
+    { MP_OBJ_NEW_QSTR(MP_QSTR_median), (mp_obj_t)&numerical_median_obj },
     #endif
     #if ULAB_NUMERICAL_HAS_MINMAX
     { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },

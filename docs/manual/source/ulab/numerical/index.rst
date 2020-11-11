@@ -54,6 +54,11 @@
    Return the mean element of the 1D array, as a number if axis is None, otherwise as an array.
 
 
+.. function:: median(array: ulab.array, *, axis: int = -1) -> ulab.array
+
+   Find the median value in an array along the given axis, or along all axes if axis is None.
+
+
 .. function:: min(array: _ArrayLike, *, axis: Optional[int] = None) -> float
 
    Return the minimum element of the 1D array

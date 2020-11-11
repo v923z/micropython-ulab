@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -19,6 +19,7 @@
 #include "py/binary.h"
 #include "py/obj.h"
 #include "py/objarray.h"
+#include "../ulab_tools.h"
 #include "vectorise.h"
 
 #if ULAB_VECTORISE_MODULE
@@ -31,12 +32,12 @@
 //|
 //| from ulab import _DType, _ArrayLike
 //|
-    
+
 static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     // Return a single value, if o_in is not iterable
     if(mp_obj_is_float(o_in) || MP_OBJ_IS_INT(o_in)) {
         return mp_obj_new_float(f(mp_obj_get_float(o_in)));
-    }    
+    }
     if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
         uint8_t *sarray = (uint8_t *)source->array;
@@ -54,7 +55,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
             ITERATE_VECTOR(mp_float_t, array, source, sarray);
         }
         return MP_OBJ_FROM_PTR(ndarray);
-    } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) || 
+    } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) ||
         MP_OBJ_IS_TYPE(o_in, &mp_type_range)) { // i.e., the input is a generic iterable
             mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
             ndarray_obj_t *out = ndarray_new_linear_array(o->len, NDARRAY_FLOAT);
@@ -136,7 +137,9 @@ mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
     mp_float_t *narray = (mp_float_t *)ndarray->array;
     uint8_t *sarray = (uint8_t *)source->array;
-    
+
+    mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
+
     #if ULAB_MAX_DIMS > 3
     size_t i = 0;
     do {
@@ -151,7 +154,7 @@ mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
             #endif
                 size_t l = 0;
                 do {
-                    mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
+                    mp_float_t f = func(sarray);
                     *narray++ = MICROPY_FLOAT_C_FUN(round)(f * mul) / mul;
                     sarray += source->strides[ULAB_MAX_DIMS - 1];
                     l++;
@@ -201,7 +204,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
     ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x);
     ndarray_obj_t *ndarray_y = ndarray_from_mp_obj(y);
-    
+
     uint8_t ndim = 0;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     int32_t *xstrides = m_new(int32_t, ULAB_MAX_DIMS);
@@ -215,9 +218,12 @@ mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
 
     uint8_t *xarray = (uint8_t *)ndarray_x->array;
     uint8_t *yarray = (uint8_t *)ndarray_y->array;
-    
+
     ndarray_obj_t *results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
     mp_float_t *rarray = (mp_float_t *)results->array;
+
+    mp_float_t (*funcx)(void *) = ndarray_get_float_function(ndarray_x->dtype);
+    mp_float_t (*funcy)(void *) = ndarray_get_float_function(ndarray_y->dtype);
 
     #if ULAB_MAX_DIMS > 3
     size_t i = 0;
@@ -233,8 +239,8 @@ mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
             #endif
                 size_t l = 0;
                 do {
-                    mp_float_t _x = ndarray_get_float_value(xarray, ndarray_x->dtype);
-                    mp_float_t _y = ndarray_get_float_value(yarray, ndarray_y->dtype);
+                    mp_float_t _x = funcx(xarray);
+                    mp_float_t _y = funcy(yarray);
                     *rarray++ = MICROPY_FLOAT_C_FUN(atan2)(_y, _x);
                     xarray += xstrides[ULAB_MAX_DIMS - 1];
                     yarray += ystrides[ULAB_MAX_DIMS - 1];
@@ -264,7 +270,7 @@ mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
         i++;
     } while(i < results->shape[ULAB_MAX_DIMS - 4]);
     #endif
-    
+
     return MP_OBJ_FROM_PTR(results);
 }
 

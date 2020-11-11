@@ -14,7 +14,7 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 `ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, `**`,
 `+=`, `-=`, `*=`, `/=`, `**=` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that
 operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of
-iterables, or by means of the `arange`, `concatenate`, `eye`, `full`, `linspace`, `logspace`, `ones`, or
+iterables, or by means of the `arange`, `concatenate`, `diag`, `eye`, `full`, `linspace`, `logspace`, `ones`, or
 `zeros`  functions.
 
 `ndarray`s can be iterated on, and have a number of their own methods, such as `flatten`, `shape`,
@@ -52,7 +52,7 @@ determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace.
 
 ### numerical
 
-The `numerical` sub-module defines the `cross`, `diff`, `flip`, `roll`, `sort` and `argsort` functions for `ndarray`s, and,
+The `numerical` sub-module defines the `cross`, `diff`, `flip`, `median`, `roll`, `sort` and `argsort` functions for `ndarray`s, and,
 in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as
 well as generic one-dimensional iterables.
 
