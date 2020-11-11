@@ -1762,16 +1762,21 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 #endif /* NDARRAY_HAS_UNARY_OPS */
 
-#if ULAB_MAX_DIMS > 1
 #if NDARRAY_HAS_TRANSPOSE
 mp_obj_t ndarray_transpose(mp_obj_t self_in) {
+    #if ULAB_MAX_DIMS == 1
+        return self_in;
+    #endif
     // TODO: check, what happens to the offset here, if we have a view
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if(self->ndim == 1) {
+        return self_in;
+    }
     size_t *shape = m_new(size_t, self->ndim);
     int32_t *strides = m_new(int32_t, self->ndim);
     for(uint8_t i=0; i < self->ndim; i++) {
-        shape[i] = self->shape[self->ndim-1-i];
-        strides[i] = self->strides[self->ndim-1-i];
+        shape[ULAB_MAX_DIMS - 1 - i] = self->shape[ULAB_MAX_DIMS - self->ndim + i];
+        strides[ULAB_MAX_DIMS - 1 - i] = self->strides[ULAB_MAX_DIMS - self->ndim + i];
     }
     // TODO: I am not sure ndarray_new_view is OK here...
     // should be deep copy...
@@ -1782,6 +1787,7 @@ mp_obj_t ndarray_transpose(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
 #endif /* NDARRAY_HAS_TRANSPOSE */
 
+#if ULAB_MAX_DIMS > 1
 #if NDARRAY_HAS_RESHAPE
 mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
     ndarray_obj_t *source = MP_OBJ_TO_PTR(oin);

@@ -16,8 +16,11 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
+
 #include "../linalg/linalg.h"
 #include "approx.h"
+#include "../ulab_tools.h"
+
 
 #if ULAB_APPROX_MODULE
 
@@ -510,37 +513,63 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj);
     ndarray_obj_t *x;
-    mp_float_t sum = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t mean = MICROPY_FLOAT_CONST(0.0);
     if(y->len < 2) {
-        return mp_obj_new_float(sum);
+        return mp_obj_new_float(mean);
     }
+    if((y->ndim != 1)) {
+        mp_raise_ValueError(translate("trapz is defined for 1D arrays"));
+    }
+
+    mp_float_t (*funcy)(void *) = ndarray_get_float_function(y->dtype);
+    uint8_t *yarray = (uint8_t *)y->array;
+
+    size_t count = 1;
+    mp_float_t y1, y2, m;
+
     if(args[1].u_obj != mp_const_none) {
         x = ndarray_from_mp_obj(args[1].u_obj); // x must hold an increasing sequence of independent values
-        if((y->ndim != 1) || (x->ndim != 1) || (y->len != x->len)) {
+        if((x->ndim != 1) || (y->len != x->len)) {
             mp_raise_ValueError(translate("trapz is defined for 1D arrays of equal length"));
         }
-        mp_float_t x1, x2, y1, y2;
-        y1 = ndarray_get_float_index(y->array, y->dtype, 0);
-        x1 = ndarray_get_float_index(x->array, x->dtype, 0);
+
+        mp_float_t (*funcx)(void *) = ndarray_get_float_function(x->dtype);
+        uint8_t *xarray = (uint8_t *)x->array;
+        mp_float_t x1, x2;
+
+        y1 =funcy(yarray);
+        yarray += y->strides[ULAB_MAX_DIMS - 1];
+        x1 =funcx(xarray);
+        xarray += x->strides[ULAB_MAX_DIMS - 1];
         for(size_t i=1; i < y->len; i++) {
-            y2 = ndarray_get_float_index(y->array, y->dtype, i);
-            x2 = ndarray_get_float_index(x->array, x->dtype, i);
-            sum += (x2 - x1) * (y2 + y1);
+            y2 =funcy(yarray);
+            yarray += y->strides[ULAB_MAX_DIMS - 1];
+            x2 =funcx(xarray);
+            xarray += x->strides[ULAB_MAX_DIMS - 1];
+            count++;
+            mp_float_t value = (x2 - x1) * (y2 + y1);
+            m = mean + (value - mean) / (mp_float_t)count;
+            mean = m;
             x1 = x2;
             y1 = y2;
+            count++;
         }
     } else {
-        mp_float_t y1, y2;
         mp_float_t dx = mp_obj_get_float(args[2].u_obj);
-        y1 = ndarray_get_float_index(y->array, y->dtype, 0);
+        y1 =funcy(yarray);
+        yarray += y->strides[ULAB_MAX_DIMS - 1];
+
         for(size_t i=1; i < y->len; i++) {
             y2 = ndarray_get_float_index(y->array, y->dtype, i);
-            sum += (y2 + y1);
+            mp_float_t value = (y2 + y1);
+            m = mean + (value - mean) / (mp_float_t)count;
+            mean = m;
             y1 = y2;
+            count++;
         }
-        sum *= dx;
+        mean *= dx;
     }
-    return mp_obj_new_float(MICROPY_FLOAT_CONST(0.5)*sum);
+    return mp_obj_new_float(MICROPY_FLOAT_CONST(0.5)*mean*(y->len-1));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_trapz_obj, 1, approx_trapz);
