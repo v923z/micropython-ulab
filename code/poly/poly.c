@@ -15,8 +15,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objarray.h"
-#include "../linalg/linalg.h"
 
+#include "../linalg/linalg_tools.h"
 #include "../ulab_tools.h"
 #include "poly.h"
 

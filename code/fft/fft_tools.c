@@ -27,7 +27,7 @@
  * parts of a complex array, and calculates the Fourier transform in place.
  * 
  * The function is basically a modification of four1 from Numerical Recipes, 
- * has no dependencies beyond the micropython itself (for the definition of mp_float_t),
+ * has no dependencies beyond micropython itself (for the definition of mp_float_t),
  * and can be used independent of ulab.
  */
  
