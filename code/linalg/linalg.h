@@ -14,21 +14,9 @@
 
 #include "../ulab.h"
 #include "../ndarray.h"
-
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#define epsilon        MICROPY_FLOAT_CONST(1.2e-7)
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#define epsilon        MICROPY_FLOAT_CONST(2.3e-16)
-#endif
-
-#define JACOBI_MAX     20
-
-#if ULAB_LINALG_MODULE || ULAB_POLY_MODULE
-bool linalg_invert_matrix(mp_float_t *, size_t );
-#endif
+#include "linalg_tools.h"
 
 #if ULAB_LINALG_MODULE
-
 extern mp_obj_module_t ulab_linalg_module;
 
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_cholesky_obj);

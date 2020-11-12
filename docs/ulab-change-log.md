@@ -1,6 +1,12 @@
+Thu, 12 Nov 2020
+
+version 1.3.1
+
+    factored out some of the math functions in re-usable form
+
 Wed, 11 Nov 2020
 
-version 1.3
+version 1.3.0
 
     added dtype function/method/property
 

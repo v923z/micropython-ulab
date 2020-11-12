@@ -19,6 +19,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
+
+#include "../ulab_tools.h"
 #include "linalg.h"
 
 #if ULAB_LINALG_MODULE
@@ -41,64 +43,6 @@ static ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
 }
 #endif
 
-bool linalg_invert_matrix(mp_float_t *data, size_t N) {
-    // returns true, of the inversion was successful,
-    // false, if the matrix is singular
-
-    // initially, this is the unit matrix: the contents of this matrix is what
-    // will be returned after all the transformations
-    mp_float_t *unit = m_new(mp_float_t, N*N);
-    mp_float_t elem = 1.0;
-    // initialise the unit matrix
-    memset(unit, 0, sizeof(mp_float_t)*N*N);
-    for(size_t m=0; m < N; m++) {
-        memcpy(&unit[m * (N+1)], &elem, sizeof(mp_float_t));
-    }
-    for(size_t m=0; m < N; m++){
-        // this could be faster with ((c < epsilon) && (c > -epsilon))
-        if(MICROPY_FLOAT_C_FUN(fabs)(data[m * (N+1)]) < epsilon) {
-            //look for a line to swap
-            size_t m1 = m + 1;
-            for(; m1 < N; m1++) {
-                if(!(MICROPY_FLOAT_C_FUN(fabs)(data[m1*N + m]) < epsilon)) {
-                    for(size_t m2=0; m2 < N; m2++) {
-                        mp_float_t swapVal = data[m*N+m2];
-                        data[m*N+m2] = data[m1*N+m2];
-                        data[m1*N+m2] = swapVal;
-                        swapVal = unit[m*N+m2];
-                        unit[m*N+m2] = unit[m1*N+m2];
-                        unit[m1*N+m2] = swapVal;
-                    }
-                    break;
-                }
-            }
-            if (m1 >= N) {
-                m_del(mp_float_t, unit, N*N);
-                return false;
-            }
-        }
-        for(size_t n=0; n < N; n++) {
-            if(m != n){
-                elem = data[N * n + m] / data[m * (N+1)];
-                for(size_t k=0; k < N; k++) {
-                    data[N * n + k] -= elem * data[N * m + k];
-                    unit[N * n + k] -= elem * unit[N * m + k];
-                }
-            }
-        }
-    }
-    for(size_t m=0; m < N; m++) {
-        elem = data[m * (N+1)];
-        for(size_t n=0; n < N; n++) {
-            data[N * m + n] /= elem;
-            unit[N * m + n] /= elem;
-        }
-    }
-    memcpy(data, unit, sizeof(mp_float_t)*N*N);
-    m_del(mp_float_t, unit, N * N);
-    return true;
-}
-
 #if ULAB_MAX_DIMS > 1
 //| def cholesky(A: ulab.array) -> ulab.array:
 //|     """
@@ -117,9 +61,11 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
     uint8_t *array = (uint8_t *)ndarray->array;
+    mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+
     for(size_t m=0; m < N; m++) { // rows
         for(size_t n=0; n < N; n++) { // columns
-            *Larray++ = ndarray_get_float_value(array, ndarray->dtype);
+            *Larray++ = func(array);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
         }
         array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;
@@ -130,7 +76,7 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
     for(size_t m=0; m < N; m++) { // rows
         for(size_t n=m+1; n < N; n++) { // columns
             // compare entry (m, n) to (n, m)
-            if(epsilon < MICROPY_FLOAT_C_FUN(fabs)(Larray[m * N + n] - Larray[n * N + m])) {
+            if(LINALG_EPSILON < MICROPY_FLOAT_C_FUN(fabs)(Larray[m * N + n] - Larray[n * N + m])) {
                 mp_raise_ValueError(translate("input matrix is asymmetric"));
             }
         }
@@ -195,10 +141,10 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
     mp_float_t det_sign = 1.0;
 
     for(size_t m=0; m < N-1; m++){
-        if(MICROPY_FLOAT_C_FUN(fabs)(tmp[m * (N+1)]) < epsilon) {
+        if(MICROPY_FLOAT_C_FUN(fabs)(tmp[m * (N+1)]) < LINALG_EPSILON) {
             size_t m1 = m + 1;
             for(; m1 < N; m1++) {
-                if(!(MICROPY_FLOAT_C_FUN(fabs)(tmp[m1*N+m]) < epsilon)) {
+                if(!(MICROPY_FLOAT_C_FUN(fabs)(tmp[m1*N+m]) < LINALG_EPSILON)) {
                      //look for a line to swap
                     for(size_t m2=0; m2 < N; m2++) {
                         mp_float_t swapVal = tmp[m*N+m2];
@@ -329,7 +275,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
         for(size_t n=m+1; n < S; n++) {
             // compare entry (m, n) to (n, m)
             // TODO: this must probably be scaled!
-            if(epsilon < MICROPY_FLOAT_C_FUN(fabs)(array[m * S + n] - array[n * S + m])) {
+            if(LINALG_EPSILON < MICROPY_FLOAT_C_FUN(fabs)(array[m * S + n] - array[n * S + m])) {
                 mp_raise_ValueError(translate("input matrix is asymmetric"));
             }
         }
@@ -339,86 +285,8 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
 
     ndarray_obj_t *eigenvectors = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, S, S), NDARRAY_FLOAT);
     mp_float_t *eigvectors = (mp_float_t *)eigenvectors->array;
-    // start out with the unit matrix
-    for(size_t m=0; m < S; m++) {
-        eigvectors[m * (S+1)] = 1.0;
-    }
-    mp_float_t largest, w, t, c, s, tau, aMk, aNk, vm, vn;
-    size_t M, N;
-    size_t iterations = JACOBI_MAX * S * S;
-    do {
-        iterations--;
-        // find the pivot here
-        M = 0;
-        N = 0;
-        largest = 0.0;
-        for(size_t m=0; m < S-1; m++) { // -1: no need to inspect last row
-            for(size_t n=m+1; n < S; n++) {
-                w = MICROPY_FLOAT_C_FUN(fabs)(array[m * S + n]);
-                if((largest < w) && (epsilon < w)) {
-                    M = m;
-                    N = n;
-                    largest = w;
-                }
-            }
-        }
-        if(M + N == 0) { // all entries are smaller than epsilon, there is not much we can do...
-            break;
-        }
-        // at this point, we have the pivot, and it is the entry (M, N)
-        // now we have to find the rotation angle
-        w = (array[N * S + N] - array[M * S + M]) / (MICROPY_FLOAT_CONST(2.0)*array[M * S + N]);
-        // The following if/else chooses the smaller absolute value for the tangent
-        // of the rotation angle. Going with the smaller should be numerically stabler.
-        if(w > 0) {
-            t = MICROPY_FLOAT_C_FUN(sqrt)(w*w + MICROPY_FLOAT_CONST(1.0)) - w;
-        } else {
-            t = MICROPY_FLOAT_CONST(-1.0)*(MICROPY_FLOAT_C_FUN(sqrt)(w*w + MICROPY_FLOAT_CONST(1.0)) + w);
-        }
-        s = t / MICROPY_FLOAT_C_FUN(sqrt)(t*t + MICROPY_FLOAT_CONST(1.0)); // the sine of the rotation angle
-        c = MICROPY_FLOAT_CONST(1.0) / MICROPY_FLOAT_C_FUN(sqrt)(t*t + MICROPY_FLOAT_CONST(1.0)); // the cosine of the rotation angle
-        tau = (MICROPY_FLOAT_CONST(1.0)-c)/s; // this is equal to the tangent of the half of the rotation angle
 
-        // at this point, we have the rotation angles, so we can transform the matrix
-        // first the two diagonal elements
-        // a(M, M) = a(M, M) - t*a(M, N)
-        array[M * S + M] = array[M * S + M] - t * array[M * S + N];
-        // a(N, N) = a(N, N) + t*a(M, N)
-        array[N * S + N] = array[N * S + N] + t * array[M * S + N];
-        // after the rotation, the a(M, N), and a(N, M) entries should become zero
-        array[M * S + N] = array[N * S + M] = MICROPY_FLOAT_CONST(0.0);
-        // then all other elements in the column
-        for(size_t k=0; k < S; k++) {
-            if((k == M) || (k == N)) {
-                continue;
-            }
-            aMk = array[M * S + k];
-            aNk = array[N * S + k];
-            // a(M, k) = a(M, k) - s*(a(N, k) + tau*a(M, k))
-            array[M * S + k] -= s * (aNk + tau * aMk);
-            // a(N, k) = a(N, k) + s*(a(M, k) - tau*a(N, k))
-            array[N * S + k] += s * (aMk - tau * aNk);
-            // a(k, M) = a(M, k)
-            array[k * S + M] = array[M * S + k];
-            // a(k, N) = a(N, k)
-            array[k * S + N] = array[N * S + k];
-        }
-        // now we have to update the eigenvectors
-        // the rotation matrix, R, multiplies from the right
-        // R is the unit matrix, except for the
-        // R(M,M) = R(N, N) = c
-        // R(N, M) = s
-        // (M, N) = -s
-        // entries. This means that only the Mth, and Nth columns will change
-        for(size_t m=0; m < S; m++) {
-            vm = eigvectors[m * S + M];
-            vn = eigvectors[m * S + N];
-            // the new value of eigvectors(m, M)
-            eigvectors[m * S + M] = c * vm - s * vn;
-            // the new value of eigvectors(m, N)
-            eigvectors[m * S + N] = s * vm + c * vn;
-        }
-    } while(iterations > 0);
+    size_t iterations = linalg_jacobi_rotations(array, eigvectors, S);
 
     if(iterations == 0) {
         // the computation did not converge; numpy raises LinAlgError
@@ -456,9 +324,11 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
     ndarray_obj_t *inverted = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, N, N), NDARRAY_FLOAT);
     mp_float_t *iarray = (mp_float_t *)inverted->array;
 
+    mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+
     for(size_t i=0; i < N; i++) { // rows
         for(size_t j=0; j < N; j++) { // columns
-            *iarray++ = ndarray_get_float_value(array, ndarray->dtype);
+            *iarray++ = func(array);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
         }
         array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;
@@ -495,10 +365,13 @@ static mp_obj_t linalg_norm(mp_obj_t _x) {
     mp_float_t dot = 0.0;
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t k = 0;
+
+    mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+
     do {
         size_t l = 0;
         do {
-            mp_float_t v = ndarray_get_float_value(array, ndarray->dtype);
+            mp_float_t v = func(array);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
             dot += v*v;
             l++;
