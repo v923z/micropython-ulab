@@ -9,6 +9,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/ulab_create.c
 SRC_USERMOD += $(USERMODULES_DIR)/linalg/linalg.c
 SRC_USERMOD += $(USERMODULES_DIR)/vector/vectorise.c
 SRC_USERMOD += $(USERMODULES_DIR)/poly/poly.c
+SRC_USERMOD += $(USERMODULES_DIR)/fft/fft_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/fft/fft.c
 SRC_USERMOD += $(USERMODULES_DIR)/numerical/numerical.c
 SRC_USERMOD += $(USERMODULES_DIR)/filter/filter.c

@@ -11,8 +11,11 @@
 
 #ifndef _FFT_
 #define _FFT_
+
 #include "../ulab.h"
+#include "../ulab_tools.h"
 #include "../ndarray.h"
+#include "fft_tools.h"
 
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 

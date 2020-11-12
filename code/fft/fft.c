@@ -1,4 +1,3 @@
-
 /*
  * This file is part of the micropython-ulab project,
  *
@@ -21,7 +20,6 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
-#include "../ulab_tools.h"
 #include "fft.h"
 
 #if ULAB_FFT_MODULE
@@ -29,54 +27,6 @@
 //| """Frequency-domain functions"""
 //|
 
-static void fft_kernel(mp_float_t *real, mp_float_t *imag, size_t n, int isign) {
-    // This is basically a modification of four1 from Numerical Recipes
-    // The main difference is that this function takes two arrays, one
-    // for the real, and one for the imaginary parts.
-    size_t j, m, mmax, istep;
-    mp_float_t tempr, tempi;
-    mp_float_t wtemp, wr, wpr, wpi, wi, theta;
-
-    j = 0;
-    for(size_t i = 0; i < n; i++) {
-        if (j > i) {
-            SWAP(mp_float_t, real[i], real[j]);
-            SWAP(mp_float_t, imag[i], imag[j]);
-        }
-        m = n >> 1;
-        while (j >= m && m > 0) {
-            j -= m;
-            m >>= 1;
-        }
-        j += m;
-    }
-
-    mmax = 1;
-    while (n > mmax) {
-        istep = mmax << 1;
-        theta = MICROPY_FLOAT_CONST(-2.0)*isign*MP_PI/istep;
-        wtemp = MICROPY_FLOAT_C_FUN(sin)(MICROPY_FLOAT_CONST(0.5) * theta);
-        wpr = MICROPY_FLOAT_CONST(-2.0) * wtemp * wtemp;
-        wpi = MICROPY_FLOAT_C_FUN(sin)(theta);
-        wr = MICROPY_FLOAT_CONST(1.0);
-        wi = MICROPY_FLOAT_CONST(0.0);
-        for(m = 0; m < mmax; m++) {
-            for(size_t i = m; i < n; i += istep) {
-                j = i + mmax;
-                tempr = wr * real[j] - wi * imag[j];
-                tempi = wr * imag[j] + wi * real[j];
-                real[j] = real[i] - tempr;
-                imag[j] = imag[i] - tempi;
-                real[i] += tempr;
-                imag[i] += tempi;
-            }
-            wtemp = wr;
-            wr = wr*wpr - wi*wpi + wr;
-            wi = wi*wpr + wtemp*wpi + wi;
-        }
-        mmax = istep;
-    }
-}
 
 mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, uint8_t type) {
     if(!MP_OBJ_IS_TYPE(arg_re, &ulab_ndarray_type)) {
