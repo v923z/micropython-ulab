@@ -43,6 +43,49 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         uint8_t *sarray = (uint8_t *)source->array;
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
+        
+        #if ULAB_VECTORISE_USES_FUNCPOINTER
+        
+            mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
+            
+            #if ULAB_MAX_DIMS > 3
+            size_t i = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 2
+                size_t j = 0;
+                do {
+                #endif
+                    #if ULAB_MAX_DIMS > 1
+                    size_t k = 0;
+                    do {
+                    #endif
+                        size_t l = 0;
+                        do {
+                            mp_float_t value = func(sarray);
+                            *array++ = f(value);
+                            sarray += source->strides[ULAB_MAX_DIMS - 1];
+                            l++;
+                        } while(l < source->shape[ULAB_MAX_DIMS - 1]);
+                    #if ULAB_MAX_DIMS > 1
+                        sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
+                        sarray += source->strides[ULAB_MAX_DIMS - 2];
+                        k++;
+                    } while(k < source->shape[ULAB_MAX_DIMS - 2]);
+                    #endif /* ULAB_MAX_DIMS > 1 */
+                #if ULAB_MAX_DIMS > 2
+                    sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
+                    sarray += source->strides[ULAB_MAX_DIMS - 3];
+                    j++;
+                } while(j < source->shape[ULAB_MAX_DIMS - 3]);
+                #endif /* ULAB_MAX_DIMS > 2 */
+            #if ULAB_MAX_DIMS > 3
+                sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
+                sarray += source->strides[ULAB_MAX_DIMS - 4];
+                i++;
+            } while(i < source->shape[ULAB_MAX_DIMS - 4]);
+            #endif /* ULAB_MAX_DIMS > 3 */
+        #else
         if(source->dtype == NDARRAY_UINT8) {
             ITERATE_VECTOR(uint8_t, array, source, sarray);
         } else if(source->dtype == NDARRAY_INT8) {
@@ -54,6 +97,8 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         } else {
             ITERATE_VECTOR(mp_float_t, array, source, sarray);
         }
+        #endif /* ULAB_VECTORISE_USES_FUNCPOINTER */
+        
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) ||
         MP_OBJ_IS_TYPE(o_in, &mp_type_range)) { // i.e., the input is a generic iterable

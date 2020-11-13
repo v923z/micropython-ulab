@@ -1,3 +1,9 @@
+Fri, 13 Nov 2020
+
+version 1.3.2
+
+    implemented function pointer option in vectorise
+
 Thu, 12 Nov 2020
 
 version 1.3.1

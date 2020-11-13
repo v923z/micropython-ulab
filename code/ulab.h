@@ -190,6 +190,12 @@
 // vectorise (all functions) takes approx. 6 kB of flash space
 #ifndef ULAB_VECTORISE_MODULE
 #define ULAB_VECTORISE_MODULE           (1)
+
+// Firmware size can be reduced at the expense of speed by using a function 
+// pointer in iterations. Setting ULAB_VECTORISE_USES_FUNCPOINTER to 1 saves
+// around 800 bytes in the four-dimensional case, and around 200 in two dimensions.
+#define ULAB_VECTORISE_USES_FUNCPOINTER (1)
+
 #define ULAB_VECTORISE_HAS_ACOS         (1)
 #define ULAB_VECTORISE_HAS_ACOSH        (1)
 #define ULAB_VECTORISE_HAS_ARCTAN2      (1)
