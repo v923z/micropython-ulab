@@ -15,8 +15,8 @@
    ``x2`` is assumed to be less than or equal to ``x3``.
 
    Arguments may be ulab arrays or numbers.  All array arguments
-   must be the same size.  If the inputs are all scalars, a 1-element
-   array is returned.
+   must be the same size.  If the inputs are all scalars, a
+   single scalar is returned.
 
    Shorthand for ``ulab.maximum(x2, ulab.minimum(x1, x3))``
 
