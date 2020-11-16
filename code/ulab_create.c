@@ -370,18 +370,18 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     } else {
         m = mp_obj_get_int(args[1].u_rom_obj);
     }
-    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, m, n), dtype);
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, n, m), dtype);
     mp_obj_t one = mp_obj_new_int(1);
     size_t i = 0;
     if((args[2].u_int >= 0)) {
-        while(k < n) {
-            mp_binary_set_val_array(dtype, ndarray->array, i*n+k, one);
+        while(k < m) {
+            mp_binary_set_val_array(dtype, ndarray->array, i*m+k, one);
             k++;
             i++;
         }
     } else {
-        while(k < m) {
-            mp_binary_set_val_array(dtype, ndarray->array, k*n+i, one);
+        while(k < n) {
+            mp_binary_set_val_array(dtype, ndarray->array, k*m+i, one);
             k++;
             i++;
         }
