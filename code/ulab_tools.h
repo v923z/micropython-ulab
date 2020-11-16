@@ -18,4 +18,7 @@ mp_float_t ndarray_get_float_int16(void *);
 mp_float_t ndarray_get_float_float(void *);
 void *ndarray_get_float_function(uint8_t );
 
+uint8_t ndarray_upcast_dtype(uint8_t , uint8_t );
+void *ndarray_set_float_function(uint8_t );
+
 #endif

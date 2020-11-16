@@ -44,7 +44,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
         
-        #if ULAB_VECTORISE_USES_FUNCPOINTER
+        #if ULAB_VECTORISE_USES_FUN_POINTER
         
             mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
             
@@ -97,7 +97,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         } else {
             ITERATE_VECTOR(mp_float_t, array, source, sarray);
         }
-        #endif /* ULAB_VECTORISE_USES_FUNCPOINTER */
+        #endif /* ULAB_VECTORISE_USES_FUN_POINTER */
         
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) ||
