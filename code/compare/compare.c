@@ -51,7 +51,7 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
     // int8 + int16 => int16
     // int8 + uint16 => uint16
     // uint16 + int16 => float
-    // The parameters of RUN_BINARY_LOOP are 
+    // The parameters of RUN_BINARY_LOOP are
     // typecode of result, type_out, type_left, type_right, lhs operand, rhs operand, operator
     if(lhs->dtype == NDARRAY_UINT8) {
         if(rhs->dtype == NDARRAY_UINT8) {
@@ -76,7 +76,7 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
             RUN_COMPARE_LOOP(NDARRAY_INT16, int16_t, int8_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
         } else if(rhs->dtype == NDARRAY_FLOAT) {
             RUN_COMPARE_LOOP(NDARRAY_FLOAT, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
-        }                
+        }
     } else if(lhs->dtype == NDARRAY_UINT16) {
         if(rhs->dtype == NDARRAY_UINT8) {
             RUN_COMPARE_LOOP(NDARRAY_UINT16, uint16_t, uint16_t, uint8_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
@@ -126,7 +126,7 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
         mp_obj_t item = mp_iternext(iterable);
         return item;
     }
-    return result;  
+    return result;
 
 }
 
@@ -141,19 +141,32 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
 //|     ``x2`` is assumed to be less than or equal to ``x3``.
 //|
 //|     Arguments may be ulab arrays or numbers.  All array arguments
-//|     must be the same size.  If the inputs are all scalars, a 1-element
-//|     array is returned.
+//|     must be the same size.  If the inputs are all scalars, a
+//|     single scalar is returned.
 //|
 //|     Shorthand for ``ulab.maximum(x2, ulab.minimum(x1, x3))``"""
 //|     ...
 //|
 
 mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
-    // Note: this function could be made faster by implementing a single-loop comparison in 
-    // RUN_COMPARE_LOOP. However, that would add around 2 kB of compile size, while we 
-    // would not gain a factor of two in speed, since the two comparisons should still be 
+    // Note: this function could be made faster by implementing a single-loop comparison in
+    // RUN_COMPARE_LOOP. However, that would add around 2 kB of compile size, while we
+    // would not gain a factor of two in speed, since the two comparisons should still be
     // evaluated. In contrast, calling the function twice adds only 140 bytes to the firmware
-    return compare_function(x2, compare_function(x1, x3, COMPARE_MINIMUM), COMPARE_MAXIMUM);
+    if(mp_obj_is_int(x1) || mp_obj_is_float(x1)) {
+        mp_float_t v1 = mp_obj_get_float(x1);
+        mp_float_t v2 = mp_obj_get_float(x2);
+        mp_float_t v3 = mp_obj_get_float(x3);
+        if(v1 < v2) {
+            return x2;
+        } else if(v1 > v3) {
+            return x3;
+        } else {
+            return x1;
+        }
+    } else { // assume ndarrays
+        return compare_function(x2, compare_function(x1, x3, COMPARE_MINIMUM), COMPARE_MAXIMUM);
+    }
 }
 
 MP_DEFINE_CONST_FUN_OBJ_3(compare_clip_obj, compare_clip);
