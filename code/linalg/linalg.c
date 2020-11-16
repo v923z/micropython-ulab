@@ -440,9 +440,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_size_obj, 1, linalg_size);
 static mp_obj_t linalg_trace(mp_obj_t oin) {
     ndarray_obj_t *ndarray = linalg_object_is_square(oin);
     mp_float_t trace = 0.0;
-    for(size_t i=0; i < ndarray->len; i++) {
-        size_t pos = i * (ndarray->strides[ULAB_MAX_DIMS - 1] + ndarray->strides[ULAB_MAX_DIMS - 2]);
-        trace += ndarray_get_float_index(ndarray->array, ndarray->dtype, pos);
+    for(size_t i=0; i < ndarray->shape[ULAB_MAX_DIMS - 1]; i++) {
+        int32_t pos = i * (ndarray->strides[ULAB_MAX_DIMS - 1] + ndarray->strides[ULAB_MAX_DIMS - 2]);
+        trace += ndarray_get_float_index(ndarray->array, ndarray->dtype, pos/ndarray->itemsize);
     }
     if(ndarray->dtype == NDARRAY_FLOAT) {
         return mp_obj_new_float(trace);
