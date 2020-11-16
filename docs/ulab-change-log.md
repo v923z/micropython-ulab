@@ -1,3 +1,9 @@
+Mon, 16 Nov 2020
+
+version 1.3.3.
+
+    added function pointer option to some binary operators
+
 Fri, 13 Nov 2020
 
 version 1.3.2

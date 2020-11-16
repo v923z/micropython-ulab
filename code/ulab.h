@@ -68,7 +68,7 @@
 // pointers in iterations. For each operator, he function pointer saves around 
 // 2 kB in the two-dimensional case, and around 4 kB in the four-dimensional case.
 
-#define NDARRAY_BINARY_USES_FUN_POINTER     (1)
+#define NDARRAY_BINARY_USES_FUN_POINTER     (0)
 
 #define NDARRAY_HAS_BINARY_OP_ADD           (1)
 #define NDARRAY_HAS_BINARY_OP_EQUAL         (1)
