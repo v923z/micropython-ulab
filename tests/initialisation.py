@@ -106,3 +106,4 @@ print(np.ones((3,3), dtype=np.int8))
 print(np.ones((3,3), dtype=np.int16))
 print(np.ones((4,3), dtype=np.float))
 print(np.ones((3,4), dtype=np.float))
+
