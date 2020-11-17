@@ -130,14 +130,14 @@ True
 True
 Testing np.std:
 True
-False
 True
-False
-False
-False
-False
-False
-False
+True
+True
+True
+True
+True
+True
+True
 Testing np.median:
 254.0
 254.0
