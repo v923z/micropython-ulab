@@ -1032,7 +1032,6 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
                         rarray += results->itemsize;
                         array += ndarray->strides[ULAB_MAX_DIMS - 1];
                         l++;
-//                        if(counter > 0) counter--;
                         if(--counter == 0) {
                             rarray = results->array;
                         }
