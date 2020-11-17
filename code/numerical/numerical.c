@@ -1032,8 +1032,8 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
                         rarray += results->itemsize;
                         array += ndarray->strides[ULAB_MAX_DIMS - 1];
                         l++;
-                        if(counter > 0) counter--;
-                        if(counter == 0) {
+//                        if(counter > 0) counter--;
+                        if(--counter == 0) {
                             rarray = results->array;
                         }
                     } while(l <  ndarray->shape[ULAB_MAX_DIMS - 1]);
@@ -1091,11 +1091,12 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
                 #endif
                     size_t l = 0;
                     _rarray = rarray;
-                    rarray += _shift * results->strides[ax];
-                    counter = results->shape[ax] - _shift;
-                    if((shift < 0) && (_shift > 0)) {
+                    if(shift < 0) {
                         rarray += (results->shape[ax] - _shift) * results->strides[ax];
                         counter = _shift;
+                    } else {
+                        rarray += _shift * results->strides[ax];
+                        counter = results->shape[ax] - _shift;
                     }
                     do {
                         memcpy(rarray, array, ndarray->itemsize);
