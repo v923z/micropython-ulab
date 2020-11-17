@@ -552,17 +552,17 @@ mp_obj_t ndarray_binary_true_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
 
-	#if NDARRAY_BINARY_USES_FUN_POINTER
-	mp_float_t (*get_lhs)(void *) = ndarray_get_float_function(lhs->dtype);
-	mp_float_t (*get_rhs)(void *) = ndarray_get_float_function(rhs->dtype);
+    #if NDARRAY_BINARY_USES_FUN_POINTER
+    mp_float_t (*get_lhs)(void *) = ndarray_get_float_function(lhs->dtype);
+    mp_float_t (*get_rhs)(void *) = ndarray_get_float_function(rhs->dtype);
 
-	uint8_t *array = (uint8_t *)results->array;
-	void (*set_result)(void *, mp_float_t ) = ndarray_set_float_function(NDARRAY_FLOAT);
+    uint8_t *array = (uint8_t *)results->array;
+    void (*set_result)(void *, mp_float_t ) = ndarray_set_float_function(NDARRAY_FLOAT);
 
-	// Note that lvalue and rvalue are local variables in the macro itself
-	FUNC_POINTER_LOOP(results, array, get_lhs, get_rhs, larray, lstrides, rarray, rstrides, lvalue/rvalue);
+    // Note that lvalue and rvalue are local variables in the macro itself
+    FUNC_POINTER_LOOP(results, array, get_lhs, get_rhs, larray, lstrides, rarray, rstrides, lvalue/rvalue);
 
-	#else
+    #else
     if(lhs->dtype == NDARRAY_UINT8) {
         if(rhs->dtype == NDARRAY_UINT8) {
             BINARY_LOOP(results, mp_float_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, /);
@@ -624,7 +624,7 @@ mp_obj_t ndarray_binary_true_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
             BINARY_LOOP(results, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, /);
         }
     }
-	#endif /* NDARRAY_BINARY_USES_FUN_POINTER */
+    #endif /* NDARRAY_BINARY_USES_FUN_POINTER */
 
     return MP_OBJ_FROM_PTR(results);
 }
@@ -640,17 +640,17 @@ mp_obj_t ndarray_binary_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
 
-	#if NDARRAY_BINARY_USES_FUN_POINTER
-	mp_float_t (*get_lhs)(void *) = ndarray_get_float_function(lhs->dtype);
-	mp_float_t (*get_rhs)(void *) = ndarray_get_float_function(rhs->dtype);
+    #if NDARRAY_BINARY_USES_FUN_POINTER
+    mp_float_t (*get_lhs)(void *) = ndarray_get_float_function(lhs->dtype);
+    mp_float_t (*get_rhs)(void *) = ndarray_get_float_function(rhs->dtype);
 
-	uint8_t *array = (uint8_t *)results->array;
-	void (*set_result)(void *, mp_float_t ) = ndarray_set_float_function(NDARRAY_FLOAT);
+    uint8_t *array = (uint8_t *)results->array;
+    void (*set_result)(void *, mp_float_t ) = ndarray_set_float_function(NDARRAY_FLOAT);
 
-	// Note that lvalue and rvalue are local variables in the macro itself
-	FUNC_POINTER_LOOP(results, array, get_lhs, get_rhs, larray, lstrides, rarray, rstrides, MICROPY_FLOAT_C_FUN(pow)(lvalue, rvalue));
+    // Note that lvalue and rvalue are local variables in the macro itself
+    FUNC_POINTER_LOOP(results, array, get_lhs, get_rhs, larray, lstrides, rarray, rstrides, MICROPY_FLOAT_C_FUN(pow)(lvalue, rvalue));
 
-	#else
+    #else
     if(lhs->dtype == NDARRAY_UINT8) {
         if(rhs->dtype == NDARRAY_UINT8) {
             POWER_LOOP(results, mp_float_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides);
@@ -712,7 +712,7 @@ mp_obj_t ndarray_binary_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
             POWER_LOOP(results, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides);
         }
     }
-	#endif /* NDARRAY_BINARY_USES_FUN_POINTER */
+    #endif /* NDARRAY_BINARY_USES_FUN_POINTER */
 
     return MP_OBJ_FROM_PTR(results);
 }
@@ -729,7 +729,7 @@ mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rs
 
     #if NDARRAY_HAS_INPLACE_ADD
     if(optype == MP_BINARY_OP_INPLACE_ADD) {
-		UNWRAP_INPLACE_OPERATOR(lhs, larray, rarray, rstrides, +=);
+        UNWRAP_INPLACE_OPERATOR(lhs, larray, rarray, rstrides, +=);
     }
     #endif
     #if NDARRAY_HAS_INPLACE_ADD
@@ -784,7 +784,7 @@ mp_obj_t ndarray_inplace_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *
         INPLACE_POWER(lhs, mp_float_t, uint8_t, larray, rarray, rstrides);
     } else if(rhs->dtype == NDARRAY_INT8) {
         INPLACE_POWER(lhs, mp_float_t, int8_t, larray, rarray, rstrides);
-    } else if(lhs->dtype == NDARRAY_UINT16) {
+    } else if(rhs->dtype == NDARRAY_UINT16) {
         INPLACE_POWER(lhs, mp_float_t, uint16_t, larray, rarray, rstrides);
     } else if(rhs->dtype == NDARRAY_INT16) {
         INPLACE_POWER(lhs, mp_float_t, int16_t, larray, rarray, rstrides);

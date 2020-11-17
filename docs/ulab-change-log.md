@@ -1,3 +1,9 @@
+Tue, 17 Nov 2020
+
+version 1.3.7
+
+    fixed in-place power
+
 Mon, 16 Nov 2020
 
 version 1.3.6
