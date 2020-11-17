@@ -226,13 +226,13 @@ version 0.46.0
 
 version 0.44.0
 
-	add approx sub-module with newton, fmin, and bisect functions
+    add approx sub-module with newton, fmin, and bisect functions
 
 Thu, 30 Apr 2020
 
 version 0.44.0
 
-	add approx sub-module with newton, fmin, and bisect functions
+    add approx sub-module with newton, fmin, and bisect functions
 
 Tue, 19 May 2020
 
@@ -250,97 +250,97 @@ Sat, 2 May 2020
 
 version 0.45.0
 
-	add equal/not_equal to the compare module
+    add equal/not_equal to the compare module
 
 Tue, 21 Apr 2020
 
 version 0.42.0
 
-	add minimum/maximum/clip functions
+    add minimum/maximum/clip functions
 
 Mon, 20 Apr 2020
 
 version 0.41.6
 
-	argument handling improvement in polyfit
+    argument handling improvement in polyfit
 
 Mon, 20 Apr 2020
 
 version 0.41.5
 
-	fix compilation errors due to https://github.com/micropython/micropython/commit/30840ebc9925bb8ef025dbc2d5982b1bfeb75f1b
+    fix compilation errors due to https://github.com/micropython/micropython/commit/30840ebc9925bb8ef025dbc2d5982b1bfeb75f1b
 
 Sat, 18 Apr 2020
 
 version 0.41.4
 
-	fix compilation error on hardware ports
+    fix compilation error on hardware ports
 
 Tue, 14 Apr 2020
 
 version 0.41.3
 
-	fix indexing error in dot function
+    fix indexing error in dot function
 
 Thu, 9 Apr 2020
 
 version 0.41.2
 
-	fix transpose function
+    fix transpose function
 
 Tue, 7 Apr 2020
 
 version 0.41.2
 
-	fix discrepancy in argmin/argmax behaviour
+    fix discrepancy in argmin/argmax behaviour
 
 Tue, 7 Apr 2020
 
 version 0.41.1
 
-	fix error in argsort
+    fix error in argsort
 
 Sat, 4 Apr 2020
 
 version 0.41.0
 
-	implemented == and != binary operators
+    implemented == and != binary operators
 
 Fri, 3 Apr 2020
 
 version 0.40.0
 
-	added trace to linalg
+    added trace to linalg
 
 Thu, 2 Apr 2020
 
 version 0.39.0
 
-	added the ** operator, and operand swapping in binary operators
+    added the ** operator, and operand swapping in binary operators
 
 Thu, 2 Apr 2020
 
 version 0.38.1
 
-	added fast option, when initialising from ndarray_properties
+    added fast option, when initialising from ndarray_properties
 
 Thu, 12 Mar 2020
 
 version 0.38.0
 
-	added initialisation from ndarray, and the around function
+    added initialisation from ndarray, and the around function
 
 Tue, 10 Mar 2020
 
 version 0.37.0
 
-	added Cholesky decomposition to linalg.c
+    added Cholesky decomposition to linalg.c
 
 Thu, 27 Feb 2020
 
 version 0.36.0
 
-	moved zeros, ones, eye and linspace into separate module (they are still bound at the top level)
+    moved zeros, ones, eye and linspace into separate module (they are still bound at the top level)
 
 Thu, 27 Feb 2020
 
