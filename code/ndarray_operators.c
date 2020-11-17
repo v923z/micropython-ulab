@@ -760,7 +760,7 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t 
         INPLACE_LOOP(lhs, mp_float_t, uint8_t, larray, rarray, rstrides, /=);
     } else if(rhs->dtype == NDARRAY_INT8) {
         INPLACE_LOOP(lhs, mp_float_t, int8_t, larray, rarray, rstrides, /=);
-    } else if(lhs->dtype == NDARRAY_UINT16) {
+    } else if(rhs->dtype == NDARRAY_UINT16) {
         INPLACE_LOOP(lhs, mp_float_t, uint16_t, larray, rarray, rstrides, /=);
     } else if(rhs->dtype == NDARRAY_INT16) {
         INPLACE_LOOP(lhs, mp_float_t, int16_t, larray, rarray, rstrides, /=);
