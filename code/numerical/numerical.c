@@ -316,7 +316,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
                             if(best_value > value) {
                                 best_value = value;
                                 best_index = index;
-                            }                            
+                            }
                         }
                         array += ndarray->strides[ULAB_MAX_DIMS - 1];
                         l++;
@@ -340,7 +340,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
             i++;
         } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
         #endif
-        
+
         if((optype == NUMERICAL_ARGMIN) || (optype == NUMERICAL_ARGMAX)) {
             return mp_obj_new_int(best_index);
         } else {
@@ -356,7 +356,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         if((ax < 0) || (ax > ndarray->ndim - 1)) {
             mp_raise_ValueError(translate("axis is out of bounds"));
         }
-        
+
         uint8_t *array = (uint8_t *)ndarray->array;
         size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
         memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
@@ -541,12 +541,12 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         mp_raise_TypeError(translate("argsort argument must be an ndarray"));
     }
 
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);    
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
     if(args[1].u_obj == mp_const_none) {
         // bail out, though dense arrays could still be sorted
         mp_raise_NotImplementedError(translate("argsort is not implemented for flattened arrays"));
     }
-    // Since we are returning an NDARRAY_UINT16 array, bail out, 
+    // Since we are returning an NDARRAY_UINT16 array, bail out,
     // if the axis is longer than what we can hold
     for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
         if(ndarray->shape[i] > 65535) {
@@ -572,7 +572,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
         istrides[i] /= sizeof(uint16_t);
     }
-    
+
     ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
     // we work with the typed array, so re-scale the stride
     int32_t increment = ndarray->strides[ax] / ndarray->itemsize;
@@ -619,7 +619,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     #endif
     // reset the array
     iarray = indices->array;
-    
+
     if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
         HEAP_ARGSORT(ndarray, uint8_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
     } else if((ndarray->dtype == NDARRAY_UINT16) || (ndarray->dtype == NDARRAY_INT16)) {
@@ -883,7 +883,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("median argument must be an ndarray"));
     }
-    
+
     ndarray_obj_t *ndarray = numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
 
     if((args[1].u_obj == mp_const_none) || (ndarray->ndim == 1)) {
@@ -911,11 +911,11 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
         ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim-1, shape, NDARRAY_FLOAT);
         mp_float_t *rarray = (mp_float_t *)results->array;
-        
+
         uint8_t *array = (uint8_t *)ndarray->array;
 
         size_t len = ndarray->shape[ax];
-        
+
         #if ULAB_MAX_DIMS > 3
         size_t i = 0;
         do {
@@ -952,7 +952,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
             i++;
         } while(i < shape[ULAB_MAX_DIMS - 3]);
         #endif
-        
+
         return MP_OBJ_FROM_PTR(results);
     }
     return mp_const_none;
