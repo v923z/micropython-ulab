@@ -1,7 +1,4 @@
-try:
-    import ulab as np
-except ImportError:
-    import numpy as np
+import ulab as np
     
 print("Array creation using RANGE:")
 print(np.array(range(2**8-5, 2**8), dtype=np.uint8))
