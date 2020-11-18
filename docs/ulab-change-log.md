@@ -1,5 +1,9 @@
 Wed, 18 Nov 2020
 
+version 1.4.0
+
+    removed size from linalg
+
 version 1.3.8
 
     fixed trapz

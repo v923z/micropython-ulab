@@ -7,12 +7,22 @@
 Welcome to the ulab book!
 =======================================
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Introduction
+
+   ulab-intro
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   ulab/index.rst
 
 .. toctree::
    :maxdepth: 3
-   :caption: User's guide
+   :caption: User's guide:
 
-   ulab-intro
    ulab-ndarray
    ulab-approx
    ulab-compare
@@ -23,15 +33,6 @@ Welcome to the ulab book!
    ulab-poly
    ulab-vectorise
    ulab-programming
-   
-.. toctree::
-   :maxdepth: 2
-   :caption: API Reference
-
-   ulab/index.rst
-
-
-
 
 Indices and tables
 ==================
