@@ -86,18 +86,16 @@ extern mp_obj_module_t ulab_numerical_module;
 // https://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation/
 #define RUN_STD1(ndarray, type, array, results, r, index, div)\
 ({\
-    mp_float_t M, m, S = 0.0, s = 0.0;\
-    M = m = (mp_float_t)(*(type *)(array));\
-    for(size_t i=1; i < (ndarray)->shape[(index)]; i++) {\
-        (array) += (ndarray)->strides[(index)];\
+    mp_float_t M = 0.0, m = 0.0, S = 0.0, s = 0.0;\
+    for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
         mp_float_t value = (mp_float_t)(*(type *)(array));\
-        m = M + (value - M) / (mp_float_t)i;\
+        m = M + (value - M) / (mp_float_t)(i+1);\
         s = S + (value - M) * (value - m);\
         M = m;\
         S = s;\
+        (array) += (ndarray)->strides[(index)];\
     }\
-    (array) += (ndarray)->strides[(index)];\
-    *(r)++ = MICROPY_FLOAT_C_FUN(sqrt)((ndarray)->shape[(index)] * s / (div));\
+    *(r)++ = MICROPY_FLOAT_C_FUN(sqrt)(s / (div));\
 })
 
 #define RUN_DIFF1(ndarray, type, array, results, rarray, index, stencil, N)\

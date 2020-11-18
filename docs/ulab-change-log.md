@@ -1,3 +1,9 @@
+Wed, 18 Nov 2020
+
+version 1.4.1.
+
+    fixed std
+
 Tue, 17 Nov 2020
 
 version 1.3.7
