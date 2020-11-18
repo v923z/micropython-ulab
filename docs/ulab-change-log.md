@@ -1,5 +1,8 @@
 Wed, 18 Nov 2020
 
+version 1.4.1.
+
+    fixed std
 version 1.4.0
 
     removed size from linalg
