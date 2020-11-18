@@ -58,7 +58,7 @@ latex_maketitle = r'''
 \Huge\textbf{The $\mu$lab book}
 \vskip 0.5em
 \LARGE
-\textbf{Release 1.4.0}
+\textbf{Release %s}
 \vskip 5em
 \huge\textbf{Zoltán Vörös}
 \end{flushright}
@@ -80,7 +80,7 @@ with contributions by
 \today
 \end{flushright}
 \end{titlepage}
-'''
+'''%release
 
 latex_elements = {
     'maketitle': latex_maketitle
