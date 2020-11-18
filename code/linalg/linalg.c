@@ -385,47 +385,6 @@ static mp_obj_t linalg_norm(mp_obj_t _x) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
 
-//| def size(array: ulab.array, *, axis: Optional[int] = None) -> int:
-//|     """Return the total number of elements in the array, as an integer."""
-//|     ...
-//|
-
-static mp_obj_t linalg_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("size is defined for ndarrays only"));
-    } else {
-        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
-        if(args[1].u_obj == mp_const_none) {
-            return mp_obj_new_int(ndarray->len);
-        } else if(MP_OBJ_IS_INT(args[1].u_obj)) {
-            int8_t ax = mp_obj_get_int(args[1].u_obj);
-            if(ax == 0) {
-                return mp_obj_new_int(ndarray->len);
-            } else {
-                if(ax < 0) {
-                    ax += ndarray->ndim;
-                }
-                if(ax > ndarray->ndim) {
-                    mp_raise_ValueError(translate("tuple index out of range"));
-                } else {
-                    mp_obj_new_int(ndarray->shape[ULAB_MAX_DIMS - 1 - ndarray->ndim + ax]);
-                }
-            }
-        }
-    }
-    return mp_const_none;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_KW(linalg_size_obj, 1, linalg_size);
-
 #if ULAB_MAX_DIMS > 1
 #if ULAB_LINALG_HAS_TRACE
 
@@ -478,9 +437,6 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
     #endif
     #if ULAB_LINALG_HAS_NORM
     { MP_ROM_QSTR(MP_QSTR_norm), (mp_obj_t)&linalg_norm_obj },
-    #endif
-    #if ULAB_LINALG_HAS_SIZE
-    { MP_ROM_QSTR(MP_QSTR_size), (mp_obj_t)&linalg_size_obj },
     #endif
 };
 

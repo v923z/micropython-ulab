@@ -26,6 +26,5 @@ MP_DECLARE_CONST_FUN_OBJ_1(linalg_inv_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_trace_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(linalg_dot_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(linalg_norm_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(linalg_size_obj);
 #endif
 #endif
