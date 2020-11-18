@@ -166,7 +166,6 @@
 #define ULAB_LINALG_HAS_EIG             (1)
 #define ULAB_LINALG_HAS_INV             (1)
 #define ULAB_LINALG_HAS_NORM            (1)
-#define ULAB_LINALG_HAS_SIZE            (1)
 #define ULAB_LINALG_HAS_TRACE           (1)
 #endif
 

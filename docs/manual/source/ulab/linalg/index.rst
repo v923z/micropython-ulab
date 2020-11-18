@@ -58,11 +58,6 @@
    Computes the 2-norm of a vector or a matrix, i.e., ``sqrt(sum(x*x))``, however, without the RAM overhead.
 
 
-.. function:: size(array: ulab.array, *, axis: Optional[int] = None) -> int
-
-   Return the total number of elements in the array, as an integer.
-
-
 .. function:: trace(m: ulab.array) -> float
 
    :param m: a square matrix

@@ -537,16 +537,16 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         uint8_t *xarray = (uint8_t *)x->array;
         mp_float_t x1, x2;
 
-        y1 =funcy(yarray);
+        y1 = funcy(yarray);
         yarray += y->strides[ULAB_MAX_DIMS - 1];
-        x1 =funcx(xarray);
+        x1 = funcx(xarray);
         xarray += x->strides[ULAB_MAX_DIMS - 1];
+
         for(size_t i=1; i < y->len; i++) {
-            y2 =funcy(yarray);
+            y2 = funcy(yarray);
             yarray += y->strides[ULAB_MAX_DIMS - 1];
-            x2 =funcx(xarray);
+            x2 = funcx(xarray);
             xarray += x->strides[ULAB_MAX_DIMS - 1];
-            count++;
             mp_float_t value = (x2 - x1) * (y2 + y1);
             m = mean + (value - mean) / (mp_float_t)count;
             mean = m;
@@ -556,7 +556,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
     } else {
         mp_float_t dx = mp_obj_get_float(args[2].u_obj);
-        y1 =funcy(yarray);
+        y1 = funcy(yarray);
         yarray += y->strides[ULAB_MAX_DIMS - 1];
 
         for(size_t i=1; i < y->len; i++) {

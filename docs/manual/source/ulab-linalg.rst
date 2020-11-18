@@ -4,46 +4,6 @@ Linalg
 Functions in the ``linalg`` module can be called by importing the
 sub-module first.
 
-size
-----
-
-``size`` takes a single argument, the axis, whose size is to be
-returned. Depending on the value of the argument, the following
-information will be returned:
-
-1. argument is 0: the number of elements of the array
-2. argument is 1: the number of rows
-3. argument is 2: the number of columns
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    from ulab import linalg
-    
-    a = np.array([1, 2, 3, 4], dtype=np.int8)
-    print("a:\n", a)
-    print("size of a:", linalg.size(a, axis=None), ",", linalg.size(a, axis=0))
-    
-    b= np.array([[1, 2], [3, 4]], dtype=np.int8)
-    print("\nb:\n", b)
-    print("size of b:", linalg.size(b, axis=None), ",", linalg.size(b, axis=0), ",", linalg.size(b, axis=1))
-
-.. parsed-literal::
-
-    a:
-     array([1, 2, 3, 4], dtype=int8)
-    size of a: 4 , 4
-    
-    b:
-     array([[1, 2],
-    	 [3, 4]], dtype=int8)
-    size of b: 4 , 2 , 2
-    
-    
-
-
 inv
 ---
 
