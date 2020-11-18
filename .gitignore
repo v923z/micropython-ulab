@@ -1,4 +1,5 @@
 /micropython
+/circuitpython
 /*.exp
 /*.out
 /docs/manual/build/
