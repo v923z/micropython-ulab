@@ -8,7 +8,7 @@ make -C circuitpython/mpy-cross -j$nproc
 make -C circuitpython/ports/unix -j$nproc deplibs
 make -C circuitpython/ports/unix -j$nproc
 
-if ! env MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython circuitpython/tests/run-tests -d tests; then
+if ! env MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython ./run-tests -d tests; then
     for exp in *.exp; do
         testbase=$(basename $exp .exp);
         echo -e "\nFAILURE $testbase";
