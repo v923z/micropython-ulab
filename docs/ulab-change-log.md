@@ -4,6 +4,10 @@ version 1.4.3
 
     fixed full, zeros, ones
 
+version 1.4.2
+
+    fixed dtype
+
 Wed, 18 Nov 2020
 
 version 1.4.1.
