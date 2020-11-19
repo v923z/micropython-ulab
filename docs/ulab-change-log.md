@@ -1,5 +1,9 @@
 Thu, 19 Nov 2020
 
+version 1.4.5
+
+    eliminated fatal micropython error in ndarray_init_helper
+
 version 1.4.4
 
     fixed min, max
