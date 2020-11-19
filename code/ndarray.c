@@ -412,11 +412,29 @@ mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0]);
         dtype->dtype = ndarray->dtype;
     } else {
-        uint8_t _dtype = mp_obj_get_int(_args[0].u_obj);
-        if((_dtype != NDARRAY_BOOL) && (_dtype != NDARRAY_UINT8)
-            && (_dtype != NDARRAY_INT8) && (_dtype != NDARRAY_UINT16)
-            && (_dtype != NDARRAY_INT16) && (_dtype != NDARRAY_FLOAT)) {
-            mp_raise_TypeError(translate("data type not understood"));
+        uint8_t _dtype;
+        if(MP_OBJ_IS_INT(_args[0].u_obj)) {
+            _dtype = mp_obj_get_int(_args[0].u_obj);
+            if((_dtype != NDARRAY_BOOL) && (_dtype != NDARRAY_UINT8)
+                && (_dtype != NDARRAY_INT8) && (_dtype != NDARRAY_UINT16)
+                && (_dtype != NDARRAY_INT16) && (_dtype != NDARRAY_FLOAT)) {
+                mp_raise_TypeError(translate("data type not understood"));
+            }
+        } else {
+            GET_STR_DATA_LEN(_args[0].u_obj, _dtype_, len);
+            if(memcmp(_dtype_, "uint8", 5) == 0) {
+                _dtype = NDARRAY_UINT8;
+            } else if(memcmp(_dtype_, "int8", 4) == 0) {
+                _dtype = NDARRAY_INT8;
+            } else if(memcmp(_dtype_, "uint16", 6) == 0) {
+                _dtype = NDARRAY_UINT16;
+            } else if(memcmp(_dtype_, "int16", 5) == 0) {
+                _dtype = NDARRAY_INT16;
+            } else if(memcmp(_dtype_, "float", 5) == 0) {
+                _dtype = NDARRAY_FLOAT;
+            } else {
+                mp_raise_TypeError(translate("data type not understood"));
+            }
         }
         dtype->dtype = _dtype;
     }
@@ -803,10 +821,11 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     uint8_t _dtype;
     #if ULAB_HAS_DTYPE_OBJECT
-    if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_dtype_type)) { //
+    if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_dtype_type)) {
+            printf("here");
         dtype_obj_t *dtype = MP_OBJ_TO_PTR(args[1].u_obj);
         _dtype = dtype->dtype;
-    } else {
+    } else { // this must be an integer defined as a class constant (ulba.uint8 etc.)
         _dtype = mp_obj_get_int(args[1].u_obj);
     }
     #else
@@ -1049,7 +1068,7 @@ static ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tu
     memset(strides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
 
     uint8_t ndim = ndarray->ndim;
-    
+
     for(uint8_t i=0; i < ndim; i++) {
         // copy from the end
         shape[ULAB_MAX_DIMS - 1 - i] = ndarray->shape[ULAB_MAX_DIMS  - 1 - i];
