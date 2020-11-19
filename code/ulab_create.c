@@ -18,37 +18,37 @@
 #include "py/runtime.h"
 #include "ulab_create.h"
 
-#if ULAB_CREATE_HAS_ONES | ULAB_CREATE_HAS_ZEROS
-static mp_obj_t create_zeros_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t kind) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    uint8_t dtype = args[1].u_int;
-    if(!MP_OBJ_IS_INT(args[0].u_obj) && !MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
-        mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
+#if ULAB_CREATE_HAS_ONES | ULAB_CREATE_HAS_ZEROS | ULAB_CREATE_HAS_FULL
+static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t value) {
+    if(!MP_OBJ_IS_INT(oshape) && !MP_OBJ_IS_TYPE(oshape, &mp_type_tuple) && !MP_OBJ_IS_TYPE(oshape, &mp_type_list)) {
+        mp_raise_TypeError(translate("input argument must be an integer, a tuple, or a list"));
     }
     ndarray_obj_t *ndarray = NULL;
-    if(MP_OBJ_IS_INT(args[0].u_obj)) {
-        size_t n = mp_obj_get_int(args[0].u_obj);
+    if(MP_OBJ_IS_INT(oshape)) {
+        size_t n = mp_obj_get_int(oshape);
         ndarray = ndarray_new_linear_array(n, dtype);
-    } else if(MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
-        mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0].u_obj);
-        if(tuple->len != 2) {
-            mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
+    } else if(MP_OBJ_IS_TYPE(oshape, &mp_type_tuple) || MP_OBJ_IS_TYPE(oshape, &mp_type_list)) {
+        uint8_t len = (uint8_t)mp_obj_get_int(mp_obj_len_maybe(oshape));
+        if(len > ULAB_MAX_DIMS) {
+            mp_raise_TypeError(translate("too many dimensions"));
         }
-        ndarray = ndarray_new_ndarray_from_tuple(tuple, dtype);
+        size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+        memset(shape, 0, ULAB_MAX_DIMS * sizeof(size_t));
+        size_t i = 0;
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t item, iterable = mp_getiter(oshape, &iter_buf);
+        while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION){
+            shape[ULAB_MAX_DIMS - len + i] = (size_t)mp_obj_get_int(item);
+            i++;
+        }
+        ndarray = ndarray_new_dense_ndarray(len, shape, dtype);
     }
-    if(kind == 1) {
-        mp_obj_t one = mp_obj_new_int(1);
+    if(value != mp_const_none) {
         for(size_t i=0; i < ndarray->len; i++) {
-            mp_binary_set_val_array(dtype, ndarray->array, i, one);
+            mp_binary_set_val_array(dtype, ndarray->array, i, value);
         }
     }
+    // if zeros calls the function, we don't have to do anything
     return MP_OBJ_FROM_PTR(ndarray);
 }
 #endif
@@ -418,25 +418,8 @@ mp_obj_t create_full(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     uint8_t dtype = args[2].u_int;
-    if(!MP_OBJ_IS_INT(args[0].u_obj) && !MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
-        mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
-    }
-    ndarray_obj_t *ndarray = NULL;
-    if(MP_OBJ_IS_INT(args[0].u_obj)) {
-        size_t n = mp_obj_get_int(args[0].u_obj);
-        ndarray = ndarray_new_linear_array(n, dtype);
-    } else if(MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
-        mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(args[0].u_obj);
-        if(tuple->len != 2) {
-            mp_raise_TypeError(translate("input argument must be an integer or a 2-tuple"));
-        }
-        ndarray = ndarray_new_ndarray_from_tuple(tuple, dtype);
-    }
-    mp_obj_t fill_value = args[1].u_obj;
-    for(size_t i=0; i < ndarray->len; i++) {
-        mp_binary_set_val_array(dtype, ndarray->array, i, fill_value);
-    }
-    return MP_OBJ_FROM_PTR(ndarray);
+
+    return create_zeros_ones_full(args[0].u_obj, dtype, args[1].u_obj);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_full_obj, 0, create_full);
@@ -604,7 +587,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_logspace_obj, 2, create_logspace);
 //|
 
 mp_obj_t create_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return create_zeros_ones(n_args, pos_args, kw_args, 1);
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t dtype = args[1].u_int;
+    mp_obj_t one = mp_obj_new_int(1);
+    return create_zeros_ones_full(args[0].u_obj, dtype, one);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
@@ -623,7 +616,16 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 //|
 
 mp_obj_t create_zeros(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return create_zeros_ones(n_args, pos_args, kw_args, 0);
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t dtype = args[1].u_int;
+    return create_zeros_ones_full(args[0].u_obj, dtype, mp_const_none);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_zeros_obj, 0, create_zeros);

@@ -496,11 +496,10 @@ mp_obj_t ndarray_get_item(ndarray_obj_t *ndarray, void *array) {
 }
 
 static void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, uint8_t *array, size_t stride, size_t n) {
-    mp_print_str(print, "[");
     if(n == 0) {
-        mp_print_str(print, "]");
         return;
     }
+    mp_print_str(print, "[");
     if((n <= ndarray_print_threshold) || (n <= 2*ndarray_print_edgeitems)) { // if the array is short, print everything
         mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         array += stride;
@@ -538,7 +537,9 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t *array = (uint8_t *)self->array;
     mp_print_str(print, "array(");
-
+    if(self->ndim == 0) {
+        mp_print_str(print, "[]");
+    }
     #if ULAB_MAX_DIMS > 3
     size_t i=0;
     ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-4], "[");
@@ -560,25 +561,24 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
                 k++;
                 ndarray_print_bracket(print, k, self->shape[ULAB_MAX_DIMS-2], ",\n       ");
             } while(k < self->shape[ULAB_MAX_DIMS-2]);
+            ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "]");
             #endif
         #if ULAB_MAX_DIMS > 2
-            ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-2], "]");
             j++;
             ndarray_print_bracket(print, j, self->shape[ULAB_MAX_DIMS-3], ",\n\n       ");
             array -= self->strides[ULAB_MAX_DIMS-2] * self->shape[ULAB_MAX_DIMS-2];
             array += self->strides[ULAB_MAX_DIMS-3];
         } while(j < self->shape[ULAB_MAX_DIMS-3]);
+        ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "]");
         #endif
     #if ULAB_MAX_DIMS > 3
-        ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-3], "]");
         array -= self->strides[ULAB_MAX_DIMS-3] * self->shape[ULAB_MAX_DIMS-3];
         array += self->strides[ULAB_MAX_DIMS-4];
         i++;
         ndarray_print_bracket(print, i, self->shape[ULAB_MAX_DIMS-4], ",\n\n       ");
     } while(i < self->shape[ULAB_MAX_DIMS-4]);
+    ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-4], "]");
     #endif
-
-    if(self->ndim > 1) mp_print_str(print, "]");
     if(self->boolean) {
         mp_print_str(print, ", dtype=bool)");
     } else if(self->dtype == NDARRAY_UINT8) {
