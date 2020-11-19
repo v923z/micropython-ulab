@@ -347,7 +347,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
             if(ndarray->dtype == NDARRAY_FLOAT) {
                 return mp_obj_new_float(best_value);
             } else {
-                return MP_OBJ_NEW_SMALL_INT((uint32_t)best_value);
+                return MP_OBJ_NEW_SMALL_INT((int32_t)best_value);
             }
         }
     } else {

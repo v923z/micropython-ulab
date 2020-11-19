@@ -1,5 +1,9 @@
 Thu, 19 Nov 2020
 
+version 1.4.4
+
+    fixed min, max
+
 version 1.4.3
 
     fixed full, zeros, ones
