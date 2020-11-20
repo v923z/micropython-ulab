@@ -364,6 +364,7 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    // TODO: numpy allows generic iterables
     ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj);
     ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj); // xp must hold an increasing sequence of independent values
     ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj);
@@ -374,11 +375,13 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     ndarray_obj_t *y = ndarray_new_linear_array(x->len, NDARRAY_FLOAT);
     mp_float_t left_value, right_value;
     uint8_t *xparray = (uint8_t *)xp->array;
+
     mp_float_t xp_left = ndarray_get_float_value(xparray, xp->dtype);
     xparray += (xp->len-1) * xp->strides[ULAB_MAX_DIMS - 1];
     mp_float_t xp_right = ndarray_get_float_value(xparray, xp->dtype);
 
     uint8_t *fparray = (uint8_t *)fp->array;
+
     if(args[3].u_obj == mp_const_none) {
         left_value = ndarray_get_float_value(fparray, fp->dtype);
     } else {
@@ -386,19 +389,24 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     }
     if(args[4].u_obj == mp_const_none) {
         fparray += (fp->len-1) * fp->strides[ULAB_MAX_DIMS - 1];
-        right_value = ndarray_get_float_value(fp->array, fp->dtype);
+        right_value = ndarray_get_float_value(fparray, fp->dtype);
     } else {
         right_value = mp_obj_get_float(args[4].u_obj);
     }
 
+    xparray = xp->array;
+    fparray = fp->array;
+
     uint8_t *xarray = (uint8_t *)x->array;
     mp_float_t *yarray = (mp_float_t *)y->array;
+    uint8_t *temp;
+
     for(size_t i=0; i < x->len; i++, yarray++) {
         mp_float_t x_value = ndarray_get_float_value(xarray, x->dtype);
         xarray += x->strides[ULAB_MAX_DIMS - 1];
-        if(x_value <= xp_left) {
+        if(x_value < xp_left) {
             *yarray = left_value;
-        } else if(x_value >= xp_right) {
+        } else if(x_value > xp_right) {
             *yarray = right_value;
         } else { // do the binary search here
             mp_float_t xp_left_, xp_right_;
@@ -406,17 +414,26 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
             size_t left_index = 0, right_index = xp->len - 1, middle_index;
             while(right_index - left_index > 1) {
                 middle_index = left_index + (right_index - left_index) / 2;
-                mp_float_t xp_middle = ndarray_get_float_index(xparray, xp->dtype, middle_index);
+                temp = xparray + middle_index * xp->strides[ULAB_MAX_DIMS - 1];
+                mp_float_t xp_middle = ndarray_get_float_value(temp, xp->dtype);
                 if(x_value <= xp_middle) {
                     right_index = middle_index;
                 } else {
                     left_index = middle_index;
                 }
             }
-            xp_left_ = ndarray_get_float_index(xp->array, xp->dtype, left_index);
-            xp_right_ = ndarray_get_float_index(xp->array, xp->dtype, right_index);
-            fp_left = ndarray_get_float_index(fp->array, fp->dtype, left_index);
-            fp_right = ndarray_get_float_index(fp->array, fp->dtype, right_index);
+            temp = xparray + left_index * xp->strides[ULAB_MAX_DIMS - 1];
+            xp_left_ = ndarray_get_float_value(temp, xp->dtype);
+
+            temp = xparray + right_index * xp->strides[ULAB_MAX_DIMS - 1];
+            xp_right_ = ndarray_get_float_value(temp, xp->dtype);
+
+            temp = fparray + left_index * fp->strides[ULAB_MAX_DIMS - 1];
+            fp_left = ndarray_get_float_value(temp, fp->dtype);
+
+            temp = fparray + right_index * fp->strides[ULAB_MAX_DIMS - 1];
+            fp_right = ndarray_get_float_value(temp, fp->dtype);
+
             *yarray = fp_left + (x_value - xp_left_) * (fp_right - fp_left) / (xp_right_ - xp_left_);
         }
     }
