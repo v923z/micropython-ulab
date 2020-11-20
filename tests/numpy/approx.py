@@ -4,6 +4,7 @@ try:
     use_ulab = True
 except ImportError:
     import numpy as np
+    from scipy import optimize
     use_ulab = False
     
 x = np.array([1, 2, 3, 4, 5])
@@ -41,7 +42,6 @@ if use_ulab:
     print(np.trapz(y))
     print(np.trapz(y, x=x))
 else:
-    from scipy import optimize
     print(optimize.newton(f, 3., tol=0.001, rtol=0.01))
     print(optimize.newton(f, 3., tol=0.001, rtol=0.01, maxiter=100))
     print(optimize.bisect(f, 1.0, 3.0))
