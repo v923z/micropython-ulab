@@ -8,13 +8,16 @@ make -C circuitpython/mpy-cross -j$nproc
 make -C circuitpython/ports/unix -j$nproc deplibs
 make -C circuitpython/ports/unix -j$nproc
 
-if ! env MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython ./run-tests -d tests; then
-    for exp in *.exp; do
-        testbase=$(basename $exp .exp);
-        echo -e "\nFAILURE $testbase";
-        diff -u $testbase.exp $testbase.out;
-    done
-    exit 1
-fi
+for dir in "circuitpy" "common"
+do
+	if ! env MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython ./run-tests -d tests/"$dir"; then
+		for exp in *.exp; do
+			testbase=$(basename $exp .exp);
+			echo -e "\nFAILURE $testbase";
+			diff -u $testbase.exp $testbase.out;
+		done
+		exit 1
+	fi
+done
 
-(cd circuitpython && sphinx-build -E -W -b html . _build/html)
+#(cd circuitpython && sphinx-build -E -W -b html . _build/html)

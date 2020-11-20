@@ -8,10 +8,14 @@ make -C micropython/mpy-cross -j$(nproc)
 make -C micropython/ports/unix -j$(nproc) deplibs
 make -C micropython/ports/unix -j$(nproc) USER_C_MODULES="${HERE}" DEBUG=1 STRIP=:
 
-if ! env MICROPY_MICROPYTHON=micropython/ports/unix/micropython ./run-tests -d tests; then
-    for exp in *.exp; do
-        testbase=$(basename $exp .exp);
-        echo -e "\nFAILURE $testbase";
-        diff -u $testbase.exp $testbase.out;
-    done
-fi
+
+for dir in "numpy" "common"
+do
+	if ! env MICROPY_MICROPYTHON=micropython/ports/unix/micropython ./run-tests -d tests/"$dir"; then
+		for exp in *.exp; do
+			testbase=$(basename $exp .exp);
+			echo -e "\nFAILURE $testbase";
+			diff -u $testbase.exp $testbase.out;
+		done
+	fi
+done
