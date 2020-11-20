@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 HERE="$(dirname -- "$(readlink -f -- "${0}")" )"
-[ -e micropython/py/py.mk ] || git clone --depth=1 --branch=v1.13 https://github.com/micropython/micropython
+[ -e micropython/py/py.mk ] || git clone https://github.com/micropython/micropython
 [ -e micropython/lib/libffi/autogen.sh ] || (cd micropython && git submodule update --init lib/libffi )
 #git clone https://github.com/micropython/micropython
 make -C micropython/mpy-cross -j$(nproc)
