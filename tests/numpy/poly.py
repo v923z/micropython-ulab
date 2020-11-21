@@ -1,4 +1,7 @@
-import ulab as np
+try:
+	import ulab as np
+except ImportError:
+	import numpy as np
 
 # polynom evaluation
 x = np.linspace(0, 10, num=9)
