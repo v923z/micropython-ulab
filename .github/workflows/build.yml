@@ -37,7 +37,6 @@ jobs:
       with:
         repository: micropython/micropython
         path: micropython
-        ref: v1.13
 
     - name: Checkout micropython submodules
       run: (cd micropython && git submodule update --init)
