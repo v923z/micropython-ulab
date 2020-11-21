@@ -1,0 +1,158 @@
+Testing np.min:
+1
+1.0
+1
+array([1, 2, 3], dtype=uint8)
+array([1, 4, 7], dtype=uint8)
+235
+array([235, 236, 237, 238, 239], dtype=uint8)
+array([250, 235, 245], dtype=uint8)
+-21
+array([-21, -20, -19, -18, -17], dtype=int8)
+array([-6, -21, -11], dtype=int8)
+235
+array([235, 236, 237, 238, 239], dtype=uint16)
+array([250, 235, 245], dtype=uint16)
+235
+array([235, 236, 237, 238, 239], dtype=int16)
+array([250, 235, 245], dtype=int16)
+253.0
+array([253.0, 254.0, 255.0], dtype=float64)
+array([7.205759403792793e+16, 65533.0, 253.0], dtype=float64)
+Testing np.max:
+1
+1.0
+9
+array([7, 8, 9], dtype=uint8)
+array([3, 6, 9], dtype=uint8)
+254
+array([250, 251, 252, 253, 254], dtype=uint8)
+array([254, 239, 249], dtype=uint8)
+-2
+array([-6, -5, -4, -3, -2], dtype=int8)
+array([-2, -17, -7], dtype=int8)
+254
+array([250, 251, 252, 253, 254], dtype=uint16)
+array([254, 239, 249], dtype=uint16)
+254
+array([250, 251, 252, 253, 254], dtype=int16)
+array([254, 239, 249], dtype=int16)
+7.205759403792793e+16
+array([7.205759403792793e+16, 7.205759403792793e+16, 7.205759403792793e+16], dtype=float64)
+array([7.205759403792793e+16, 65535.00000000001, 255.0], dtype=float64)
+Testing np.argmin:
+0
+0
+0
+array([0, 0, 0], dtype=int16)
+array([0, 0, 0], dtype=int16)
+5
+array([1, 1, 1, 1, 1], dtype=int16)
+array([0, 0, 0], dtype=int16)
+5
+array([1, 1, 1, 1, 1], dtype=int16)
+array([0, 0, 0], dtype=int16)
+5
+array([1, 1, 1, 1, 1], dtype=int16)
+array([0, 0, 0], dtype=int16)
+5
+array([1, 1, 1, 1, 1], dtype=int16)
+array([0, 0, 0], dtype=int16)
+6
+array([2, 2, 2], dtype=int16)
+array([0, 0, 0], dtype=int16)
+Testing np.argmax:
+0
+0
+8
+array([2, 2, 2], dtype=int16)
+array([2, 2, 2], dtype=int16)
+4
+array([0, 0, 0, 0, 0], dtype=int16)
+array([4, 4, 4], dtype=int16)
+4
+array([0, 0, 0, 0, 0], dtype=int16)
+array([4, 4, 4], dtype=int16)
+4
+array([0, 0, 0, 0, 0], dtype=int16)
+array([4, 4, 4], dtype=int16)
+4
+array([0, 0, 0, 0, 0], dtype=int16)
+array([4, 4, 4], dtype=int16)
+0
+array([0, 0, 0], dtype=int16)
+array([0, 2, 2], dtype=int16)
+Testing np.minimum:
+9
+9.0
+array([[252.0, 253.0, 254.0],
+       [237.0, 238.0, 239.0],
+       [247.0, 248.0, 249.0]], dtype=float64)
+Testing np.maximum:
+array([[7.205759403792793e+16, 7.205759403792793e+16, 7.205759403792793e+16],
+       [65533.0, 65534.0, 65535.00000000001],
+       [253.0, 254.0, 255.0]], dtype=float64)
+10
+10.0
+array([[7.205759403792793e+16, 7.205759403792793e+16, 7.205759403792793e+16],
+       [65533.0, 65534.0, 65535.00000000001],
+       [253.0, 254.0, 255.0]], dtype=float64)
+Testing np.sort:
+array([237, 238, 239, 247, 248, 249, 252, 253, 254], dtype=uint8)
+array([253.0, 254.0, 255.0, 65533.0, 65534.0, 65535.00000000001, 7.205759403792793e+16, 7.205759403792793e+16, 7.205759403792793e+16], dtype=float64)
+array([[237, 238, 239],
+       [247, 248, 249],
+       [252, 253, 254]], dtype=uint8)
+array([[253.0, 254.0, 255.0],
+       [65533.0, 65534.0, 65535.00000000001],
+       [7.205759403792793e+16, 7.205759403792793e+16, 7.205759403792793e+16]], dtype=float64)
+array([[252, 253, 254],
+       [237, 238, 239],
+       [247, 248, 249]], dtype=uint8)
+array([[7.205759403792793e+16, 7.205759403792793e+16, 7.205759403792793e+16],
+       [65533.0, 65534.0, 65535.00000000001],
+       [253.0, 254.0, 255.0]], dtype=float64)
+Testing np.sum:
+762
+250
+2217.0
+array([736.0, 739.0000000000001, 742.0], dtype=float64)
+array([759.0, 714.0000000000001, 744.0], dtype=float64)
+Testing np.mean:
+254.0
+254.0
+True
+True
+True
+True
+True
+True
+True
+Testing np.std:
+True
+True
+True
+True
+True
+True
+True
+True
+True
+Testing np.median:
+254.0
+254.0
+248.0
+array([247.0, 248.0, 249.0], dtype=float64)
+array([253.0, 238.0, 248.0], dtype=float64)
+Testing np.roll:
+array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=int16)
+array([8, 9, 0, 1, 2, 3, 4, 5, 6, 7], dtype=int16)
+array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1], dtype=int16)
+array([7.0, 8.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=float64)
+array([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 1.0, 2.0], dtype=float64)
+Testing np.clip:
+5
+6
+3
+array([3, 3, 3, 4, 5, 5, 5], dtype=int16)
+array([3.0, 3.0, 3.0, 4.0, 5.0, 5.0, 5.0], dtype=float64)
