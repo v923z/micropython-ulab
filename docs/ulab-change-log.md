@@ -1,3 +1,9 @@
+Mon, 23 Nov 2020
+
+version 1.4.7.
+
+    fixed iteration loop in norm
+
 Fri, 20 Nov 2020
 
 version 1.4.6
