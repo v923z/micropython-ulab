@@ -4,7 +4,11 @@ version 1.4.9
 
     added in-place sort
 
-version 1.4.7
+version 1.4.8
+
+    fixed convolve
+
+version 1.4.7.
 
     fixed iteration loop in norm
 
