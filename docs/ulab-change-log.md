@@ -1,5 +1,9 @@
 Mon, 23 Nov 2020
 
+version 1.5.0
+
+    added nan/inf class level constants
+
 version 1.4.10
 
     fixed sosfilt
