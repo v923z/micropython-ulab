@@ -1,5 +1,9 @@
 Mon, 23 Nov 2020
 
+version 1.5.1
+
+    fixed nan definition
+
 version 1.5.0
 
     added nan/inf class level constants
