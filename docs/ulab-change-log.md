@@ -1,6 +1,10 @@
 Mon, 23 Nov 2020
 
-version 1.4.7.
+version 1.4.9
+
+    added in-place sort
+
+version 1.4.7
 
     fixed iteration loop in norm
 
