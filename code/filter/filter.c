@@ -177,7 +177,7 @@ mp_obj_t filter_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_obj_t item, iterable = mp_getiter(args[0].u_obj, &iter_buf);
     size_t lensos = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0].u_obj));
 
-    size_t shape[] = {0, 0, lensos, 2};
+    size_t *shape = ndarray_shape_vector(0, 0, lensos, 2);
     ndarray_obj_t *zf = ndarray_new_dense_ndarray(2, shape, NDARRAY_FLOAT);
     mp_float_t *zf_array = (mp_float_t *)zf->array;
 

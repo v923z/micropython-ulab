@@ -22,11 +22,11 @@ if use_ulab:
     print(math.isclose(result, ref_result, rel_tol=1E-6, abs_tol=1E-6))
 
     ref_result = -7.105427357601002e-15
-    result = np.fmin(f, 3.0)
+    result = np.fmin(f, 3.0, fatol=1e-15)
     print(math.isclose(result, ref_result, rel_tol=1E-6, abs_tol=1E-6))
 
     ref_result = -7.105427357601002e-15
-    result = np.fmin(f, 3.0, xatol=0.0001, maxiter=500)
+    result = np.fmin(f, 3.0, xatol=1e-8, fatol=1e-15, maxiter=500)
     print(math.isclose(result, ref_result, rel_tol=1E-6, abs_tol=1E-6))
 else:
     ref_result = 1.41421826342255
@@ -44,5 +44,3 @@ else:
     print(math.isclose(result[0], ref_result, rel_tol=1E-9, abs_tol=1E-9))
     result = optimize.fmin(f, 3.0, xtol=0.0001, ftol=0.0001, disp=0)
     print(math.isclose(result[0], ref_result, rel_tol=1E-9, abs_tol=1E-9))
-
-
