@@ -81,14 +81,17 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     uint8_t *aarray = (uint8_t *)a->array;
     uint8_t *carray = (uint8_t *)c->array;
     
-    int off = len_c-1;
+    int32_t off = len_c - 1;
+    int32_t as = a->strides[ULAB_MAX_DIMS - 1] / a->itemsize;
+    int32_t cs = c->strides[ULAB_MAX_DIMS - 1] / c->itemsize;
+
     for(int32_t k=-off; k < len-off; k++) {
         mp_float_t accum = (mp_float_t)0.0;
         int32_t top_n = MIN(len_c, len_a - k);
         int32_t bot_n = MAX(-k, 0);
         for(int32_t n=bot_n; n < top_n; n++) {
-            int32_t idx_c = (len_c - n - 1) * c->strides[ULAB_MAX_DIMS - 1];
-            int32_t idx_a = (n + k) * a->strides[ULAB_MAX_DIMS - 1];
+            int32_t idx_c = (len_c - n - 1) * cs;
+            int32_t idx_a = (n + k) * as;
             mp_float_t ai = ndarray_get_float_index(aarray, a->dtype, idx_a);
             mp_float_t ci = ndarray_get_float_index(carray, c->dtype, idx_c);
             accum += ai * ci;
