@@ -58,6 +58,12 @@
 // determines, whether pi, and e are defined in ulab itself
 #define ULAB_HAS_MATH_CONSTANTS         (1)
 
+// ulab defines infinite as a class constant
+#define ULAB_HAS_INF                    (1)
+
+// ulab defines NaN as a class constant
+#define ULAB_HAS_NAN                    (1)
+
 // determines, whether the ndinfo function is available
 #define ULAB_HAS_NDINFO                 (1)
 
