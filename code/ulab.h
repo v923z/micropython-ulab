@@ -109,6 +109,7 @@
 #define NDARRAY_HAS_RESHAPE             (1)
 #define NDARRAY_HAS_SHAPE               (1)
 #define NDARRAY_HAS_SIZE                (1)
+#define NDARRAY_HAS_SORT                (1)
 #define NDARRAY_HAS_STRIDES             (1)
 #define NDARRAY_HAS_TOBYTES             (1)
 #define NDARRAY_HAS_TRANSPOSE           (1)

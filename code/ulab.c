@@ -32,7 +32,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 1.4.8
+#define ULAB_VERSION 1.4.9
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
@@ -82,9 +82,9 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #if NDARRAY_HAS_TOBYTES
         { MP_ROM_QSTR(MP_QSTR_tobytes), MP_ROM_PTR(&ndarray_tobytes_obj) },
     #endif
-//#if CIRCUITPY
-//    { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&numerical_sort_inplace_obj) },
-//#endif
+    #if NDARRAY_HAS_SORT
+        { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&numerical_sort_inplace_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);

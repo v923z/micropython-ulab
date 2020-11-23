@@ -444,7 +444,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 
-#if ULAB_NUMERICAL_HAS_SORT
+#if ULAB_NUMERICAL_HAS_SORT | NDARRAY_HAS_SORT
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
     if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
@@ -498,7 +498,7 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
         return MP_OBJ_FROM_PTR(ndarray);
     }
 }
-#endif
+#endif /* ULAB_NUMERICAL_HAS_SORT | NDARRAY_HAS_SORT */
 
 #if ULAB_NUMERICAL_HAS_ARGMINMAX
 //| def argmax(array: _ArrayLike, *, axis: Optional[int] = None) -> int:
@@ -1161,7 +1161,7 @@ mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_obj, 1, numerical_sort);
 #endif
 
-/*
+#if NDARRAY_HAS_SORT
 // method of an ndarray
 static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -1176,7 +1176,7 @@ static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace);
-*/
+#endif /* NDARRAY_HAS_SORT */
 
 #if ULAB_NUMERICAL_HAS_STD
 //| def std(array: _ArrayLike, *, axis: Optional[int] = None, ddof: int = 0) -> float:
