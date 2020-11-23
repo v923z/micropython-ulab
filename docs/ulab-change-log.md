@@ -1,5 +1,9 @@
 Mon, 23 Nov 2020
 
+version 1.4.8
+
+    fixed convolve
+
 version 1.4.7.
 
     fixed iteration loop in norm
