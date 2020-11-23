@@ -32,7 +32,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 1.5.0
+#define ULAB_VERSION 1.5.1
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
@@ -402,7 +402,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #if ULAB_HAS_INF
         { MP_ROM_QSTR(MP_QSTR_inf), MP_ROM_PTR(&ulab_const_float_inf_obj) },
     #endif
-    #if ULAB_HAS_INF
+    #if ULAB_HAS_NAN
         { MP_ROM_QSTR(MP_QSTR_nan), MP_ROM_PTR(&ulab_const_float_nan_obj) },
     #endif
     // class constants
