@@ -6,11 +6,11 @@ HERE="$(dirname -- "$(readlink -f -- "${0}")" )"
 rm -rf circuitpython/extmod/ulab; ln -s "$HERE" circuitpython/extmod/ulab
 make -C circuitpython/mpy-cross -j$nproc
 make -C circuitpython/ports/unix -j$nproc deplibs
-make -C circuitpython/ports/unix -j$nproc
+make -C circuitpython/ports/unix -j$nproc DEBUG=1
 
-for dir in "circuitpy" "common"
+for dir in "circuitpy" "common" "numpy"
 do
-	if ! env MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython ./run-tests -d tests/"$dir"; then
+	if ! env MICROPY_TEST_PATH="$(readlink -f tests/numpy-shim)" MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython ./run-tests -d tests/"$dir"; then
 		for exp in *.exp; do
 			testbase=$(basename $exp .exp);
 			echo -e "\nFAILURE $testbase";

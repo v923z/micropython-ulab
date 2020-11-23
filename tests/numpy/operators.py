@@ -1,8 +1,7 @@
 try:
-    import ulab as np
-except ImportError:
     import numpy as np
-
+except:
+    import ulab as np
   
 print(len(np.array([1, 2, 3, 4, 5], dtype=np.uint8)))
 print(len(np.array([[1, 2, 3],[4, 5, 6]])))

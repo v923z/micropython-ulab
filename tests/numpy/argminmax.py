@@ -1,4 +1,7 @@
-import ulab as np
+try:
+    import numpy as np
+except:
+    import ulab as np
 
 # Adapted from https://docs.python.org/3.8/library/itertools.html#itertools.permutations
 def permutations(iterable, r=None):

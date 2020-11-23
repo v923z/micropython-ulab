@@ -1,4 +1,7 @@
-import ulab as np
+try:
+    import numpy as np
+except:
+    import ulab as np
 
 a = np.array([1, 2, 3, 4, 5], dtype=np.uint8)
 b = np.array([5, 4, 3, 2, 1], dtype=np.float)

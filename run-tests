@@ -16,6 +16,12 @@ if os.name == 'nt':
 else:
     MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', 'micropython/ports/unix/micropython')
 
+test_path_extra = os.getenv('MICROPY_TEST_PATH', None)
+if test_path_extra is None:
+    test_path_extra = ()
+else:
+    test_path_extra = tuple(test_path_extra.split(os.path.pathsep))
+
 # mpy-cross is only needed if --via-mpy command-line arg is passed
 MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
 
@@ -129,7 +135,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
                 cmdlist.append(test_file)
 
             # run the actual test
-            e = {"MICROPYPATH": os.getcwd() + ":", "LANG": "en_US.UTF-8"}
+            e = {"MICROPYPATH": ":".join((os.getcwd(), '',) + test_path_extra), "LANG": "en_US.UTF-8"}
             p = subprocess.Popen(cmdlist, env=e, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             output_mupy = b''
             while p.poll() is None:

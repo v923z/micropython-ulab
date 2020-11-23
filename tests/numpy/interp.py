@@ -1,7 +1,7 @@
 try:
-    import ulab as np
-except ImportError:
     import numpy as np
+except:
+    import ulab as np
 
 x = np.array([1, 2, 3, 4, 5])
 xp = np.array([1, 2, 3, 4])

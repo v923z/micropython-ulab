@@ -1,8 +1,14 @@
 import math
 try:
-    import ulab as np
-except ImportError:
     import numpy as np
+except:
+    import ulab as np
+    
+try:
+    from math import isclose
+except:
+    def isclose(a, b, *, rel_tol=1e-9, abs_tol=0):
+        return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
     
 print("Testing np.min:")
 print(np.min([1]))
@@ -156,39 +162,39 @@ print(np.mean(a))
 print(np.mean(a, axis=0))
 a = np.array([range(255-3, 255),range(240-3, 240),range(250-3,250)], dtype=np.float)
 #print(np.mean(a))
-print(math.isclose(np.mean(a), 246.3333333333333, rel_tol=1e-06, abs_tol=1e-06))
+print(isclose(np.mean(a), 246.3333333333333, rel_tol=1e-06, abs_tol=1e-06))
 #print(np.mean(a, axis=0))
 result = np.mean(a, axis=0)
 ref_result = [245.33333333, 246.33333333, 247.33333333]
 for p, q in zip(list(result), ref_result):
-    print(math.isclose(p, q, rel_tol=1e-06, abs_tol=1e-06))
+    print(isclose(p, q, rel_tol=1e-06, abs_tol=1e-06))
 
 #print(np.mean(a, axis=1))
 result = np.mean(a, axis=1)
 ref_result = [253., 238., 248.]
 for p, q in zip(list(result), ref_result):
-    print(math.isclose(p, q, rel_tol=1e-06, abs_tol=1e-06))
+    print(isclose(p, q, rel_tol=1e-06, abs_tol=1e-06))
 
 print("Testing np.std:")
 a = np.array([253, 254, 255], dtype=np.uint8)
 #print(np.std(a))
-print(math.isclose(np.std(a), 0.816496580927726, rel_tol=1e-06, abs_tol=1e-06))
+print(isclose(np.std(a), 0.816496580927726, rel_tol=1e-06, abs_tol=1e-06))
 #print(np.std(a, axis=0))  ## Here is problem
-print(math.isclose(np.std(a, axis=0), 0.816496580927726, rel_tol=1e-06, abs_tol=1e-06))
+print(isclose(np.std(a, axis=0), 0.816496580927726, rel_tol=1e-06, abs_tol=1e-06))
 a = np.array([range(255-3, 255),range(240-3, 240),range(250-3,250)], dtype=np.float)
 #print(np.std(a))
-print(math.isclose(np.std(a), 6.289320754704403, rel_tol=1e-06, abs_tol=1e-06))
+print(isclose(np.std(a), 6.289320754704403, rel_tol=1e-06, abs_tol=1e-06))
 #print(np.std(a, axis=0))
 result = np.std(a, axis=0)
 ref_result = [6.23609564, 6.23609564, 6.23609564]
 for p, q in zip(list(result), ref_result):
-    print(math.isclose(p, q, rel_tol=1e-06, abs_tol=1e-06))
+    print(isclose(p, q, rel_tol=1e-06, abs_tol=1e-06))
 
 #print(np.std(a, axis=1))
 result = np.std(a, axis=1)
 ref_result = [0.81649658, 0.81649658, 0.81649658]
 for p, q in zip(list(result), ref_result):
-    print(math.isclose(p, q, rel_tol=1e-06, abs_tol=1e-06))
+    print(isclose(p, q, rel_tol=1e-06, abs_tol=1e-06))
 
 print("Testing np.median:")
 a = np.array([253, 254, 255], dtype=np.uint8)

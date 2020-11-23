@@ -1,7 +1,7 @@
 try:
-    import ulab as np
-except ImportError:
     import numpy as np
+except:
+    import ulab as np
 
 x = np.linspace(0, 9, num=10)
 y = x*x
