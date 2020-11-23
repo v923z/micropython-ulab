@@ -364,10 +364,10 @@ static mp_obj_t linalg_norm(mp_obj_t _x) {
     }
     mp_float_t dot = 0.0;
     uint8_t *array = (uint8_t *)ndarray->array;
-    size_t k = 0;
 
     mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
 
+    size_t k = 0;
     do {
         size_t l = 0;
         do {
@@ -376,7 +376,7 @@ static mp_obj_t linalg_norm(mp_obj_t _x) {
             dot += v*v;
             l++;
         } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
-        array -= ndarray->strides[ULAB_MAX_DIMS - 1] + ndarray->shape[ULAB_MAX_DIMS - 1];
+        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS - 1];
         array += ndarray->strides[ULAB_MAX_DIMS - 2];
         k++;
     } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
