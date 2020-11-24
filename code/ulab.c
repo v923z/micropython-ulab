@@ -32,7 +32,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 1.5.1
+#define ULAB_VERSION 1.6.0
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
