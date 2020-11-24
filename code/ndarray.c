@@ -652,14 +652,14 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     // the function should work in the general n-dimensional case
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
-    ndarray->dense = 1;
-    ndarray->dtype = dtype;
+    ndarray->dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
+    ndarray->boolean = dtype == NDARRAY_BOOL ? NDARRAY_BOOLEAN : NDARRAY_NUMERIC;
     ndarray->ndim = ndim;
     ndarray->len = ndim == 0 ? 0 : 1;
-    ndarray->itemsize = mp_binary_get_size('@', dtype, NULL);
+    ndarray->itemsize = mp_binary_get_size('@', ndarray->dtype, NULL);
     int32_t *_strides;
     if(strides == NULL) {
-        _strides = strides_from_shape(shape, dtype);
+        _strides = strides_from_shape(shape, ndarray->dtype);
     } else {
         _strides = strides;
     }
@@ -668,12 +668,7 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
         ndarray->strides[i-1] = _strides[i-1];
         ndarray->len *= shape[i-1];
     }
-    if(dtype == NDARRAY_BOOL) {
-        dtype = NDARRAY_UINT8;
-        ndarray->boolean = NDARRAY_BOOLEAN;
-    } else {
-        ndarray->boolean = NDARRAY_NUMERIC;
-    }
+
     uint8_t *array = m_new(byte, ndarray->itemsize * ndarray->len);
     // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
     // we could, perhaps, leave this step out, and initialise the array only, when needed
@@ -686,7 +681,7 @@ ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dt
     // creates a dense array, i.e., one, where the strides are derived directly from the shapes
     // the function should work in the general n-dimensional case
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    strides[ULAB_MAX_DIMS-1] = mp_binary_get_size('@', dtype, NULL);
+    strides[ULAB_MAX_DIMS-1] = dtype == NDARRAY_BOOL ? 1 : mp_binary_get_size('@', dtype, NULL);
     for(size_t i=ULAB_MAX_DIMS; i > 1; i--) {
         strides[i-2] = strides[i-1] * shape[i-1];
     }
@@ -822,7 +817,6 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
     uint8_t _dtype;
     #if ULAB_HAS_DTYPE_OBJECT
     if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_dtype_type)) {
-            printf("here");
         dtype_obj_t *dtype = MP_OBJ_TO_PTR(args[1].u_obj);
         _dtype = dtype->dtype;
     } else { // this must be an integer defined as a class constant (ulba.uint8 etc.)
@@ -937,7 +931,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
     size_t idx = 0;
     iterable1 = mp_getiter(args[0], &iter_buf1);
     if(len2 == 0) { // the first argument is a single iterable
-        ndarray_assign_elements(self, iterable1, dtype, &idx);
+        ndarray_assign_elements(self, iterable1, self->dtype, &idx);
     }
     #if ULAB_MAX_DIMS > 1
     else {
@@ -945,7 +939,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
         mp_obj_t iterable2;
         while ((item1 = mp_iternext(iterable1)) != MP_OBJ_STOP_ITERATION) {
             iterable2 = mp_getiter(item1, &iter_buf2);
-            ndarray_assign_elements(self, iterable2, dtype, &idx);
+            ndarray_assign_elements(self, iterable2, self->dtype, &idx);
         }
     }
     #endif

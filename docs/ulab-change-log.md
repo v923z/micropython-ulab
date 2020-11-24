@@ -1,3 +1,9 @@
+Tue, 24 Nov 2020
+
+version 1.6.0
+
+    added Boolean initialisation option
+
 Mon, 23 Nov 2020
 
 version 1.5.1

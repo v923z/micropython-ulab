@@ -80,7 +80,6 @@ enum NDARRAY_TYPE {
 
 typedef struct _ndarray_obj_t {
     mp_obj_base_t base;
-    uint8_t dense;
     uint8_t dtype;
     uint8_t itemsize;
     uint8_t boolean;
