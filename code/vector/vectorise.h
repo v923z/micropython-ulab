@@ -15,9 +15,6 @@
 #include "../ulab.h"
 #include "../ndarray.h"
 
-#if ULAB_VECTORISE_MODULE
-
-#if ULAB_NUMPY_COMPATIBILITY
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_acos_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_acosh_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(vectorise_arctan2_obj);
@@ -47,7 +44,6 @@ MP_DECLARE_CONST_FUN_OBJ_1(vectorise_sqrt_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_tan_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_tanh_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(vectorise_vectorize_obj);
-#endif /* ULAB_NUMPY_COMPATIBILITY */
 
 #if !ULAB_NUMPY_COMPATIBILITY
 extern mp_obj_module_t ulab_vectorise_module;
@@ -161,5 +157,4 @@ typedef struct _vectorized_function_obj_t {
         return vectorise_generic_vector(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
 }
 
-#endif /* ULAB_VECTORISE_MODULE */
 #endif

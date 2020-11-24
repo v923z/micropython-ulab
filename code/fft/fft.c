@@ -22,8 +22,6 @@
 
 #include "fft.h"
 
-#if ULAB_FFT_MODULE
-
 //| """Frequency-domain functions"""
 //|
 
@@ -121,7 +119,7 @@ mp_obj_t fft_fft_ifft_spectrum(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, 
 //|     rather than separately returning its real and imaginary parts."""
 //|     ...
 //|
-static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
+mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_FFT);
     } else {
@@ -141,7 +139,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 //|     ...
 //|
 
-static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
+mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_IFFT);
     } else {
@@ -160,7 +158,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 //|     ...
 //|
 
-static mp_obj_t fft_spectrogram(size_t n_args, const mp_obj_t *args) {
+mp_obj_t fft_spectrogram(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrum(n_args, args[0], args[1], FFT_SPECTROGRAM);
     } else {
@@ -170,12 +168,20 @@ static mp_obj_t fft_spectrogram(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrogram_obj, 1, 2, fft_spectrogram);
 
+#if ULAB_NUMPY_COMPATIBILITY
+STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
+};
+#else
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&fft_spectrogram_obj },
 };
+#endif
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_fft_globals, ulab_fft_globals_table);
 
@@ -183,5 +189,3 @@ mp_obj_module_t ulab_fft_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_fft_globals,
 };
-
-#endif

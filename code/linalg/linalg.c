@@ -20,11 +20,11 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
+#include "../numpy.h"
 #include "../ulab_tools.h"
 #include "linalg.h"
 
-#if ULAB_LINALG_MODULE
-
+#if ULAB_NUMPY_HAS_LINALG_MODULE
 //| """Linear algebra functions"""
 //|
 

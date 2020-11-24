@@ -16,17 +16,14 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
-#include "compare.h"
 
-#if ULAB_COMPARE_MODULE
+#include "../numpy_defs.h"
+#include "compare.h"
 
 //| """Comparison functions"""
 //|
 
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
-//  if((op == MP_BINARY_OP_EQUAL) || (op == MP_BINARY_OP_NOT_EQUAL)) {
-//      return ndarray_binary_op(op, x1, x2);
-//  }
     ndarray_obj_t *lhs = ndarray_from_mp_obj(x1);
     ndarray_obj_t *rhs = ndarray_from_mp_obj(x2);
     uint8_t ndim = 0;
@@ -130,7 +127,7 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
 
 }
 
-#if ULAB_COMPARE_HAS_CLIP
+#if ULAB_NUMPY_HAS_CLIP
 //| def clip(
 //|     x1: Union[ulab.array, float],
 //|     x2: Union[ulab.array, float],
@@ -172,7 +169,7 @@ mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
 MP_DEFINE_CONST_FUN_OBJ_3(compare_clip_obj, compare_clip);
 #endif
 
-#if ULAB_COMPARE_HAS_EQUAL
+#if ULAB_NUMPY_HAS_EQUAL
 //| def equal(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> List[bool]:
 //|     """Return an array of bool which is true where x1[i] == x2[i] and false elsewhere"""
 //|     ...
@@ -185,7 +182,7 @@ mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
 MP_DEFINE_CONST_FUN_OBJ_2(compare_equal_obj, compare_equal);
 #endif
 
-#if ULAB_COMPARE_HAS_NOTEQUAL
+#if ULAB_NUMPY_HAS_NOTEQUAL
 //| def not_equal(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> List[bool]:
 //|     """Return an array of bool which is false where x1[i] == x2[i] and true elsewhere"""
 //|     ...
@@ -198,7 +195,7 @@ mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
 MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
 #endif
 
-#if ULAB_COMPARE_HAS_MAXIMUM
+#if ULAB_NUMPY_HAS_MAXIMUM
 //| def maximum(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> ulab.array:
 //|     """
 //|     Compute the element by element maximum of the arguments.
@@ -222,7 +219,7 @@ mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
 MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
 #endif
 
-#if ULAB_COMPARE_HAS_MINIMUM
+#if ULAB_NUMPY_HAS_MINIMUM
 //| def minimum(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> ulab.array:
 //|     """Compute the element by element minimum of the arguments.
 //|
@@ -272,4 +269,3 @@ mp_obj_module_t ulab_compare_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_compare_globals,
 };
 #endif /* ULAB_NUMPY_COMPATIBILITY */
-#endif

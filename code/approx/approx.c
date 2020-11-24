@@ -17,22 +17,19 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../linalg/linalg.h"
-#include "approx.h"
+#include "../numpy_defs.h"
+#include "../scipy_defs.h"
 #include "../ulab_tools.h"
-
-
-#if ULAB_APPROX_MODULE
+#include "approx.h"
 
 //| """Numerical approximation methods"""
 //|
-
 
 const mp_obj_float_t xtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(2.4e-7)};
 const mp_obj_float_t rtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(0.0)};
 const mp_obj_float_t approx_trapz_dx = {{&mp_type_float}, MICROPY_FLOAT_CONST(1.0)};
 
-STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
+static mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
     // Helper function for calculating the value of f(x, a, b, c, ...),
     // where f is defined in python. Takes a float, returns a float.
     // The array of mp_obj_t type must be supplied, as must the number of parameters (a, b, c...) in nparams
@@ -40,7 +37,7 @@ STATIC mp_float_t approx_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp
     return mp_obj_get_float(type->call(fun, nparams+1, 0, fargs));
 }
 
-#if ULAB_APPROX_HAS_BISECT
+#if ULAB_SCIPY_OPTIMIZE_HAS_BISECT
 //| def bisect(
 //|     fun: Callable[[float], float],
 //|     a: float,
@@ -110,7 +107,7 @@ STATIC mp_obj_t approx_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_bisect_obj, 3, approx_bisect);
 #endif
 
-#if ULAB_APPROX_HAS_FMIN
+#if ULAB_SCIPY_OPTIMIZE_HAS_FMIN
 //| def fmin(
 //|     fun: Callable[[float], float],
 //|     x0: float,
@@ -226,7 +223,7 @@ STATIC mp_obj_t approx_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_fmin_obj, 2, approx_fmin);
 #endif
 
-#if ULAB_APPROX_HAS_CURVE_FIT
+#if ULAB_SCIPY_OPTIMIZE_HAS_CURVE_FIT
 static void approx_jacobi(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t *x, mp_float_t *y, uint16_t len, mp_float_t *params, uint8_t nparams, mp_float_t *jacobi, mp_float_t *grad) {
     /* Calculates the Jacobian and the gradient of the cost function
      *
@@ -333,7 +330,7 @@ mp_obj_t approx_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_curve_fit_obj, 2, approx_curve_fit);
 #endif
 
-#if ULAB_APPROX_HAS_INTERP
+#if ULAB_NUMPY_HAS_INTERP
 //| def interp(
 //|     x: ulab.array,
 //|     xp: ulab.array,
@@ -443,7 +440,7 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
 #endif
 
-#if ULAB_APPROX_HAS_NEWTON
+#if ULAB_SCIPY_OPTIMIZE_HAS_NEWTON
 //| def newton(
 //|     fun: Callable[[float], float],
 //|     x0: float,
@@ -507,7 +504,7 @@ STATIC mp_obj_t approx_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_newton_obj, 2, approx_newton);
 #endif
 
-#if ULAB_APPROX_HAS_TRAPZ
+#if ULAB_NUMPY_HAS_TRAPZ
 //| def trapz(y: ulab.array, x: Optional[ulab.array] = None, dx: float = 1.0) -> float:
 //|     """
 //|     :param 1D ulab.array y: the values of the dependent variable
@@ -622,4 +619,3 @@ mp_obj_module_t ulab_approx_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_approx_globals,
 };
 #endif /* ULAB_NUMPY_COMPATIBILITY */
-#endif

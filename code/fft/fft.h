@@ -25,15 +25,12 @@ enum FFT_TYPE {
     FFT_SPECTROGRAM,
 };
 
-#if ULAB_FFT_MODULE
-
 extern mp_obj_module_t ulab_fft_module;
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrum_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrogram_obj);
 
 mp_obj_t fft_fft_ifft_spectrum(size_t , mp_obj_t , mp_obj_t , uint8_t );
 
-#endif
 #endif

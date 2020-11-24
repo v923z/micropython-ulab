@@ -15,8 +15,6 @@
 #include "../ulab.h"
 #include "../ndarray.h"
 
-#if ULAB_COMPARE_MODULE
-
 enum COMPARE_FUNCTION_TYPE {
     COMPARE_MINIMUM,
     COMPARE_MAXIMUM,
@@ -29,9 +27,7 @@ MP_DECLARE_CONST_FUN_OBJ_2(compare_minimum_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_maximum_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(compare_clip_obj);
 
-#if !ULAB_NUMPY_COMPATIBILITY
 extern mp_obj_module_t ulab_compare_module;
-#endif
 
 #if ULAB_MAX_DIMS == 1
 #define COMPARE_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
@@ -137,8 +133,6 @@ extern mp_obj_module_t ulab_compare_module;
 
 #endif // ULAB_MAX_DIMS == 4
 
-
-
 #define RUN_COMPARE_LOOP(dtype, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, ndim, shape, op) do {\
     ndarray_obj_t *results = ndarray_new_dense_ndarray((ndim), (shape), (dtype));\
     uint8_t *array = (uint8_t *)results->array;\
@@ -150,5 +144,4 @@ extern mp_obj_module_t ulab_compare_module;
     }\
 } while(0)
 
-#endif /* ULAB_COMPARE_MODULE */
 #endif

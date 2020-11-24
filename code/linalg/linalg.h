@@ -16,7 +16,6 @@
 #include "../ndarray.h"
 #include "linalg_tools.h"
 
-#if ULAB_LINALG_MODULE
 extern mp_obj_module_t ulab_linalg_module;
 
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_cholesky_obj);
@@ -26,5 +25,4 @@ MP_DECLARE_CONST_FUN_OBJ_1(linalg_inv_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_trace_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(linalg_dot_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(linalg_norm_obj);
-#endif
 #endif

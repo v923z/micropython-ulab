@@ -20,10 +20,9 @@
 #include "py/builtin.h"
 #include "py/misc.h"
 
+#include "../numpy_defs.h"
 #include "../ulab_tools.h"
 #include "numerical.h"
-
-#if ULAB_NUMERICAL_MODULE
 
 enum NUMERICAL_FUNCTION_TYPE {
     NUMERICAL_MIN,
@@ -62,7 +61,7 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
     }
 }
 
-#if ULAB_NUMERICAL_HAS_SUM | ULAB_NUMERICAL_HAS_MEAN | ULAB_NUMERICAL_HAS_STD
+#if ULAB_NUMPY_HAS_SUM | ULAB_NUMPY_HAS_MEAN | ULAB_NUMPY_HAS_STD
 static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, size_t ddof) {
     mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0, sum = 0.0;
     size_t count = 0;
@@ -243,7 +242,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
 }
 #endif
 
-#if ULAB_NUMERICAL_HAS_ARGMINMAX
+#if ULAB_NUMPY_HAS_ARGMINMAX
 static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
     if(MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(oin)) == 0) {
         mp_raise_ValueError(translate("attempt to get argmin/argmax of an empty sequence"));
@@ -444,7 +443,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     return mp_const_none;
 }
 
-#if ULAB_NUMERICAL_HAS_SORT | NDARRAY_HAS_SORT
+#if ULAB_NUMPY_HAS_SORT | NDARRAY_HAS_SORT
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
     if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
@@ -500,7 +499,7 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
 }
 #endif /* ULAB_NUMERICAL_HAS_SORT | NDARRAY_HAS_SORT */
 
-#if ULAB_NUMERICAL_HAS_ARGMINMAX
+#if ULAB_NUMPY_HAS_ARGMINMAX
 //| def argmax(array: _ArrayLike, *, axis: Optional[int] = None) -> int:
 //|     """Return the index of the maximum element of the 1D array"""
 //|     ...
@@ -524,7 +523,7 @@ static mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 #endif
 
-#if ULAB_NUMERICAL_HAS_ARGSORT
+#if ULAB_NUMPY_HAS_ARGSORT
 //| def argsort(array: ulab.array, *, axis: int = -1) -> ulab.array:
 //|     """Returns an array which gives indices into the input array from least to greatest."""
 //|     ...
@@ -633,7 +632,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 #endif
 
-#if ULAB_NUMERICAL_HAS_CROSS
+#if ULAB_NUMPY_HAS_CROSS
 //| def cross(a: ulab.array, b: ulab.array) -> ulab.array:
 //|     """Return the cross product of two vectors of length 3"""
 //|     ...
@@ -711,7 +710,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(numerical_cross_obj, numerical_cross);
 
 #endif /* ULAB_NUMERICAL_HAS_CROSS */
 
-#if ULAB_NUMERICAL_HAS_DIFF
+#if ULAB_NUMPY_HAS_DIFF
 //| def diff(array: ulab.array, *, n: int = 1, axis: int = -1) -> ulab.array:
 //|     """Return the numerical derivative of successive elements of the array, as
 //|        an array.  axis=None is not supported."""
@@ -792,7 +791,7 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
 #endif
 
-#if ULAB_NUMERICAL_HAS_FLIP
+#if ULAB_NUMPY_HAS_FLIP
 //| def flip(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
 //|     """Returns a new array that reverses the order of the elements along the
 //|        given axis, or along all axes if axis is None."""
@@ -840,7 +839,7 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_flip_obj, 1, numerical_flip);
 #endif
 
-#if ULAB_NUMERICAL_HAS_MINMAX
+#if ULAB_NUMPY_HAS_MINMAX
 //| def max(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the maximum element of the 1D array"""
 //|     ...
@@ -853,7 +852,7 @@ mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_max_obj, 1, numerical_max);
 #endif
 
-#if ULAB_NUMERICAL_HAS_MEAN
+#if ULAB_NUMPY_HAS_MEAN
 //| def mean(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the mean element of the 1D array, as a number if axis is None, otherwise as an array."""
 //|     ...
@@ -866,7 +865,7 @@ mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 #endif
 
-#if ULAB_NUMERICAL_HAS_MEDIAN
+#if ULAB_NUMPY_HAS_MEDIAN
 //| def median(array: ulab.array, *, axis: int = -1) -> ulab.array:
 //|     """Find the median value in an array along the given axis, or along all axes if axis is None."""
 //|     ...
@@ -961,7 +960,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_median_obj, 1, numerical_median);
 #endif
 
-#if ULAB_NUMERICAL_HAS_MINMAX
+#if ULAB_NUMPY_HAS_MINMAX
 //| def min(array: _ArrayLike, *, axis: Optional[int] = None) -> float:
 //|     """Return the minimum element of the 1D array"""
 //|     ...
@@ -974,7 +973,7 @@ mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
 #endif
 
-#if ULAB_NUMERICAL_HAS_ROLL
+#if ULAB_NUMPY_HAS_ROLL
 //| def roll(array: ulab.array, distance: int, *, axis: Optional[int] = None) -> None:
 //|     """Shift the content of a vector by the positions given as the second
 //|        argument. If the ``axis`` keyword is supplied, the shift is applied to
@@ -1139,7 +1138,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 #endif
 
-#if ULAB_NUMERICAL_HAS_SORT
+#if ULAB_NUMPY_HAS_SORT
 //| def sort(array: ulab.array, *, axis: int = -1) -> ulab.array:
 //|     """Sort the array along the given axis, or along all axes if axis is None.
 //|        The array is modified in place."""
@@ -1178,7 +1177,7 @@ static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace);
 #endif /* NDARRAY_HAS_SORT */
 
-#if ULAB_NUMERICAL_HAS_STD
+#if ULAB_NUMPY_HAS_STD
 //| def std(array: _ArrayLike, *, axis: Optional[int] = None, ddof: int = 0) -> float:
 //|     """Return the standard deviation of the array, as a number if axis is None, otherwise as an array."""
 //|     ...
@@ -1215,7 +1214,7 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
 #endif
 
-#if ULAB_NUMERICAL_HAS_SUM
+#if ULAB_NUMPY_HAS_SUM
 //| def sum(array: _ArrayLike, *, axis: Optional[int] = None) -> Union[float, int, ulab.array]:
 //|     """Return the sum of the array, as a number if axis is None, otherwise as an array."""
 //|     ...
@@ -1280,4 +1279,3 @@ mp_obj_module_t ulab_numerical_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_numerical_globals,
 };
 #endif /* ULAB_NUMPY_COMPATIBILITY */
-#endif

@@ -22,6 +22,7 @@
 #include "ndarray.h"
 #include "ndarray_properties.h"
 #include "numpy.h"
+#include "scipy.h"
 #include "ulab_create.h"
 #include "approx/approx.h"
 #include "compare/compare.h"
@@ -122,9 +123,6 @@ const mp_obj_type_t ulab_dtype_type = {
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
-    #if ULAB_NUMPY_COMPATIBILITY
-        { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
-    #endif /* ULAB_NUMPY_COMPATIBILITY */
     #if ULAB_HAS_DTYPE_OBJECT
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ulab_dtype_type },
     #else
@@ -132,202 +130,37 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ndarray_dtype_obj },
         #endif /* NDARRAY_HAS_DTYPE */
     #endif /* ULAB_HAS_DTYPE_OBJECT */
-    #if ULAB_APPROX_MODULE
-        #if !ULAB_NUMPY_COMPATIBILITY
+    #if ULAB_NUMPY_COMPATIBILITY
+        { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
+        #if ULAB_HAS_SCIPY
+            { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR(&ulab_scipy_module) },
+        #endif
+    #else // from here, the circuitpython nomenclature
+        #if ULAB_APPROX_MODULE
             { MP_ROM_QSTR(MP_QSTR_approx), MP_ROM_PTR(&ulab_approx_module) },
-        #else
-            #if ULAB_APPROX_HAS_BISECT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&approx_bisect_obj },
-            #endif
-            #if ULAB_APPROX_HAS_FMIN
-                { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&approx_fmin_obj },
-            #endif
-            #if ULAB_APPROX_HAS_CURVE_FIT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
-            #endif
-            #if ULAB_APPROX_HAS_INTERP
-                { MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
-            #endif
-            #if ULAB_APPROX_HAS_NEWTON
-                { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&approx_newton_obj },
-            #endif
-            #if ULAB_APPROX_HAS_TRAPZ
-                { MP_OBJ_NEW_QSTR(MP_QSTR_trapz), (mp_obj_t)&approx_trapz_obj },
-            #endif
-        #endif /* ULAB_NUMPY_COMPATIBILITY */
-    #endif /* ULAB_APPROX_MODULE */
-    #if ULAB_COMPARE_MODULE
-        #if !ULAB_NUMPY_COMPATIBILITY
+        #endif
+        #if ULAB_COMPARE_MODULE
             { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&ulab_compare_module) },
-        #else
-        #endif /* ULAB_NUMPY_COMPATIBILITY */
-    #endif /* ULAB_COMPARE_MODULE */
-    #if ULAB_FILTER_MODULE
-        #if !ULAB_NUMPY_COMPATIBILITY
+        #endif
+        #if ULAB_FILTER_MODULE
             { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&ulab_filter_module) },
-        #else
-            #if ULAB_FILTER_HAS_CONVOLVE
-                { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
-            #endif
-            #if ULAB_FILTER_HAS_SOSFILT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&filter_sosfilt_obj },
-            #endif
-        #endif /* ULAB_NUMPY_COMPATIBILITY */
-    #endif /* ULAB_FFT_MODULE */
-    #if ULAB_LINALG_MODULE
-    { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
-    #endif
-    #if ULAB_NUMERICAL_MODULE
-        #if !ULAB_NUMPY_COMPATIBILITY
+        #endif
+        #if ULAB_LINALG_MODULE
+            { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
+        #endif
+        #if ULAB_NUMERICAL_MODULE
             { MP_ROM_QSTR(MP_QSTR_numerical), MP_ROM_PTR(&ulab_numerical_module) },
-        #else
-            #if ULAB_NUMERICAL_HAS_ARGMINMAX
-                { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
-                { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_ARGSORT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_CROSS
-                { MP_OBJ_NEW_QSTR(MP_QSTR_cross), (mp_obj_t)&numerical_cross_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_DIFF
-                { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_FLIP
-                { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_MINMAX
-                { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_MEAN
-                { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_MEDIAN
-                { MP_OBJ_NEW_QSTR(MP_QSTR_median), (mp_obj_t)&numerical_median_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_MINMAX
-                { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_ROLL
-                { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_SORT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_STD
-                { MP_OBJ_NEW_QSTR(MP_QSTR_std), (mp_obj_t)&numerical_std_obj },
-            #endif
-            #if ULAB_NUMERICAL_HAS_SUM
-                { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
-            #endif
-        #endif /* ULAB_NUMPY_COMPATIBILITY */
-    #endif
-    #if ULAB_POLY_MODULE
-        #if !ULAB_NUMPY_COMPATIBILITY
+        #endif
+        #if ULAB_POLY_MODULE
             { MP_ROM_QSTR(MP_QSTR_poly), MP_ROM_PTR(&ulab_poly_module) },
-        #else
-            #if ULAB_POLY_HAS_POLYFIT
-                { MP_ROM_QSTR(MP_QSTR_polyfit), (mp_obj_t)&poly_polyfit_obj },
-            #endif
-            #if ULAB_POLY_HAS_POLYVAL
-                { MP_ROM_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
-            #endif
-        #endif /* ULAB_NUMPY_COMPATIBILITY */
-    #endif /* ULAB_POLY_MODULE */
+        #endif
+        #if ULAB_VECTORISE_MODULE
+            { MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vectorise_module) },
+        #endif
+    #endif /* ULAB_NUMPY_COMPATIBILITY */
     #if ULAB_USER_MODULE
         { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
     #endif
-    #if ULAB_VECTORISE_MODULE
-        #if !ULAB_NUMPY_COMPATIBILITY
-            { MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vectorise_module) },
-        #else
-            #if ULAB_VECTORISE_HAS_ACOS
-                { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_ACOSH
-                { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_ARCTAN2
-                { MP_OBJ_NEW_QSTR(MP_QSTR_arctan2), (mp_obj_t)&vectorise_arctan2_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_AROUND
-                { MP_OBJ_NEW_QSTR(MP_QSTR_around), (mp_obj_t)&vectorise_around_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_ASIN
-                { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_ASINH
-                { MP_OBJ_NEW_QSTR(MP_QSTR_asinh), (mp_obj_t)&vectorise_asinh_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_ATAN
-                { MP_OBJ_NEW_QSTR(MP_QSTR_atan), (mp_obj_t)&vectorise_atan_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_ATANH
-                { MP_OBJ_NEW_QSTR(MP_QSTR_atanh), (mp_obj_t)&vectorise_atanh_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_CEIL
-                { MP_OBJ_NEW_QSTR(MP_QSTR_ceil), (mp_obj_t)&vectorise_ceil_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_COS
-                { MP_OBJ_NEW_QSTR(MP_QSTR_cos), (mp_obj_t)&vectorise_cos_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_COSH
-                { MP_OBJ_NEW_QSTR(MP_QSTR_cosh), (mp_obj_t)&vectorise_cosh_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_DEGREES
-                { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&vectorise_degrees_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_ERF
-                { MP_OBJ_NEW_QSTR(MP_QSTR_erf), (mp_obj_t)&vectorise_erf_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_ERFC
-                { MP_OBJ_NEW_QSTR(MP_QSTR_erfc), (mp_obj_t)&vectorise_erfc_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_EXP
-                { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&vectorise_exp_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_EXPM1
-                { MP_OBJ_NEW_QSTR(MP_QSTR_expm1), (mp_obj_t)&vectorise_expm1_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_FLOOR
-                { MP_OBJ_NEW_QSTR(MP_QSTR_floor), (mp_obj_t)&vectorise_floor_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_GAMMA
-                { MP_OBJ_NEW_QSTR(MP_QSTR_gamma), (mp_obj_t)&vectorise_gamma_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_LGAMMA
-                { MP_OBJ_NEW_QSTR(MP_QSTR_lgamma), (mp_obj_t)&vectorise_lgamma_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_LOG
-                { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&vectorise_log_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_LOG10
-                { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&vectorise_log10_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_LOG2
-                { MP_OBJ_NEW_QSTR(MP_QSTR_log2), (mp_obj_t)&vectorise_log2_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_RADIANS
-                { MP_OBJ_NEW_QSTR(MP_QSTR_radians), (mp_obj_t)&vectorise_radians_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_SIN
-                { MP_OBJ_NEW_QSTR(MP_QSTR_sin), (mp_obj_t)&vectorise_sin_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_SINH
-                { MP_OBJ_NEW_QSTR(MP_QSTR_sinh), (mp_obj_t)&vectorise_sinh_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_SQRT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&vectorise_sqrt_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_TAN
-                { MP_OBJ_NEW_QSTR(MP_QSTR_tan), (mp_obj_t)&vectorise_tan_obj },
-            #endif
-            #if ULAB_VECTORISE_HAS_TANH
-                { MP_OBJ_NEW_QSTR(MP_QSTR_tanh), (mp_obj_t)&vectorise_tanh_obj },
-            #endif
-        #endif /* ULAB_NUMPY_COMPATIBILITY */
-    #endif /* ULAB_VECTORISE_MODULE */
 };
 
 STATIC MP_DEFINE_CONST_DICT (

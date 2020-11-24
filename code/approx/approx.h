@@ -15,8 +15,6 @@
 #include "../ulab.h"
 #include "../ndarray.h"
 
-#if ULAB_APPROX_MODULE
-
 #define     APPROX_EPS          MICROPY_FLOAT_CONST(1.0e-4)
 #define     APPROX_NONZDELTA    MICROPY_FLOAT_CONST(0.05)
 #define     APPROX_ZDELTA       MICROPY_FLOAT_CONST(0.00025)
@@ -36,5 +34,4 @@ MP_DECLARE_CONST_FUN_OBJ_KW(approx_interp_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_newton_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_trapz_obj);
 
-#endif  /* ULAB_APPROX_MODULE */
 #endif  /* _APPROX_ */

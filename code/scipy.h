@@ -10,13 +10,12 @@
  *               
 */
 
-#ifndef _NUMPY_
-#define _NUMPY_
+#ifndef _SCIPY_
+#define _SCIPY_
 
 #include "ulab.h"
 #include "ndarray.h"
-#include "numpy_defs.h"
 
-extern mp_obj_module_t ulab_numpy_module;
+extern mp_obj_module_t ulab_scipy_module;
 
-#endif /* _NUMPY_ */
+#endif /* _SCIPY_ */

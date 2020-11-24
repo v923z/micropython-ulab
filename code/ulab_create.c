@@ -16,9 +16,11 @@
 #include <string.h>
 #include "py/obj.h"
 #include "py/runtime.h"
+
+#include "numpy_defs.h"
 #include "ulab_create.h"
 
-#if ULAB_CREATE_HAS_ONES | ULAB_CREATE_HAS_ZEROS | ULAB_CREATE_HAS_FULL
+#if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL
 static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t value) {
     if(!MP_OBJ_IS_INT(oshape) && !MP_OBJ_IS_TYPE(oshape, &mp_type_tuple) && !MP_OBJ_IS_TYPE(oshape, &mp_type_list)) {
         mp_raise_TypeError(translate("input argument must be an integer, a tuple, or a list"));
@@ -53,7 +55,7 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
 }
 #endif
 
-#if ULAB_CREATE_HAS_ARANGE | ULAB_CREATE_HAS_LINSPACE
+#if ULAB_NUMPY_HAS_ARANGE | ULAB_NUMPY_HAS_LINSPACE
 static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t dtype) {
     mp_float_t value = start;
 
@@ -78,7 +80,7 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
 }
 #endif
 
-#if ULAB_CREATE_HAS_ARANGE
+#if ULAB_NUMPY_HAS_ARANGE
 //| @overload
 //| def arange(stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.array: ...
 //| @overload
@@ -146,7 +148,7 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 #endif
 
-#if ULAB_CREATE_HAS_CONCATENATE
+#if ULAB_NUMPY_HAS_CONCATENATE
 //| def concatenate(arrays: Tuple[ulab.array], *, axis: int = 0) -> ulab.array:
 //|     """
 //|     .. param: arrays
@@ -271,7 +273,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(create_concatenate_obj, 1, create_concatenate);
 #endif
 
-#if ULAB_CREATE_HAS_DIAG
+#if ULAB_NUMPY_HAS_DIAG
 //| def diag(a: ulab.array, *, k: int = 0) -> ulab.array:
 //|     """
 //|     .. param: a
@@ -341,10 +343,10 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_diag_obj, 1, create_diag);
-#endif /* ULAB_CREATE_HAS_DIAG */
+#endif /* ULAB_NUMPY_HAS_DIAG */
 
 #if ULAB_MAX_DIMS > 1
-#if ULAB_CREATE_HAS_EYE
+#if ULAB_NUMPY_HAS_EYE
 //| def eye(size: int, *, M: Optional[int] = None, k: int = 0, dtype: _DType = ulab.float) -> ulab.array:
 //|     """Return a new square array of size, with the diagonal elements set to 1
 //|        and the other elements set to 0."""
@@ -390,10 +392,10 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
-#endif /* ULAB_CREATE_HAS_EYE */
+#endif /* ULAB_NUMPY_HAS_EYE */
 #endif /* ULAB_MAX_DIMS > 1 */
 
-#if ULAB_CREATE_HAS_FULL
+#if ULAB_NUMPY_HAS_FULL
 //| def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[_float, _bool], *, dtype: _DType = ulab.float) -> ulab.array:
 //|    """
 //|    .. param: shape
@@ -426,7 +428,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_full_obj, 0, create_full);
 #endif
 
 
-#if ULAB_CREATE_HAS_LINSPACE
+#if ULAB_NUMPY_HAS_LINSPACE
 //| def linspace(
 //|     start: _float,
 //|     stop: _float,
@@ -492,7 +494,7 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 #endif
 
-#if ULAB_CREATE_HAS_LOGSPACE
+#if ULAB_NUMPY_HAS_LOGSPACE
 //| def logspace(
 //|     start: _float,
 //|     stop: _float,
@@ -574,7 +576,7 @@ mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 MP_DEFINE_CONST_FUN_OBJ_KW(create_logspace_obj, 2, create_logspace);
 #endif
 
-#if ULAB_CREATE_HAS_ONES
+#if ULAB_NUMPY_HAS_ONES
 //| def ones(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.array:
 //|    """
 //|    .. param: shape
@@ -603,7 +605,7 @@ mp_obj_t create_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 #endif
 
-#if ULAB_CREATE_HAS_ZEROS
+#if ULAB_NUMPY_HAS_ZEROS
 //| def zeros(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.array:
 //|    """
 //|    .. param: shape

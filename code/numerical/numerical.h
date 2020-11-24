@@ -15,8 +15,6 @@
 #include "../ulab.h"
 #include "../ndarray.h"
 
-#if ULAB_NUMERICAL_MODULE
-
 #if !ULAB_NUMPY_COMPATIBILITY
 extern mp_obj_module_t ulab_numerical_module;
 #endif
@@ -579,5 +577,4 @@ MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sum_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sort_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj);
 
-#endif
 #endif

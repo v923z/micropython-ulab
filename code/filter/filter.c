@@ -18,11 +18,12 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
+
+#include "../numpy_defs.h"
+#include "../scipy_defs.h"
 #include "filter.h"
 
-#if ULAB_FILTER_MODULE
-
-#if ULAB_FILTER_HAS_CONVOLVE
+#if ULAB_NUMPY_HAS_CONVOLVE
 
 //| """Filtering functions"""
 //|
@@ -106,7 +107,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(filter_convolve_obj, 2, filter_convolve);
 
 #endif
 
-#if ULAB_FILTER_HAS_SOSFILT
+#if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
 
 static void filter_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_float_t *zf, const size_t len) {
     for(size_t i=0; i < len; i++) {
@@ -239,4 +240,3 @@ mp_obj_module_t ulab_filter_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_filter_globals,
 };
 #endif /* ULAB_NUMPY_COMPATIBILITY */
-#endif
