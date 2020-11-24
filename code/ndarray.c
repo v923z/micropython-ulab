@@ -652,7 +652,6 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     // the function should work in the general n-dimensional case
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
-    ndarray->dense = 1;
     ndarray->dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
     ndarray->boolean = dtype == NDARRAY_BOOL ? NDARRAY_BOOLEAN : NDARRAY_NUMERIC;
     ndarray->ndim = ndim;
