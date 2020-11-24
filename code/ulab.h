@@ -55,17 +55,17 @@
 #define NDARRAY_PRINT_THRESHOLD         10
 #define NDARRAY_PRINT_EDGEITEMS         3
 
-// ulab defines infinite as a class constant
-#define NUMPY_HAS_E                     (1)
+// determines, whether e is defined in ulab.numpy itself
+#define ULAB_HAS_E                      (1)
 
-// ulab defines infinite as a class constant
-#define NUMPY_HAS_INF                   (1)
+// ulab defines infinite as a class constant in ulab.numpy
+#define ULAB_HAS_INF                    (1)
 
-// ulab defines NaN as a class constant
-#define NUMPY_HAS_NAN                   (1)
+// ulab defines NaN as a class constant in ulab.numpy
+#define ULAB_HAS_NAN                    (1)
 
 // determines, whether pi is defined in ulab.numpy itself
-#define NUMPY_HAS_PI                    (1)
+#define ULAB_HAS_PI                     (1)
 
 // determines, whether the ndinfo function is available
 #define ULAB_HAS_NDINFO                 (1)
