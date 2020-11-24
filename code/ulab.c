@@ -21,6 +21,7 @@
 #include "ulab.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
+#include "numpy.h"
 #include "ulab_create.h"
 #include "approx/approx.h"
 #include "compare/compare.h"
@@ -32,7 +33,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 1.6.0
+#define ULAB_VERSION 2.0.0
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
@@ -43,18 +44,6 @@
 
 STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
-#if ULAB_HAS_MATH_CONSTANTS
-mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MP_E};
-mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
-#endif
-
-#if ULAB_HAS_INF
-mp_obj_float_t ulab_const_float_inf_obj = {{&mp_type_float}, INFINITY};
-#endif
-
-#if ULAB_HAS_NAN
-mp_obj_float_t ulab_const_float_nan_obj = {{&mp_type_float}, NAN};
-#endif
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     // these are the methods and properties of an ndarray
@@ -134,6 +123,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
+    #if ULAB_NUMPY_COMPATIBILITY
+        { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
+    #endif /* ULAB_NUMPY_COMPATIBILITY */
     #if ULAB_HAS_DTYPE_OBJECT
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ulab_dtype_type },
     #else
@@ -394,17 +386,6 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
             #endif
         #endif /* ULAB_NUMPY_COMPATIBILITY */
     #endif /* ULAB_VECTORISE_MODULE */
-    // math constants
-    #if ULAB_HAS_MATH_CONSTANTS
-        { MP_ROM_QSTR(MP_QSTR_e), MP_ROM_PTR(&ulab_const_float_e_obj) },
-        { MP_ROM_QSTR(MP_QSTR_pi), MP_ROM_PTR(&ulab_const_float_pi_obj) },
-    #endif
-    #if ULAB_HAS_INF
-        { MP_ROM_QSTR(MP_QSTR_inf), MP_ROM_PTR(&ulab_const_float_inf_obj) },
-    #endif
-    #if ULAB_HAS_NAN
-        { MP_ROM_QSTR(MP_QSTR_nan), MP_ROM_PTR(&ulab_const_float_nan_obj) },
-    #endif
     // class constants
     { MP_ROM_QSTR(MP_QSTR_bool), MP_ROM_INT(NDARRAY_BOOL) },
     { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },

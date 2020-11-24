@@ -2,6 +2,7 @@
 USERMODULES_DIR := $(USERMOD_DIR)
 
 # Add all C files to SRC_USERMOD.
+SRC_USERMOD += $(USERMODULES_DIR)/numpy.c
 SRC_USERMOD += $(USERMODULES_DIR)/ndarray_operators.c
 SRC_USERMOD += $(USERMODULES_DIR)/ulab_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/ndarray.c

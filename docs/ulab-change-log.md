@@ -1,5 +1,11 @@
 Tue, 24 Nov 2020
 
+version 2.0.0
+
+    implemented numpy/scipy compatibility
+
+Tue, 24 Nov 2020
+
 version 1.6.0
 
     added Boolean initialisation option
