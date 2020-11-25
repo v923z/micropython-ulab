@@ -16,13 +16,12 @@
 #include "py/runtime.h"
 #include "py/objarray.h"
 
+#include "../numpy.h"
 #include "../linalg/linalg_tools.h"
 #include "../ulab_tools.h"
 #include "poly.h"
 
-#if ULAB_POLY_MODULE
-
-#if ULAB_POLY_HAS_POLYFIT
+#if ULAB_NUMPY_HAS_POLYFIT
 //| """Polynomial functions"""
 //|
 //| from ulab import _ArrayLike
@@ -150,7 +149,7 @@ mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj, 2, 3, poly_polyfit);
 #endif
 
-#if ULAB_POLY_HAS_POLYVAL
+#if ULAB_NUMPY_HAS_POLYVAL
 //| def polyval(p: _ArrayLike, x: _ArrayLike) -> ulab.array:
 //|     """Evaluate the polynomial p at the points x.  x must be an array."""
 //|     ...
@@ -252,10 +251,10 @@ MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
 #if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_poly_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_poly) },
-    #if ULAB_POLY_HAS_POLYFIT
+    #if ULAB_NUMPY_HAS_POLYFIT
     { MP_OBJ_NEW_QSTR(MP_QSTR_polyfit), (mp_obj_t)&poly_polyfit_obj },
     #endif
-    #if ULAB_POLY_HAS_POLYVAL
+    #if ULAB_NUMPY_HAS_POLYVAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
     #endif
 };
@@ -268,4 +267,3 @@ mp_obj_module_t ulab_poly_module = {
 };
 #endif
 
-#endif

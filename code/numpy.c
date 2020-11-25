@@ -23,6 +23,7 @@
 #include "filter/filter.h"
 #include "linalg/linalg.h"
 #include "numerical/numerical.h"
+#include "poly/poly.h"
 #include "vector/vectorise.h"
 
 // math constants
@@ -79,17 +80,17 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_HAS_NDINFO
         { MP_ROM_QSTR(MP_QSTR_ndinfo), (mp_obj_t)&ndarray_info_obj },
     #endif
-    #if ULAB_CREATE_HAS_ARANGE
+    #if ULAB_NUMPY_HAS_ARANGE
         { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
     #endif
-    #if ULAB_CREATE_HAS_CONCATENATE
+    #if ULAB_NUMPY_HAS_CONCATENATE
         { MP_ROM_QSTR(MP_QSTR_concatenate), (mp_obj_t)&create_concatenate_obj },
     #endif
-    #if ULAB_CREATE_HAS_DIAG
+    #if ULAB_NUMPY_HAS_DIAG
         { MP_ROM_QSTR(MP_QSTR_diag), (mp_obj_t)&create_diag_obj },
     #endif
     #if ULAB_MAX_DIMS > 1
-        #if ULAB_CREATE_HAS_EYE
+        #if ULAB_NUMPY_HAS_EYE
             { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
         #endif
     #endif /* ULAB_MAX_DIMS */
@@ -177,9 +178,88 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
 	#if ULAB_NUMPY_HAS_SUM
 		{ MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
 	#endif
+	// functions of the poly sub-module
+	#if ULAB_NUMPY_HAS_POLYFIT
+	    { MP_OBJ_NEW_QSTR(MP_QSTR_polyfit), (mp_obj_t)&poly_polyfit_obj },
+	#endif
+	#if ULAB_NUMPY_HAS_POLYVAL
+		{ MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
+	#endif
 	// functions of the vector sub-module
+	#if ULAB_NUMPY_HAS_ACOS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ACOSH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_acosh), (mp_obj_t)&vectorise_acosh_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ARCTAN2
+    { MP_OBJ_NEW_QSTR(MP_QSTR_arctan2), (mp_obj_t)&vectorise_arctan2_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_AROUND
+    { MP_OBJ_NEW_QSTR(MP_QSTR_around), (mp_obj_t)&vectorise_around_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ASIN
+    { MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&vectorise_asin_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ASINH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_asinh), (mp_obj_t)&vectorise_asinh_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ATAN
+    { MP_OBJ_NEW_QSTR(MP_QSTR_atan), (mp_obj_t)&vectorise_atan_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ATANH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_atanh), (mp_obj_t)&vectorise_atanh_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_CEIL
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ceil), (mp_obj_t)&vectorise_ceil_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_COS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cos), (mp_obj_t)&vectorise_cos_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_COSH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cosh), (mp_obj_t)&vectorise_cosh_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_DEGREES
+    { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&vectorise_degrees_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_EXP
+    { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&vectorise_exp_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_EXPM1
+    { MP_OBJ_NEW_QSTR(MP_QSTR_expm1), (mp_obj_t)&vectorise_expm1_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_FLOOR
+    { MP_OBJ_NEW_QSTR(MP_QSTR_floor), (mp_obj_t)&vectorise_floor_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_LOG
+    { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&vectorise_log_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_LOG10
+    { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&vectorise_log10_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_LOG2
+    { MP_OBJ_NEW_QSTR(MP_QSTR_log2), (mp_obj_t)&vectorise_log2_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_RADIANS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_radians), (mp_obj_t)&vectorise_radians_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_SIN
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sin), (mp_obj_t)&vectorise_sin_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_SINH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sinh), (mp_obj_t)&vectorise_sinh_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_SQRT
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&vectorise_sqrt_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_TAN
+    { MP_OBJ_NEW_QSTR(MP_QSTR_tan), (mp_obj_t)&vectorise_tan_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_TANH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_tanh), (mp_obj_t)&vectorise_tanh_obj },
+    #endif
 	#if ULAB_NUMPY_HAS_VECTORIZE
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vectorise_vectorize_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vectorise_vectorize_obj },
 	#endif
 
 };

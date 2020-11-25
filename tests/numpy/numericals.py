@@ -1,6 +1,6 @@
 import math
 try:
-    import ulab as np
+    from ulab import numpy as np
 except ImportError:
     import numpy as np
     

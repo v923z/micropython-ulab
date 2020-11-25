@@ -76,7 +76,7 @@
 // the FFT module; functions of the fft module still have
 // to be defined separately
 #ifndef ULAB_NUMPY_HAS_FFT_MODULE
-#define ULAB_FFT_MODULE                 (1)
+#define ULAB_NUMPY_HAS_FFT_MODULE       (1)
 #define ULAB_FFT_HAS_FFT           		(1)
 #define ULAB_FFT_HAS_IFFT           	(1)
 #endif

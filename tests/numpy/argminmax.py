@@ -1,4 +1,4 @@
-import ulab as np
+from ulab import numpy as np
 
 # Adapted from https://docs.python.org/3.8/library/itertools.html#itertools.permutations
 def permutations(iterable, r=None):

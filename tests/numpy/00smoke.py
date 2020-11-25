@@ -1,2 +1,3 @@
-import ulab
-print(ulab.eye(3))
+from ulab import numpy as np
+
+print(np.eye(3))
