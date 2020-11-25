@@ -21,5 +21,4 @@ extern mp_obj_module_t ulab_filter_module;
 #endif
 
 MP_DECLARE_CONST_FUN_OBJ_KW(filter_convolve_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(filter_sosfilt_obj);
 #endif
