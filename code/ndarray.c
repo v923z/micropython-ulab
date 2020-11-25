@@ -1937,7 +1937,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
 #endif /* NDARRAY_HAS_RESHAPE */
 #endif /* ULAB_MAX_DIMS > 1 */
 
-#if ULAB_HAS_NDINFO
+#if ULAB_NUMPY_HAS_NDINFO
 mp_obj_t ndarray_info(mp_obj_t obj_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj_in);
     if(!MP_OBJ_IS_TYPE(ndarray, &ulab_ndarray_type)) {

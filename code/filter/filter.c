@@ -19,8 +19,7 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../numpy_defs.h"
-#include "../scipy_defs.h"
+#include "../ulab.h"
 #include "filter.h"
 
 #if ULAB_NUMPY_HAS_CONVOLVE
@@ -110,11 +109,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(filter_convolve_obj, 2, filter_convolve);
 #if !ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_filter_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_filter) },
-    #if ULAB_FILTER_HAS_CONVOLVE
+    #if ULAB_NUMPY_HAS_CONVOLVE
     { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
     #endif
-    #if ULAB_FILTER_HAS_SOSFILT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&filter_sosfilt_obj },
+    #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&signal_sosfilt_obj },
     #endif
 };
 

@@ -16,7 +16,6 @@
 #include "py/runtime.h"
 
 #include "ulab.h"
-#include "scipy_defs.h"
 #include "scipy/optimize.h"
 #include "scipy/signal.h"
 #include "scipy/special.h"

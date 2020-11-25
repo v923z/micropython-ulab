@@ -20,8 +20,7 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
-#include "../numpy_defs.h"
-#include "../scipy_defs.h"
+#include "../ulab.h"
 #include "../ulab_tools.h"
 #include "vectorise.h"
 

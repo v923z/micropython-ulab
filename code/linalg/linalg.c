@@ -20,7 +20,7 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../numpy.h"
+#include "../ulab.h"
 #include "../ulab_tools.h"
 #include "linalg.h"
 

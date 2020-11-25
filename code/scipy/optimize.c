@@ -13,14 +13,14 @@
 */
 
 #include <math.h>
-#include "py/runtime.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "scipy_defs.h"
+#include "../ndarray.h"
+#include "../ulab.h"
 #include "../ulab_tools.h"
-#include "../approx/approx.h"
+#include "optimize.h"
 
 const mp_obj_float_t xtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(2.4e-7)};
 const mp_obj_float_t rtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(0.0)};
@@ -153,7 +153,7 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     uint16_t maxiter = (uint16_t)args[4].u_int;
 
     mp_float_t x0 = mp_obj_get_float(args[1].u_obj);
-    mp_float_t x1 = x0 != MICROPY_FLOAT_CONST(0.0) ? (MICROPY_FLOAT_CONST(1.0) + APPROX_NONZDELTA) * x0 : APPROX_ZDELTA;
+    mp_float_t x1 = x0 != MICROPY_FLOAT_CONST(0.0) ? (MICROPY_FLOAT_CONST(1.0) + OPTIMIZE_NONZDELTA) * x0 : OPTIMIZE_ZDELTA;
     mp_obj_t *fargs = m_new(mp_obj_t, 1);
     mp_float_t f0 = optimize_python_call(type, fun, x0, fargs, 0);
     mp_float_t f1 = optimize_python_call(type, fun, x1, fargs, 0);
@@ -167,10 +167,10 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         f1 = optimize_python_call(type, fun, x1, fargs, 0);
 
         // reflection
-        mp_float_t xr = (MICROPY_FLOAT_CONST(1.0) + APPROX_ALPHA) * x0 - APPROX_ALPHA * x1;
+        mp_float_t xr = (MICROPY_FLOAT_CONST(1.0) + OPTIMIZE_ALPHA) * x0 - OPTIMIZE_ALPHA * x1;
         mp_float_t fr = optimize_python_call(type, fun, xr, fargs, 0);
         if(fr < f0) { // expansion
-            mp_float_t xe = (1 + APPROX_ALPHA * APPROX_BETA) * x0 - APPROX_ALPHA * APPROX_BETA * x1;
+            mp_float_t xe = (1 + OPTIMIZE_ALPHA * OPTIMIZE_BETA) * x0 - OPTIMIZE_ALPHA * OPTIMIZE_BETA * x1;
             mp_float_t fe = optimize_python_call(type, fun, xe, fargs, 0);
             if(fe < fr) {
                 x1 = xe;
@@ -181,7 +181,7 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
             }
         } else {
             if(fr < f1) { // contraction
-                mp_float_t xc = (1 + APPROX_GAMMA * APPROX_ALPHA) * x0 - APPROX_GAMMA * APPROX_ALPHA * x1;
+                mp_float_t xc = (1 + OPTIMIZE_GAMMA * OPTIMIZE_ALPHA) * x0 - OPTIMIZE_GAMMA * OPTIMIZE_ALPHA * x1;
                 mp_float_t fc = optimize_python_call(type, fun, xc, fargs, 0);
                 if(fc < fr) {
                     x1 = xc;
@@ -190,7 +190,7 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
                     shrink = 1;
                 }
             } else { // inside contraction
-                mp_float_t xc = (MICROPY_FLOAT_CONST(1.0) - APPROX_GAMMA) * x0 + APPROX_GAMMA * x1;
+                mp_float_t xc = (MICROPY_FLOAT_CONST(1.0) - OPTIMIZE_GAMMA) * x0 + OPTIMIZE_GAMMA * x1;
                 mp_float_t fc = optimize_python_call(type, fun, xc, fargs, 0);
                 if(fc < f1) {
                     x1 = xc;
@@ -200,7 +200,7 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
                 }
             }
             if(shrink == 1) {
-                x1 = x0 + APPROX_DELTA * (x1 - x0);
+                x1 = x0 + OPTIMIZE_DELTA * (x1 - x0);
                 f1 = optimize_python_call(type, fun, x1, fargs, 0);
             }
             if((MICROPY_FLOAT_C_FUN(fabs)(f1 - f0) < fatol) ||
@@ -372,7 +372,7 @@ STATIC mp_obj_t optimize_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_float_t tol = mp_obj_get_float(args[2].u_obj);
     mp_float_t rtol = mp_obj_get_float(args[3].u_obj);
     mp_float_t dx, df, fx;
-    dx = x > MICROPY_FLOAT_CONST(0.0) ? APPROX_EPS * x : -APPROX_EPS * x;
+    dx = x > MICROPY_FLOAT_CONST(0.0) ? OPTIMIZE_EPS * x : -OPTIMIZE_EPS * x;
     mp_obj_t *fargs = m_new(mp_obj_t, 1);
     if(args[4].u_int <= 0) {
         mp_raise_ValueError(translate("maxiter must be > 0"));

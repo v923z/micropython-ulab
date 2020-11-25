@@ -15,7 +15,6 @@
 
 #include "ulab.h"
 #include "ndarray.h"
-#include "numpy_defs.h"
 
 extern mp_obj_module_t ulab_numpy_module;
 

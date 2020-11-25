@@ -185,7 +185,7 @@ mp_obj_t ndarray_transpose(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
 #endif
 
-#if ULAB_HAS_NDINFO
+#if ULAB_NUMPY_HAS_NDINFO
 mp_obj_t ndarray_info(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_info_obj);
 #endif

@@ -16,9 +16,8 @@
 #include <string.h>
 #include "py/runtime.h"
 
-#include "scipy_defs.h"
+#include "../ulab.h"
 #include "../fft/fft.h"
-#include "../filter/filter.h"
 
 #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
 

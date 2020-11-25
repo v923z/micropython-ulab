@@ -27,19 +27,19 @@
 #include "vector/vectorise.h"
 
 // math constants
-#if ULAB_HAS_E
+#if ULAB_NUMPY_HAS_E
 mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MP_E};
 #endif
 
-#if ULAB_HAS_INF
+#if ULAB_NUMPY_HAS_INF
 mp_obj_float_t numpy_const_float_inf_obj = {{&mp_type_float}, INFINITY};
 #endif
 
-#if ULAB_HAS_NAN
+#if ULAB_NUMPY_HAS_NAN
 mp_obj_float_t numpy_const_float_nan_obj = {{&mp_type_float}, NAN};
 #endif
 
-#if ULAB_HAS_PI
+#if ULAB_NUMPY_HAS_PI
 mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
 #endif
 
@@ -47,16 +47,16 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_numpy) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
     // math constants
-    #if ULAB_HAS_E
+    #if ULAB_NUMPY_HAS_E
         { MP_ROM_QSTR(MP_QSTR_e), MP_ROM_PTR(&ulab_const_float_e_obj) },
     #endif
-    #if ULAB_HAS_INF
+    #if ULAB_NUMPY_HAS_INF
         { MP_ROM_QSTR(MP_QSTR_inf), MP_ROM_PTR(&numpy_const_float_inf_obj) },
     #endif
-    #if ULAB_HAS_NAN
+    #if ULAB_NUMPY_HAS_NAN
         { MP_ROM_QSTR(MP_QSTR_nan), MP_ROM_PTR(&numpy_const_float_nan_obj) },
     #endif
-    #if ULAB_HAS_PI
+    #if ULAB_NUMPY_HAS_PI
         { MP_ROM_QSTR(MP_QSTR_pi), MP_ROM_PTR(&ulab_const_float_pi_obj) },
     #endif
 	// class constants, always included
@@ -77,7 +77,7 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR_set_printoptions), (mp_obj_t)&ndarray_set_printoptions_obj },
         { MP_ROM_QSTR(MP_QSTR_get_printoptions), (mp_obj_t)&ndarray_get_printoptions_obj },
     #endif
-    #if ULAB_HAS_NDINFO
+    #if ULAB_NUMPY_HAS_NDINFO
         { MP_ROM_QSTR(MP_QSTR_ndinfo), (mp_obj_t)&ndarray_info_obj },
     #endif
     #if ULAB_NUMPY_HAS_ARANGE

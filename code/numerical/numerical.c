@@ -20,7 +20,7 @@
 #include "py/builtin.h"
 #include "py/misc.h"
 
-#include "../numpy_defs.h"
+#include "../ulab.h"
 #include "../ulab_tools.h"
 #include "numerical.h"
 

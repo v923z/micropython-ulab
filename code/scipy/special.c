@@ -15,7 +15,7 @@
 #include <math.h>
 #include "py/runtime.h"
 
-#include "scipy_defs.h"
+#include "../ulab.h"
 #include "../vector/vectorise.h"
 
 static const mp_rom_map_elem_t ulab_scipy_special_globals_table[] = {

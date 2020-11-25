@@ -17,7 +17,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "numpy_defs.h"
+#include "ulab.h"
 #include "ulab_create.h"
 
 #if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL

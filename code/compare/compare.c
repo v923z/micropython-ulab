@@ -17,7 +17,7 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../numpy_defs.h"
+#include "../ulab.h"
 #include "compare.h"
 
 //| """Comparison functions"""
