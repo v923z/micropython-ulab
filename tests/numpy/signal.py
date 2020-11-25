@@ -2,11 +2,9 @@ import math
 try:
     from ulab import numpy as np
     from ulab import scipy as spy
-    use_ulab = True
 except ImportError:
     import numpy as np
     import scipy as spy
-    use_ulab = False
 
 x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float)
 sos = np.array([[1, 2, 3, 1, 5, 6], [1, 2, 3, 1, 5, 6]],dtype=np.float)

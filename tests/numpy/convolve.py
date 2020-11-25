@@ -2,11 +2,8 @@ import math
 
 try:
     from ulab import numpy as np
-    use_ulab = True
 except ImportError:
     import numpy as np
-    from scipy import signal
-    use_ulab = False
 
 x = np.array((1,2,3))
 y = np.array((1,10,100,1000))

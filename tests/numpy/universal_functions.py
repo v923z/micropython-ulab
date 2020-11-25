@@ -3,11 +3,9 @@ import math
 try:
     from ulab import numpy as np
     from ulab import scipy as spy
-    use_ulab = True
 except ImportError:
     import numpy as np
     import scipy as spy
-    use_ulab = False
     
 result = (np.sin(np.pi/2))
 ref_result = 1.0
