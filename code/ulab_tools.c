@@ -157,5 +157,4 @@ void *ndarray_set_float_function(uint8_t dtype) {
         return ndarray_set_float_float;
     }
 }
-
-#endif
+#endif /* NDARRAY_BINARY_USES_FUN_POINTER */

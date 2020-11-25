@@ -27,7 +27,6 @@
 extern mp_obj_module_t ulab_approx_module;
 #endif
 
-MP_DECLARE_CONST_FUN_OBJ_KW(approx_bisect_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_curve_fit_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_fmin_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_interp_obj);
