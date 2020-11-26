@@ -16,8 +16,8 @@
 #include <string.h>
 #include "py/runtime.h"
 
-#include "../ulab.h"
-#include "../fft/fft.h"
+#include "../../ulab.h"
+#include "../../fft/fft.h"
 
 #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
 

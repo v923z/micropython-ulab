@@ -13,7 +13,7 @@
 #ifndef _SCIPY_OPTIMIZE_
 #define _SCIPY_OPTIMIZE_
 
-#include "../ulab_tools.h"
+#include "../../ulab_tools.h"
 
 #define     OPTIMIZE_EPS          MICROPY_FLOAT_CONST(1.0e-4)
 #define     OPTIMIZE_NONZDELTA    MICROPY_FLOAT_CONST(0.05)

@@ -22,7 +22,7 @@
 #include "ndarray.h"
 #include "ndarray_properties.h"
 #include "numpy.h"
-#include "scipy.h"
+#include "scipy/scipy.h"
 #include "ulab_create.h"
 #include "approx/approx.h"
 #include "compare/compare.h"

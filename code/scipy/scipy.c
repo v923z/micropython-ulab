@@ -15,10 +15,10 @@
 #include <math.h>
 #include "py/runtime.h"
 
-#include "ulab.h"
-#include "scipy/optimize.h"
-#include "scipy/signal.h"
-#include "scipy/special.h"
+#include "../ulab.h"
+#include "optimize/optimize.h"
+#include "signal/signal.h"
+#include "special/special.h"
 
 #if ULAB_HAS_SCIPY
 

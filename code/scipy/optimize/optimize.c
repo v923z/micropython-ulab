@@ -17,9 +17,9 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../ndarray.h"
-#include "../ulab.h"
-#include "../ulab_tools.h"
+#include "../../ndarray.h"
+#include "../../ulab.h"
+#include "../../ulab_tools.h"
 #include "optimize.h"
 
 const mp_obj_float_t xtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(2.4e-7)};
