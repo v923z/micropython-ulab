@@ -1,3 +1,9 @@
+Thu, 26 Nov 2020
+
+version 2.1.0
+
+    implemented frombuffer
+
 Tue, 24 Nov 2020
 
 version 2.0.0

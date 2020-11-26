@@ -13,6 +13,7 @@
 */
 
 #include <math.h>
+#include <string.h>
 #include "py/runtime.h"
 
 #include "numpy.h"
@@ -43,9 +44,57 @@ mp_obj_float_t numpy_const_float_nan_obj = {{&mp_type_float}, NAN};
 mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
 #endif
 
+#if ULAB_NUMPY_HAS_FROMBUFFER
+static mp_obj_t numpy_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(NDARRAY_FLOAT) } },
+        { MP_QSTR_count, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(-1) } },
+        { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(0) } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    uint8_t dtype = mp_obj_get_int(args[1].u_obj);
+    uint8_t _dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
+    size_t offset = mp_obj_get_int(args[3].u_obj);
+	mp_buffer_info_t bufinfo;
+    if(mp_get_buffer(args[0].u_obj, &bufinfo, MP_BUFFER_READ)) {
+        size_t sz = mp_binary_get_size('@', _dtype, NULL);
+        // TODO add offset here
+        if(bufinfo.len < offset) {
+			mp_raise_ValueError(translate("offset must be non-negative and no greater than buffer length"));
+		}
+        size_t len = (bufinfo.len - offset) / sz;
+        if((len * sz) != (bufinfo.len - offset)) {
+			mp_raise_ValueError(translate("buffer size must be a multiple of element size"));
+		}
+        if(mp_obj_get_int(args[2].u_obj) > 0) {
+			size_t count = mp_obj_get_int(args[2].u_obj);
+			if(len < count) {
+				mp_raise_ValueError(translate("buffer is smaller than requested size"));
+			} else {
+				len -= count;
+			}
+		}
+        ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
+        uint8_t *buffer = bufinfo.buf;
+        memcpy(ndarray->array, buffer + offset, len * sz);
+		return MP_OBJ_FROM_PTR(ndarray);
+	}
+	return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(numpy_frombuffer_obj, 1, numpy_frombuffer);
+#endif
+
 static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_numpy) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ulab_ndarray_type },
+    #if ULAB_NUMPY_HAS_FROMBUFFER
+        { MP_ROM_QSTR(MP_QSTR_frombuffer), MP_ROM_PTR(&numpy_frombuffer_obj) },
+    #endif
+
     // math constants
     #if ULAB_NUMPY_HAS_E
         { MP_ROM_QSTR(MP_QSTR_e), MP_ROM_PTR(&ulab_const_float_e_obj) },

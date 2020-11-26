@@ -34,7 +34,7 @@
 #include "user/user.h"
 #include "vector/vectorise.h"
 
-#define ULAB_VERSION 2.0.0
+#define ULAB_VERSION 2.1.0
 #define xstr(s) str(s)
 #define str(s) #s
 #if ULAB_NUMPY_COMPATIBILITY
@@ -107,7 +107,6 @@ const mp_obj_type_t ulab_ndarray_type = {
     #if NDARRAY_HAS_BINARY_OPS
     .binary_op = ndarray_binary_op,
     #endif
-    .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 

@@ -348,16 +348,16 @@ MP_DEFINE_CONST_FUN_OBJ_KW(optimize_curve_fit_obj, 2, optimize_curve_fit);
 //|     ...
 //|
 
-STATIC mp_obj_t optimize_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t optimize_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // this is actually the secant method, as the first derivative of the function
     // is not accepted as an argument. The function whose root we want to solve for
     // must depend on a single variable without parameters, i.e., f(x)
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
-        { MP_QSTR_rtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&rtolerance)} },
-        { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&xtolerance) } },
+        { MP_QSTR_rtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&rtolerance) } },
+        { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 50 } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

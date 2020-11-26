@@ -137,6 +137,9 @@
 // determines, whether the ndinfo function is available
 #define ULAB_NUMPY_HAS_NDINFO           (1)
 
+// frombuffer adds 600 bytes to the firmware
+#define ULAB_NUMPY_HAS_FROMBUFFER       (1)
+
 // functions that create an array
 #define ULAB_NUMPY_HAS_ARANGE           (1)
 #define ULAB_NUMPY_HAS_CONCATENATE      (1)
