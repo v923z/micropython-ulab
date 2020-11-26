@@ -21,7 +21,7 @@
 #include "ulab.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
-#include "numpy.h"
+#include "numpy/numpy.h"
 #include "scipy/scipy.h"
 #include "ulab_create.h"
 #include "approx/approx.h"
