@@ -17,10 +17,31 @@
 #include "py/runtime.h"
 
 #include "../../ulab.h"
-#include "../../fft/fft.h"
+#include "../../ndarray.h"
+#include "../../fft/fft_tools.h"
+
+#if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
+//| def spectrogram(r: ulab.array) -> ulab.array:
+//|     """
+//|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
+//|
+//|     Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
+//|     This function is similar to scipy's ``scipy.signal.spectrogram``."""
+//|     ...
+//|
+
+mp_obj_t signal_spectrogram(size_t n_args, const mp_obj_t *args) {
+    if(n_args == 2) {
+        return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_SPECTROGRAM);
+    } else {
+        return fft_fft_ifft_spectrogram(n_args, args[0], mp_const_none, FFT_SPECTROGRAM);
+    }
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_spectrogram_obj, 1, 2, signal_spectrogram);
+#endif /* ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM */
 
 #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
-
 static void signal_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_float_t *zf, const size_t len) {
     for(size_t i=0; i < len; i++) {
         mp_float_t xn = *x;
@@ -132,15 +153,15 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(signal_sosfilt_obj, 2, signal_sosfilt);
-#endif
+#endif /* ULAB_SCIPY_SIGNAL_HAS_SOSFILT */
 
 static const mp_rom_map_elem_t ulab_scipy_signal_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_signal) },
-	#if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
-        { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&fft_spectrogram_obj },
-	#endif
+    #if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
+        { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&signal_spectrogram_obj },
+    #endif
     #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&signal_sosfilt_obj },
+        { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&signal_sosfilt_obj },
     #endif
 };
 
@@ -150,33 +171,3 @@ mp_obj_module_t ulab_scipy_signal_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_scipy_signal_globals,
 };
-
-/*
-        #else
-            #if ULAB_APPROX_HAS_BISECT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&approx_bisect_obj },
-            #endif
-            #if ULAB_APPROX_HAS_FMIN
-                { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&approx_fmin_obj },
-            #endif
-            #if ULAB_APPROX_HAS_CURVE_FIT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
-            #endif
-            #if ULAB_APPROX_HAS_INTERP
-                { MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
-            #endif
-            #if ULAB_APPROX_HAS_NEWTON
-                { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&approx_newton_obj },
-            #endif
-            #if ULAB_APPROX_HAS_TRAPZ
-                { MP_OBJ_NEW_QSTR(MP_QSTR_trapz), (mp_obj_t)&approx_trapz_obj },
-            #endif
-           
-            #if ULAB_FILTER_HAS_CONVOLVE
-                { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
-            #endif
-            #if ULAB_FILTER_HAS_SOSFILT
-                { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&filter_sosfilt_obj },
-            #endif
-        #endif  
-*/

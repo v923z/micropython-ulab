@@ -7,7 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Zoltán Vörös
- *               
+ *
 */
 
 #ifndef _SCIPY_SIGNAL_
@@ -18,6 +18,7 @@
 
 extern mp_obj_module_t ulab_scipy_signal_module;
 
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(signal_spectrogram_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(filter_sosfilt_obj);
 
 #endif /* _SCIPY_SIGNAL_ */

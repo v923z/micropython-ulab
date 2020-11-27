@@ -22,15 +22,15 @@
 #define MP_E MICROPY_FLOAT_CONST(2.71828182845904523536)
 #endif
 
-/* 
- * The following function takes two arrays, namely, the real and imaginary 
+/*
+ * The following function takes two arrays, namely, the real and imaginary
  * parts of a complex array, and calculates the Fourier transform in place.
- * 
- * The function is basically a modification of four1 from Numerical Recipes, 
+ *
+ * The function is basically a modification of four1 from Numerical Recipes,
  * has no dependencies beyond micropython itself (for the definition of mp_float_t),
  * and can be used independent of ulab.
  */
- 
+
 void fft_kernel(mp_float_t *real, mp_float_t *imag, size_t n, int isign) {
     size_t j, m, mmax, istep;
     mp_float_t tempr, tempi;
@@ -77,12 +77,12 @@ void fft_kernel(mp_float_t *real, mp_float_t *imag, size_t n, int isign) {
     }
 }
 
-/* 
- * The following function is a helper interface to the python side. 
- * It has been factored out from fft.c, so that the same argument parsing 
+/*
+ * The following function is a helper interface to the python side.
+ * It has been factored out from fft.c, so that the same argument parsing
  * routine can be called from scipy.signal.spectrogram.
  */
- 
+
 mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, uint8_t type) {
     if(!MP_OBJ_IS_TYPE(arg_re, &ulab_ndarray_type)) {
         mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
@@ -91,7 +91,7 @@ mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_i
         if(!MP_OBJ_IS_TYPE(arg_im, &ulab_ndarray_type)) {
             mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
         }
-    }    
+    }
     ndarray_obj_t *re = MP_OBJ_TO_PTR(arg_re);
     #if ULAB_MAX_DIMS > 1
     if(re->ndim != 1) {

@@ -68,25 +68,6 @@ mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 
-//| def spectrogram(r: ulab.array) -> ulab.array:
-//|     """
-//|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
-//|
-//|     Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
-//|     This function is similar to scipy's ``scipy.signal.spectrogram``."""
-//|     ...
-//|
-
-mp_obj_t fft_spectrogram(size_t n_args, const mp_obj_t *args) {
-    if(n_args == 2) {
-        return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_SPECTROGRAM);
-    } else {
-        return fft_fft_ifft_spectrogram(n_args, args[0], mp_const_none, FFT_SPECTROGRAM);
-    }
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrogram_obj, 1, 2, fft_spectrogram);
-
 #if ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
