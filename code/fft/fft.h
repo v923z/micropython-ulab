@@ -17,20 +17,12 @@
 #include "../ndarray.h"
 #include "fft_tools.h"
 
-#define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
-
-enum FFT_TYPE {
-    FFT_FFT,
-    FFT_IFFT,
-    FFT_SPECTROGRAM,
-};
-
 extern mp_obj_module_t ulab_fft_module;
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrogram_obj);
 
-mp_obj_t fft_fft_ifft_spectrum(size_t , mp_obj_t , mp_obj_t , uint8_t );
+mp_obj_t fft_fft_ifft_spectrogram(size_t , mp_obj_t , mp_obj_t , uint8_t );
 
 #endif

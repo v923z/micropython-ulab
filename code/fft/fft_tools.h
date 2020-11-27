@@ -11,6 +11,12 @@
 #ifndef _FFT_TOOLS_
 #define _FFT_TOOLS_
 
+enum FFT_TYPE {
+    FFT_FFT,
+    FFT_IFFT,
+    FFT_SPECTROGRAM,
+};
+
 void fft_kernel(mp_float_t *, mp_float_t *, size_t , int );
 
 #endif /* _FFT_TOOLS_ */

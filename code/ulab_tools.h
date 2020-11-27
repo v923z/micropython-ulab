@@ -11,6 +11,8 @@
 #ifndef _TOOLS_
 #define _TOOLS_
 
+#define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
+
 mp_float_t ndarray_get_float_uint8(void *);
 mp_float_t ndarray_get_float_int8(void *);
 mp_float_t ndarray_get_float_uint16(void *);

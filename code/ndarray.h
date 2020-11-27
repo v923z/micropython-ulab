@@ -45,8 +45,6 @@ typedef struct _mp_obj_float_t {
 #define translate(x) MP_ERROR_TEXT(x)
 #endif
 
-#define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
-
 #define NDARRAY_NUMERIC   0
 #define NDARRAY_BOOLEAN   1
 
