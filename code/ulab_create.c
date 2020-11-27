@@ -650,7 +650,6 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     mp_buffer_info_t bufinfo;
     if(mp_get_buffer(args[0].u_obj, &bufinfo, MP_BUFFER_READ)) {
         size_t sz = mp_binary_get_size('@', _dtype, NULL);
-        // TODO add offset here
         if(bufinfo.len < offset) {
             mp_raise_ValueError(translate("offset must be non-negative and no greater than buffer length"));
         }

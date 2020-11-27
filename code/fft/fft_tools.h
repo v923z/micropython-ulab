@@ -19,4 +19,5 @@ enum FFT_TYPE {
 
 void fft_kernel(mp_float_t *, mp_float_t *, size_t , int );
 mp_obj_t fft_fft_ifft_spectrogram(size_t , mp_obj_t , mp_obj_t , uint8_t );
+
 #endif /* _FFT_TOOLS_ */
