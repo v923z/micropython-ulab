@@ -644,12 +644,16 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
     uint8_t dtype = mp_obj_get_int(args[1].u_obj);
-    uint8_t _dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
     size_t offset = mp_obj_get_int(args[3].u_obj);
+    
     mp_buffer_info_t bufinfo;
     if(mp_get_buffer(args[0].u_obj, &bufinfo, MP_BUFFER_READ)) {
-        size_t sz = mp_binary_get_size('@', _dtype, NULL);
+        size_t sz = 1;
+        if(dtype != NDARRAY_BOOL) { // mp_binary_get_size doesn't work with Booleans
+            sz = mp_binary_get_size('@', dtype, NULL);
+        }
         if(bufinfo.len < offset) {
             mp_raise_ValueError(translate("offset must be non-negative and no greater than buffer length"));
         }
@@ -666,8 +670,9 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             }
         }
         ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
+        uint8_t *array = (uint8_t *)ndarray->array;
         uint8_t *buffer = bufinfo.buf;
-        memcpy(ndarray->array, buffer + offset, len * sz);
+        memcpy(array, buffer + offset, len * sz);
         return MP_OBJ_FROM_PTR(ndarray);
     }
     return mp_const_none;
