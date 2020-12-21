@@ -895,7 +895,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         if(!(len & 0x01)) { // len is an even number
             array -= ndarray->itemsize;
             median += ndarray_get_float_value(array, ndarray->dtype);
-            median *= 0.5;
+            median *= 0.5f;
         }
         return mp_obj_new_float(median);
     } else {
@@ -931,7 +931,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
                     if(!(len & 0x01)) { // len is an even number
                         array -= ndarray->strides[ax];
                         median += ndarray_get_float_value(array, ndarray->dtype);
-                        median *= 0.5;
+                        median *= 0.5f;
                         array += ndarray->strides[ax];
                     }
                     array -= ndarray->strides[ax] * (len >> 1);
