@@ -100,6 +100,10 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|         """Return a copy of the array"""
 //|         ...
 //|
+//|     def dtype(self) -> _DType:
+//|         """Returns the dtype of the array"""
+//|         ...
+//|
 //|     def flatten(self, *, order: str = "C") -> ulab.array:
 //|         """:param order: Whether to flatten by rows ('C') or columns ('F')
 //|
