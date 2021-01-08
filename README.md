@@ -182,19 +182,6 @@ git submodule update --init --recursive # get idf submodules
 pip install -r ./requirements.txt # install python reqs
 ```
 
-Choose an ESPIDF version from one of the options printed by the previous command:
-
-```bash
-ESPIDF_VER=9e70825d1e1cbf7988cf36981774300066580ea7
-
-# Download and prepare the SDK
-git clone https://github.com/espressif/esp-idf.git $BUILD_DIR/esp-idf
-cd $BUILD_DIR/esp-idf
-git checkout $ESPIDF_VER
-git submodule update --init --recursive # get idf submodules
-pip install -r ./requirements.txt # install python reqs
-```
-
 Next, install the ESP32 compiler. If using an ESP-IDF version >= 4.x (chosen by `$ESPIDF_VER` above), this can be done by running `. $BUILD_DIR/esp-idf/install.sh`. Otherwise, (for version 3.x) run:
 
 ```bash
