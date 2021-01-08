@@ -12,8 +12,8 @@
 #ifndef _NUMERICAL_
 #define _NUMERICAL_
 
-#include "../ulab.h"
-#include "../ndarray.h"
+#include "../../ulab.h"
+#include "../../ndarray.h"
 
 #if !ULAB_NUMPY_COMPATIBILITY
 extern mp_obj_module_t ulab_numerical_module;

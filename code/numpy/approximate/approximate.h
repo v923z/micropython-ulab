@@ -9,11 +9,11 @@
  * Copyright (c) 2020 Zoltán Vörös
 */
 
-#ifndef _APPROX_
-#define _APPROX_
+#ifndef _APPROXIMATE_
+#define _APPROXIMATE_
 
-#include "../ulab.h"
-#include "../ndarray.h"
+#include "../../ulab.h"
+#include "../../ndarray.h"
 
 #define     APPROX_EPS          MICROPY_FLOAT_CONST(1.0e-4)
 #define     APPROX_NONZDELTA    MICROPY_FLOAT_CONST(0.05)
@@ -23,14 +23,7 @@
 #define     APPROX_GAMMA        MICROPY_FLOAT_CONST(0.5)
 #define     APPROX_DELTA        MICROPY_FLOAT_CONST(0.5)
 
-#if !ULAB_NUMPY_COMPATIBILITY
-extern mp_obj_module_t ulab_approx_module;
-#endif
-
-MP_DECLARE_CONST_FUN_OBJ_KW(approx_curve_fit_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(approx_fmin_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_interp_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(approx_newton_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_trapz_obj);
 
-#endif  /* _APPROX_ */
+#endif  /* _APPROXIMATE_ */

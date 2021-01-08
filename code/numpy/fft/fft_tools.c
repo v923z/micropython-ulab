@@ -11,8 +11,8 @@
 #include <math.h>
 #include "py/runtime.h"
 
-#include "../ndarray.h"
-#include "../ulab_tools.h"
+#include "../../ndarray.h"
+#include "../../ulab_tools.h"
 #include "fft_tools.h"
 
 #ifndef MP_PI

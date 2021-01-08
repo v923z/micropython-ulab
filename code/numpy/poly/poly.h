@@ -12,8 +12,8 @@
 #ifndef _POLY_
 #define _POLY_
 
-#include "../ulab.h"
-#include "../ndarray.h"
+#include "../../ulab.h"
+#include "../../ndarray.h"
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(poly_polyval_obj);

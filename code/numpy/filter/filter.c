@@ -19,34 +19,11 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../ulab.h"
+#include "../../ulab.h"
+#include "../../scipy/signal/signal.h"
 #include "filter.h"
 
 #if ULAB_NUMPY_HAS_CONVOLVE
-
-//| """Filtering functions"""
-//|
-//| from ulab import _ArrayLike
-//|
-
-//| def convolve(a: ulab.array, v: ulab.array) -> ulab.array:
-//|     """
-//|     :param ulab.array a:
-//|     :param ulab.array v:
-//|
-//|     Returns the discrete, linear convolution of two one-dimensional sequences.
-//|     The result is always an array of float.  Only the ``full`` mode is supported,
-//|     and the ``mode`` named parameter of numpy is not accepted. Note that all other
-//|     modes can be had by slicing a ``full`` result.
-//|
-//|     Convolution filters can implement high pass, low pass, band pass, etc.,
-//|     filtering operations.  Convolution filters are typically constructed ahead
-//|     of time.  This can be done using desktop python with scipy, or on web pages
-//|     such as https://fiiir.com/
-//|
-//|     Convolution is most time-efficient when both inputs are of float type."""
-//|     ...
-//|
 
 mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -105,22 +82,3 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 MP_DEFINE_CONST_FUN_OBJ_KW(filter_convolve_obj, 2, filter_convolve);
 
 #endif
-
-#if !ULAB_NUMPY_COMPATIBILITY
-STATIC const mp_rom_map_elem_t ulab_filter_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_filter) },
-    #if ULAB_NUMPY_HAS_CONVOLVE
-    { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
-    #endif
-    #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&signal_sosfilt_obj },
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_filter_globals, ulab_filter_globals_table);
-
-mp_obj_module_t ulab_filter_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ulab_filter_globals,
-};
-#endif /* ULAB_NUMPY_COMPATIBILITY */

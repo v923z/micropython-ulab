@@ -20,13 +20,13 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
-#include "../ulab.h"
-#include "../ulab_tools.h"
+#include "../../ulab.h"
+#include "../../ulab_tools.h"
 #include "vectorise.h"
 
 //| """Element-by-element functions
 //|
-//| These functions can operate on numbers, 1-D iterables, 1-D arrays, or 2-D arrays by
+//| These functions can operate on numbers, 1-D iterables, and arrays of 1 to 4 dimensions by
 //| applying the function to every element in the array.  This is typically
 //| much more efficient than expressing the same operation as a Python loop."""
 //|

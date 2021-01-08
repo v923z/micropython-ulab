@@ -12,8 +12,8 @@
 #ifndef _LINALG_
 #define _LINALG_
 
-#include "../ulab.h"
-#include "../ndarray.h"
+#include "../../ulab.h"
+#include "../../ndarray.h"
 #include "linalg_tools.h"
 
 extern mp_obj_module_t ulab_linalg_module;

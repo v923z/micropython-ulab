@@ -20,8 +20,8 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../ulab.h"
-#include "../ulab_tools.h"
+#include "../../ulab.h"
+#include "../../ulab_tools.h"
 #include "linalg.h"
 
 #if ULAB_NUMPY_HAS_LINALG_MODULE

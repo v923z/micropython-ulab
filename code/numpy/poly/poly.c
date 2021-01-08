@@ -16,25 +16,12 @@
 #include "py/runtime.h"
 #include "py/objarray.h"
 
-#include "../ulab.h"
+#include "../../ulab.h"
 #include "../linalg/linalg_tools.h"
-#include "../ulab_tools.h"
+#include "../../ulab_tools.h"
 #include "poly.h"
 
 #if ULAB_NUMPY_HAS_POLYFIT
-//| """Polynomial functions"""
-//|
-//| from ulab import _ArrayLike
-//|
-
-//| @overload
-//| def polyfit(y: _ArrayLike, degree: int) -> ulab.array: ...
-//| @overload
-//| def polyfit(x: _ArrayLike, y: _ArrayLike, degree: int) -> ulab.array:
-//|     """Return a polynomial of given degree that approximates the function
-//|        f(x)=y.  If x is not supplied, it is the range(len(y))."""
-//|     ...
-//|
 
 mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
     if(!ndarray_object_is_array_like(args[0])) {
@@ -150,10 +137,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poly_polyfit_obj, 2, 3, poly_polyfit);
 #endif
 
 #if ULAB_NUMPY_HAS_POLYVAL
-//| def polyval(p: _ArrayLike, x: _ArrayLike) -> ulab.array:
-//|     """Evaluate the polynomial p at the points x.  x must be an array."""
-//|     ...
-//|
 
 mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     if(!ndarray_object_is_array_like(o_p) || !ndarray_object_is_array_like(o_x)) {
@@ -247,23 +230,3 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(poly_polyval_obj, poly_polyval);
 #endif
-
-#if !ULAB_NUMPY_COMPATIBILITY
-STATIC const mp_rom_map_elem_t ulab_poly_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_poly) },
-    #if ULAB_NUMPY_HAS_POLYFIT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_polyfit), (mp_obj_t)&poly_polyfit_obj },
-    #endif
-    #if ULAB_NUMPY_HAS_POLYVAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_poly_globals, ulab_poly_globals_table);
-
-mp_obj_module_t ulab_poly_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ulab_poly_globals,
-};
-#endif
-

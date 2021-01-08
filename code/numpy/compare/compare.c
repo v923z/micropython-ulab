@@ -17,11 +17,9 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../ulab.h"
+#include "../../ulab.h"
+#include "../../ndarray_operators.h"
 #include "compare.h"
-
-//| """Comparison functions"""
-//|
 
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
     ndarray_obj_t *lhs = ndarray_from_mp_obj(x1);
@@ -39,6 +37,12 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
 
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
+
+    if(op == COMPARE_EQUAL) {
+        return ndarray_binary_equality(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_EQUAL);
+    } else if(op == COMPARE_NOT_EQUAL) {
+        return ndarray_binary_equality(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_NOT_EQUAL);
+    }
     // These are the upcasting rules
     // float always becomes float
     // operation on identical types preserves type
@@ -48,7 +52,7 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
     // int8 + int16 => int16
     // int8 + uint16 => uint16
     // uint16 + int16 => float
-    // The parameters of RUN_BINARY_LOOP are
+    // The parameters of RUN_COMPARE_LOOP are
     // typecode of result, type_out, type_left, type_right, lhs operand, rhs operand, operator
     if(lhs->dtype == NDARRAY_UINT8) {
         if(rhs->dtype == NDARRAY_UINT8) {
@@ -124,26 +128,9 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
         return item;
     }
     return result;
-
 }
 
 #if ULAB_NUMPY_HAS_CLIP
-//| def clip(
-//|     x1: Union[ulab.array, float],
-//|     x2: Union[ulab.array, float],
-//|     x3: Union[ulab.array, float],
-//| ) -> ulab.array:
-//|     """
-//|     Constrain the values from ``x1`` to be between ``x2`` and ``x3``.
-//|     ``x2`` is assumed to be less than or equal to ``x3``.
-//|
-//|     Arguments may be ulab arrays or numbers.  All array arguments
-//|     must be the same size.  If the inputs are all scalars, a
-//|     single scalar is returned.
-//|
-//|     Shorthand for ``ulab.maximum(x2, ulab.minimum(x1, x3))``"""
-//|     ...
-//|
 
 mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
     // Note: this function could be made faster by implementing a single-loop comparison in
@@ -170,41 +157,24 @@ MP_DEFINE_CONST_FUN_OBJ_3(compare_clip_obj, compare_clip);
 #endif
 
 #if ULAB_NUMPY_HAS_EQUAL
-//| def equal(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> List[bool]:
-//|     """Return an array of bool which is true where x1[i] == x2[i] and false elsewhere"""
-//|     ...
-//|
 
 mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
-    return compare_equal_helper(x1, x2, MP_BINARY_OP_EQUAL);
+    return compare_equal_helper(x1, x2, COMPARE_EQUAL);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_equal_obj, compare_equal);
 #endif
 
 #if ULAB_NUMPY_HAS_NOTEQUAL
-//| def not_equal(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> List[bool]:
-//|     """Return an array of bool which is false where x1[i] == x2[i] and true elsewhere"""
-//|     ...
-//|
 
 mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
-    return compare_equal_helper(x1, x2, MP_BINARY_OP_NOT_EQUAL);
+    return compare_equal_helper(x1, x2, COMPARE_NOT_EQUAL);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
 #endif
 
 #if ULAB_NUMPY_HAS_MAXIMUM
-//| def maximum(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> ulab.array:
-//|     """
-//|     Compute the element by element maximum of the arguments.
-//|
-//|     Arguments may be ulab arrays or numbers.  All array arguments
-//|     must be the same size.  If the inputs are both scalars, a number is
-//|     returned"""
-//|     ...
-//|
 
 mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return maximum(3, 4) properly
@@ -220,14 +190,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
 #endif
 
 #if ULAB_NUMPY_HAS_MINIMUM
-//| def minimum(x1: Union[ulab.array, float], x2: Union[ulab.array, float]) -> ulab.array:
-//|     """Compute the element by element minimum of the arguments.
-//|
-//|     Arguments may be ulab arrays or numbers.  All array arguments
-//|     must be the same size.  If the inputs are both scalars, a number is
-//|     returned"""
-//|     ...
-//|
 
 mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return minimum(3, 4) properly
@@ -241,31 +203,3 @@ mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
 #endif
-
-#if !ULAB_NUMPY_COMPATIBILITY
-STATIC const mp_rom_map_elem_t ulab_compare_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_compare) },
-    #if ULAB_COMPARE_HAS_CLIP
-    { MP_OBJ_NEW_QSTR(MP_QSTR_clip), (mp_obj_t)&compare_clip_obj },
-    #endif
-    #if ULAB_COMPARE_HAS_EQUAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_equal), (mp_obj_t)&compare_equal_obj },
-    #endif
-    #if ULAB_COMPARE_HAS_NOTEQUAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_not_equal), (mp_obj_t)&compare_not_equal_obj },
-    #endif
-    #if ULAB_COMPARE_HAS_MAXIMUM
-    { MP_OBJ_NEW_QSTR(MP_QSTR_maximum), (mp_obj_t)&compare_maximum_obj },
-    #endif
-    #if ULAB_COMPARE_HAS_MINIMUM
-    { MP_OBJ_NEW_QSTR(MP_QSTR_minimum), (mp_obj_t)&compare_minimum_obj },
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_compare_globals, ulab_compare_globals_table);
-
-mp_obj_module_t ulab_compare_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ulab_compare_globals,
-};
-#endif /* ULAB_NUMPY_COMPATIBILITY */

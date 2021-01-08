@@ -18,7 +18,7 @@
 
 #include "numpy.h"
 #include "ulab_create.h"
-#include "approx/approx.h"
+#include "approximate/approximate.h"
 #include "compare/compare.h"
 #include "fft/fft.h"
 #include "filter/filter.h"

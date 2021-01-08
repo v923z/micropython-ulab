@@ -19,20 +19,15 @@
 #include "py/objarray.h"
 
 #include "ulab.h"
+#include "ulab_create.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
-#include "ulab_create.h"
-#include "approx/approx.h"
-#include "compare/compare.h"
-#include "numerical/numerical.h"
-#include "fft/fft.h"
-#include "filter/filter.h"
-#include "linalg/linalg.h"
-#include "poly/poly.h"
+#include "numpy/fft/fft.h"
+#include "numpy/linalg/linalg.h"
+#include "numpy/numerical/numerical.h"
 #include "user/user.h"
-#include "vector/vectorise.h"
 
 #define ULAB_VERSION 2.1.0
 #define xstr(s) str(s)
@@ -135,6 +130,7 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
             { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR(&ulab_scipy_module) },
         #endif
     #else // from here, the circuitpython nomenclature
+        
         #if ULAB_APPROX_MODULE
             { MP_ROM_QSTR(MP_QSTR_approx), MP_ROM_PTR(&ulab_approx_module) },
         #endif

@@ -12,9 +12,9 @@
 #ifndef _FFT_
 #define _FFT_
 
-#include "../ulab.h"
-#include "../ulab_tools.h"
-#include "../ndarray.h"
+#include "../../ulab.h"
+#include "../../ulab_tools.h"
+#include "../../ndarray.h"
 #include "fft_tools.h"
 
 extern mp_obj_module_t ulab_fft_module;

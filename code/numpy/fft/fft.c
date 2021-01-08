@@ -38,7 +38,7 @@
 //|     rather than separately returning its real and imaginary parts."""
 //|     ...
 //|
-mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_FFT);
     } else {
@@ -58,7 +58,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 //|     ...
 //|
 
-mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_IFFT);
     } else {
@@ -75,6 +75,12 @@ STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
 };
 #else
+static mp_obj_t fft_spectrogram(size_t n_args, const mp_obj_t *args) {
+    return fft_fft_ifft_spectrogram(n_args, args[0], mp_const_none, FFT_SPECTROGRAM);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrogram_obj, 1, 2, fft_spectrogram);
+
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },

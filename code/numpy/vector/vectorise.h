@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -12,8 +12,8 @@
 #ifndef _VECTORISE_
 #define _VECTORISE_
 
-#include "../ulab.h"
-#include "../ndarray.h"
+#include "../../ulab.h"
+#include "../../ndarray.h"
 
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_acos_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_acosh_obj);

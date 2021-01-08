@@ -20,8 +20,8 @@
 #include "py/builtin.h"
 #include "py/misc.h"
 
-#include "../ulab.h"
-#include "../ulab_tools.h"
+#include "../../ulab.h"
+#include "../../ulab_tools.h"
 #include "numerical.h"
 
 enum NUMERICAL_FUNCTION_TYPE {
@@ -1226,56 +1226,3 @@ mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sum_obj, 1, numerical_sum);
 #endif
-
-#if !ULAB_NUMPY_COMPATIBILITY
-STATIC const mp_rom_map_elem_t ulab_numerical_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_numerical) },
-    #if ULAB_NUMERICAL_HAS_ARGMINMAX
-    { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_ARGSORT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_CROSS
-    { MP_OBJ_NEW_QSTR(MP_QSTR_cross), (mp_obj_t)&numerical_cross_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_DIFF
-    { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_FLIP
-    { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_MINMAX
-    { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_MEAN
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_MEDIAN
-    { MP_OBJ_NEW_QSTR(MP_QSTR_median), (mp_obj_t)&numerical_median_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_MINMAX
-    { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_ROLL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_SORT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_STD
-    { MP_OBJ_NEW_QSTR(MP_QSTR_std), (mp_obj_t)&numerical_std_obj },
-    #endif
-    #if ULAB_NUMERICAL_HAS_SUM
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_numerical_globals, ulab_numerical_globals_table);
-
-mp_obj_module_t ulab_numerical_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ulab_numerical_globals,
-};
-#endif /* ULAB_NUMPY_COMPATIBILITY */

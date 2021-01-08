@@ -17,9 +17,9 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../ulab.h"
-#include "../ulab_tools.h"
-#include "approx.h"
+#include "../../ulab.h"
+#include "../../ulab_tools.h"
+#include "approximate.h"
 
 //| """Numerical approximation methods"""
 //|
@@ -220,34 +220,3 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
 MP_DEFINE_CONST_FUN_OBJ_KW(approx_trapz_obj, 1, approx_trapz);
 #endif
-
-#if !ULAB_NUMPY_COMPATIBILITY
-STATIC const mp_rom_map_elem_t ulab_approx_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_approx) },
-    #if ULAB_APPROX_HAS_BISECT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&approx_bisect_obj },
-    #endif
-    #if ULAB_APPROX_HAS_FMIN
-    { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&approx_fmin_obj },
-    #endif
-    #if ULAB_APPROX_HAS_CURVE_FIT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&approx_curve_fit_obj },
-    #endif
-    #if ULAB_APPROX_HAS_INTERP
-    { MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
-    #endif
-    #if ULAB_APPROX_HAS_NEWTON
-    { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&approx_newton_obj },
-    #endif
-    #if ULAB_APPROX_HAS_TRAPZ
-    { MP_OBJ_NEW_QSTR(MP_QSTR_trapz), (mp_obj_t)&approx_trapz_obj },
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_approx_globals, ulab_approx_globals_table);
-
-mp_obj_module_t ulab_approx_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ulab_approx_globals,
-};
-#endif /* ULAB_NUMPY_COMPATIBILITY */
