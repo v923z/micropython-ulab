@@ -198,6 +198,12 @@ curl https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2
 # also, see https://docs.espressif.com/projects/esp-idf/en/v3.3.2/get-started for more info
 ```
 
+We can now clone the `ulab` repository
+
+```
+git clone https://github.com/v923z/micropython-ulab $BUILD_DIR/ulab
+```
+
 Finally, build the firmware:
 
 ```bash
