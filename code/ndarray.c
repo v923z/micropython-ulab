@@ -886,6 +886,12 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
     return MP_OBJ_FROM_PTR(self);
 }
 
+mp_obj_t ndarray_array_constructor(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // array constructor for ndarray, equivalent to numpy.array(...)
+    return ndarray_make_new_core(&ulab_ndarray_type, n_args, kw_args->used, pos_args, kw_args);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_array_constructor_obj, 1, ndarray_array_constructor);
+
 #ifdef CIRCUITPY
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void) type;
