@@ -1,3 +1,9 @@
+Mon, 11 Jan 2021
+
+version 1.6.1
+
+    fix #282
+
 Tue, 24 Nov 2020
 
 version 1.6.0
