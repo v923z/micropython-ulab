@@ -40,8 +40,7 @@ HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
 [ -e circuitpython/py/py.mk ] || (git clone --no-recurse-submodules --depth 100 --branch 6.0.x https://github.com/adafruit/circuitpython && cd circuitpython && git submodule update --init lib/uzlib tools)
 rm -rf circuitpython/extmod/ulab; ln -s "$HERE" circuitpython/extmod/ulab
 make -C circuitpython/mpy-cross -j$NPROC
-cp circuitpython/ports/unix/mpconfigport.h circuitpython/ports/unix/mpconfigport_ulab.h
-sed -i '/MICROPY_PY_UHASHLIB/s/1/0/' circuitpython/ports/unix/mpconfigport_ulab.h
+sed -e '/MICROPY_PY_UHASHLIB/s/1/0/' < circuitpython/ports/unix/mpconfigport.h > circuitpython/ports/unix/mpconfigport_ulab.h
 # Work around circuitpython#3990
 make -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_ulab.h>"' build/genhdr/qstrdefs.generated.h
 make -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_ulab.h>"'
