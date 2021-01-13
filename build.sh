@@ -37,11 +37,10 @@ readlinkf_posix() {
 NPROC=`python3 -c 'import multiprocessing; print(multiprocessing.cpu_count())'`
 set -e
 HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
-[ -e micropython/py/py.mk ] || git clone https://github.com/micropython/micropython
-[ -e micropython/lib/libffi/autogen.sh ] || (cd micropython && git submodule update --init lib/libffi )
-#git clone https://github.com/micropython/micropython
+[ -e micropython/py/py.mk ] || git clone --no-recurse-submodules https://github.com/micropython/micropython
+[ -e micropython/lib/axtls/README ] || (cd micropython && git submodule update --init lib/axtls )
 make -C micropython/mpy-cross -j${NPROC}
-make -C micropython/ports/unix -j${NPROC} deplibs
+make -C micropython/ports/unix -j${NPROC} axtls
 make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0
 
 
