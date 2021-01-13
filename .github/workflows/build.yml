@@ -47,7 +47,12 @@ jobs:
       run: ./build.sh
 
   circuitpython:
-    runs-on: ubuntu-16.04
+    strategy:
+        matrix:
+            os:
+                - ubuntu-16.04
+                - macos-10.14
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Dump GitHub context
       env:
@@ -68,7 +73,8 @@ jobs:
 
     - name: Install requirements
       run: |
-        sudo apt install librsvg2-bin gettext
+        type -path apt && sudo apt install librsvg2-bin gettext
+        type -path brew && brew install librsvg gettext
         pip install "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter astroid isort polib black
 
     - name: Run build-cp.sh
