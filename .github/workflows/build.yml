@@ -44,15 +44,14 @@ jobs:
         path: micropython
 
     - name: Checkout micropython submodules
-      run: (cd micropython && git submodule update --init)
+      run: (cd micropython && git submodule update --init lib/axtls)
 
     - name: Build mpy-cross
       run: make -C micropython/mpy-cross -j2
 
     - name: Build micropython unix port
       run: |
-        make -C micropython/ports/unix -j2 deplibs
-        make -C micropython/ports/unix -j2 USER_C_MODULES=$(readlink -f .)
+        make -C micropython/ports/unix -j2 USER_C_MODULES=$(readlink -f .) MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0
 
     - name: Run tests
       run: env MICROPYTHON_CPYTHON3=python3.5 MICROPY_MICROPYTHON=micropython/ports/unix/micropython micropython/tests/run-tests -d tests
