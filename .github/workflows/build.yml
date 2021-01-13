@@ -73,9 +73,11 @@ jobs:
 
     - name: Install requirements
       run: |
-        type -path apt && sudo apt install librsvg2-bin gettext
-        type -path brew && brew install librsvg gettext
-        pip install "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter astroid isort polib black
+        if type -path brew; then
+            brew install gettext
+        else
+            sudo apt-get install gettext
+        fi
 
     - name: Run build-cp.sh
       run: ./build-cp.sh
