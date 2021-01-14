@@ -49,11 +49,11 @@ mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
 #endif
 
 #if ULAB_HAS_INF
-mp_obj_float_t ulab_const_float_inf_obj = {{&mp_type_float}, INFINITY};
+mp_obj_float_t ulab_const_float_inf_obj = {{&mp_type_float}, (mp_float_t)INFINITY};
 #endif
 
 #if ULAB_HAS_NAN
-mp_obj_float_t ulab_const_float_nan_obj = {{&mp_type_float}, NAN};
+mp_obj_float_t ulab_const_float_nan_obj = {{&mp_type_float}, (mp_float_t)NAN};
 #endif
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
