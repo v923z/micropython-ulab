@@ -632,6 +632,19 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_zeros_obj, 0, create_zeros);
 #endif
 
 #if ULAB_CREATE_HAS_FROMBUFFER
+//| def frombuffer(buffer, dtype=ulab.float, count=-1, offset=0) ->ulab.array:
+//|    """
+//|    .. param: buffer
+//|       bufferlike object
+//|    .. param: dtype
+//|       Type of the output array
+//|    .. param: count
+//|       number of items to read. -1 means all data in the buffer
+//|    .. param: offset
+//|       start reading the buffer from this offset (in bytes); default: 0
+//|    Interpret a buffer as a 1-dimensional array."""
+//|    ...
+//|
 mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
