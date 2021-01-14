@@ -1,8 +1,14 @@
+Thu, 14 Jan 2021
+
+version 1.6.2
+
+    fix indexing issue in diff
+
 Mon, 11 Jan 2021
 
 version 1.6.1
 
-    fix #282
+    fix issue #282
 
 Tue, 24 Nov 2020
 
