@@ -1,3 +1,9 @@
+Thu, 14 Jan 2021
+
+version 2.1.1
+
+    fixed bad error in diff
+
 Thu, 26 Nov 2020
 
 version 2.1.0

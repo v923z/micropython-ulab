@@ -8,7 +8,7 @@
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *               2020 Scott Shawcroft for Adafruit Industries
- *               2020 Zoltán Vörös
+ *               2020-2021 Zoltán Vörös
  *               2020 Taku Fukada
 */
 
@@ -27,10 +27,10 @@ static const mp_rom_map_elem_t ulab_scipy_globals_table[] = {
     #if ULAB_SCIPY_HAS_OPTIMIZE_MODULE
         { MP_ROM_QSTR(MP_QSTR_optimize), MP_ROM_PTR(&ulab_scipy_optimize_module) },
     #endif
-	#if ULAB_SCIPY_HAS_SIGNAL_MODULE
+    #if ULAB_SCIPY_HAS_SIGNAL_MODULE
         { MP_ROM_QSTR(MP_QSTR_signal), MP_ROM_PTR(&ulab_scipy_signal_module) },
     #endif
-	#if ULAB_SCIPY_HAS_SPECIAL_MODULE
+    #if ULAB_SCIPY_HAS_SPECIAL_MODULE
         { MP_ROM_QSTR(MP_QSTR_special), MP_ROM_PTR(&ulab_scipy_special_module) },
     #endif
 };

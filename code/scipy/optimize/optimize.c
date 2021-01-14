@@ -8,7 +8,7 @@
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *               2020 Scott Shawcroft for Adafruit Industries
- *               2020 Zoltán Vörös
+ *               2020-2021 Zoltán Vörös
  *               2020 Taku Fukada
 */
 
@@ -392,18 +392,18 @@ MP_DEFINE_CONST_FUN_OBJ_KW(optimize_newton_obj, 2, optimize_newton);
 
 static const mp_rom_map_elem_t ulab_scipy_optimize_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_optimize) },
-	#if ULAB_SCIPY_OPTIMIZE_HAS_BISECT
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&optimize_bisect_obj },
-	#endif
-	#if ULAB_SCIPY_OPTIMIZE_HAS_CURVE_FIT
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&optimize_curve_fit_obj },
-	#endif
-	#if ULAB_SCIPY_OPTIMIZE_HAS_FMIN
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&optimize_fmin_obj },
-	#endif
-	#if ULAB_SCIPY_OPTIMIZE_HAS_NEWTON
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&optimize_newton_obj },
-	#endif
+    #if ULAB_SCIPY_OPTIMIZE_HAS_BISECT
+        { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&optimize_bisect_obj },
+    #endif
+    #if ULAB_SCIPY_OPTIMIZE_HAS_CURVE_FIT
+        { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&optimize_curve_fit_obj },
+    #endif
+    #if ULAB_SCIPY_OPTIMIZE_HAS_FMIN
+        { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&optimize_fmin_obj },
+    #endif
+    #if ULAB_SCIPY_OPTIMIZE_HAS_NEWTON
+        { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&optimize_newton_obj },
+    #endif
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_ulab_scipy_optimize_globals, ulab_scipy_optimize_globals_table);

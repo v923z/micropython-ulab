@@ -6,7 +6,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *               2019-2020 Zoltán Vörös
+ *               2019-2021 Zoltán Vörös
 */
 
 #ifndef _CREATE_

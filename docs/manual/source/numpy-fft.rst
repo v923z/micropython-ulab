@@ -1,8 +1,12 @@
+None
 Fourier transforms
 ==================
 
-Functions related to Fourier transforms can be called by importing the
-``fft`` sub-module first.
+Functions related to Fourier transforms can be called by prepending them
+with ``numpy.fft.``. The module defines the following two functions:
+
+1. `numpy.fft.fft <#fft>`__
+2. `numpy.fft.ifft <#ifft>`__
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.fft.ifft.html
@@ -30,8 +34,8 @@ it will be treated as a complex array:
 
 
 
-**WARNING:** The array that is returned is also complex, i.e., the real
-and imaginary components are cast together. In ``ulab``, the real and
+**WARNING:** The array returned is also complex, i.e., the real and
+imaginary components are cast together. In ``ulab``, the real and
 imaginary parts are treated separately: you have to pass two
 ``ndarray``\ s to the function, although, the second argument is
 optional, in which case the imaginary part is assumed to be zero.
@@ -44,19 +48,17 @@ parts of the transform separately.
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import vector
-    from ulab import fft
+    from ulab import numpy as np
     
     x = np.linspace(0, 10, num=1024)
-    y = vector.sin(x)
+    y = np.sin(x)
     z = np.zeros(len(x))
     
-    a, b = fft.fft(x)
+    a, b = np.fft.fft(x)
     print('real part:\t', a)
     print('\nimaginary part:\t', b)
     
-    c, d = fft.fft(x, z)
+    c, d = np.fft.fft(x, z)
     print('\nreal part:\t', c)
     print('\nimaginary part:\t', d)
 
@@ -84,18 +86,16 @@ the inverse of the transform is equal to the original array.
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import vector
-    from ulab import fft
+    from ulab import numpy as np
     
     x = np.linspace(0, 10, num=1024)
-    y = vector.sin(x)
+    y = np.sin(x)
     
-    a, b = fft.fft(y)
+    a, b = np.fft.fft(y)
     
     print('original vector:\t', y)
     
-    y, z = fft.ifft(a, b)
+    y, z = np.fft.ifft(a, b)
     # the real part should be equal to y
     print('\nreal part of inverse:\t', y)
     # the imaginary part should be equal to zero
@@ -114,71 +114,6 @@ the inverse of the transform is equal to the original array.
 Note that unlike in ``numpy``, the length of the array on which the
 Fourier transform is carried out must be a power of 2. If this is not
 the case, the function raises a ``ValueError`` exception.
-
-spectrogram
------------
-
-In addition to the Fourier transform and its inverse, ``ulab`` also
-sports a function called ``spectrogram``, which returns the absolute
-value of the Fourier transform. This could be used to find the dominant
-spectral component in a time series. The arguments are treated in the
-same way as in ``fft``, and ``ifft``.
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    from ulab import vector
-    from ulab import fft
-    
-    x = np.linspace(0, 10, num=1024)
-    y = vector.sin(x)
-    
-    a = fft.spectrogram(y)
-    
-    print('original vector:\t', y)
-    print('\nspectrum:\t', a)
-
-.. parsed-literal::
-
-    original vector:	 array([0.0, 0.009775015390171337, 0.01954909674625918, ..., -0.5275140569487312, -0.5357931822978732, -0.5440211108893639], dtype=float)
-    
-    spectrum:	 array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float)
-    
-    
-
-
-As such, ``spectrogram`` is really just a shorthand for
-``np.sqrt(a*a + b*b)``:
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    from ulab import fft
-    from ulab import vector
-    
-    x = np.linspace(0, 10, num=1024)
-    y = vector.sin(x)
-    
-    a, b = fft.fft(y)
-    
-    print('\nspectrum calculated the hard way:\t', vector.sqrt(a*a + b*b))
-    
-    a = fft.spectrogram(y)
-    
-    print('\nspectrum calculated the lazy way:\t', a)
-
-.. parsed-literal::
-
-    
-    spectrum calculated the hard way:	 array([187.8641, 315.3125, 347.8804, ..., 84.4587, 347.8803, 315.3124], dtype=float)
-    
-    spectrum calculated the lazy way:	 array([187.8641, 315.3125, 347.8804, ..., 84.4587, 347.8803, 315.3124], dtype=float)
-    
-
 
 Computation and storage costs
 -----------------------------

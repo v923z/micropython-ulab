@@ -8,7 +8,7 @@
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *               2020 Scott Shawcroft for Adafruit Industries
- *               2020 Zoltán Vörös
+ *               2020-2021 Zoltán Vörös
  *               2020 Taku Fukada
 */
 
@@ -16,7 +16,7 @@
 #include "py/runtime.h"
 
 #include "../../ulab.h"
-#include "../../numpy/vector/vectorise.h"
+#include "../../numpy/vector/vector.h"
 
 static const mp_rom_map_elem_t ulab_scipy_special_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_special) },

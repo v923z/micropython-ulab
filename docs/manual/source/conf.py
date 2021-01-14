@@ -23,11 +23,11 @@ from sphinx import addnodes
 # -- Project information -----------------------------------------------------
 
 project = 'The ulab book'
-copyright = '2019-2020, Zoltán Vörös and contributors'
+copyright = '2019-2021, Zoltán Vörös and contributors'
 author = 'Zoltán Vörös'
 
 # The full version, including alpha/beta/rc tags
-release = '1.4.0'
+release = '2.1.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -98,19 +98,6 @@ latex_documents = [
 'Zoltán Vörös', 'manual'),
 ]
 
-# sphinx-autoapi
-extensions.append('autoapi.extension')
-autoapi_type = 'python'
-autoapi_keep_files = True
-autoapi_dirs = ["ulab"]
-autoapi_add_toctree_entry = False
-autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members']
-autoapi_template_dir = '../autoapi/templates'
-autoapi_python_class_content = "both"
-autoapi_python_use_implicit_namespaces = True
-autoapi_root = "."
-
-
 # Read the docs theme
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if not on_rtd:
@@ -123,36 +110,3 @@ if not on_rtd:
         html_theme_path = ['.']
 else:
     html_theme_path = ['.']
-
-
-class UlabTransform(SphinxTransform):
-    default_priority = 870
-
-    def _convert_first_paragraph_into_title(self):
-        title = self.document.next_node(nodes.title)
-        paragraph = self.document.next_node(nodes.paragraph)
-        if not title or not paragraph:
-            return
-        if isinstance(paragraph[0], nodes.paragraph):
-            paragraph = paragraph[0]
-        if all(isinstance(child, nodes.Text) for child in paragraph.children):
-            for child in paragraph.children:
-                title.append(nodes.Text(" \u2013 "))
-                title.append(child)
-            paragraph.parent.remove(paragraph)
-
-    def _enable_linking_to_nonclass_targets(self):
-        for desc in self.document.traverse(addnodes.desc):
-            for xref in desc.traverse(addnodes.pending_xref):
-                if xref.attributes.get("reftype") == "class":
-                    xref.attributes.pop("refspecific", None)
-
-    def apply(self, **kwargs):
-        docname = self.env.docname
-        if docname.startswith("ulab/"):
-            self._convert_first_paragraph_into_title()
-            self._enable_linking_to_nonclass_targets()
-
-
-def setup(app):
-    app.add_transform(UlabTransform)

@@ -6,11 +6,11 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Zoltán Vörös
+ * Copyright (c) 2020-2021 Zoltán Vörös
 */
 
-#ifndef _APPROXIMATE_
-#define _APPROXIMATE_
+#ifndef _APPROX_
+#define _APPROX_
 
 #include "../../ulab.h"
 #include "../../ndarray.h"
@@ -26,4 +26,4 @@
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_interp_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(approx_trapz_obj);
 
-#endif  /* _APPROXIMATE_ */
+#endif  /* _APPROX_ */

@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Zoltán Vörös
+ * Copyright (c) 2020-2021 Zoltán Vörös
  *               2020 Diego Elio Pettenò
  *               2020 Taku Fukada
 */
@@ -19,7 +19,7 @@
 
 #include "../../ulab.h"
 #include "../../ulab_tools.h"
-#include "approximate.h"
+#include "approx.h"
 
 //| """Numerical approximation methods"""
 //|

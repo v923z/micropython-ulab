@@ -6,7 +6,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2020 Zoltán Vörös
+ * Copyright (c) 2019-2021 Zoltán Vörös
+ *               2020 Jeff Epler for Adafruit Industries
 */
 
 #include <math.h>
@@ -22,21 +23,24 @@
 #include "ulab_create.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
+
+#if CIRCUITPY
+#include "circuitpy/vector/vector.h"
+#else
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
 #include "numpy/fft/fft.h"
 #include "numpy/linalg/linalg.h"
+// TODO: we should get rid of this; array.sort depends on it
 #include "numpy/numerical/numerical.h"
+#endif
+
 #include "user/user.h"
 
 #define ULAB_VERSION 2.1.0
 #define xstr(s) str(s)
 #define str(s) #s
-#if ULAB_NUMPY_COMPATIBILITY
-#define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D) xstr(-numpy)
-#else
-#define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D) xstr(-cpy)
-#endif
+#define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
 
 STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
@@ -124,35 +128,10 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ndarray_dtype_obj },
         #endif /* NDARRAY_HAS_DTYPE */
     #endif /* ULAB_HAS_DTYPE_OBJECT */
-    #if ULAB_NUMPY_COMPATIBILITY
         { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
-        #if ULAB_HAS_SCIPY
-            { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR(&ulab_scipy_module) },
-        #endif
-    #else // from here, the circuitpython nomenclature
-        
-        #if ULAB_APPROX_MODULE
-            { MP_ROM_QSTR(MP_QSTR_approx), MP_ROM_PTR(&ulab_approx_module) },
-        #endif
-        #if ULAB_COMPARE_MODULE
-            { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&ulab_compare_module) },
-        #endif
-        #if ULAB_FILTER_MODULE
-            { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&ulab_filter_module) },
-        #endif
-        #if ULAB_LINALG_MODULE
-            { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
-        #endif
-        #if ULAB_NUMERICAL_MODULE
-            { MP_ROM_QSTR(MP_QSTR_numerical), MP_ROM_PTR(&ulab_numerical_module) },
-        #endif
-        #if ULAB_POLY_MODULE
-            { MP_ROM_QSTR(MP_QSTR_poly), MP_ROM_PTR(&ulab_poly_module) },
-        #endif
-        #if ULAB_VECTORISE_MODULE
-            { MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vectorise_module) },
-        #endif
-    #endif /* ULAB_NUMPY_COMPATIBILITY */
+    #if ULAB_HAS_SCIPY
+        { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR(&ulab_scipy_module) },
+    #endif
     #if ULAB_USER_MODULE
         { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
     #endif

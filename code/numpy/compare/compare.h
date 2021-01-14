@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Zoltán Vörös
+ * Copyright (c) 2020-2021 Zoltán Vörös
 */
 
 #ifndef _COMPARE_
@@ -28,8 +28,6 @@ MP_DECLARE_CONST_FUN_OBJ_2(compare_not_equal_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_minimum_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_maximum_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(compare_clip_obj);
-
-extern mp_obj_module_t ulab_compare_module;
 
 #if ULAB_MAX_DIMS == 1
 #define COMPARE_LOOP(results, array, type_out, type_left, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\

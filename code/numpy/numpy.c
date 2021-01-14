@@ -8,7 +8,7 @@
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *               2020 Scott Shawcroft for Adafruit Industries
- *               2020 Zoltán Vörös
+ *               2020-2021 Zoltán Vörös
  *               2020 Taku Fukada
 */
 
@@ -17,15 +17,15 @@
 #include "py/runtime.h"
 
 #include "numpy.h"
-#include "ulab_create.h"
-#include "approximate/approximate.h"
+#include "../ulab_create.h"
+#include "approx/approx.h"
 #include "compare/compare.h"
 #include "fft/fft.h"
 #include "filter/filter.h"
 #include "linalg/linalg.h"
 #include "numerical/numerical.h"
 #include "poly/poly.h"
-#include "vector/vectorise.h"
+#include "vector/vector.h"
 
 // math constants
 #if ULAB_NUMPY_HAS_E
@@ -64,7 +64,7 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_PI
         { MP_ROM_QSTR(MP_QSTR_pi), MP_ROM_PTR(&ulab_const_float_pi_obj) },
     #endif
-	// class constants, always included
+    // class constants, always included
     { MP_ROM_QSTR(MP_QSTR_bool), MP_ROM_INT(NDARRAY_BOOL) },
     { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },
     { MP_ROM_QSTR(MP_QSTR_int8), MP_ROM_INT(NDARRAY_INT8) },
@@ -72,10 +72,10 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_int16), MP_ROM_INT(NDARRAY_INT16) },
     { MP_ROM_QSTR(MP_QSTR_float), MP_ROM_INT(NDARRAY_FLOAT) },
     // modules of numpy
-	#if ULAB_NUMPY_HAS_FFT_MODULE
+    #if ULAB_NUMPY_HAS_FFT_MODULE
         { MP_ROM_QSTR(MP_QSTR_fft), MP_ROM_PTR(&ulab_fft_module) },
     #endif
-	#if ULAB_NUMPY_HAS_LINALG_MODULE
+    #if ULAB_NUMPY_HAS_LINALG_MODULE
         { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
     #endif
     #if ULAB_HAS_PRINTOPTIONS
@@ -100,12 +100,12 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
         #endif
     #endif /* ULAB_MAX_DIMS */
     // functions of the approx sub-module
-	#if ULAB_NUMPY_HAS_INTERP
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_TRAPZ
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_trapz), (mp_obj_t)&approx_trapz_obj },
-	#endif
+    #if ULAB_NUMPY_HAS_INTERP
+        { MP_OBJ_NEW_QSTR(MP_QSTR_interp), (mp_obj_t)&approx_interp_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_TRAPZ
+        { MP_OBJ_NEW_QSTR(MP_QSTR_trapz), (mp_obj_t)&approx_trapz_obj },
+    #endif
     // functions of the create sub-module
     #if ULAB_NUMPY_HAS_FULL
         { MP_ROM_QSTR(MP_QSTR_full), (mp_obj_t)&create_full_obj },
@@ -123,75 +123,75 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR_zeros), (mp_obj_t)&create_zeros_obj },
     #endif
     // functions of the compare sub-module
-	#if ULAB_NUMPY_HAS_CLIP
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_clip), (mp_obj_t)&compare_clip_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_EQUAL
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_equal), (mp_obj_t)&compare_equal_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_NOTEQUAL
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_not_equal), (mp_obj_t)&compare_not_equal_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_MAXIMUM
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_maximum), (mp_obj_t)&compare_maximum_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_MINIMUM
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_minimum), (mp_obj_t)&compare_minimum_obj },
-	#endif
-	// functions of the filter sub-module
-	#if ULAB_NUMPY_HAS_CONVOLVE
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
-	#endif
-	// functions of the numerical sub-module
-	#if ULAB_NUMPY_HAS_ARGMINMAX
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_ARGSORT
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_CROSS
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_cross), (mp_obj_t)&numerical_cross_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_DIFF
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_FLIP
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_MINMAX
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_MEAN
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_MEDIAN
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_median), (mp_obj_t)&numerical_median_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_MINMAX
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_ROLL
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_SORT
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_STD
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_std), (mp_obj_t)&numerical_std_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_SUM
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
-	#endif
-	// functions of the poly sub-module
-	#if ULAB_NUMPY_HAS_POLYFIT
-	    { MP_OBJ_NEW_QSTR(MP_QSTR_polyfit), (mp_obj_t)&poly_polyfit_obj },
-	#endif
-	#if ULAB_NUMPY_HAS_POLYVAL
-		{ MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
-	#endif
-	// functions of the vector sub-module
-	#if ULAB_NUMPY_HAS_ACOS
+    #if ULAB_NUMPY_HAS_CLIP
+        { MP_OBJ_NEW_QSTR(MP_QSTR_clip), (mp_obj_t)&compare_clip_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_EQUAL
+        { MP_OBJ_NEW_QSTR(MP_QSTR_equal), (mp_obj_t)&compare_equal_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_NOTEQUAL
+        { MP_OBJ_NEW_QSTR(MP_QSTR_not_equal), (mp_obj_t)&compare_not_equal_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_MAXIMUM
+        { MP_OBJ_NEW_QSTR(MP_QSTR_maximum), (mp_obj_t)&compare_maximum_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_MINIMUM
+        { MP_OBJ_NEW_QSTR(MP_QSTR_minimum), (mp_obj_t)&compare_minimum_obj },
+    #endif
+    // functions of the filter sub-module
+    #if ULAB_NUMPY_HAS_CONVOLVE
+        { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
+    #endif
+    // functions of the numerical sub-module
+    #if ULAB_NUMPY_HAS_ARGMINMAX
+        { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
+        { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ARGSORT
+        { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_CROSS
+        { MP_OBJ_NEW_QSTR(MP_QSTR_cross), (mp_obj_t)&numerical_cross_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_DIFF
+        { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_FLIP
+        { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_MINMAX
+        { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_MEAN
+        { MP_OBJ_NEW_QSTR(MP_QSTR_mean), (mp_obj_t)&numerical_mean_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_MEDIAN
+        { MP_OBJ_NEW_QSTR(MP_QSTR_median), (mp_obj_t)&numerical_median_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_MINMAX
+        { MP_OBJ_NEW_QSTR(MP_QSTR_min), (mp_obj_t)&numerical_min_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ROLL
+        { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_SORT
+        { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_STD
+        { MP_OBJ_NEW_QSTR(MP_QSTR_std), (mp_obj_t)&numerical_std_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_SUM
+        { MP_OBJ_NEW_QSTR(MP_QSTR_sum), (mp_obj_t)&numerical_sum_obj },
+    #endif
+    // functions of the poly sub-module
+    #if ULAB_NUMPY_HAS_POLYFIT
+        { MP_OBJ_NEW_QSTR(MP_QSTR_polyfit), (mp_obj_t)&poly_polyfit_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_POLYVAL
+        { MP_OBJ_NEW_QSTR(MP_QSTR_polyval), (mp_obj_t)&poly_polyval_obj },
+    #endif
+    // functions of the vector sub-module
+    #if ULAB_NUMPY_HAS_ACOS
     { MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&vectorise_acos_obj },
     #endif
     #if ULAB_NUMPY_HAS_ACOSH
@@ -263,9 +263,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_TANH
     { MP_OBJ_NEW_QSTR(MP_QSTR_tanh), (mp_obj_t)&vectorise_tanh_obj },
     #endif
-	#if ULAB_NUMPY_HAS_VECTORIZE
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vectorise_vectorize_obj },
-	#endif
+    #if ULAB_NUMPY_HAS_VECTORIZE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vectorise_vectorize_obj },
+    #endif
 
 };
 

@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2020 Zoltán Vörös
+ * Copyright (c) 2019-2010 Zoltán Vörös
 */
 
 #include <math.h>
@@ -86,7 +86,7 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
  */
 
 size_t linalg_jacobi_rotations(mp_float_t *array, mp_float_t *eigvectors, size_t S) {
-	// eigvectors should be a 0-array; start out with the unit matrix
+    // eigvectors should be a 0-array; start out with the unit matrix
     for(size_t m=0; m < S; m++) {
         eigvectors[m * (S+1)] = 1.0;
     }

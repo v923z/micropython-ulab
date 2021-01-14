@@ -1,3 +1,4 @@
+None
 Programming ulab
 ================
 
@@ -6,22 +7,15 @@ accessed in ``micropython``. This last section of the book explains, how
 these functions are implemented. By the end of this chapter, not only
 would you be able to extend ``ulab``, and write your own
 ``numpy``-compatible functions, but through a deeper understanding of
-the inner workings of the functions, you would be able to see what the
-trade-offs are at the ``python`` level.
+the inner workings of the functions, you would also be able to see what
+the trade-offs are at the ``python`` level.
 
 Code organisation
 -----------------
 
 As mentioned earlier, the ``python`` functions are organised into
-sub-modules at the C level. Functions in module ``x`` always begin with
-the ``x_`` prefix, so it is relatively easy to navigate the code.
-Sub-modules are all in their respective folder. E.g., the ``filter``
-sub-module is in ``./ulab/code/filter/``, with two files,
-``./ulab/code/filter/filter.h``, and ``./ulab/code/filter/filter.c``.
-``filter.c`` contains two functions, ``filter_convolve``, and
-``filter_sosfilt``, which are bound to the name space either in
-``ulab_filter_globals_table[]``, or, if ``numpy``-compatibility is
-required, at the top level, in ``ulab.c``.
+sub-modules at the C level. The C sub-modules can be found in
+``./ulab/code/``.
 
 The ``ndarray`` object
 ----------------------
@@ -34,15 +28,15 @@ General comments
 ``mp_float_t``\ s, which, depending on the platform, are either C
 ``float``\ s, or C ``double``\ s). Beyond storing the actual data in the
 void pointer ``*array``, the type definition has eight additional
-members (on top of the ``base`` type). Namely, ``dense``, which tells
-us, whether the array is dense or sparse (more on this later), the
-``dtype``, which tells us, how the bytes are to be interpreted.
-Moreover, the ``itemsize``, which stores the size of a single entry in
-the array, ``boolean``, an unsigned integer, which determines, whether
-the arrays is to be treated as a set of Booleans, or as numerical data,
-``ndim``, the number of dimensions (``uint8_t``), ``len``, the length of
-the array, the shape (``*size_t``), the strides (``*int32_t``). The
-length is simply the product of the numbers in ``shape``.
+members (on top of the ``base`` type). Namely, the ``dtype``, which
+tells us, how the bytes are to be interpreted. Moreover, the
+``itemsize``, which stores the size of a single entry in the array,
+``boolean``, an unsigned integer, which determines, whether the arrays
+is to be treated as a set of Booleans, or as numerical data, ``ndim``,
+the number of dimensions (``uint8_t``), ``len``, the length of the array
+(the number of entries), the shape (``*size_t``), the strides
+(``*int32_t``). The length is simply the product of the numbers in
+``shape``.
 
 The type definition is as follows:
 
@@ -50,7 +44,6 @@ The type definition is as follows:
 
    typedef struct _ndarray_obj_t {
        mp_obj_base_t base;
-       uint8_t dense;
        uint8_t dtype;
        uint8_t itemsize;
        uint8_t boolean;
@@ -131,7 +124,7 @@ Iterating using the unwrapped loops
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following macro definition is taken from
-`vectorise.h <https://github.com/v923z/micropython-ulab/blob/master/code/vector/vectorise.h>`__,
+`vector.h <https://github.com/v923z/micropython-ulab/blob/master/code/numpy/vector/vector.h>`__,
 and demonstrates, how we can iterate over a single array in four
 dimensions.
 
@@ -357,8 +350,8 @@ the two arrays, so that they can be iterated over at the same time.
    }
 
 A good example of how the function would be called can be found in
-`vectorise.c <https://github.com/v923z/micropython-ulab/blob/master/code/vector/vectorise.c>`__,
-in the ``vectorise_arctan2`` function:
+`vector.c <https://github.com/v923z/micropython-ulab/blob/master/code/numpy/vector/vector.c>`__,
+in the ``vector_arctan2`` function:
 
 .. code:: c
 
@@ -421,7 +414,7 @@ Once the reduced ``strides`` and ``shape`` are known, we place the axis
 in question in the innermost loop, and wrap it with the loops, whose
 coordinates are in the ``strides``, and ``shape`` arrays. The
 ``RUN_STD`` macro from
-`numerical.h <https://github.com/v923z/micropython-ulab/blob/master/code/numerical/numerical.h>`__
+`numerical.h <https://github.com/v923z/micropython-ulab/blob/master/code/numpy/numerical/numerical.h>`__
 is a good example. The macro is expanded in the
 ``numerical_sum_mean_std_ndarray`` function.
 
@@ -801,15 +794,15 @@ constant has been set to 1. After compilation, you can call a particular
 
 .. code:: python
 
-   import ulab
+   from ulab import numpy as np
    from ulab import user
 
    user.some_function(...)
 
 This separation of user-defined functions from the rest of the code
 ensures that the integrity of the main module and all its functions are
-always preserved. Even in case of a catastrophic failure, you can easily
-clone ``ulab`` anew, and start over.
+always preserved. Even in case of a catastrophic failure, you can
+exclude the ``user`` module, and start over.
 
 And now the function:
 

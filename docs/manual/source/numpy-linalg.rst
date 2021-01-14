@@ -1,92 +1,110 @@
+None
 Linalg
 ======
 
-Functions in the ``linalg`` module can be called by importing the
-sub-module first.
+Functions in the ``linalg`` module can be called by prepending them by
+``numpy.linalg.``. The module defines the following seven functions:
 
-inv
----
+1. `numpy.linalg.cholesky <#cholesky>`__
+2. `numpy.linalg.det <#det>`__
+3. `numpy.linalg.dot <#dot>`__
+4. `numpy.linalg.eig <#eig>`__
+5. `numpy.linalg.inv <#inv>`__
+6. `numpy.linalg.norm <#norm>`__
+7. `numpy.linalg.trace <#trace>`__
+
+cholesky
+--------
 
 ``numpy``:
-https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.linalg.inv.html
+https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.linalg.cholesky.html
 
-A square matrix, provided that it is not singular, can be inverted by
-calling the ``inv`` function that takes a single argument. The inversion
-is based on successive elimination of elements in the lower left
-triangle, and raises a ``ValueError`` exception, if the matrix turns out
-to be singular (i.e., one of the diagonal entries is zero).
+The function of the Cholesky decomposition takes a positive definite,
+symmetric square matrix as its single argument, and returns the *square
+root matrix* in the lower triangular form. If the input argument does
+not fulfill the positivity or symmetry condition, a ``ValueError`` is
+raised.
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import linalg
+    from ulab import numpy as np
     
-    m = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
-    
-    print(linalg.inv(m))
+    a = np.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]])
+    print('a: ', a)
+    print('\n' + '='*20 + '\nCholesky decomposition\n', np.linalg.cholesky(a))
 
 .. parsed-literal::
 
-    array([[-2.166666, 1.499999, -0.8333326, 1.0],
-    	 [1.666666, -3.333331, 1.666666, -4.768516e-08],
-    	 [0.1666672, 2.166666, -0.8333327, -1.0],
-    	 [-0.1666666, -0.3333334, 4.96705e-08, 0.5]], dtype=float)
+    a:  array([[25.0, 15.0, -5.0],
+    	 [15.0, 18.0, 0.0],
+    	 [-5.0, 0.0, 11.0]], dtype=float)
+    
+    ====================
+    Cholesky decomposition
+     array([[5.0, 0.0, 0.0],
+    	 [3.0, 3.0, 0.0],
+    	 [-1.0, 1.0, 3.0]], dtype=float)
+    
     
 
 
-Computation expenses
-~~~~~~~~~~~~~~~~~~~~
+det
+---
 
-Note that the cost of inverting a matrix is approximately twice as many
-floats (RAM), as the number of entries in the original matrix, and
-approximately as many operations, as the number of entries. Here are a
-couple of numbers:
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.det.html
+
+The ``det`` function takes a square matrix as its single argument, and
+calculates the determinant. The calculation is based on successive
+elimination of the matrix elements, and the return value is a float,
+even if the input array was of integer type.
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import linalg
+    from ulab import numpy as np
+    
+    a = np.array([[1, 2], [3, 4]], dtype=np.uint8)
+    print(np.linalg.det(a))
+
+.. parsed-literal::
+
+    -2.0
+    
+
+
+Benchmark
+~~~~~~~~~
+
+Since the routine for calculating the determinant is pretty much the
+same as for finding the `inverse of a matrix <#inv>`__, the execution
+times are similar:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
     
     @timeit
-    def invert_matrix(m):
-        return linalg.inv(m)
-    
-    m = np.array([[1, 2,], [4, 5]])
-    print('2 by 2 matrix:')
-    invert_matrix(m)
-    
-    m = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
-    print('\n4 by 4 matrix:')
-    invert_matrix(m)
+    def matrix_det(m):
+        return np.linalg.inv(m)
     
     m = np.array([[1, 2, 3, 4, 5, 6, 7, 8], [0, 5, 6, 4, 5, 6, 4, 5], 
                   [0, 0, 9, 7, 8, 9, 7, 8], [0, 0, 0, 10, 11, 12, 11, 12], 
                  [0, 0, 0, 0, 4, 6, 7, 8], [0, 0, 0, 0, 0, 5, 6, 7], 
                  [0, 0, 0, 0, 0, 0, 7, 6], [0, 0, 0, 0, 0, 0, 0, 2]])
-    print('\n8 by 8 matrix:')
-    invert_matrix(m)
+    
+    matrix_det(m)
 
 .. parsed-literal::
 
-    2 by 2 matrix:
-    execution time:  65  us
-    
-    4 by 4 matrix:
-    execution time:  105  us
-    
-    8 by 8 matrix:
-    execution time:  299  us
+    execution time:  294  us
     
 
-
-The above-mentioned scaling is not obeyed strictly. The reason for the
-discrepancy is that the function call is still the same for all three
-cases: the input must be inspected, the output array must be created,
-and so on.
 
 dot
 ---
@@ -109,15 +127,14 @@ below.
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import linalg
+    from ulab import numpy as np
     
     m = np.array([[1, 2, 3], [4, 5, 6], [7, 10, 9]], dtype=np.uint8)
-    n = linalg.inv(m)
+    n = np.linalg.inv(m)
     print("m:\n", m)
     print("\nm^-1:\n", n)
     # this should be the unit matrix
-    print("\nm*m^-1:\n", linalg.dot(m, n))
+    print("\nm*m^-1:\n", np.linalg.dot(m, n))
 
 .. parsed-literal::
 
@@ -147,14 +164,13 @@ right-hand-side matrix rows):
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import linalg
+    from ulab import numpy as np
     
     m = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.uint8)
     n = np.array([[1, 2], [3, 4], [5, 6], [7, 8]], dtype=np.uint8)
     print(m)
     print(n)
-    print(linalg.dot(m, n))
+    print(np.linalg.dot(m, n))
 
 .. parsed-literal::
 
@@ -167,61 +183,6 @@ right-hand-side matrix rows):
     array([[7.0, 10.0],
     	 [23.0, 34.0]], dtype=float)
     
-    
-
-
-det
----
-
-``numpy``:
-https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.det.html
-
-The ``det`` function takes a square matrix as its single argument, and
-calculates the determinant. The calculation is based on successive
-elimination of the matrix elements, and the return value is a float,
-even if the input array was of integer type.
-
-.. code::
-        
-    # code to be run in micropython
-    
-    import ulab as np
-    from ulab import linalg
-    
-    a = np.array([[1, 2], [3, 4]], dtype=np.uint8)
-    print(linalg.det(a))
-
-.. parsed-literal::
-
-    -2.0
-    
-
-
-Benchmark
-~~~~~~~~~
-
-Since the routine for calculating the determinant is pretty much the
-same as for finding the `inverse of a matrix <#inv>`__, the execution
-times are similar:
-
-.. code::
-        
-    # code to be run in micropython
-    
-    @timeit
-    def matrix_det(m):
-        return linalg.inv(m)
-    
-    m = np.array([[1, 2, 3, 4, 5, 6, 7, 8], [0, 5, 6, 4, 5, 6, 4, 5], 
-                  [0, 0, 9, 7, 8, 9, 7, 8], [0, 0, 0, 10, 11, 12, 11, 12], 
-                 [0, 0, 0, 0, 4, 6, 7, 8], [0, 0, 0, 0, 0, 5, 6, 7], 
-                 [0, 0, 0, 0, 0, 0, 7, 6], [0, 0, 0, 0, 0, 0, 0, 2]])
-    
-    matrix_det(m)
-
-.. parsed-literal::
-
-    execution time:  294  us
     
 
 
@@ -242,11 +203,10 @@ stabilisation routines for robots.
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import linalg
+    from ulab import numpy as np
     
     a = np.array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
-    x, y = linalg.eig(a)
+    x, y = np.linalg.eig(a)
     print('eigenvectors of a:\n', y)
     print('\neigenvalues of a:\n', x)
 
@@ -311,12 +271,11 @@ least, be guessed based on the measurement below:
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import linalg
+    from ulab import numpy as np
     
     @timeit
     def matrix_eig(a):
-        return linalg.eig(a)
+        return np.linalg.eig(a)
     
     a = np.array([[1, 2, 1, 4], [2, 5, 3, 5], [1, 3, 6, 1], [4, 5, 1, 7]], dtype=np.uint8)
     
@@ -328,42 +287,88 @@ least, be guessed based on the measurement below:
     
 
 
-Cholesky decomposition
-----------------------
+inv
+---
 
 ``numpy``:
-https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.linalg.cholesky.html
+https://docs.scipy.org/doc/numpy-1.17.0/reference/generated/numpy.linalg.inv.html
 
-``cholesky`` takes a positive definite, symmetric square matrix as its
-single argument, and returns *square root matrix* in the lower
-triangular form. If the input argument does not fulfill the positivity
-or symmetry condition, a ``ValueError`` is raised.
+A square matrix, provided that it is not singular, can be inverted by
+calling the ``inv`` function that takes a single argument. The inversion
+is based on successive elimination of elements in the lower left
+triangle, and raises a ``ValueError`` exception, if the matrix turns out
+to be singular (i.e., one of the diagonal entries is zero).
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab
-    from ulab import linalg
+    from ulab import numpy as np
     
-    a = ulab.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]])
-    print('a: ', a)
-    print('\n' + '='*20 + '\nCholesky decomposition\n', linalg.cholesky(a))
+    m = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
+    
+    print(np.linalg.inv(m))
 
 .. parsed-literal::
 
-    a:  array([[25.0, 15.0, -5.0],
-    	 [15.0, 18.0, 0.0],
-    	 [-5.0, 0.0, 11.0]], dtype=float)
-    
-    ====================
-    Cholesky decomposition
-     array([[5.0, 0.0, 0.0],
-    	 [3.0, 3.0, 0.0],
-    	 [-1.0, 1.0, 3.0]], dtype=float)
+    array([[-2.166666666666667, 1.500000000000001, -0.8333333333333337, 1.0],
+           [1.666666666666667, -3.333333333333335, 1.666666666666668, -0.0],
+           [0.1666666666666666, 2.166666666666668, -0.8333333333333337, -1.0],
+           [-0.1666666666666667, -0.3333333333333333, 0.0, 0.5]], dtype=float64)
     
     
 
+
+Computation expenses
+~~~~~~~~~~~~~~~~~~~~
+
+Note that the cost of inverting a matrix is approximately twice as many
+floats (RAM), as the number of entries in the original matrix, and
+approximately as many operations, as the number of entries. Here are a
+couple of numbers:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    @timeit
+    def invert_matrix(m):
+        return np.linalg.inv(m)
+    
+    m = np.array([[1, 2,], [4, 5]])
+    print('2 by 2 matrix:')
+    invert_matrix(m)
+    
+    m = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
+    print('\n4 by 4 matrix:')
+    invert_matrix(m)
+    
+    m = np.array([[1, 2, 3, 4, 5, 6, 7, 8], [0, 5, 6, 4, 5, 6, 4, 5], 
+                  [0, 0, 9, 7, 8, 9, 7, 8], [0, 0, 0, 10, 11, 12, 11, 12], 
+                 [0, 0, 0, 0, 4, 6, 7, 8], [0, 0, 0, 0, 0, 5, 6, 7], 
+                 [0, 0, 0, 0, 0, 0, 7, 6], [0, 0, 0, 0, 0, 0, 0, 2]])
+    print('\n8 by 8 matrix:')
+    invert_matrix(m)
+
+.. parsed-literal::
+
+    2 by 2 matrix:
+    execution time:  65  us
+    
+    4 by 4 matrix:
+    execution time:  105  us
+    
+    8 by 8 matrix:
+    execution time:  299  us
+    
+
+
+The above-mentioned scaling is not obeyed strictly. The reason for the
+discrepancy is that the function call is still the same for all three
+cases: the input must be inspected, the output array must be created,
+and so on.
 
 norm
 ----
@@ -378,14 +383,13 @@ The function takes a vector or matrix without options, and returns its
         
     # code to be run in micropython
     
-    import ulab
-    from ulab import linalg
+    from ulab import numpy as np
     
-    a = ulab.array([1, 2, 3, 4, 5])
-    b = ulab.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    a = np.array([1, 2, 3, 4, 5])
+    b = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     
-    print('norm of a:', linalg.norm(a))
-    print('norm of b:', linalg.norm(b))
+    print('norm of a:', np.linalg.norm(a))
+    print('norm of b:', np.linalg.norm(b))
 
 .. parsed-literal::
 
@@ -413,17 +417,16 @@ point trace.
         
     # code to be run in micropython
     
-    import ulab
-    from ulab import linalg
+    from ulab import numpy as np
     
-    a = ulab.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]], dtype=ulab.int8)
+    a = np.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]], dtype=np.int8)
     print('a: ', a)
-    print('\ntrace of a: ', linalg.trace(a))
+    print('\ntrace of a: ', np.linalg.trace(a))
     
-    b = ulab.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]], dtype=ulab.float)
+    b = np.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]], dtype=np.float)
     
     print('='*20 + '\nb: ', b)
-    print('\ntrace of b: ', linalg.trace(b))
+    print('\ntrace of b: ', np.linalg.trace(b))
 
 .. parsed-literal::
 

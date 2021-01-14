@@ -6,7 +6,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2020 Zoltán Vörös
+ * Copyright (c) 2019-2021 Zoltán Vörös
+ *               2020 Jeff Epler for Adafruit Industries
  *               2020 Taku Fukada
 */
 
@@ -1503,7 +1504,7 @@ mp_obj_t ndarray_tobytes(mp_obj_t self_in) {
     if(!ndarray_is_dense(self)) {
         mp_raise_ValueError(translate("tobytes can be invoked for dense arrays only"));
     }
-    return mp_obj_new_bytearray_by_ref(self->len, self->array);
+    return mp_obj_new_bytearray_by_ref(self->itemsize * self->len, self->array);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_tobytes_obj, ndarray_tobytes);

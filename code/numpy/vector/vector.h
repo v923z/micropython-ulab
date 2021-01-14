@@ -6,11 +6,11 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2020 Zoltán Vörös
+ * Copyright (c) 2019-2021 Zoltán Vörös
 */
 
-#ifndef _VECTORISE_
-#define _VECTORISE_
+#ifndef _VECTOR_
+#define _VECTOR_
 
 #include "../../ulab.h"
 #include "../../ndarray.h"
@@ -44,10 +44,6 @@ MP_DECLARE_CONST_FUN_OBJ_1(vectorise_sqrt_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_tan_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vectorise_tanh_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(vectorise_vectorize_obj);
-
-#if !ULAB_NUMPY_COMPATIBILITY
-extern mp_obj_module_t ulab_vectorise_module;
-#endif
 
 typedef struct _vectorized_function_obj_t {
     mp_obj_base_t base;
@@ -157,4 +153,4 @@ typedef struct _vectorized_function_obj_t {
         return vectorise_generic_vector(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
 }
 
-#endif
+#endif /* _VECTOR_ */

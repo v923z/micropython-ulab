@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2020 Zoltán Vörös
+ * Copyright (c) 2019-2021 Zoltán Vörös
  *               2020 Scott Shawcroft for Adafruit Industries
  *               2020 Taku Fukada
 */
@@ -68,26 +68,11 @@ static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 
-#if ULAB_NUMPY_COMPATIBILITY
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
 };
-#else
-static mp_obj_t fft_spectrogram(size_t n_args, const mp_obj_t *args) {
-    return fft_fft_ifft_spectrogram(n_args, args[0], mp_const_none, FFT_SPECTROGRAM);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_spectrogram_obj, 1, 2, fft_spectrogram);
-
-STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&fft_spectrogram_obj },
-};
-#endif
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_fft_globals, ulab_fft_globals_table);
 

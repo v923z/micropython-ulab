@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2020 Zoltán Vörös
+ * Copyright (c) 2019-2021 Zoltán Vörös
 */
 
 #ifndef _TOOLS_TOOLS_
@@ -13,7 +13,7 @@
 
 #ifndef LINALG_EPSILON
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#define LINALG_EPSILON 		MICROPY_FLOAT_CONST(1.2e-7)
+#define LINALG_EPSILON      MICROPY_FLOAT_CONST(1.2e-7)
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define LINALG_EPSILON      MICROPY_FLOAT_CONST(2.3e-16)
 #endif
