@@ -162,6 +162,10 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
             { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
         #endif
     #endif /* ULAB_MAX_DIMS */
+    // frombuffer adds 600 bytes to the firmware
+    #if ULAB_CREATE_HAS_FROMBUFFER
+        { MP_ROM_QSTR(MP_QSTR_frombuffer), (mp_obj_t)&create_frombuffer_obj },
+    #endif
     #if ULAB_CREATE_HAS_FULL
         { MP_ROM_QSTR(MP_QSTR_full), (mp_obj_t)&create_full_obj },
     #endif

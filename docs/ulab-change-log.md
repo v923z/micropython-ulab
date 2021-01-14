@@ -1,5 +1,11 @@
 Thu, 14 Jan 2021
 
+version 1.7.0
+
+    added frombuffer
+
+Thu, 14 Jan 2021
+
 version 1.6.2
 
     fix indexing issue in diff

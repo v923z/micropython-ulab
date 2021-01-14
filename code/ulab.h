@@ -148,6 +148,7 @@
 #define ULAB_CREATE_HAS_CONCATENATE     (1)
 #define ULAB_CREATE_HAS_DIAG            (1)
 #define ULAB_CREATE_HAS_EYE             (1)
+#define ULAB_CREATE_HAS_FROMBUFFER      (1)
 #define ULAB_CREATE_HAS_FULL            (1)
 #define ULAB_CREATE_HAS_LINSPACE        (1)
 #define ULAB_CREATE_HAS_LOGSPACE        (1)

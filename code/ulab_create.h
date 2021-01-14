@@ -62,4 +62,10 @@ mp_obj_t create_zeros(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_zeros_obj);
 #endif
 
+
+#if ULAB_CREATE_HAS_FROMBUFFER
+mp_obj_t create_frombuffer(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(create_frombuffer_obj);
+#endif
+
 #endif

@@ -630,3 +630,51 @@ mp_obj_t create_zeros(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_zeros_obj, 0, create_zeros);
 #endif
+
+#if ULAB_CREATE_HAS_FROMBUFFER
+mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(NDARRAY_FLOAT) } },
+        { MP_QSTR_count, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(-1) } },
+        { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(0) } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t dtype = mp_obj_get_int(args[1].u_obj);
+    size_t offset = mp_obj_get_int(args[3].u_obj);
+
+    mp_buffer_info_t bufinfo;
+    if(mp_get_buffer(args[0].u_obj, &bufinfo, MP_BUFFER_READ)) {
+        size_t sz = 1;
+        if(dtype != NDARRAY_BOOL) { // mp_binary_get_size doesn't work with Booleans
+            sz = mp_binary_get_size('@', dtype, NULL);
+        }
+        if(bufinfo.len < offset) {
+            mp_raise_ValueError(translate("offset must be non-negative and no greater than buffer length"));
+        }
+        size_t len = (bufinfo.len - offset) / sz;
+        if((len * sz) != (bufinfo.len - offset)) {
+            mp_raise_ValueError(translate("buffer size must be a multiple of element size"));
+        }
+        if(mp_obj_get_int(args[2].u_obj) > 0) {
+            size_t count = mp_obj_get_int(args[2].u_obj);
+            if(len < count) {
+                mp_raise_ValueError(translate("buffer is smaller than requested size"));
+            } else {
+                len -= count;
+            }
+        }
+        ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
+        uint8_t *array = (uint8_t *)ndarray->array;
+        uint8_t *buffer = bufinfo.buf;
+        memcpy(array, buffer + offset, len * sz);
+        return MP_OBJ_FROM_PTR(ndarray);
+    }
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(create_frombuffer_obj, 1, create_frombuffer);
+#endif
