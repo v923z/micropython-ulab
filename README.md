@@ -14,68 +14,45 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 `ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, `**`,
 `+=`, `-=`, `*=`, `/=`, `**=` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that
 operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of
-iterables, or by means of the `arange`, `concatenate`, `diag`, `eye`, `full`, `linspace`, `logspace`, `ones`, or
+iterables, or by means of the `arange`, `concatenate`, `diag`, `eye`, `frombuffer`, `full`, `linspace`, `logspace`, `ones`, or
 `zeros`  functions.
 
 `ndarray`s can be iterated on, and have a number of their own methods, such as `flatten`, `shape`,
 `reshape`, `strides`, `transpose`, `size`, `tobytes`, and `itemsize`.
 
+
 ## Customising the firmware
 
-In addition to the `ndarray`'s operators and methods, seven modules define a great number of functions that can
-take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary sub-modules
-or even individual functions can be excluded from the compiled firmware with pre-processor switches.
+In addition to the `ndarray` operators and methods, `ulab` defines a great number of functions that can
+take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary functions
+can be excluded from the compiled firmware with pre-processor switches. Most of the functions are parts of
+`numpy`, but several are re-implementations of `scipy` features. For a full list of functions, see
+[micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest)!
 
-### approx
 
-The `approx` sub-module contains the implementation of the `interp`, and `trapz` functions of `numpy`, and `newton`, `bisect`,
-and `fmin` from `scipy`.
+## Usage
 
-### compare
+`ulab` sports a `numpy`-compatible interface, which makes porting of `CPython` code straightforward. The following
+snippet should run equally well in `micropython`, or on a PC.
 
-The `compare` sub-module contains the implementation of the `equal`, `not_equal`, `minimum`, `maximum`, and `clip` functions.
+```python
+try:
+    from ulab import numpy as np
+    from ulab import scipy as spy
+except ImportError:
+    import numpy as np
+    import scipy as spy
 
-### fft
-
-The `fft` sub-module implements the fast Fourier transform, and its inverse for one-dimensional `ndarray`s,
-as well as the `spectrogram` function from `scipy`.
-
-### filter
-
-The `filter` sub-module implements `convolve` for one-dimensional convolution,
-as well as the cascaded second-order sections filter, `sosfilt` from `scipy`.
-
-### linalg
-
-The `linalg` sub-module implements functions for matrix inversion, dot product, and the calculation of the
-determinant, eigenvalues, eigenvectors, Cholesky decomposition, and trace.
-
-### numerical
-
-The `numerical` sub-module defines the `cross`, `diff`, `flip`, `median`, `roll`, `sort` and `argsort` functions for `ndarray`s, and,
-in addition, the `min`, `max`, `argmin`, `argmax`, `sum`, `mean`, `std` functions that work with `ndarray`s, as
-well as generic one-dimensional iterables.
-
-### poly
-
-The `poly` sub-module defines the `polyval`, and `polyfit` functions from `numpy`.
-
-### vector
-
-The `vector` sub-module implements all functions of `micropython`'s `math` package (e.g., `acos`, `acosh`, ..., `tan`, `tanh`),
-and the `degrees` and `radians` for `ndarray`s and iterables. In addition, it also provided tools for vectorising generic,
-user-defined `python` functions.
-
-### user
-
-The `user` sub-module is meant as a user-extendable module, and contains a dummy function only.
+x = np.array([1, 2, 3])
+spy.special.erf(x)
+```
 
 # Finding help
 
 Documentation can be found on [readthedocs](https://readthedocs.org/) under
 [micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest),
 as well as at [circuitpython-ulab](https://circuitpython.readthedocs.io/en/latest/shared-bindings/ulab/__init__.html).
-A number of practical examples are listed in the excellent
+A number of practical examples are listed in Jeff Epler's excellent
 [circuitpython-ulab](https://learn.adafruit.com/ulab-crunch-numbers-fast-with-circuitpython/overview) overview.
 
 # Benchmarks
