@@ -33,11 +33,11 @@ mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MP_E};
 #endif
 
 #if ULAB_NUMPY_HAS_INF
-mp_obj_float_t numpy_const_float_inf_obj = {{&mp_type_float}, INFINITY};
+mp_obj_float_t numpy_const_float_inf_obj = {{&mp_type_float}, (mp_float_t)INFINITY};
 #endif
 
 #if ULAB_NUMPY_HAS_NAN
-mp_obj_float_t numpy_const_float_nan_obj = {{&mp_type_float}, NAN};
+mp_obj_float_t numpy_const_float_nan_obj = {{&mp_type_float}, (mp_float_t)NAN};
 #endif
 
 #if ULAB_NUMPY_HAS_PI
