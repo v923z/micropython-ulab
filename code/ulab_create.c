@@ -632,7 +632,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_zeros_obj, 0, create_zeros);
 #endif
 
 #if ULAB_CREATE_HAS_FROMBUFFER
-//| def frombuffer(buffer, dtype=ulab.float, count=-1, offset=0) ->ulab.array:
+//| def frombuffer(buffer: ReadableBuffer, dtype: _DType = ulab.float, count: int = -1, offset: int = 0) ->ulab.array:
 //|    """
 //|    .. param: buffer
 //|       bufferlike object
