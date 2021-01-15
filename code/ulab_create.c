@@ -642,6 +642,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_zeros_obj, 0, create_zeros);
 //|       number of items to read. -1 means all data in the buffer
 //|    .. param: offset
 //|       start reading the buffer from this offset (in bytes); default: 0
+//|
 //|    Interpret a buffer as a 1-dimensional array."""
 //|    ...
 //|
