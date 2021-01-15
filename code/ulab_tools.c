@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Zoltán Vörös
+ * Copyright (c) 2020-2021 Zoltán Vörös
  */
 
 
@@ -61,7 +61,7 @@ void *ndarray_get_float_function(uint8_t dtype) {
 }
 
 mp_float_t ndarray_get_float_index(void *data, uint8_t dtype, size_t index) {
-	// returns a single float value from an array located at index
+    // returns a single float value from an array located at index
     if(dtype == NDARRAY_UINT8) {
         return (mp_float_t)((uint8_t *)data)[index];
     } else if(dtype == NDARRAY_INT8) {
@@ -93,10 +93,10 @@ mp_float_t ndarray_get_float_value(void *data, uint8_t dtype) {
 
 #if NDARRAY_BINARY_USES_FUN_POINTER
 uint8_t ndarray_upcast_dtype(uint8_t ldtype, uint8_t rdtype) {
-	// returns a single character that corresponds to the broadcasting rules
-	// - if one of the operarands is a float, the result is always float
+    // returns a single character that corresponds to the broadcasting rules
+    // - if one of the operarands is a float, the result is always float
     // - operation on identical types preserves type
-	// 
+    //
     // uint8 + int8 => int16
     // uint8 + int16 => int16
     // uint8 + uint16 => uint16
@@ -104,43 +104,43 @@ uint8_t ndarray_upcast_dtype(uint8_t ldtype, uint8_t rdtype) {
     // int8 + uint16 => uint16
     // uint16 + int16 => float
 
-	if(ldtype == rdtype) {
-		// if the two dtypes are equal, the result is also of that type
-		return ldtype;
-	} else if(((ldtype == NDARRAY_UINT8) && (rdtype == NDARRAY_INT8)) ||
-			((ldtype == NDARRAY_INT8) && (rdtype == NDARRAY_UINT8)) ||
-			((ldtype == NDARRAY_UINT8) && (rdtype == NDARRAY_INT16)) || 
-			((ldtype == NDARRAY_INT16) && (rdtype == NDARRAY_UINT8)) || 
-			((ldtype == NDARRAY_INT8) && (rdtype == NDARRAY_INT16)) || 
-			((ldtype == NDARRAY_INT16) && (rdtype == NDARRAY_INT8))) {
-		return NDARRAY_INT16;
-	} else if(((ldtype == NDARRAY_UINT8) && (rdtype == NDARRAY_UINT16)) ||
-			((ldtype == NDARRAY_UINT16) && (rdtype == NDARRAY_UINT8)) || 
-			((ldtype == NDARRAY_INT8) && (rdtype == NDARRAY_UINT16)) ||
-			((ldtype == NDARRAY_UINT16) && (rdtype == NDARRAY_INT8))) {
-		return NDARRAY_UINT16;
-	}
-	return NDARRAY_FLOAT;
+    if(ldtype == rdtype) {
+        // if the two dtypes are equal, the result is also of that type
+        return ldtype;
+    } else if(((ldtype == NDARRAY_UINT8) && (rdtype == NDARRAY_INT8)) ||
+            ((ldtype == NDARRAY_INT8) && (rdtype == NDARRAY_UINT8)) ||
+            ((ldtype == NDARRAY_UINT8) && (rdtype == NDARRAY_INT16)) ||
+            ((ldtype == NDARRAY_INT16) && (rdtype == NDARRAY_UINT8)) ||
+            ((ldtype == NDARRAY_INT8) && (rdtype == NDARRAY_INT16)) ||
+            ((ldtype == NDARRAY_INT16) && (rdtype == NDARRAY_INT8))) {
+        return NDARRAY_INT16;
+    } else if(((ldtype == NDARRAY_UINT8) && (rdtype == NDARRAY_UINT16)) ||
+            ((ldtype == NDARRAY_UINT16) && (rdtype == NDARRAY_UINT8)) ||
+            ((ldtype == NDARRAY_INT8) && (rdtype == NDARRAY_UINT16)) ||
+            ((ldtype == NDARRAY_UINT16) && (rdtype == NDARRAY_INT8))) {
+        return NDARRAY_UINT16;
+    }
+    return NDARRAY_FLOAT;
 }
 
 void ndarray_set_float_uint8(void *data, mp_float_t datum) {
-	*((uint8_t *)data) = (uint8_t)datum;
+    *((uint8_t *)data) = (uint8_t)datum;
 }
 
 void ndarray_set_float_int8(void *data, int8_t datum) {
-	*((int8_t *)data) = (int8_t)datum;
+    *((int8_t *)data) = (int8_t)datum;
 }
 
 void ndarray_set_float_uint16(void *data, mp_float_t datum) {
-	*((uint16_t *)data) = (uint16_t)datum;
+    *((uint16_t *)data) = (uint16_t)datum;
 }
 
 void ndarray_set_float_int16(void *data, int8_t datum) {
-	*((int16_t *)data) = (int16_t)datum;
+    *((int16_t *)data) = (int16_t)datum;
 }
 
 void ndarray_set_float_float(void *data, mp_float_t datum) {
-	*((mp_float_t *)data) = datum;
+    *((mp_float_t *)data) = datum;
 }
 
 // returns a single function pointer, depending on the dtype
@@ -157,5 +157,4 @@ void *ndarray_set_float_function(uint8_t dtype) {
         return ndarray_set_float_float;
     }
 }
-
-#endif
+#endif /* NDARRAY_BINARY_USES_FUN_POINTER */

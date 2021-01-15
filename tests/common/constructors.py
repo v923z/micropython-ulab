@@ -1,13 +1,13 @@
-from ulab import linalg
-import ulab
-print(ulab.ones(3))
-print(ulab.ones((2,3)))
-print(ulab.zeros(3))
-print(ulab.zeros((2,3)))
-print(ulab.eye(3))
-print(ulab.ones(1, dtype=ulab.int8))
-print(ulab.ones(2, dtype=ulab.uint8))
-print(ulab.ones(3, dtype=ulab.int16))
-print(ulab.ones(4, dtype=ulab.uint16))
-print(ulab.ones(5, dtype=ulab.float))
-print(ulab.linspace(0, 1, 9))
+from ulab import numpy as np
+
+print(np.ones(3))
+print(np.ones((2,3)))
+print(np.zeros(3))
+print(np.zeros((2,3)))
+print(np.eye(3))
+print(np.ones(1, dtype=np.int8))
+print(np.ones(2, dtype=np.uint8))
+print(np.ones(3, dtype=np.int16))
+print(np.ones(4, dtype=np.uint16))
+print(np.ones(5, dtype=np.float))
+print(np.linspace(0, 1, 9))

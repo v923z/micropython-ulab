@@ -1,3 +1,4 @@
+
 Introduction
 ============
 
@@ -6,15 +7,16 @@ Enter ulab
 
 ``ulab`` is a ``numpy``-like module for ``micropython`` and its
 derivatives, meant to simplify and speed up common mathematical
-operations on arrays. ``ulab`` implements a small subset of ``numpy``.
-The functions were chosen such that they might be useful in the context
-of a microcontroller. However, the project is a living one, and
-suggestions for new functions are always welcome.
+operations on arrays. ``ulab`` implements a small subset of ``numpy``
+and ``scipy``. The functions were chosen such that they might be useful
+in the context of a microcontroller. However, the project is a living
+one, and suggestions for new features are always welcome.
 
 This document discusses how you can use the library, starting from
 building your own firmware, through questions like what affects the
 firmware size, what are the trade-offs, and what are the most important
-differences to ``numpy``. The document is organised as follows:
+differences to ``numpy`` and ``scipy``, respectively. The document is
+organised as follows:
 
 The chapter after this one helps you with firmware customisation.
 
@@ -90,16 +92,16 @@ The main points of ``ulab`` are
 -  polynomial fits to numerical data, and evaluation of polynomials
 -  fast Fourier transforms
 -  filtering of data (convolution and second-order filters)
--  function minimasation, fitting, and numerical approximation routines
+-  function minimisation, fitting, and numerical approximation routines
 
 ``ulab`` implements close to a hundred functions and array methods. At
-the time of writing this manual (for version 1.0.0), the library adds
-approximately 100 kB of extra compiled code to the ``micropython``
+the time of writing this manual (for version 2.1.0), the library adds
+approximately 120 kB of extra compiled code to the ``micropython``
 (pyboard.v.11) firmware. However, if you are tight with flash space, you
 can easily shave tens of kB off the firmware. In fact, if only a small
 sub-set of functions are needed, you can get away with less than 10 kB
 of flash space. See the section on `customising
-ulab <#Custom_builds>`__.
+ulab <#Customising-the-firmware>`__.
 
 Resources and legal matters
 ---------------------------
@@ -120,8 +122,8 @@ please, raise a `ulab
 issue <#https://github.com/v923z/micropython-ulab/issues>`__ on github,
 so that the community can profit from your experiences.
 
-Even better, if you find the project useful, and think that it could be
-made better, faster, tighter, and shinier, please, consider
+Even better, if you find the project to be useful, and think that it
+could be made better, faster, tighter, and shinier, please, consider
 contributing, and issue a pull request with the implementation of your
 improvements and new features. ``ulab`` can only become successful, if
 it offers what the community needs.
@@ -143,29 +145,25 @@ implementation details only, which all have been sorted out with the
 generous and enthusiastic support of Jeff Epler from `Adafruit
 Industries <http://www.adafruit.com>`__.
 
-There are, however, a couple of instances, where the usage in the two
-environments is different at the python level. These are how the
-packages can be imported, and how the class properties can be accessed.
+There are, however, a couple of instances, where the two environments
+differ at the python level in how the class properties can be accessed.
 We will point out the differences and possible workarounds at the
 relevant places in this document.
 
-Customising ``ulab``
-====================
+Customising the firmware
+========================
 
 As mentioned above, ``ulab`` has considerably grown since its
 conception, which also means that it might no longer fit on the
 microcontroller of your choice. There are, however, a couple of ways of
 customising the firmware, and thereby reducing its size.
 
-All options are listed in a single header file,
+All ``ulab`` options are listed in a single header file,
 `ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__,
 which contains pre-processor flags for each feature that can be
 fine-tuned. The first couple of lines of the file look like this
 
 .. code:: c
-
-   #ifndef __ULAB__
-   #define __ULAB__
 
    // The pre-processor constants in this file determine how ulab behaves:
    //
@@ -178,51 +176,59 @@ fine-tuned. The first couple of lines of the file look like this
    // A considerable amount of flash space can be saved by removing (setting
    // the corresponding constants to 0) the unnecessary functions and features.
 
-   // Setting this variable to 1 produces numpy-compatible firmware,
-   // i.e., functions can be called at the top level,
-   // without having to import the sub-modules (linalg and fft are exceptions,
-   // since those must be imported even in numpy)
-   #define ULAB_NUMPY_COMPATIBILITY        (1)
+   // Determines, whether scipy is defined in ulab. The sub-modules and functions
+   // of scipy have to be defined separately
+   #define ULAB_HAS_SCIPY                      (1)
 
    // The maximum number of dimensions the firmware should be able to support
    // Possible values lie between 1, and 4, inclusive
-   #define ULAB_MAX_DIMS                   2
+   #define ULAB_MAX_DIMS                       2
 
    // By setting this constant to 1, iteration over array dimensions will be implemented
    // as a function (ndarray_rewind_array), instead of writing out the loops in macros
    // This reduces firmware size at the expense of speed
-   #define ULAB_HAS_FUNCTION_ITERATOR      (0)
+   #define ULAB_HAS_FUNCTION_ITERATOR          (0)
 
    // If NDARRAY_IS_ITERABLE is 1, the ndarray object defines its own iterator function
    // This option saves approx. 250 bytes of flash space
-   #define NDARRAY_IS_ITERABLE             (1)
+   #define NDARRAY_IS_ITERABLE                 (1)
 
    // Slicing can be switched off by setting this variable to 0
-   #define NDARRAY_IS_SLICEABLE            (1)
+   #define NDARRAY_IS_SLICEABLE                (1)
 
    // The default threshold for pretty printing. These variables can be overwritten
    // at run-time via the set_printoptions() function
-   #define ULAB_HAS_PRINTOPTIONS           (1)
-   #define NDARRAY_PRINT_THRESHOLD         10
-   #define NDARRAY_PRINT_EDGEITEMS         3
+   #define ULAB_HAS_PRINTOPTIONS               (1)
+   #define NDARRAY_PRINT_THRESHOLD             10
+   #define NDARRAY_PRINT_EDGEITEMS             3
 
-   // determines, whether pi, and e are defined in ulab itself
-   #define ULAB_HAS_MATH_CONSTANTS         (1)
-
-   // determines, whether the ndinfo function is available
-   #define ULAB_HAS_NDINFO                 (1)
+   // determines, whether the dtype is an object, or simply a character
+   // the object implementation is numpythonic, but requires more space
+   #define ULAB_HAS_DTYPE_OBJECT               (0)
 
    // the ndarray binary operators
    #define NDARRAY_HAS_BINARY_OPS              (1)
+
+   // Firmware size can be reduced at the expense of speed by using function
+   // pointers in iterations. For each operator, he function pointer saves around
+   // 2 kB in the two-dimensional case, and around 4 kB in the four-dimensional case.
+
+   #define NDARRAY_BINARY_USES_FUN_POINTER     (0)
+
    #define NDARRAY_HAS_BINARY_OP_ADD           (1)
    #define NDARRAY_HAS_BINARY_OP_EQUAL         (1)
    #define NDARRAY_HAS_BINARY_OP_LESS          (1)
    #define NDARRAY_HAS_BINARY_OP_LESS_EQUAL    (1)
    #define NDARRAY_HAS_BINARY_OP_MORE          (1)
    #define NDARRAY_HAS_BINARY_OP_MORE_EQUAL    (1)
-   ...
+   #define NDARRAY_HAS_BINARY_OP_MULTIPLY      (1)
+   #define NDARRAY_HAS_BINARY_OP_NOT_EQUAL     (1)
+   #define NDARRAY_HAS_BINARY_OP_POWER         (1)
+   #define NDARRAY_HAS_BINARY_OP_SUBTRACT      (1)
+   #define NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE   (1)
+   ...     
 
-The meaning of flags with names ``_HAS_`` should obvious, so we will
+The meaning of flags with names ``_HAS_`` should be obvious, so we will
 just explain the other options.
 
 To see how much you can gain by un-setting the functions that you do not
@@ -234,76 +240,60 @@ everything else, you get away with less than 5 kB extra.
 Compatibility with numpy
 ------------------------
 
-Working with sub-modules
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The functions implemented in ``ulab`` are organised in sub-modules at
-the C level. This modularity is eleveted to python, if
-
-.. code:: c
-
-   #define ULAB_NUMPY_COMPATIBILITY        (0)
-
-meaning that if you want to access a particular function, you would have
-to import the corresponding sub-module first.
+The functions implemented in ``ulab`` are organised in three sub-modules
+at the C level, namely, ``numpy``, ``scipy``, and ``user``. This
+modularity is elevated to ``python``, meaning that in order to use
+functions that are part of ``numpy``, you have to import ``numpy`` as
 
 .. code:: python
 
-   import ulab
-   from ulab import poly
+   from ulab import numpy as np
 
-   x = ulab.array([4, 5, 6])
-   p = ulab.array([1, 2, 3])
-   poly.polyval(p, x)
+   x = np.array([4, 5, 6])
+   p = np.array([1, 2, 3])
+   np.polyval(p, x)
 
-The idea of such grouping of functions and methods at the python level
-is to provide a means for granularity. At first, having to import
-everything in this way might appear to be overly complicated, but there
-is a very good reason behind all this: you can find out at the time of
-importing, whether a function or sub-module is part of your ``ulab``
-firmware, or not. The alternative, namely, that you do not have to
-import anything beyond ``ulab``, could prove catastrophic: you would
-learn only at run time (at the moment of calling the function in your
-code) that a particular function is not in the firmware, and that is
-most probably too late.
-
-Generating numpy-compatible firmware
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-``circuitpython`` follows the approach above, setting the
-``ULAB_NUMPY_COMPATIBILITY`` flag to 0. On the other hand, if you want
-to generate truly ``numpy``-compatible firmware, you can set
-
-.. code:: c
-
-   #define ULAB_NUMPY_COMPATIBILITY        (1)
-
-If ``ULAB_NUMPY_COMPATIBILITY`` equals 1, functions will be bound at the
-top level, meaning that the example above now would look like
+There are a couple of exceptions to this rule, namely ``fft``, and
+``linalg``, which are sub-modules even in ``numpy``, thus you have to
+write them out as
 
 .. code:: python
 
-   import ulab as numpy
+   from ulab import numpy as np
 
-   x = numpy.array([4, 5, 6])
-   p = numpy.array([1, 2, 3])
-   numpy.polyval(p, x)
+   A = np.array([1, 2, 3, 4]).reshape()
+   np.linalg.trace(A)
 
-There are two exceptions to this rule, namely ``fft``, and ``linalg``,
-which are sub-modules even in ``numpy``, thus you have to write them out
-as
+Some of the functions in ``ulab`` are re-implementations of ``scipy``
+functions, and they are to be imported as
 
 .. code:: python
 
-   import ulab
-   from ulab import linalg
+   from ulab import numpy as np
+   from ulab import scipy as spy
 
-   A = ulab.array([1, 2, 3, 4]).reshape()
-   linalg.trace(A)
 
-We should also note that the ``numpy``-compatible firmware is a couple
-of hundred bytes smaller than the one with sub-modules, because defining
-the sub-modules requires some space.
+   x = np.array([1, 2, 3])
+   spy.special.erf(x)
+
+``numpy``-compatibility has an enormous benefit : namely, by
+``try``\ ing to ``import``, we can guarantee that the same, unmodified
+code runs in ``CPython``, as in ``micropython``. The following snippet
+is platform-independent, thus, the ``python`` code can be tested and
+debugged on a computer before loading it onto the microcontroller.
+
+.. code:: python
+
+
+   try:
+       from ulab import numpy as np
+       from ulab import scipy as spy
+   except ImportError:
+       import numpy as np
+       import scipy as spy
+       
+   x = np.array([1, 2, 3])
+   spy.special.erf(x)    
 
 The impact of dimensionality
 ----------------------------
@@ -313,7 +303,7 @@ Reducing the number of dimensions
 
 ``ulab`` supports tensors of rank four, but this is expensive in terms
 of flash: with all available functions and options, the library adds
-around 100 kB to the flash. However, if such high dimensions are not
+around 100 kB to the firmware. However, if such high dimensions are not
 required, significant reductions in size can be gotten by changing the
 value of
 
@@ -401,7 +391,7 @@ number of data types. As an example, the innocent-looking expression
 .. code:: python
 
 
-   import ulab as np
+   from ulab import numpy as np
 
    a = np.array([1, 2, 3])
    b = np.array([4, 5, 6])
@@ -423,13 +413,13 @@ version can be found be querying the ``__version__`` string.
         
     # code to be run in micropython
     
-    import ulab as np
+    import ulab
     
-    print('you are running ulab version', np.__version__)
+    print('you are running ulab version', ulab.__version__)
 
 .. parsed-literal::
 
-    you are running ulab version 0.99.0-2D-numpy
+    you are running ulab version 2.1.0-2D
     
     
 
@@ -443,18 +433,41 @@ implemented.
 
 ``2D`` tells us that the particular firmware supports tensors of rank 2
 (defined by ``ULAB_MAX_DIMS`` in
-`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__),
-and the string ``numpy`` means that the firmware is ``numpy``-compatible
-in the sense explained above. Otherwise, you would find ``cpy``, i.e.,
-firmware that conforms to ``circuitpython``\ ’s conventions.
+`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__).
 
 If you find a bug, please, include the version string in your report!
+
+Should you need the numerical value of ``ULAB_MAX_DIMS``, you can get it
+from the version string in the following way:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    
+    version = ulab.__version__
+    version_dims = version.split('-')[1]
+    version_num = int(version_dims.replace('D', ''))
+    
+    print('version string: ', version)
+    print('version dimensions: ', version_dims)
+    print('numerical value of dimensions: ', version_num)
+
+.. parsed-literal::
+
+    version string:  2.1.0-2D
+    version dimensions:  2D
+    numerical value of dimensions:  2
+    
+    
+
 
 Finding out what your firmware supports
 ---------------------------------------
 
 ``ulab`` implements a number of array operators and functions, but this
-doesn’t mean that all of these functions and methods are actually
+does not mean that all of these functions and methods are actually
 compiled into the firmware. You can fine-tune your firmware by
 setting/unsetting any of the ``_HAS_`` constants in
 `ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__.
@@ -471,24 +484,46 @@ firmware is calling ``dir`` with ``ulab`` as its argument.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
+    from ulab import scipy as spy
     
-    print('class-level functions: \n', dir(np))
+    
+    print('===== constants, functions, and modules of numpy =====\n\n', dir(np))
     
     # since fft and linalg are sub-modules, print them separately
-    print('\nfunctions included in the fft module: \n', dir(np.fft))
-    print('\nfunctions included in the linalg module: \n', dir(np.linalg))
+    print('\nfunctions included in the fft module:\n', dir(np.fft))
+    print('\nfunctions included in the linalg module:\n', dir(np.linalg))
+    
+    print('\n\n===== modules of scipy =====\n\n', dir(spy))
+    print('\nfunctions included in the optimize module:\n', dir(spy.optimize))
+    print('\nfunctions included in the signal module:\n', dir(spy.signal))
+    print('\nfunctions included in the special module:\n', dir(spy.special))
 
 .. parsed-literal::
 
-    class-level functions: 
-     ['__class__', '__name__', 'bool', 'sort', 'sum', '__version__', 'acos', 'acosh', 'arange', 'arctan2', 'argmax', 'argmin', 'argsort', 'around', 'array', 'asin', 'asinh', 'atan', 'atanh', 'bisect', 'ceil', 'clip', 'concatenate', 'convolve', 'cos', 'cosh', 'cross', 'degrees', 'diff', 'e', 'equal', 'erf', 'erfc', 'exp', 'expm1', 'eye', 'fft', 'flip', 'float', 'floor', 'fmin', 'full', 'gamma', 'get_printoptions', 'int16', 'int8', 'interp', 'lgamma', 'linalg', 'linspace', 'log', 'log10', 'log2', 'logspace', 'max', 'maximum', 'mean', 'min', 'minimum', 'ndinfo', 'newton', 'not_equal', 'ones', 'pi', 'polyfit', 'polyval', 'radians', 'roll', 'set_printoptions', 'sin', 'sinh', 'sosfilt', 'sqrt', 'std', 'tan', 'tanh', 'trapz', 'uint16', 'uint8', 'user', 'vectorize', 'zeros']
+    ===== constants, functions, and modules of numpy =====
     
-    functions included in the fft module: 
-     ['__class__', '__name__', 'fft', 'ifft', 'spectrogram']
+     ['__class__', '__name__', 'bool', 'sort', 'sum', 'acos', 'acosh', 'arange', 'arctan2', 'argmax', 'argmin', 'argsort', 'around', 'array', 'asin', 'asinh', 'atan', 'atanh', 'ceil', 'clip', 'concatenate', 'convolve', 'cos', 'cosh', 'cross', 'degrees', 'diag', 'diff', 'e', 'equal', 'exp', 'expm1', 'eye', 'fft', 'flip', 'float', 'floor', 'frombuffer', 'full', 'get_printoptions', 'inf', 'int16', 'int8', 'interp', 'linalg', 'linspace', 'log', 'log10', 'log2', 'logspace', 'max', 'maximum', 'mean', 'median', 'min', 'minimum', 'nan', 'ndinfo', 'not_equal', 'ones', 'pi', 'polyfit', 'polyval', 'radians', 'roll', 'set_printoptions', 'sin', 'sinh', 'sqrt', 'std', 'tan', 'tanh', 'trapz', 'uint16', 'uint8', 'vectorize', 'zeros']
     
-    functions included in the linalg module: 
-     ['__class__', '__name__', 'cholesky', 'det', 'dot', 'eig', 'inv', 'norm', 'size', 'trace']
+    functions included in the fft module:
+     ['__class__', '__name__', 'fft', 'ifft']
+    
+    functions included in the linalg module:
+     ['__class__', '__name__', 'cholesky', 'det', 'dot', 'eig', 'inv', 'norm', 'trace']
+    
+    
+    ===== modules of scipy =====
+    
+     ['__class__', '__name__', 'optimize', 'signal', 'special']
+    
+    functions included in the optimize module:
+     ['__class__', '__name__', 'bisect', 'fmin', 'newton']
+    
+    functions included in the signal module:
+     ['__class__', '__name__', 'sosfilt', 'spectrogram']
+    
+    functions included in the special module:
+     ['__class__', '__name__', 'erf', 'erfc', 'gamma', 'gammaln']
     
     
 
@@ -498,20 +533,20 @@ Methods included in the firmware
 
 The ``dir`` function applied to the module or its sub-modules gives
 information on what the module and sub-modules include, but is not
-enough to find out which methods the ``ndarray`` supports. We can list
-the methods by calling ``dir`` with the ``array`` object itself:
+enough to find out which methods the ``ndarray`` class supports. We can
+list the methods by calling ``dir`` with the ``array`` object itself:
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     print(dir(np.array))
 
 .. parsed-literal::
 
-    ['__class__', '__name__', 'copy', '__bases__', '__dict__', 'flatten', 'itemsize', 'reshape', 'shape', 'size', 'strides', 'tobytes', 'transpose']
+    ['__class__', '__name__', 'copy', 'sort', '__bases__', '__dict__', 'dtype', 'flatten', 'itemsize', 'reshape', 'shape', 'size', 'strides', 'tobytes', 'transpose']
     
     
 
@@ -519,15 +554,15 @@ the methods by calling ``dir`` with the ``array`` object itself:
 Operators included in the firmware
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A list of operators cannot be generated as shown above. If you need to
-find out, whether, e.g., the ``**`` operator is supported by the
+A list of operators cannot be generated as shown above. If you really
+need to find out, whether, e.g., the ``**`` operator is supported by the
 firmware, you have to ``try`` it:
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3])
     b = np.array([4, 5, 6])
@@ -543,3 +578,12 @@ firmware, you have to ``try`` it:
     
     
 
+
+The exception above would be raised, if the firmware was compiled with
+the
+
+.. code:: c
+
+   #define NDARRAY_HAS_BINARY_OP_POWER         (0)
+
+definition.

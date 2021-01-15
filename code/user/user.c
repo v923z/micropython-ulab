@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Zoltán Vörös
+ * Copyright (c) 2020-2021 Zoltán Vörös
 */
 
 #include <math.h>

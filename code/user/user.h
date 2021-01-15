@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Zoltán Vörös
+ * Copyright (c) 2020-2021 Zoltán Vörös
 */
 
 #ifndef _USER_
@@ -15,9 +15,6 @@
 #include "../ulab.h"
 #include "../ndarray.h"
 
-#if ULAB_USER_MODULE
-
 extern mp_obj_module_t ulab_user_module;
 
-#endif
 #endif

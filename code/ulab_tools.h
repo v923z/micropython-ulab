@@ -5,11 +5,13 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Zoltán Vörös
+ * Copyright (c) 2020-2021 Zoltán Vörös
 */
 
 #ifndef _TOOLS_
 #define _TOOLS_
+
+#define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
 mp_float_t ndarray_get_float_uint8(void *);
 mp_float_t ndarray_get_float_int8(void *);

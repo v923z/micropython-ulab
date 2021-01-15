@@ -1,3 +1,13 @@
+/*
+ * This file is part of the micropython-ulab project,
+ *
+ * https://github.com/v923z/micropython-ulab
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2020-2021 Zoltán Vörös
+*/
+
 #include "ndarray.h"
 
 mp_obj_t ndarray_binary_equality(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t *,  int32_t *, int32_t *, mp_binary_op_t );

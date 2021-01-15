@@ -1,17 +1,16 @@
-import ulab
-from ulab import linalg
+from ulab import numpy as np
 
-a = ulab.array([[1, 2], [3, 4]])
-print(linalg.inv(a))
+a = np.array([[1, 2], [3, 4]])
+print(np.linalg.inv(a))
 
-b = ulab.array([[1, 2, 3], [4, 5, 6], [7, 8, 7]])
-print(linalg.inv(b))
+b = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 7]])
+print(np.linalg.inv(b))
 
-c = ulab.array([[1, 2, 0, 0], [0, 6, 7, 0], [0, 0, 8, 9], [0, 0, 15, 13]])
-print(linalg.inv(c))
+c = np.array([[1, 2, 0, 0], [0, 6, 7, 0], [0, 0, 8, 9], [0, 0, 15, 13]])
+print(np.linalg.inv(c))
 
-print(linalg.det(a))
-print(linalg.det(b))
-print(linalg.det(c))
+print(np.linalg.det(a))
+print(np.linalg.det(b))
+print(np.linalg.det(c))
 
 

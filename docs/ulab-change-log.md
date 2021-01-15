@@ -1,14 +1,26 @@
+Fri, 15 Jan 2021
+
+version 2.1.2
+
+    fixed small error in frombuffer
+
 Thu, 14 Jan 2021
 
-version 1.6.2
+version 2.1.1
 
-    fix indexing issue in diff
+    fixed bad error in diff
 
-Mon, 11 Jan 2021
+Thu, 26 Nov 2020
 
-version 1.6.1
+version 2.1.0
 
-    fix issue #282
+    implemented frombuffer
+
+Tue, 24 Nov 2020
+
+version 2.0.0
+
+    implemented numpy/scipy compatibility
 
 Tue, 24 Nov 2020
 

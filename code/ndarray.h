@@ -6,7 +6,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2020 Zoltán Vörös
+ * Copyright (c) 2019-2021 Zoltán Vörös
+ *               2020 Jeff Epler for Adafruit Industries
 */
 
 #ifndef _NDARRAY_
@@ -38,28 +39,12 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 
-#ifdef OPENMV
-#define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
-#define translate(x) x
-
-typedef struct _mp_obj_slice_t {
-    mp_obj_base_t base;
-    mp_obj_t start;
-    mp_obj_t stop;
-    mp_obj_t step;
-} mp_obj_slice_t;
-
-void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *, mp_obj_t *, mp_obj_t *);
-#else
 #if CIRCUITPY
 #define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
 #define mp_obj_is_int(x) (MP_OBJ_IS_INT((x)))
 #else
 #define translate(x) MP_ERROR_TEXT(x)
 #endif
-#endif
-
-#define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
 #define NDARRAY_NUMERIC   0
 #define NDARRAY_BOOLEAN   1
@@ -138,6 +123,7 @@ bool ndarray_is_dense(ndarray_obj_t *);
 ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *);
 void ndarray_copy_array(ndarray_obj_t *, ndarray_obj_t *);
 
+MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_array_constructor_obj);
 #ifdef CIRCUITPY
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 #else
@@ -185,12 +171,11 @@ mp_obj_t ndarray_transpose(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
 #endif
 
-#if ULAB_HAS_NDINFO
+#if ULAB_NUMPY_HAS_NDINFO
 mp_obj_t ndarray_info(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_info_obj);
 #endif
 
-mp_int_t ndarray_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 //void ndarray_attributes(mp_obj_t , qstr , mp_obj_t *);
 
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );

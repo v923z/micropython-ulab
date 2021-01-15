@@ -15,23 +15,16 @@ Welcome to the ulab book!
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
-
-   ulab/index.rst
-
-.. toctree::
-   :maxdepth: 3
    :caption: User's guide:
 
    ulab-ndarray
-   ulab-approx
-   ulab-compare
-   ulab-fft
-   ulab-filter
-   ulab-linalg
-   ulab-numerical
-   ulab-poly
-   ulab-vectorise
+   numpy-functions
+   numpy-universal
+   numpy-fft
+   numpy-linalg
+   scipy-optimize
+   scipy-signal
+   scipy-special
    ulab-programming
 
 Indices and tables

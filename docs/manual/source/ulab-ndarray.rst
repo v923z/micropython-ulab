@@ -1,5 +1,6 @@
-ndarray, the basic container
-============================
+
+ndarray, the base class
+=======================
 
 The ``ndarray`` is the underlying container of numerical data. It can be
 thought of as micropython’s own ``array`` object, but has a great number
@@ -28,9 +29,10 @@ the smallest reasonable one. Five such types are defined, namely
 ``float``, which occupies four or eight bytes per datum. The
 precision/size of the ``float`` type depends on the definition of
 ``mp_float_t``. Some platforms, e.g., the PYBD, implement ``double``\ s,
-but some, e.g., the pyboard.v.11, don’t. You can find out, what type of
+but some, e.g., the pyboard.v.11, do not. You can find out, what type of
 float your particular platform implements by looking at the output of
-the `.itemsize <#.itemsize>`__ class property.
+the `.itemsize <#.itemsize>`__ class property, or looking at the exact
+``dtype``, when you print out an array.
 
 In addition to the five above-mentioned numerical types, it is also
 possible to define Boolean arrays, which can be used in the indexing of
@@ -68,7 +70,7 @@ the printout, you should call the dedicated ``shape``, ``strides``, or
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(5), dtype=np.float)
     b = np.array(range(25), dtype=np.uint8).reshape((5, 5))
@@ -82,7 +84,7 @@ the printout, you should call the dedicated ``shape``, ``strides``, or
     shape: (5,)
     strides: (8,)
     itemsize: 8
-    data pointer: 0x7f2bafabd220
+    data pointer: 0x7f8f6fa2e240
     type: float
     
     
@@ -90,7 +92,7 @@ the printout, you should call the dedicated ``shape``, ``strides``, or
     shape: (5, 5)
     strides: (5, 1)
     itemsize: 1
-    data pointer: 0x7f2bafabd3a0
+    data pointer: 0x7f8f6fa2e2e0
     type: uint8
     
     
@@ -121,7 +123,7 @@ default.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = [1, 2, 3, 4, 5, 6, 7, 8]
     b = np.array(a)
@@ -140,11 +142,11 @@ default.
 .. parsed-literal::
 
     a:	 [1, 2, 3, 4, 5, 6, 7, 8]
-    b:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
+    b:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float64)
     
     c:	 array([[0, 1, 2, 3, 4],
-    	[20, 21, 22, 23, 24],
-    	[44, 55, 66, 77, 88]], dtype=uint8)
+           [20, 21, 22, 23, 24],
+           [44, 55, 66, 77, 88]], dtype=uint8)
     
     Traceback (most recent call last):
       File "/dev/shm/micropython.py", line 15, in <module>
@@ -168,7 +170,7 @@ copying.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = [1, 2, 3, 4, 5, 6, 7, 8]
     b = np.array(a)
@@ -184,9 +186,9 @@ copying.
 
     a:	 [1, 2, 3, 4, 5, 6, 7, 8]
     
-    b:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
+    b:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float64)
     
-    c:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
+    c:	 array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float64)
     
     d:	 array([1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
     
@@ -201,7 +203,7 @@ take place, except, when the output type is specifically supplied. I.e.,
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(5), dtype=np.uint8)
     b = np.array(a)
@@ -212,20 +214,20 @@ take place, except, when the output type is specifically supplied. I.e.,
 
     a:	 array([0, 1, 2, 3, 4], dtype=uint8)
     
-    b:	 array([0.0, 1.0, 2.0, 3.0, 4.0], dtype=float)
+    b:	 array([0.0, 1.0, 2.0, 3.0, 4.0], dtype=float64)
     
     
 
 
 will iterate over the elements in ``a``, since in the assignment
-``b = np.array(a)`` no output type was given, therefore, ``float`` was
+``b = np.array(a)``, no output type was given, therefore, ``float`` was
 assumed. On the other hand,
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(5), dtype=np.uint8)
     b = np.array(a, dtype=np.uint8)
@@ -248,9 +250,17 @@ type, or performance is important.
 Array initialisation functions
 ------------------------------
 
-There are seven functions that can be used for initialising an array.
-These are bound to ``ulab`` itself at the top level, i.e., no module has
-to be imported for the function invocations.
+There are nine functions that can be used for initialising an array.
+
+1. `numpy.arange <#arange>`__
+2. `numpy.concatenate <#concatenate>`__
+3. `numpy.eye <#eye>`__
+4. `numpy.frombuffer <#frombuffer>`__
+5. `numpy.full <#full>`__
+6. `numpy.linspace <#linspace>`__
+7. `numpy.logspace <#logspace>`__
+8. `numpy.ones <#ones>`__
+9. `numpy.zeros <#zeros>`__
 
 arange
 ~~~~~~
@@ -266,19 +276,19 @@ keyword argument.
         
     # code to be run in micropython
     
-    import ulab
+    from ulab import numpy as np
     
-    print(ulab.arange(10))
-    print(ulab.arange(2, 10))
-    print(ulab.arange(2, 10, 3))
-    print(ulab.arange(2, 10, 3, dtype=ulab.float))
+    print(np.arange(10))
+    print(np.arange(2, 10))
+    print(np.arange(2, 10, 3))
+    print(np.arange(2, 10, 3, dtype=np.float))
 
 .. parsed-literal::
 
     array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=int16)
     array([2, 3, 4, 5, 6, 7, 8, 9], dtype=int16)
     array([2, 5, 8], dtype=int16)
-    array([2.0, 5.0, 8.0], dtype=float)
+    array([2.0, 5.0, 8.0], dtype=float64)
     
     
 
@@ -290,13 +300,14 @@ concatenate
 https://numpy.org/doc/stable/reference/generated/numpy.concatenate.html
 
 The function joins a sequence of arrays, if they are compatible in
-shape, if all shapes except the one along the joining axis are equal.
+shape, i.e., if all shapes except the one along the joining axis are
+equal.
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(25), dtype=np.uint8).reshape((5, 5))
     b = np.array(range(15), dtype=np.uint8).reshape((3, 5))
@@ -307,13 +318,13 @@ shape, if all shapes except the one along the joining axis are equal.
 .. parsed-literal::
 
     array([[0, 1, 2, 3, 4],
-    	[5, 6, 7, 8, 9],
-    	[10, 11, 12, 13, 14],
-    	[15, 16, 17, 18, 19],
-    	[20, 21, 22, 23, 24],
-    	[0, 1, 2, 3, 4],
-    	[5, 6, 7, 8, 9],
-    	[10, 11, 12, 13, 14]], dtype=uint8)
+           [5, 6, 7, 8, 9],
+           [10, 11, 12, 13, 14],
+           [15, 16, 17, 18, 19],
+           [20, 21, 22, 23, 24],
+           [0, 1, 2, 3, 4],
+           [5, 6, 7, 8, 9],
+           [10, 11, 12, 13, 14]], dtype=uint8)
     
     
 
@@ -329,7 +340,7 @@ concatenation works:
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(25), dtype=np.uint8).reshape((5, 5))
     b = np.array(range(15), dtype=np.float).reshape((5, 3))
@@ -342,22 +353,22 @@ concatenation works:
 .. parsed-literal::
 
     a:  array([[0, 1, 2, 3, 4],
-    	[5, 6, 7, 8, 9],
-    	[10, 11, 12, 13, 14],
-    	[15, 16, 17, 18, 19],
-    	[20, 21, 22, 23, 24]], dtype=uint8)
+           [5, 6, 7, 8, 9],
+           [10, 11, 12, 13, 14],
+           [15, 16, 17, 18, 19],
+           [20, 21, 22, 23, 24]], dtype=uint8)
     ====================
     d:  array([[1, 2, 3],
-    	[4, 5, 6],
-    	[7, 8, 9],
-    	[10, 11, 12],
-    	[13, 14, 15]], dtype=uint8)
+           [4, 5, 6],
+           [7, 8, 9],
+           [10, 11, 12],
+           [13, 14, 15]], dtype=uint8)
     ====================
     c:  array([[1, 2, 3, 0, 1, 2, 3, 4],
-    	[4, 5, 6, 5, 6, 7, 8, 9],
-    	[7, 8, 9, 10, 11, 12, 13, 14],
-    	[10, 11, 12, 15, 16, 17, 18, 19],
-    	[13, 14, 15, 20, 21, 22, 23, 24]], dtype=uint8)
+           [4, 5, 6, 5, 6, 7, 8, 9],
+           [7, 8, 9, 10, 11, 12, 13, 14],
+           [10, 11, 12, 15, 16, 17, 18, 19],
+           [13, 14, 15, 20, 21, 22, 23, 24]], dtype=uint8)
     
     
 
@@ -387,7 +398,7 @@ With a single argument
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     print(np.eye(5))
 
@@ -397,7 +408,7 @@ With a single argument
            [0.0, 1.0, 0.0, 0.0, 0.0],
            [0.0, 0.0, 1.0, 0.0, 0.0],
            [0.0, 0.0, 0.0, 1.0, 0.0],
-           [0.0, 0.0, 0.0, 0.0, 1.0]], dtype=float)
+           [0.0, 0.0, 0.0, 0.0, 1.0]], dtype=float64)
     
     
 
@@ -409,18 +420,16 @@ Specifying the dimensions of the matrix
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     print(np.eye(4, M=6, k=-1, dtype=np.int16))
 
 .. parsed-literal::
 
-    array([[0, 0, 0, 0],
-           [1, 0, 0, 0],
-           [0, 1, 0, 0],
-           [0, 0, 1, 0],
-           [0, 0, 0, 1],
-           [0, 0, 0, 0]], dtype=int16)
+    array([[0, 0, 0, 0, 0, 0],
+           [1, 0, 0, 0, 0, 0],
+           [0, 1, 0, 0, 0, 0],
+           [0, 0, 1, 0, 0, 0]], dtype=int16)
     
     
 
@@ -429,18 +438,62 @@ Specifying the dimensions of the matrix
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     print(np.eye(4, M=6, dtype=np.int8))
 
 .. parsed-literal::
 
-    array([[1, 0, 0, 0],
-           [0, 1, 0, 0],
-           [0, 0, 1, 0],
-           [0, 0, 0, 1],
-           [0, 0, 0, 0],
-           [0, 0, 0, 0]], dtype=int8)
+    array([[1, 0, 0, 0, 0, 0],
+           [0, 1, 0, 0, 0, 0],
+           [0, 0, 1, 0, 0, 0],
+           [0, 0, 0, 1, 0, 0]], dtype=int8)
+    
+    
+
+
+frombuffer
+~~~~~~~~~~
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html
+
+The function interprets a contiguous buffer as a one-dimensional array,
+and thus can be used for piping buffered data directly into an array.
+This method of analysing, e.g., ADC data is much more efficient than
+passing the ADC buffer into the ``array`` constructor, because
+``frombuffer`` simply creates the ``ndarray`` header and blindly copies
+the memory segment, without inspecting the underlying data.
+
+The function takes a single positional argument, the buffer, and three
+keyword arguments. These are the ``dtype`` with a default value of
+``float``, the ``offset``, with a default of 0, and the ``count``, with
+a default of -1, meaning that all data are taken in.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    buffer = b'\x01\x02\x03\x04\x05\x06\x07\x08'
+    print('buffer: ', buffer)
+    
+    a = np.frombuffer(buffer, dtype=np.uint8)
+    print('a, all data read: ', a)
+    
+    b = np.frombuffer(buffer, dtype=np.uint8, offset=2)
+    print('b, all data with an offset: ', b)
+    
+    c = np.frombuffer(buffer, dtype=np.uint8, offset=2, count=3)
+    print('c, only 3 items with an offset: ', c)
+
+.. parsed-literal::
+
+    buffer:  b'\x01\x02\x03\x04\x05\x06\x07\x08'
+    a, all data read:  array([1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    b, all data with an offset:  array([3, 4, 5, 6, 7, 8], dtype=uint8)
+    c, only 3 items with an offset:  array([3, 4, 5], dtype=uint8)
     
     
 
@@ -460,7 +513,7 @@ with a default value of ``float`` can also be supplied.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     # create an array with the default type
     print(np.full((2, 4), 3))
@@ -472,12 +525,12 @@ with a default value of ``float`` can also be supplied.
 .. parsed-literal::
 
     array([[3.0, 3.0, 3.0, 3.0],
-    	[3.0, 3.0, 3.0, 3.0]], dtype=float)
+           [3.0, 3.0, 3.0, 3.0]], dtype=float64)
     
     ====================
     
     array([[3, 3, 3, 3],
-    	[3, 3, 3, 3]], dtype=uint8)
+           [3, 3, 3, 3]], dtype=uint8)
     
     
 
@@ -502,7 +555,7 @@ consequence of rounding. (This is also the ``numpy`` behaviour.)
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     # generate a sequence with defaults
     print('default sequence:\t', np.linspace(0, 10))
@@ -518,9 +571,9 @@ consequence of rounding. (This is also the ``numpy`` behaviour.)
 
 .. parsed-literal::
 
-    default sequence:	 array([0.0, 0.2040816396474838, 0.4081632792949677, ..., 9.591833114624023, 9.795914649963379, 9.999996185302734], dtype=float)
-    num=5:			 array([0.0, 2.5, 5.0, 7.5, 10.0], dtype=float)
-    num=5:			 array([0.0, 2.0, 4.0, 6.0, 8.0], dtype=float)
+    default sequence:	 array([0.0, 0.2040816326530612, 0.4081632653061225, ..., 9.591836734693871, 9.795918367346932, 9.999999999999993], dtype=float64)
+    num=5:			 array([0.0, 2.5, 5.0, 7.5, 10.0], dtype=float64)
+    num=5:			 array([0.0, 2.0, 4.0, 6.0, 8.0], dtype=float64)
     num=5:			 array([0, 0, 1, 2, 2, 3, 4], dtype=uint8)
     
     
@@ -554,7 +607,7 @@ also accepts the ``base`` argument. The default value is 10.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     # generate a sequence with defaults
     print('default sequence:\t', np.logspace(0, 3))
@@ -570,10 +623,10 @@ also accepts the ``base`` argument. The default value is 10.
 
 .. parsed-literal::
 
-    default sequence:	 array([1.0, 1.151395399326447, 1.325711365590109, ..., 754.3120063354646, 868.5113737513561, 1000.000000000004], dtype=float)
-    num=5:			 array([10.0, 1778.279410038923, 316227.766016838, 56234132.5190349, 10000000000.0], dtype=float)
-    num=5:			 array([10.0, 630.9573444801933, 39810.71705534974, 2511886.431509581, 158489319.2461114], dtype=float)
-    num=5:			 array([2.0, 6.964404506368993, 24.25146506416637, 84.44850628946524, 294.066778879241], dtype=float)
+    default sequence:	 array([1.0, 1.151395399326447, 1.325711365590109, ..., 754.3120063354646, 868.5113737513561, 1000.000000000004], dtype=float64)
+    num=5:			 array([10.0, 1778.279410038923, 316227.766016838, 56234132.5190349, 10000000000.0], dtype=float64)
+    num=5:			 array([10.0, 630.9573444801933, 39810.71705534974, 2511886.431509581, 158489319.2461114], dtype=float64)
+    num=5:			 array([2.0, 6.964404506368993, 24.25146506416637, 84.44850628946524, 294.066778879241], dtype=float64)
     
     
 
@@ -596,27 +649,52 @@ calling one of the ``ones``, or ``zeros`` functions. ``ones`` and
    ones(shape, dtype=float)
    zeros(shape, dtype=float)
 
-where shape is either an integer, or a 2-tuple.
+where shape is either an integer, or a tuple specifying the shape.
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     print(np.ones(6, dtype=np.uint8))
+    
     print(np.zeros((6, 4)))
 
 .. parsed-literal::
 
     array([1, 1, 1, 1, 1, 1], dtype=uint8)
     array([[0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0],
-    	 [0.0, 0.0, 0.0, 0.0]], dtype=float)
+           [0.0, 0.0, 0.0, 0.0],
+           [0.0, 0.0, 0.0, 0.0],
+           [0.0, 0.0, 0.0, 0.0],
+           [0.0, 0.0, 0.0, 0.0],
+           [0.0, 0.0, 0.0, 0.0]], dtype=float64)
     
+    
+
+
+When specifying the shape, make sure that the length of the tuple is not
+larger than the maximum dimension of your firmware.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    import ulab
+    
+    print('maximum number of dimensions: ', ulab.__version__)
+    
+    print(np.zeros((2, 2, 2)))
+
+.. parsed-literal::
+
+    maximum number of dimensions:  2.1.0-2D
+    
+    Traceback (most recent call last):
+      File "/dev/shm/micropython.py", line 7, in <module>
+    TypeError: too many dimensions
     
 
 
@@ -632,14 +710,14 @@ last three entries will be printed. Also note that, as opposed to
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(200))
     print("a:\t", a)
 
 .. parsed-literal::
 
-    a:	 array([0.0, 1.0, 2.0, ..., 197.0, 198.0, 199.0], dtype=float)
+    a:	 array([0.0, 1.0, 2.0, ..., 197.0, 198.0, 199.0], dtype=float64)
     
     
 
@@ -660,7 +738,7 @@ the ellipsis, if the array is longer than ``threshold``.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(20))
     print("a printed with defaults:\t", a)
@@ -673,11 +751,11 @@ the ellipsis, if the array is longer than ``threshold``.
 
 .. parsed-literal::
 
-    a printed with defaults:	 array([0.0, 1.0, 2.0, ..., 17.0, 18.0, 19.0], dtype=float)
+    a printed with defaults:	 array([0.0, 1.0, 2.0, ..., 17.0, 18.0, 19.0], dtype=float64)
     
-    a printed in full:		 array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0], dtype=float)
+    a printed in full:		 array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0], dtype=float64)
     
-    a truncated with 2 edgeitems:	 array([0.0, 1.0, ..., 18.0, 19.0], dtype=float)
+    a truncated with 2 edgeitems:	 array([0.0, 1.0, ..., 18.0, 19.0], dtype=float64)
     
     
 
@@ -693,7 +771,7 @@ function returns a *dictionary* with two keys.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     np.set_printoptions(threshold=100, edgeitems=20)
     print(np.get_printoptions())
@@ -723,7 +801,7 @@ entries of the source array are *copied* into the target array.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     b = a.copy()
@@ -759,7 +837,7 @@ object, and returns a single character (number) instead.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     b = np.array([5, 6, 7], dtype=a.dtype)
@@ -783,7 +861,7 @@ object, and returns a single character (number) instead.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     b = np.array([5, 6, 7], dtype=a.dtype())
@@ -802,14 +880,19 @@ object, and returns a single character (number) instead.
 
 
 If the ``ulab.h`` header file sets the pre-processor constant
-``ULAB_HAS_DTYPE_OBJECT`` to 0, then the output of the previous snippet
-will be
+``ULAB_HAS_DTYPE_OBJECT`` to 0 as
+
+.. code:: c
+
+   #define ULAB_HAS_DTYPE_OBJECT               (0)
+
+then the output of the previous snippet will be
 
 .. code::
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     b = np.array([5, 6, 7], dtype=a.dtype())
@@ -828,7 +911,8 @@ will be
 
 
 Here 98 is nothing but the ASCII value of the character ``b``, which is
-the type code for signed 8-bit integers.
+the type code for signed 8-bit integers. The object definition adds
+around 600 bytes to the firmware.
 
 .flatten
 ~~~~~~~~
@@ -844,7 +928,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.htm
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     print("a: \t\t", a)
@@ -862,7 +946,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.htm
     a flattened: 	 array([1, 2, 3, 4], dtype=int8)
     
     b: array([[1, 2, 3],
-    	[4, 5, 6]], dtype=int8)
+           [4, 5, 6]], dtype=int8)
     b flattened (C): 	 array([1, 2, 3, 4, 5, 6], dtype=int8)
     b flattened (F): 	 array([1, 4, 2, 5, 3, 6], dtype=int8)
     
@@ -884,15 +968,15 @@ elements in the array.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3], dtype=np.int8)
     print("a:\n", a)
-    print("itemsize of a:", a.itemsize)
+    print("itemsize of a:", a.itemsize
     
     b= np.array([[1, 2], [3, 4]], dtype=np.float)
     print("\nb:\n", b)
-    print("itemsize of b:", b.itemsize)
+    print("itemsize of b:", b.itemsize
 
 .. parsed-literal::
 
@@ -902,7 +986,7 @@ elements in the array.
     
     b:
      array([[1.0, 2.0],
-    	 [3.0, 4.0]], dtype=float)
+           [3.0, 4.0]], dtype=float64)
     itemsize of b: 8
     
     
@@ -914,7 +998,7 @@ elements in the array.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3], dtype=np.int8)
     print("a:\n", a)
@@ -928,11 +1012,11 @@ elements in the array.
 
     a:
      array([1, 2, 3], dtype=int8)
-    itemsize of a: 1
+    itemsize of a: <bound_method 7fdc008692c0 array([1, 2, 3], dtype=int8).<function>>
     
     b:
      array([[1.0, 2.0],
-    	 [3.0, 4.0]], dtype=float)
+           [3.0, 4.0]], dtype=float64)
     itemsize of b: 8
     
     
@@ -954,7 +1038,7 @@ consistent with the old, a ``ValueError`` exception will be raised.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]], dtype=np.uint8)
     print('a (4 by 4):', a)
@@ -964,12 +1048,12 @@ consistent with the old, a ``ValueError`` exception will be raised.
 .. parsed-literal::
 
     a (4 by 4): array([[1, 2, 3, 4],
-    	 [5, 6, 7, 8],
-    	 [9, 10, 11, 12],
-    	 [13, 14, 15, 16]], dtype=uint8)
+           [5, 6, 7, 8],
+           [9, 10, 11, 12],
+           [13, 14, 15, 16]], dtype=uint8)
     a (2 by 8): array([[1, 2, 3, 4, 5, 6, 7, 8],
-    	 [9, 10, 11, 12, 13, 14, 15, 16]], dtype=uint8)
-    a (1 by 16): array([1, 2, 3, ..., 14, 15, 16], dtype=uint8)
+           [9, 10, 11, 12, 13, 14, 15, 16]], dtype=uint8)
+    a (1 by 16): array([[1, 2, 3, ..., 14, 15, 16]], dtype=uint8)
     
     
 
@@ -990,7 +1074,7 @@ property, i.e.,
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     print("a:\n", a)
@@ -998,17 +1082,17 @@ property, i.e.,
     
     b= np.array([[1, 2], [3, 4]], dtype=np.int8)
     print("\nb:\n", b)
-    print("shape of b:", b.shape)
+    print("shape of b:", b.shape
 
 .. parsed-literal::
 
     a:
      array([1, 2, 3, 4], dtype=int8)
-    shape of a: (1, 4)
+    shape of a: (4,)
     
     b:
      array([[1, 2],
-    	 [3, 4]], dtype=int8)
+           [3, 4]], dtype=int8)
     shape of b: (2, 2)
     
     
@@ -1021,11 +1105,11 @@ property, i.e.,
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
     print("a:\n", a)
-    print("shape of a:", a.shape)
+    print("shape of a:", a.shape())
     
     b= np.array([[1, 2], [3, 4]], dtype=np.int8)
     print("\nb:\n", b)
@@ -1035,11 +1119,11 @@ property, i.e.,
 
     a:
      array([1, 2, 3, 4], dtype=int8)
-    shape of a: (1, 4)
+    shape of a: (4,)
     
     b:
      array([[1, 2],
-    	 [3, 4]], dtype=int8)
+           [3, 4]], dtype=int8)
     shape of b: (2, 2)
     
     
@@ -1061,7 +1145,7 @@ i.e.,
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3], dtype=np.int8)
     print("a:\n", a)
@@ -1091,11 +1175,11 @@ i.e.,
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3], dtype=np.int8)
     print("a:\n", a)
-    print("size of a:", a.size)
+    print("size of a:", a.size())
     
     b= np.array([[1, 2], [3, 4]], dtype=np.int8)
     print("\nb:\n", b)
@@ -1109,7 +1193,7 @@ i.e.,
     
     b:
      array([[1, 2],
-    	 [3, 4]], dtype=int8)
+           [3, 4]], dtype=int8)
     size of b: 4
     
     
@@ -1136,7 +1220,7 @@ not dense (i.e., it has already been sliced).
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(8), dtype=np.uint8)
     print('a: ', a)
@@ -1174,7 +1258,7 @@ dimensions is larger than 1.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]], dtype=np.uint8)
     print('a:\n', a)
@@ -1214,7 +1298,7 @@ In-place sorting of an ``ndarray``. For a more detailed exposition, see
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.uint8)
     print('\na:\n', a)
@@ -1222,11 +1306,11 @@ In-place sorting of an ``ndarray``. For a more detailed exposition, see
     print('\na sorted along vertical axis:\n', a)
     
     a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.uint8)
-    a.sort(a, axis=1)
+    a.sort(axis=1)
     print('\na sorted along horizontal axis:\n', a)
     
     a = np.array([[1, 12, 3, 0], [5, 3, 4, 1], [9, 11, 1, 8], [7, 10, 0, 1]], dtype=np.uint8)
-    a.sort(a, axis=None)
+    a.sort(axis=None)
     print('\nflattened a sorted:\n', a)
 
 .. parsed-literal::
@@ -1234,21 +1318,21 @@ In-place sorting of an ``ndarray``. For a more detailed exposition, see
     
     a:
      array([[1, 12, 3, 0],
-    	 [5, 3, 4, 1],
-    	 [9, 11, 1, 8],
-    	 [7, 10, 0, 1]], dtype=uint8)
+           [5, 3, 4, 1],
+           [9, 11, 1, 8],
+           [7, 10, 0, 1]], dtype=uint8)
     
     a sorted along vertical axis:
      array([[1, 3, 0, 0],
-    	 [5, 10, 1, 1],
-    	 [7, 11, 3, 1],
-    	 [9, 12, 4, 8]], dtype=uint8)
+           [5, 10, 1, 1],
+           [7, 11, 3, 1],
+           [9, 12, 4, 8]], dtype=uint8)
     
     a sorted along horizontal axis:
      array([[0, 1, 3, 12],
-    	 [1, 3, 4, 5],
-    	 [1, 8, 9, 11],
-    	 [0, 1, 7, 10]], dtype=uint8)
+           [1, 3, 4, 5],
+           [1, 8, 9, 11],
+           [0, 1, 7, 10]], dtype=uint8)
     
     flattened a sorted:
      array([0, 0, 1, ..., 10, 11, 12], dtype=uint8)
@@ -1272,7 +1356,7 @@ length of the first axis.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4, 5], dtype=np.uint8)
     b = np.array([range(5), range(5), range(5), range(5)], dtype=np.uint8)
@@ -1288,13 +1372,13 @@ length of the first axis.
 
     a:	 array([1, 2, 3, 4, 5], dtype=uint8)
     length of a:  5
-    shape of a:  (1, 5)
+    shape of a:  (5,)
     
     b:	 array([[0, 1, 2, 3, 4],
-    	 [0, 1, 2, 3, 4],
-    	 [0, 1, 2, 3, 4],
-    	 [0, 1, 2, 3, 4]], dtype=uint8)
-    length of b:  4
+           [0, 1, 2, 3, 4],
+           [0, 1, 2, 3, 4],
+           [0, 1, 2, 3, 4]], dtype=uint8)
+    length of b:  2
     shape of b:  (4, 5)
     
     
@@ -1318,7 +1402,7 @@ unexpected, as in the example below:
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([0, -1, -100], dtype=np.int8)
     print("a:\t\t", a)
@@ -1351,7 +1435,7 @@ returned immediately, and no calculation takes place.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([0, -1, -100], dtype=np.int8)
     print("a:\t\t\t ", a)
@@ -1375,7 +1459,7 @@ element in the array. Unsigned values are wrapped.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([10, -1, 1], dtype=np.int8)
     print("a:\t\t", a)
@@ -1406,7 +1490,7 @@ array.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([10, -1, 1], dtype=np.int8)
     print("a:\t\t", a)
@@ -1440,8 +1524,9 @@ side, when compared to scalars. This means that the following works
         
     # code to be run in micropython
     
-    import ulab
-    a = ulab.array([1, 2, 3])
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3])
     print(a > 2)
 
 .. parsed-literal::
@@ -1458,15 +1543,16 @@ exception:
         
     # code to be run in micropython
     
-    import ulab
-    a = ulab.array([1, 2, 3])
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3])
     print(2 < a)
 
 .. parsed-literal::
 
     
     Traceback (most recent call last):
-      File "/dev/shm/micropython.py", line 4, in <module>
+      File "/dev/shm/micropython.py", line 5, in <module>
     TypeError: unsupported types for __lt__: 'int', 'ndarray'
     
 
@@ -1528,7 +1614,7 @@ Upcasting can be seen in action in the following snippet:
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.uint8)
     b = np.array([1, 2, 3, 4], dtype=np.int8)
@@ -1548,8 +1634,8 @@ Upcasting can be seen in action in the following snippet:
     a+b:	 array([2, 4, 6, 8], dtype=int16)
     
     a:	 array([1, 2, 3, 4], dtype=uint8)
-    c:	 array([1.0, 2.0, 3.0, 4.0], dtype=float)
-    a*c:	 array([1.0, 4.0, 9.0, 16.0], dtype=float)
+    c:	 array([1.0, 2.0, 3.0, 4.0], dtype=float64)
+    a*c:	 array([1.0, 4.0, 9.0, 16.0], dtype=float64)
     
     
 
@@ -1585,7 +1671,7 @@ take the following snippet from the micropython manual:
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     @timeit
     def py_add(a, b):
@@ -1658,7 +1744,7 @@ operators return a vector of Booleans indicating the positions
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4, 5, 6, 7, 8], dtype=np.uint8)
     print(a < 5)
@@ -1707,7 +1793,7 @@ reduced-dimensional *view* is created and returned.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4, 5], dtype=np.uint8)
     b = np.array([range(5), range(10, 15, 1), range(20, 25, 1), range(30, 35, 1)], dtype=np.uint8)
@@ -1732,9 +1818,9 @@ reduced-dimensional *view* is created and returned.
     element 4 in a: 5
     
     b:	 array([[0, 1, 2, 3, 4],
-    	[10, 11, 12, 13, 14],
-    	[20, 21, 22, 23, 24],
-    	[30, 31, 32, 33, 34]], dtype=uint8)
+           [10, 11, 12, 13, 14],
+           [20, 21, 22, 23, 24],
+           [30, 31, 32, 33, 34]], dtype=uint8)
     element 0 in b: array([0, 1, 2, 3, 4], dtype=uint8)
     element 1 in b: array([10, 11, 12, 13, 14], dtype=uint8)
     element 2 in b: array([20, 21, 22, 23, 24], dtype=uint8)
@@ -1793,7 +1879,7 @@ Now, we can do the same with numerical arrays.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(10), dtype=np.uint8)
     print('a:\t', a)
@@ -1822,7 +1908,7 @@ pointer* entry is the same in the two printouts.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(10), dtype=np.uint8)
     print('a: ', a, '\n')
@@ -1869,7 +1955,7 @@ square brackets as in
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(10), dtype=np.uint8)
     print("a: ", a)
@@ -1895,7 +1981,7 @@ dimensions, a new *view* is returned, otherwise, we get a single number.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(9), dtype=np.uint8).reshape((3, 3))
     print("a:\n", a)
@@ -1926,7 +2012,7 @@ future version of ``ulab``.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(9), dtype=np.float)
     print("a:\t", a)
@@ -1947,7 +2033,7 @@ is a very concise way of comparing two vectors, e.g.:
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(9), dtype=np.uint8)
     b = np.array([4, 4, 4, 3, 3, 3, 13, 13, 13], dtype=np.uint8)
@@ -1980,7 +2066,7 @@ wherever some condition is fulfilled.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(9), dtype=np.uint8)
     b = np.array(range(9)) + 12
@@ -2004,7 +2090,7 @@ On the right hand side of the assignment we can even have another array.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array(range(9), dtype=np.uint8)
     b = np.array(range(9)) + 12
@@ -2032,7 +2118,7 @@ array. Slices are special python objects of the form
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
     print('a:\n', a)
@@ -2087,7 +2173,7 @@ column. A couple of examples should make these statements clearer:
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.zeros((3, 3), dtype=np.uint8)
     print('a:\n', a)
@@ -2130,7 +2216,7 @@ here are the results:
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.zeros((3, 3), dtype=np.uint8)
     b = a[:,:]
@@ -2168,7 +2254,7 @@ home:
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.zeros((3, 3), dtype=np.uint8)
     b = a.copy()
@@ -2223,7 +2309,7 @@ that leaves ``a`` unchanged.
         
     # code to be run in micropython
     
-    import ulab as np
+    from ulab import numpy as np
     
     a = np.zeros((3, 3), dtype=np.uint8)
     b = a[0].copy()
@@ -2255,8 +2341,3 @@ view is really nothing but a short header with a data array that already
 exists, and is filled up. Hence, creating the view requires only the
 creation of its header. This operation is fast, and uses virtually no
 RAM.
-
-.. code::
-
-    # code to be run in CPython
-    
