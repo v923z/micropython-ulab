@@ -1,4 +1,4 @@
-None
+
 Programming ulab
 ================
 
@@ -909,8 +909,3 @@ function are
    MP_DEFINE_CONST_FUN_OBJ_N()
 3. Binding this function object to the namespace in the
    ``ulab_user_globals_table[]``
-
-.. code::
-
-    # code to be run in CPython
-    

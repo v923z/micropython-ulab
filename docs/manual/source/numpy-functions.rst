@@ -1,4 +1,4 @@
-None
+
 Numpy functions
 ===============
 
@@ -20,7 +20,7 @@ from ``numpy``.
 13. `numpy.median <#median>`__
 14. `numpy.min <#min>`__
 15. `numpy.minimum <#minimum>`__
-16. `numpy.not_equal <#not_equal>`__
+16. `numpy.not_equal <#equal>`__
 17. `numpy.polyfit <#polyfit>`__
 18. `numpy.polyval <#polyval>`__
 19. `numpy.roll <#roll>`__
@@ -570,22 +570,13 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.min.html
 
 See `numpy.max <#max>`__.
 
-.. code::
-
-    # code to be run in CPython
-    
-
 minimum
 -------
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.minimum.html
 
-Returns the minimum of two arrays, or two scalars, or an array, and a
-scalar. If the arrays are of different ``dtype``, the output is upcast
-as in `Binary operators <#Binary-operators>`__. If both inputs are
-scalars, a scalar is returned. Only positional arguments are
-implemented.
+See `numpy.maximum <#maximum>`__
 
 maximum
 -------
@@ -1045,8 +1036,3 @@ points corresponding to ``y``.
     
     
 
-
-.. code::
-
-    # code to be run in CPython
-    

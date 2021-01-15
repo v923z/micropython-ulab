@@ -14,7 +14,7 @@ Welcome to the ulab book!
    ulab-intro
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: User's guide:
 
    ulab-ndarray

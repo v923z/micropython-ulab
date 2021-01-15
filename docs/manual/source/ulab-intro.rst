@@ -1,4 +1,4 @@
-None
+
 Introduction
 ============
 
@@ -101,7 +101,7 @@ approximately 120 kB of extra compiled code to the ``micropython``
 can easily shave tens of kB off the firmware. In fact, if only a small
 sub-set of functions are needed, you can get away with less than 10 kB
 of flash space. See the section on `customising
-ulab <#Custom_builds>`__.
+ulab <#Customising-the-firmware>`__.
 
 Resources and legal matters
 ---------------------------
@@ -145,13 +145,13 @@ implementation details only, which all have been sorted out with the
 generous and enthusiastic support of Jeff Epler from `Adafruit
 Industries <http://www.adafruit.com>`__.
 
-There are, however, a couple of instances, where the usage in the two
-environments is different at the python level. These are how the class
-properties can be accessed. We will point out the differences and
-possible workarounds at the relevant places in this document.
+There are, however, a couple of instances, where the two environments
+differ at the python level in how the class properties can be accessed.
+We will point out the differences and possible workarounds at the
+relevant places in this document.
 
-Customising ``ulab``
-====================
+Customising the firmware
+========================
 
 As mentioned above, ``ulab`` has considerably grown since its
 conception, which also means that it might no longer fit on the
@@ -587,8 +587,3 @@ the
    #define NDARRAY_HAS_BINARY_OP_POWER         (0)
 
 definition.
-
-.. code::
-
-    # code to be run in CPython
-    

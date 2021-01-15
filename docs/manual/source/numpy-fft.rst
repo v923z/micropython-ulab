@@ -1,4 +1,4 @@
-None
+
 Fourier transforms
 ==================
 

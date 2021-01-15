@@ -1,6 +1,6 @@
-None
-ndarray, the basic container
-============================
+
+ndarray, the base class
+=======================
 
 The ``ndarray`` is the underlying container of numerical data. It can be
 thought of as micropython’s own ``array`` object, but has a great number
@@ -250,7 +250,17 @@ type, or performance is important.
 Array initialisation functions
 ------------------------------
 
-There are seven functions that can be used for initialising an array.
+There are nine functions that can be used for initialising an array.
+
+1. `numpy.arange <#arange>`__
+2. `numpy.concatenate <#concatenate>`__
+3. `numpy.eye <#eye>`__
+4. `numpy.frombuffer <#frombuffer>`__
+5. `numpy.full <#full>`__
+6. `numpy.linspace <#linspace>`__
+7. `numpy.logspace <#logspace>`__
+8. `numpy.ones <#ones>`__
+9. `numpy.zeros <#zeros>`__
 
 arange
 ~~~~~~
@@ -438,6 +448,52 @@ Specifying the dimensions of the matrix
            [0, 1, 0, 0, 0, 0],
            [0, 0, 1, 0, 0, 0],
            [0, 0, 0, 1, 0, 0]], dtype=int8)
+    
+    
+
+
+frombuffer
+~~~~~~~~~~
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html
+
+The function interprets a contiguous buffer as a one-dimensional array,
+and thus can be used for piping buffered data directly into an array.
+This method of analysing, e.g., ADC data is much more efficient than
+passing the ADC buffer into the ``array`` constructor, because
+``frombuffer`` simply creates the ``ndarray`` header and blindly copies
+the memory segment, without inspecting the underlying data.
+
+The function takes a single positional argument, the buffer, and three
+keyword arguments. These are the ``dtype`` with a default value of
+``float``, the ``offset``, with a default of 0, and the ``count``, with
+a default of -1, meaning that all data are taken in.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    buffer = b'\x01\x02\x03\x04\x05\x06\x07\x08'
+    print('buffer: ', buffer)
+    
+    a = np.frombuffer(buffer, dtype=np.uint8)
+    print('a, all data read: ', a)
+    
+    b = np.frombuffer(buffer, dtype=np.uint8, offset=2)
+    print('b, all data with an offset: ', b)
+    
+    c = np.frombuffer(buffer, dtype=np.uint8, offset=2, count=3)
+    print('c, only 3 items with an offset: ', c)
+
+.. parsed-literal::
+
+    buffer:  b'\x01\x02\x03\x04\x05\x06\x07\x08'
+    a, all data read:  array([1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    b, all data with an offset:  array([3, 4, 5, 6, 7, 8], dtype=uint8)
+    c, only 3 items with an offset:  array([3, 4, 5], dtype=uint8)
     
     
 
@@ -2285,8 +2341,3 @@ view is really nothing but a short header with a data array that already
 exists, and is filled up. Hence, creating the view requires only the
 creation of its header. This operation is fast, and uses virtually no
 RAM.
-
-.. code::
-
-    # code to be run in CPython
-    
