@@ -666,7 +666,7 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             if(len < count) {
                 mp_raise_ValueError(translate("buffer is smaller than requested size"));
             } else {
-                len -= count;
+                len = count;
             }
         }
         ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);

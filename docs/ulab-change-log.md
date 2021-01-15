@@ -1,3 +1,9 @@
+Fri, 15 Jan 2021
+
+version 2.1.2
+
+    fixed small error in frombuffer
+
 Thu, 14 Jan 2021
 
 version 2.1.1
