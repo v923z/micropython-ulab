@@ -1,0 +1,23 @@
+ jobs:
+   test:
++   strategy:
++    matrix:
++     max_dims: [1, 2, 3, 4]
++     function_iterator: [0, 1]
+     runs-on: ubuntu-16.04
+     steps:
+     - name: Dump GitHub context
+@@ -44,6 +48,13 @@ jobs:
+     - name: Build mpy-cross
+       run: make -C micropython/mpy-cross -j2
+ 
++    - name: Set build flags
++      run: |
++        echo "#define ULAB_MAX_DIMS ($MAX_DIMS)" >> micropython/ports/unix/mpconfigport.h
++        echo "#define ULAB_HAS_FUNCTION_ITERATOR ($FUNCTION_ITERATOR)" >> micropython/ports/unix/mpconfigport.h
++      env:
++        MAX_DIMS: ${{ matrix.max_dims }}
++        FUNCTION_ITERATOR: ${{ matrix.function_iterator }}
+     - name: Build micropython unix port
+       run: |
+         make -C micropython/ports/unix -j2 deplibs

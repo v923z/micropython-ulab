@@ -6,8 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2021 Zoltán Vörös
- *               2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019-2020 Zoltán Vörös
 */
 
 #include <math.h>
@@ -19,26 +18,40 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
-#include "ulab.h"
-#include "ulab_create.h"
-#include "ndarray.h"
-#include "ndarray_properties.h"
+#include "ulabcpy.h"
+#include "../ulab.h"
+#include "../ulab_create.h"
+#include "../ndarray.h"
+#include "../ndarray_properties.h"
 
-#include "numpy/numpy.h"
-#include "scipy/scipy.h"
-#include "numpy/fft/fft.h"
-#include "numpy/linalg/linalg.h"
-// TODO: we should get rid of this; array.sort depends on it
-#include "numpy/numerical/numerical.h"
+#include "approx/approx.h"
+#include "vector/vector.h"
+#include "numerical/numerical.h"
 
-#include "user/user.h"
 
-#define ULAB_VERSION 2.1.2
+#define ULAB_VERSION 2.1.0
 #define xstr(s) str(s)
 #define str(s) #s
-#define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
+#define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D) xstr(-cpy)
 
 STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
+
+// math constants
+#if ULAB_NUMPY_HAS_E
+mp_obj_float_t ulab_const_float_e_obj;
+#endif
+
+#if ULAB_NUMPY_HAS_INF
+mp_obj_float_t numpy_const_float_inf_obj = {{&mp_type_float}, INFINITY};
+#endif
+
+#if ULAB_NUMPY_HAS_NAN
+mp_obj_float_t numpy_const_float_nan_obj = {{&mp_type_float}, NAN};
+#endif
+
+#if ULAB_NUMPY_HAS_PI
+mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
+#endif
 
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
@@ -117,6 +130,32 @@ const mp_obj_type_t ulab_dtype_type = {
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ndarray), (mp_obj_t)&ulab_ndarray_type },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_array), MP_ROM_PTR(&ndarray_array_constructor_obj) },
+    #if ULAB_NUMPY_HAS_FROMBUFFER
+        //{ MP_ROM_QSTR(MP_QSTR_frombuffer), MP_ROM_PTR(&create_frombuffer_obj) },
+    #endif
+	// class constants, always included
+    { MP_ROM_QSTR(MP_QSTR_bool), MP_ROM_INT(NDARRAY_BOOL) },
+    { MP_ROM_QSTR(MP_QSTR_uint8), MP_ROM_INT(NDARRAY_UINT8) },
+    { MP_ROM_QSTR(MP_QSTR_int8), MP_ROM_INT(NDARRAY_INT8) },
+    { MP_ROM_QSTR(MP_QSTR_uint16), MP_ROM_INT(NDARRAY_UINT16) },
+    { MP_ROM_QSTR(MP_QSTR_int16), MP_ROM_INT(NDARRAY_INT16) },
+    { MP_ROM_QSTR(MP_QSTR_float), MP_ROM_INT(NDARRAY_FLOAT) },
+
+    // math constants
+    #if ULAB_NUMPY_HAS_E
+        { MP_ROM_QSTR(MP_QSTR_e), MP_ROM_PTR(&ulab_const_float_e_obj) },
+    #endif
+    #if ULAB_NUMPY_HAS_INF
+        { MP_ROM_QSTR(MP_QSTR_inf), MP_ROM_PTR(&numpy_const_float_inf_obj) },
+    #endif
+    #if ULAB_NUMPY_HAS_NAN
+        { MP_ROM_QSTR(MP_QSTR_nan), MP_ROM_PTR(&numpy_const_float_nan_obj) },
+    #endif
+    #if ULAB_NUMPY_HAS_PI
+        { MP_ROM_QSTR(MP_QSTR_pi), MP_ROM_PTR(&ulab_const_float_pi_obj) },
+    #endif
     #if ULAB_HAS_DTYPE_OBJECT
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ulab_dtype_type },
     #else
@@ -124,13 +163,30 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ndarray_dtype_obj },
         #endif /* NDARRAY_HAS_DTYPE */
     #endif /* ULAB_HAS_DTYPE_OBJECT */
-        { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
-    #if ULAB_HAS_SCIPY
-        { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR(&ulab_scipy_module) },
-    #endif
-    #if ULAB_USER_MODULE
-        { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
-    #endif
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_ndarray), (mp_obj_t)&ulab_ndarray_type },
+	// TODO: odd, but he following doesn't work with MP_ROM_PTR(&ndarray_array_constructor_obj)
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&ndarray_array_constructor_obj },
+	#if ULAB_APPROX_MODULE
+		{ MP_ROM_QSTR(MP_QSTR_approx), MP_ROM_PTR(&ulab_approx_module) },
+	#endif
+	#if ULAB_COMPARE_MODULE
+		{ MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&ulab_compare_module) },
+	#endif
+	#if ULAB_FILTER_MODULE
+		{ MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&ulab_filter_module) },
+	#endif
+	#if ULAB_LINALG_MODULE
+		{ MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
+	#endif
+	#if ULAB_NUMERICAL_MODULE
+		{ MP_ROM_QSTR(MP_QSTR_numerical), MP_ROM_PTR(&ulab_numerical_module) },
+	#endif
+	#if ULAB_POLY_MODULE
+		{ MP_ROM_QSTR(MP_QSTR_poly), MP_ROM_PTR(&ulab_poly_module) },
+	#endif
+	#if ULAB_VECTORISE_MODULE
+		{ MP_ROM_QSTR(MP_QSTR_vector), MP_ROM_PTR(&ulab_vectorise_module) },
+	#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT (
@@ -138,11 +194,7 @@ STATIC MP_DEFINE_CONST_DICT (
     ulab_globals_table
 );
 
-#ifdef OPENMV
-const struct _mp_obj_module_t ulab_user_cmodule = {
-#else
 const mp_obj_module_t ulab_user_cmodule = {
-#endif
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_globals,
 };
