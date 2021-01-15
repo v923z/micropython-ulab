@@ -1,3 +1,10 @@
+Fri, 15 Jan 2021
+
+version 1.7.1
+
+    fixed small error in frombuffer
+
+
 Thu, 14 Jan 2021
 
 version 1.7.0
