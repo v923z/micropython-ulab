@@ -1,6 +1,6 @@
 # ulab
 
-`ulab` is a `numpy`-like array manipulation library for `micropython` and `CircuitPython`.
+`ulab` is a `numpy`-like array manipulation library for [micropython](http://micropython.org/) and [CircuitPython](https://circuitpython.org/).
 The module is written in C, defines compact containers for numerical data of one to four
 dimensions, and is fast. The library is a software-only standard `micropython` user module,
 i.e., it has no hardware dependencies, and can be compiled for any platform.
@@ -14,25 +14,30 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 `ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, `**`,
 `+=`, `-=`, `*=`, `/=`, `**=` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that
 operate element-wise. Type-aware `ndarray`s can be initialised from any `micropython` iterable, lists of
-iterables, or by means of the `arange`, `concatenate`, `diag`, `eye`, `frombuffer`, `full`, `linspace`, `logspace`, `ones`, or
-`zeros`  functions.
+iterables via the `array` constructor, or by means of the `arange`, `concatenate`, `diag`, `eye`, 
+`frombuffer`, `full`, `linspace`, `logspace`, `ones`, or `zeros`  functions.
 
-`ndarray`s can be iterated on, and have a number of their own methods, such as `flatten`, `shape`,
-`reshape`, `strides`, `transpose`, `size`, `tobytes`, and `itemsize`.
+`ndarray`s can be iterated on, and have a number of their own methods, such as `flatten`, `itemsize`, `reshape`,
+`shape`, `size`, `strides`, `tobytes`, and `transpose`.
 
 
 ## Customising the firmware
 
 In addition to the `ndarray` operators and methods, `ulab` defines a great number of functions that can
-take `ndarray`s or `micropython` iterables as their arguments. If flash space is a concern, unnecessary functions
-can be excluded from the compiled firmware with pre-processor switches. Most of the functions are parts of
-`numpy`, but several are re-implementations of `scipy` features. For a full list of functions, see
+take `ndarray`s or `micropython` iterables as their arguments. Most of the functions have been ported from 
+`numpy`, but several are re-implementations of `scipy` features. For a complete list, see
 [micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest)!
+
+If flash space is a concern, unnecessary functions can be excluded from the compiled firmware with 
+pre-processor switches. In addition, `ulab` also has options for trading execution speed for firmware size. 
+A thorough discussion on how the firmware can be customised can be found in the 
+[corresponding section](https://micropython-ulab.readthedocs.io/en/latest/ulab-intro.html#customising-the-firmware) 
+of the user manual.
 
 
 ## Usage
 
-`ulab` sports a `numpy`-compatible interface, which makes porting of `CPython` code straightforward. The following
+`ulab` sports a `numpy/scipy`-compatible interface, which makes porting of `CPython` code straightforward. The following
 snippet should run equally well in `micropython`, or on a PC.
 
 ```python
