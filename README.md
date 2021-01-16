@@ -83,6 +83,24 @@ in question.
 If you want to try the latest version of `ulab` on `micropython` or one of its forks, the firmware can be compiled
 from the source by following these steps:
 
+### UNIX port
+
+Simply clone the `ulab` repository with
+
+```bash
+git clone https://github.com/v923z/micropython-ulab.git ulab
+```
+and then run 
+
+```bash
+./build.sh
+```
+This command will clone `micropython`, and build the `unix` port automatically, as well as run the test scripts. If you want an interactive `unix` session, you can launch it in 
+
+```bash
+ulab/micropython/ports/unix
+```
+
 ### STM-based boards
 
 First, you have to clone the `micropython` repository by running
