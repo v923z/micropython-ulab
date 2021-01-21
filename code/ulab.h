@@ -12,6 +12,8 @@
 #ifndef __ULAB__
 #define __ULAB__
 
+
+
 // The pre-processor constants in this file determine how ulab behaves:
 //
 // - how many dimensions ulab can handle
@@ -22,6 +24,13 @@
 //
 // A considerable amount of flash space can be saved by removing (setting
 // the corresponding constants to 0) the unnecessary functions and features.
+
+// Values defined here can be overridden by your own config file as 
+// make -DULAB_CONFIG_FILE="my_ulab_config.h"
+#if defined(ULAB_CONFIG_FILE)
+#include ULAB_CONFIG_FILE
+#endif
+
 
 // Determines, whether scipy is defined in ulab. The sub-modules and functions
 // of scipy have to be defined separately
