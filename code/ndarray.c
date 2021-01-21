@@ -836,23 +836,50 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
         return MP_OBJ_FROM_PTR(target);
     }
 
-    mp_obj_t len_in = mp_obj_len_maybe(args[0]);
-    size_t len1 = 0, len2 = 0;
-    if (len_in == MP_OBJ_NULL) {
-        mp_raise_ValueError(translate("first argument must be an iterable"));
-    } else {
-        // len1 is either the number of rows (for matrices), or the number of elements (row vectors)
-        len1 = MP_OBJ_SMALL_INT_VALUE(len_in);
-    }
-    ndarray_obj_t *self;
+    // We have to figure out, whether the elements of the iterable are iterables themself
+    size_t len[ULAB_MAX_DIMS];
+    uint8_t ndim = 0;
+    mp_obj_t obj = args[0];
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(obj, &iter_buf);
 
-    // We have to figure out, whether the first element of the iterable is an iterable itself
-    // Perhaps, there is a more elegant way of handling this
+    while(ndim < ULAB_MAX_DIMS) {
+        mp_obj_t len_in = mp_obj_len_maybe(obj);
+        if (len_in == MP_OBJ_NULL) {
+            break;
+        } else {
+            len[ndim] = MP_OBJ_SMALL_INT_VALUE(len_in);
+            obj = iterable;
+            iterable = mp_getiter(obj, &iter_buf);
+            ndim++;
+        }
+    }
+    // shift all length values to the right
+    for(uint8_t i=ULAB_MAX_DIMS-1; i > ndim; i--) {
+        len[i] = len[i - (ULAB_MAX_DIMS - ndim)];
+    }
+    // TODO: This will not work, if ULAB_MAX_DIMS = 1
+    ndarray_obj_t *self = ndarray_new_dense_ndarray(ndim, len, dtype);
+
+    // Now, the recursive assignment loop
+    mp_obj_iter_buf_t iter_buf[ndim];
+    mp_obj_t item[ndim];
+    obj = args[0];
+    uint8_t i = 0;
+    size_t idx = 0;
+    while(i < ndim) {
+        ndarray_assign_elements(self, iterable, self->dtype, &idx);
+        obj = iterable;
+        iterable = mp_getiter(obj, &iter_buf);
+        ndim++;
+    }
+
     mp_obj_iter_buf_t iter_buf1;
     mp_obj_t iterable1 = mp_getiter(args[0], &iter_buf1);
     #if ULAB_MAX_DIMS > 1
     mp_obj_t item1;
     size_t i = 0;
+    size_t idx = 0;
     while ((item1 = mp_iternext(iterable1)) != MP_OBJ_STOP_ITERATION) {
         len_in = mp_obj_len_maybe(item1);
         if(len_in != MP_OBJ_NULL) { // indeed, this seems to be an iterable
