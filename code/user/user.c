@@ -17,7 +17,7 @@
 #include "py/misc.h"
 #include "user.h"
 
-#if ULAB_USER_MODULE
+#if ULAB_HAS_USER_MODULE
 
 //| """This module should hold arbitrary user-defined functions."""
 //|
@@ -80,12 +80,12 @@ static mp_obj_t user_square(mp_obj_t arg) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(user_square_obj, user_square);
 
-STATIC const mp_rom_map_elem_t ulab_user_globals_table[] = {
+static const mp_rom_map_elem_t ulab_user_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_user) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_square), (mp_obj_t)&user_square_obj },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_user_globals, ulab_user_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_ulab_user_globals, ulab_user_globals_table);
 
 mp_obj_module_t ulab_user_module = {
     .base = { &mp_type_module },
