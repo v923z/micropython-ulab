@@ -174,8 +174,108 @@ mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
 MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
 #endif
 
-#if ULAB_NUMPY_HAS_MAXIMUM
+#if ULAB_NUMPY_HAS_ISFINITE | ULAB_NUMPY_HAS_ISINF
+static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
+    // mask should signify, whether the function is called from isinf (mask = 1),
+    // or from isfinite (mask = 0)
+    if(MP_OBJ_IS_INT(_x)) {
+        if(mask) {
+            return mp_const_false;
+        } else {
+            return mp_const_true;
+        }
+    } else if(mp_obj_is_float(_x)) {
+        mp_float_t x = mp_obj_get_float(_x);
+        if(isnan(x)) {
+            return mp_const_false;
+        }
+        if(mask) { // called from isinf
+            return isinf(x) ? mp_const_true : mp_const_false;
+        } else { // called from isfinite
+            return isinf(x) ? mp_const_false : mp_const_true;
+        }
+    } else if(MP_OBJ_IS_TYPE(_x, &ulab_ndarray_type)) {
+        ndarray_obj_t *x = MP_OBJ_TO_PTR(_x);
+        ndarray_obj_t *results = ndarray_new_dense_ndarray(x->ndim, x->shape, NDARRAY_BOOL);
+        // At this point, results is all False
+        uint8_t *rarray = (uint8_t *)results->array;
+        if(x->dtype != NDARRAY_FLOAT) {
+            // int types can never be infinite...
+            if(!mask) {
+                // ...so flip all values in the array, if the function was called from isfinite
+                memset(rarray, 1, results->len);
+            }
+            return results;
+        }
+        uint8_t *xarray = (uint8_t *)x->array;
 
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        mp_float_t value = *(mp_float_t *)xarray;
+                        if(isnan(value)) {
+                            *rarray++ = 0;
+                        } else {
+                            *rarray++ = isinf(value) ? mask : 1 - mask;
+                        }
+                        xarray += x->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l < x->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    xarray -= x->strides[ULAB_MAX_DIMS - 1] * x->shape[ULAB_MAX_DIMS-1];
+                    xarray += x->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < x->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                xarray -= x->strides[ULAB_MAX_DIMS - 2] * x->shape[ULAB_MAX_DIMS-2];
+                xarray += x->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < x->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            xarray -= x->strides[ULAB_MAX_DIMS - 3] * x->shape[ULAB_MAX_DIMS-3];
+            xarray += x->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < x->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+
+        return results;
+    } else {
+        mp_raise_TypeError(translate("wrong input type"));
+    }
+    return mp_const_none;
+}
+#endif
+
+#if ULAB_NUMPY_HAS_ISFINITE
+mp_obj_t compare_isfinite(mp_obj_t _x) {
+    return compare_isinf_isfinite(_x, 0);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(compare_isfinite_obj, compare_isfinite);
+#endif
+
+#if ULAB_NUMPY_HAS_ISINF
+mp_obj_t compare_isinf(mp_obj_t _x) {
+    return compare_isinf_isfinite(_x, 1);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(compare_isinf_obj, compare_isinf);
+#endif
+
+#if ULAB_NUMPY_HAS_MAXIMUM
 mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return maximum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MAXIMUM);
