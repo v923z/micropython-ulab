@@ -1,3 +1,9 @@
+wed, 27 Jan 2021
+
+version 2.1.4
+
+    arrays can now be initialised from nested iterables
+
 Fri, 15 Jan 2021
 
 version 2.1.2

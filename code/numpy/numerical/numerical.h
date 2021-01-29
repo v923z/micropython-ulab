@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -359,8 +359,8 @@
             (rarray) += (results)->strides[ULAB_MAX_DIMS - 2];\
             l++;\
         } while(l < (shape)[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ndarray)->[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
-        (array) += (ndarray)->[ULAB_MAX_DIMS - 3];\
+        (array) -= (ndarray)->strides[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (array) += (ndarray)->strides[ULAB_MAX_DIMS - 3];\
         (rarray) -= (results)->strides[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
         (rarray) += (results)->strides[ULAB_MAX_DIMS - 3];\
         k++;\
