@@ -34,6 +34,8 @@ A thorough discussion on how the firmware can be customised can be found in the
 [corresponding section](https://micropython-ulab.readthedocs.io/en/latest/ulab-intro.html#customising-the-firmware) 
 of the user manual.
 
+It is also possible to extend the library with arbitrary user-defined functions operating on numerical arrays, and add them to the namespace, as explaind in the   [programming manual](https://micropython-ulab.readthedocs.io/en/latest/ulab-programming.html).
+
 
 ## Usage
 
