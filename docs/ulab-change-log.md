@@ -1,3 +1,9 @@
+Fri, 29 Jan 2021
+
+version 1.7.2
+
+    fixed code calculating the standard deviation of iterables
+
 Fri, 15 Jan 2021
 
 version 1.7.1

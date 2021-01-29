@@ -68,16 +68,10 @@ static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, si
     size_t count = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t item, iterable = mp_getiter(oin, &iter_buf);
-    if((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        value = mp_obj_get_float(item);
-        sum += value;
-        M = m = value;
-        count++;
-    }
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         value = mp_obj_get_float(item);
         sum += value;
-        m = M + (value - M) / count;
+        m = M + (value - M) / (count + 1);
         s = S + (value - M) * (value - m);
         M = m;
         S = s;
@@ -88,7 +82,7 @@ static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, si
     } else if(optype == NUMERICAL_MEAN) {
         return count > 0 ? mp_obj_new_float(m) : mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
     } else { // this should be the case of the standard deviation
-        return count > ddof ? mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(count * s / (count - ddof))) : mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
+        return count > ddof ? mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(s / (count - ddof))) : mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
     }
 }
 

@@ -74,8 +74,8 @@
 // the ndarray binary operators
 #define NDARRAY_HAS_BINARY_OPS              (1)
 
-// Firmware size can be reduced at the expense of speed by using function 
-// pointers in iterations. For each operator, he function pointer saves around 
+// Firmware size can be reduced at the expense of speed by using function
+// pointers in iterations. For each operator, he function pointer saves around
 // 2 kB in the two-dimensional case, and around 4 kB in the four-dimensional case.
 
 #define NDARRAY_BINARY_USES_FUN_POINTER     (0)
@@ -209,7 +209,7 @@
 #ifndef ULAB_VECTORISE_MODULE
 #define ULAB_VECTORISE_MODULE           (1)
 
-// Firmware size can be reduced at the expense of speed by using a function 
+// Firmware size can be reduced at the expense of speed by using a function
 // pointer in iterations. Setting ULAB_VECTORISE_USES_FUNCPOINTER to 1 saves
 // around 800 bytes in the four-dimensional case, and around 200 in two dimensions.
 #define ULAB_VECTORISE_USES_FUN_POINTER (1)
