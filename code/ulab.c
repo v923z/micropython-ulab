@@ -30,7 +30,6 @@
 #include "numpy/linalg/linalg.h"
 // TODO: we should get rid of this; array.sort depends on it
 #include "numpy/numerical/numerical.h"
-#endif
 
 #include "user/user.h"
 
