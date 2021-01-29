@@ -4,6 +4,12 @@ version 2.1.5
 
     fixed error, when calculating standard deviation of iterables
 
+wed, 27 Jan 2021
+
+version 2.1.4
+
+    arrays can now be initialised from nested iterables
+
 Thu, 21 Jan 2021
 
 version 2.1.3
