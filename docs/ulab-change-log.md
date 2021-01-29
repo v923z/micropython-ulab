@@ -1,3 +1,9 @@
+Fri, 29 Jan 2021
+
+version 2.1.5
+
+    fixed error, when calculating standard deviation of iterables
+
 Thu, 21 Jan 2021
 
 version 2.1.3

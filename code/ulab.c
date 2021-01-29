@@ -24,9 +24,6 @@
 #include "ndarray.h"
 #include "ndarray_properties.h"
 
-#if CIRCUITPY
-#include "circuitpy/vector/vector.h"
-#else
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
 #include "numpy/fft/fft.h"
@@ -37,7 +34,7 @@
 
 #include "user/user.h"
 
-#define ULAB_VERSION 2.1.3
+#define ULAB_VERSION 2.1.5
 #define xstr(s) str(s)
 #define str(s) #s
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
