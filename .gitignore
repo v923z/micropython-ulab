@@ -4,3 +4,6 @@
 /*.out
 /docs/manual/build/
 /docs/manual/source/**/*.pyi
+/docs/.ipynb_checkpoints/
+/docs/ulab-test.ipynb
+/code/.atom-build.yml
