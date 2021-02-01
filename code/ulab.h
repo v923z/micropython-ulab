@@ -25,7 +25,7 @@
 // A considerable amount of flash space can be saved by removing (setting
 // the corresponding constants to 0) the unnecessary functions and features.
 
-// Values defined here can be overridden by your own config file as 
+// Values defined here can be overridden by your own config file as
 // make -DULAB_CONFIG_FILE="my_ulab_config.h"
 #if defined(ULAB_CONFIG_FILE)
 #include ULAB_CONFIG_FILE
@@ -307,8 +307,12 @@
 #define ULAB_NUMPY_HAS_EQUAL            (1)
 #endif
 
-#ifndef ULAB_NUMPY_HAS_NOTEQUAL
-#define ULAB_NUMPY_HAS_NOTEQUAL         (1)
+#ifndef ULAB_NUMPY_HAS_ISFINITE
+#define ULAB_NUMPY_HAS_ISFINITE         (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_ISINF
+#define ULAB_NUMPY_HAS_ISINF            (1)
 #endif
 
 #ifndef ULAB_NUMPY_HAS_MAXIMUM
@@ -317,6 +321,10 @@
 
 #ifndef ULAB_NUMPY_HAS_MINIMUM
 #define ULAB_NUMPY_HAS_MINIMUM          (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_NOTEQUAL
+#define ULAB_NUMPY_HAS_NOTEQUAL         (1)
 #endif
 
 // the linalg module; functions of the linalg module still have

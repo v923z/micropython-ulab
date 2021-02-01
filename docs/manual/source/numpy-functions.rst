@@ -14,20 +14,22 @@ from ``numpy``.
 7.  `numpy.equal <#equal>`__
 8.  `numpy.flip <#flip>`__
 9.  `numpy.interp <#interp>`__
-10. `numpy.max <#max>`__
-11. `numpy.maximum <#maximum>`__
-12. `numpy.mean <#mean>`__
-13. `numpy.median <#median>`__
-14. `numpy.min <#min>`__
-15. `numpy.minimum <#minimum>`__
-16. `numpy.not_equal <#equal>`__
-17. `numpy.polyfit <#polyfit>`__
-18. `numpy.polyval <#polyval>`__
-19. `numpy.roll <#roll>`__
-20. `numpy.sort <#sort>`__
-21. `numpy.std <#std>`__
-22. `numpy.sum <#sum>`__
-23. `numpy.trapz <#trapz>`__
+10. `numpy.isfinite <#isfinite>`__
+11. `numpy.isinf <#isinf>`__
+12. `numpy.max <#max>`__
+13. `numpy.maximum <#maximum>`__
+14. `numpy.mean <#mean>`__
+15. `numpy.median <#median>`__
+16. `numpy.min <#min>`__
+17. `numpy.minimum <#minimum>`__
+18. `numpy.not_equal <#equal>`__
+19. `numpy.polyfit <#polyfit>`__
+20. `numpy.polyval <#polyval>`__
+21. `numpy.roll <#roll>`__
+22. `numpy.sort <#sort>`__
+23. `numpy.std <#std>`__
+24. `numpy.sum <#sum>`__
+25. `numpy.trapz <#trapz>`__
 
 argmax
 ------
@@ -422,6 +424,130 @@ respectively. If these arguments are not supplied, ``left``, and
     array([1.0, 1.8, 2.8, 4.6, 5.0], dtype=float64)
     array([0.0, 1.8, 2.8, 4.6, 5.0], dtype=float64)
     array([1.0, 1.8, 2.8, 4.6, 10.0], dtype=float64)
+    
+    
+
+
+isfinite
+--------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.isfinite.html
+
+Returns a Boolean array of the same shape as the input, or a
+``True/False``, if the input is a scalar. In the return value, all
+elements are ``True`` at positions, where the input value was finite.
+Integer types are automatically finite, therefore, if the input is of
+integer type, the output will be the ``True`` tensor.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    print('isfinite(0): ', np.isfinite(0))
+    
+    a = np.array([1, 2, np.nan])
+    print('\n' + '='*20)
+    print('a:\n', a)
+    print('\nisfinite(a):\n', np.isfinite(a))
+    
+    b = np.array([1, 2, np.inf])
+    print('\n' + '='*20)
+    print('b:\n', b)
+    print('\nisfinite(b):\n', np.isfinite(b))
+    
+    c = np.array([1, 2, 3], dtype=np.uint16)
+    print('\n' + '='*20)
+    print('c:\n', c)
+    print('\nisfinite(c):\n', np.isfinite(c))
+
+.. parsed-literal::
+
+    isfinite(0):  True
+    
+    ====================
+    a:
+     array([1.0, 2.0, nan], dtype=float64)
+    
+    isfinite(a):
+     array([True, True, False], dtype=bool)
+    
+    ====================
+    b:
+     array([1.0, 2.0, inf], dtype=float64)
+    
+    isfinite(b):
+     array([True, True, False], dtype=bool)
+    
+    ====================
+    c:
+     array([1, 2, 3], dtype=uint16)
+    
+    isfinite(c):
+     array([True, True, True], dtype=bool)
+    
+    
+
+
+isinf
+-----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.isinf.html
+
+Similar to `isfinite <#isfinite>`__, but the output is ``True`` at
+positions, where the input is infinite. Integer types return the
+``False`` tensor.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    print('isinf(0): ', np.isinf(0))
+    
+    a = np.array([1, 2, np.nan])
+    print('\n' + '='*20)
+    print('a:\n', a)
+    print('\nisinf(a):\n', np.isinf(a))
+    
+    b = np.array([1, 2, np.inf])
+    print('\n' + '='*20)
+    print('b:\n', b)
+    print('\nisinf(b):\n', np.isinf(b))
+    
+    c = np.array([1, 2, 3], dtype=np.uint16)
+    print('\n' + '='*20)
+    print('c:\n', c)
+    print('\nisinf(c):\n', np.isinf(c))
+
+.. parsed-literal::
+
+    isinf(0):  False
+    
+    ====================
+    a:
+     array([1.0, 2.0, nan], dtype=float64)
+    
+    isinf(a):
+     array([False, False, False], dtype=bool)
+    
+    ====================
+    b:
+     array([1.0, 2.0, inf], dtype=float64)
+    
+    isinf(b):
+     array([False, False, True], dtype=bool)
+    
+    ====================
+    c:
+     array([1, 2, 3], dtype=uint16)
+    
+    isinf(c):
+     array([False, False, False], dtype=bool)
     
     
 

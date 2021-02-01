@@ -132,6 +132,12 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_NOTEQUAL
         { MP_OBJ_NEW_QSTR(MP_QSTR_not_equal), (mp_obj_t)&compare_not_equal_obj },
     #endif
+    #if ULAB_NUMPY_HAS_ISFINITE
+        { MP_OBJ_NEW_QSTR(MP_QSTR_isfinite), (mp_obj_t)&compare_isfinite_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ISINF
+        { MP_OBJ_NEW_QSTR(MP_QSTR_isinf), (mp_obj_t)&compare_isinf_obj },
+    #endif
     #if ULAB_NUMPY_HAS_MAXIMUM
         { MP_OBJ_NEW_QSTR(MP_QSTR_maximum), (mp_obj_t)&compare_maximum_obj },
     #endif

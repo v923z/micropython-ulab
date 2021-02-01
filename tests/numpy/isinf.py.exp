@@ -1,0 +1,37 @@
+isinf(0):  False
+
+====================
+a:
+ array([1.0, 2.0, nan], dtype=float64)
+
+isinf(a):
+ array([False, False, False], dtype=bool)
+
+====================
+b:
+ array([1.0, 2.0, inf], dtype=float64)
+
+isinf(b):
+ array([False, False, True], dtype=bool)
+
+====================
+c:
+ array([1, 2, 3], dtype=uint16)
+
+isinf(c):
+ array([False, False, False], dtype=bool)
+
+====================
+d:
+ array([[inf, nan, nan, nan, nan],
+       [nan, inf, nan, nan, nan],
+       [nan, nan, inf, nan, nan],
+       [nan, nan, nan, inf, nan],
+       [nan, nan, nan, nan, inf]], dtype=float64)
+
+isinf(d):
+ array([[True, False, False, False, False],
+       [False, True, False, False, False],
+       [False, False, True, False, False],
+       [False, False, False, True, False],
+       [False, False, False, False, True]], dtype=bool)

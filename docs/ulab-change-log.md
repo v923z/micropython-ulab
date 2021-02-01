@@ -1,5 +1,11 @@
 Fri, 29 Jan 2021
 
+version 2.2.0
+
+    added isinf/infinite functions
+
+Fri, 29 Jan 2021
+
 version 2.1.5
 
     fixed error, when calculating standard deviation of iterables
