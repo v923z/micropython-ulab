@@ -61,6 +61,38 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
     }
 }
 
+#if ULAB_NUMPY_HAS_ALL | ULAB_NUMPY_HAS_ANY
+static mp_obj_t numerical_all_any_iterable(mp_obj_t oin, bool anytype) {
+    if(mp_obj_is_int(oin) || mp_obj_is_float(oin)) {
+        return mp_obj_is_true(oin) ? mp_const_true : mp_const_false;
+    }
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t item, iterable = mp_getiter(oin, &iter_buf);
+    while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if(!mp_obj_is_true(item) & !anytype) {
+            return mp_const_false;
+        } else if(mp_obj_is_true(item) & anytype) {
+            return mp_const_true;
+        }
+    }
+    return anytype ? mp_const_false : mp_const_true;
+}
+
+#if ULAB_NUMPY_HAS_ALL
+mp_obj_t numerical_all(mp_obj_t oin) {
+    return numerical_all_any_iterable(oin, false);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(numerical_all_obj, numerical_all);
+#endif
+
+#if ULAB_NUMPY_HAS_ANY
+mp_obj_t numerical_any(mp_obj_t oin) {
+    return numerical_all_any_iterable(oin, true);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(numerical_any_obj, numerical_any);
+#endif
+#endif
+
 #if ULAB_NUMPY_HAS_SUM | ULAB_NUMPY_HAS_MEAN | ULAB_NUMPY_HAS_STD
 static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, size_t ddof) {
     mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0, sum = 0.0;

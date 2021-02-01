@@ -149,6 +149,12 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
         { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
     #endif
     // functions of the numerical sub-module
+    #if ULAB_NUMPY_HAS_ALL
+        { MP_OBJ_NEW_QSTR(MP_QSTR_all), (mp_obj_t)&numerical_all_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_ANY
+        { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&numerical_any_obj },
+    #endif
     #if ULAB_NUMPY_HAS_ARGMINMAX
         { MP_OBJ_NEW_QSTR(MP_QSTR_argmax), (mp_obj_t)&numerical_argmax_obj },
         { MP_OBJ_NEW_QSTR(MP_QSTR_argmin), (mp_obj_t)&numerical_argmin_obj },

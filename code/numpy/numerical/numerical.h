@@ -568,6 +568,8 @@
 
 #endif
 
+MP_DECLARE_CONST_FUN_OBJ_1(numerical_all_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(numerical_any_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmax_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmin_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argsort_obj);
