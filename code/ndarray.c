@@ -935,7 +935,33 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     mp_arg_check_num(n_args, n_kw, 1, 2, true);
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    return ndarray_make_new_core(type, n_args, n_kw, args, &kw_args);
+    uint8_t dtype = ndarray_init_helper(n_args, args, &kw_args);
+
+    mp_obj_t mp_shape = args[0];
+    mp_obj_t mp_ndim_maybe = mp_obj_len_maybe(mp_shape);
+    // single-number shapes "x" are interpreted the same as "(x,)"
+    uint8_t ndim;
+    size_t shape[ULAB_MAX_DIMS];
+    
+    if (mp_ndim_maybe == MP_OBJ_NULL) {
+        ndim = 1;
+        shape[ULAB_MAX_DIMS - 1] = MP_OBJ_SMALL_INT_VALUE(mp_shape);
+    } else {
+        mp_int_t mp_int;
+        mp_obj_get_int_maybe(mp_ndim_maybe, &mp_int);
+        ndim = MP_OBJ_SMALL_INT_VALUE(mp_int);
+
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t mp_shape_iter = mp_getiter(mp_shape, &iter_buf);
+
+        for (uint8_t i = ULAB_MAX_DIMS - ndim; i < ULAB_MAX_DIMS; i++) {
+            shape[i] = MP_OBJ_SMALL_INT_VALUE(mp_iternext(mp_shape_iter));
+        }
+    }
+
+    return MP_OBJ_FROM_PTR(
+        ndarray_new_dense_ndarray(ndim, shape, dtype)
+    );
 }
 #endif
 
