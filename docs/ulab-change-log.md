@@ -1,5 +1,11 @@
 Mon, 8 Feb 2021
 
+version 2.3.1
+
+    partially fix https://github.com/v923z/micropython-ulab/issues/304, and len unary operator
+
+Mon, 8 Feb 2021
+
 version 2.3.0
 
     added any and all functions
