@@ -16,7 +16,13 @@
 #include "../../ndarray.h"
 
 // TODO: implement cumsum
-//mp_obj_t numerical_cumsum(size_t , const mp_obj_t *, mp_map_t *);
+
+typedef struct {
+    uint8_t index;
+    int8_t axis;
+    size_t *shape;
+    int32_t *strides;
+} shape_strides;
 
 #define RUN_ARGMIN1(ndarray, type, array, results, rarray, index, op)\
 ({\
@@ -568,6 +574,8 @@
 
 #endif
 
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_all_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(numerical_any_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmax_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argmin_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(numerical_argsort_obj);

@@ -375,6 +375,14 @@
 #define ULAB_FFT_HAS_IFFT               (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_ALL
+#define ULAB_NUMPY_HAS_ALL              (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_ANY
+#define ULAB_NUMPY_HAS_ANY              (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_ARGMINMAX
 #define ULAB_NUMPY_HAS_ARGMINMAX        (1)
 #endif
