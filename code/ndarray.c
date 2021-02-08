@@ -503,7 +503,7 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t *array = (uint8_t *)self->array;
     mp_print_str(print, "array(");
-    if(self->ndim == 0) {
+    if(self->len == 0) {
         mp_print_str(print, "[]");
     }
     #if ULAB_MAX_DIMS > 3
@@ -1759,13 +1759,11 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
 #if NDARRAY_HAS_UNARY_OPS
 mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
     ndarray_obj_t *ndarray = NULL;
 
     switch (op) {
         #if NDARRAY_HAS_UNARY_OP_ABS
         case MP_UNARY_OP_ABS:
-            (void)itemsize;
             ndarray = ndarray_copy_view(self);
             // if Booleam, NDARRAY_UINT8, or NDARRAY_UINT16, there is nothing to do
             if(self->dtype == NDARRAY_INT8) {
@@ -1798,6 +1796,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             if(ndarray->boolean) {
                 for(size_t i=0; i < ndarray->len; i++, array++) *array = *array ^ 0x01;
             } else {
+                uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
                 for(size_t i=0; i < ndarray->len*itemsize; i++, array++) *array ^= 0xFF;
             }
             return MP_OBJ_FROM_PTR(ndarray);
@@ -1805,11 +1804,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         #endif
         #if NDARRAY_HAS_UNARY_OP_LEN
         case MP_UNARY_OP_LEN:
-            if(self->ndim > 1) {
-                return mp_obj_new_int(self->ndim);
-            } else {
-                return mp_obj_new_int(self->len);
-            }
+            return mp_obj_new_int(self->shape[ULAB_MAX_DIMS - self->ndim]);
             break;
         #endif
         #if NDARRAY_HAS_UNARY_OP_NEGATIVE
