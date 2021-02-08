@@ -1,5 +1,11 @@
 Mon, 8 Feb 2021
 
+version 2.3.2
+
+    improved the accuracy of linalg.norm, and extended it to generic iterables
+
+Mon, 8 Feb 2021
+
 version 2.3.1
 
     partially fix https://github.com/v923z/micropython-ulab/issues/304, and len unary operator

@@ -354,33 +354,46 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 //|    ...
 //|
 
-static mp_obj_t linalg_norm(mp_obj_t _x) {
-    if (!MP_OBJ_IS_TYPE(_x, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("argument must be ndarray"));
-    }
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(_x);
-    if((ndarray->ndim != 1) && (ndarray->ndim != 2)) {
-        mp_raise_ValueError(translate("norm is defined for 1D and 2D arrays"));
-    }
-    mp_float_t dot = 0.0;
-    uint8_t *array = (uint8_t *)ndarray->array;
+static mp_obj_t linalg_norm(mp_obj_t x) {
+    mp_float_t dot = 0.0, value;
+    size_t count = 1;
 
-    mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+    if(MP_OBJ_IS_TYPE(x, &mp_type_tuple) || MP_OBJ_IS_TYPE(x, &mp_type_list) || MP_OBJ_IS_TYPE(x, &mp_type_range)) {
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t item, iterable = mp_getiter(x, &iter_buf);
+        while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            value = mp_obj_get_float(item);
+            // we could simply take the sum of value ** 2,
+            // but this method is numerically stable
+            dot = dot + (value * value - dot) / count++;
+        }
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1)));
+    } else if(MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) {
+        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(x);
+        if((ndarray->ndim != 1) && (ndarray->ndim != 2)) {
+            mp_raise_ValueError(translate("norm is defined for 1D and 2D arrays"));
+        }
+        uint8_t *array = (uint8_t *)ndarray->array;
 
-    size_t k = 0;
-    do {
-        size_t l = 0;
+        mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+
+        size_t k = 0;
         do {
-            mp_float_t v = func(array);
-            array += ndarray->strides[ULAB_MAX_DIMS - 1];
-            dot += v*v;
-            l++;
-        } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
-        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS - 1];
-        array += ndarray->strides[ULAB_MAX_DIMS - 2];
-        k++;
-    } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
-    return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot));
+            size_t l = 0;
+            do {
+                value = func(array);
+                dot = dot + (value * value - dot) / count++;
+                array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                l++;
+            } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
+            array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS - 1];
+            array += ndarray->strides[ULAB_MAX_DIMS - 2];
+            k++;
+        } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1)));
+    } else {
+        mp_raise_TypeError(translate("argument must be an interable or ndarray"));
+    }
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
