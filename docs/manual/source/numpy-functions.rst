@@ -5,31 +5,141 @@ Numpy functions
 This section of the manual discusses those functions that were adapted
 from ``numpy``.
 
-1.  `numpy.argmax <#argmax>`__
-2.  `numpy.argmin <#argmin>`__
-3.  `numpy.argsort <#argsort>`__
-4.  `numpy.clip <#clip>`__
-5.  `numpy.convolve <#convolve>`__
-6.  `numpy.diff <#diff>`__
-7.  `numpy.equal <#equal>`__
-8.  `numpy.flip <#flip>`__
-9.  `numpy.interp <#interp>`__
-10. `numpy.isfinite <#isfinite>`__
-11. `numpy.isinf <#isinf>`__
-12. `numpy.max <#max>`__
-13. `numpy.maximum <#maximum>`__
-14. `numpy.mean <#mean>`__
-15. `numpy.median <#median>`__
-16. `numpy.min <#min>`__
-17. `numpy.minimum <#minimum>`__
-18. `numpy.not_equal <#equal>`__
-19. `numpy.polyfit <#polyfit>`__
-20. `numpy.polyval <#polyval>`__
-21. `numpy.roll <#roll>`__
-22. `numpy.sort <#sort>`__
-23. `numpy.std <#std>`__
-24. `numpy.sum <#sum>`__
-25. `numpy.trapz <#trapz>`__
+1.  `numpy.all <#all>`__
+2.  `numpy.any <#any>`__
+3.  `numpy.argmax <#argmax>`__
+4.  `numpy.argmin <#argmin>`__
+5.  `numpy.argsort <#argsort>`__
+6.  `numpy.clip <#clip>`__
+7.  `numpy.convolve <#convolve>`__
+8.  `numpy.diff <#diff>`__
+9.  `numpy.equal <#equal>`__
+10. `numpy.flip <#flip>`__
+11. `numpy.interp <#interp>`__
+12. `numpy.isfinite <#isfinite>`__
+13. `numpy.isinf <#isinf>`__
+14. `numpy.max <#max>`__
+15. `numpy.maximum <#maximum>`__
+16. `numpy.mean <#mean>`__
+17. `numpy.median <#median>`__
+18. `numpy.min <#min>`__
+19. `numpy.minimum <#minimum>`__
+20. `numpy.not_equal <#equal>`__
+21. `numpy.polyfit <#polyfit>`__
+22. `numpy.polyval <#polyval>`__
+23. `numpy.roll <#roll>`__
+24. `numpy.sort <#sort>`__
+25. `numpy.std <#std>`__
+26. `numpy.sum <#sum>`__
+27. `numpy.trapz <#trapz>`__
+
+all
+---
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.all.html
+
+The function takes one positional, and one keyword argument, the
+``axis``, with a default value of ``None``, and tests, whether *all*
+array elements along the given axis evaluate to ``True``. If the keyword
+argument is ``None``, the flattened array is inspected.
+
+Elements of an array evaluate to ``True``, if they are not equal to
+zero, or the Boolean ``False``. The return value if a Boolean
+``ndarray``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(12)).reshape((3, 4))
+    
+    print('\na:\n', a)
+    
+    b = np.all(a)
+    print('\nall of the flattened array:\n', b)
+    
+    c = np.all(a, axis=0)
+    print('\nall of a along 0th axis:\n', c)
+    
+    d = np.all(a, axis=1)
+    print('\nall of a along 1st axis:\n', d)
+
+.. parsed-literal::
+
+    
+    a:
+     array([[0.0, 1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0, 7.0],
+           [8.0, 9.0, 10.0, 11.0]], dtype=float64)
+    
+    all of the flattened array:
+     False
+    
+    all of a along 0th axis:
+     array([False, True, True, True], dtype=bool)
+    
+    all of a along 1st axis:
+     array([False, True, True], dtype=bool)
+    
+    
+
+
+any
+---
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.any.html
+
+The function takes one positional, and one keyword argument, the
+``axis``, with a default value of ``None``, and tests, whether *any*
+array element along the given axis evaluates to ``True``. If the keyword
+argument is ``None``, the flattened array is inspected.
+
+Elements of an array evaluate to ``True``, if they are not equal to
+zero, or the Boolean ``False``. The return value if a Boolean
+``ndarray``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(12)).reshape((3, 4))
+    
+    print('\na:\n', a)
+    
+    b = np.any(a)
+    print('\nany of the flattened array:\n', b)
+    
+    c = np.any(a, axis=0)
+    print('\nany of a along 0th axis:\n', c)
+    
+    d = np.any(a, axis=1)
+    print('\nany of a along 1st axis:\n', d)
+
+.. parsed-literal::
+
+    
+    a:
+     array([[0.0, 1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0, 7.0],
+           [8.0, 9.0, 10.0, 11.0]], dtype=float64)
+    
+    any of the flattened array:
+     True
+    
+    any of a along 0th axis:
+     array([True, True, True, True], dtype=bool)
+    
+    any of a along 1st axis:
+     array([True, True, True], dtype=bool)
+    
+    
+
 
 argmax
 ------

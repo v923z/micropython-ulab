@@ -1,3 +1,9 @@
+Mon, 8 Feb 2021
+
+version 2.3.0
+
+    added any and all functions
+
 Fri, 29 Jan 2021
 
 version 2.2.0
