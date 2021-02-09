@@ -162,7 +162,7 @@ void *ndarray_set_float_function(uint8_t dtype) {
 shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
     // TODO: replace numerical_reduce_axes with this function, wherever applicable
     if(!mp_obj_is_int(axis) & (axis != mp_const_none)) {
-        mp_raise_TypeError(translate("axis must be an interable or ndarray"));
+        mp_raise_TypeError(translate("axis must be None, or an integer"));
     }
     shape_strides _shape_strides;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);

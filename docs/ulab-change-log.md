@@ -1,5 +1,11 @@
 Tue, 9 Feb 2021
 
+version 2.3.4
+
+    removed redundant exception from linalg.norm, fixed exception message in tools_reduce_axes
+
+Tue, 9 Feb 2021
+
 version 2.3.3
 
     linalg.norm should now work with the axis keyword argument
