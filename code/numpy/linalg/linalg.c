@@ -365,12 +365,7 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     mp_obj_t x = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
-    if((axis != mp_const_none) && (!MP_OBJ_IS_INT(axis))) {
-        mp_raise_TypeError(translate("axis must be None, or an integer"));
-    }
 
-
-// static mp_obj_t linalg_norm(mp_obj_t x) {
     mp_float_t dot = 0.0, value;
     size_t count = 1;
 
