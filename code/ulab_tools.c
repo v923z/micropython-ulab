@@ -161,31 +161,32 @@ void *ndarray_set_float_function(uint8_t dtype) {
 
 shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
     // TODO: replace numerical_reduce_axes with this function, wherever applicable
-    int8_t ax = mp_obj_get_int(axis);
-    if(ax < 0) ax += ndarray->ndim;
-    if((ax < 0) || (ax > ndarray->ndim - 1)) {
-        mp_raise_ValueError(translate("index out of range"));
+    if(!mp_obj_is_int(axis) & (axis != mp_const_none)) {
+        mp_raise_TypeError(translate("axis must be an interable or ndarray"));
     }
     shape_strides _shape_strides;
-    _shape_strides.index = ULAB_MAX_DIMS - ndarray->ndim + ax;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     _shape_strides.shape = shape;
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
     _shape_strides.strides = strides;
-    if((ndarray->ndim == 1) && (_shape_strides.axis == 0)) {
-        _shape_strides.index = 0;
-        _shape_strides.shape[ULAB_MAX_DIMS - 1] = 1;
-    } else {
-        for(uint8_t i = ULAB_MAX_DIMS - 1; i > 0; i--) {
-            if(i > _shape_strides.index) {
-                _shape_strides.shape[i] = ndarray->shape[i];
-                _shape_strides.strides[i] = ndarray->strides[i];
-            } else {
-                _shape_strides.shape[i] = ndarray->shape[i-1];
-                _shape_strides.strides[i] = ndarray->strides[i-1];
-            }
+
+    memcpy(_shape_strides.shape, ndarray->shape, sizeof(size_t) * ULAB_MAX_DIMS);
+    memcpy(_shape_strides.strides, ndarray->strides, sizeof(int32_t) * ULAB_MAX_DIMS);
+    // for axis == mp_const_none, simply return the original shape and strides
+    if(axis != mp_const_none) {
+        // move the axis to the rightmost position, and align everything else to the right
+        int8_t ax = mp_obj_get_int(axis);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
+        }
+        uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        _shape_strides.shape[ULAB_MAX_DIMS - 1] = ndarray->shape[index];
+        _shape_strides.strides[ULAB_MAX_DIMS - 1] = ndarray->strides[index];
+        for(uint8_t i = index; i < ULAB_MAX_DIMS - 1; i++) {
+            // entries to the right of index must be shifted to the left
+            _shape_strides.shape[i] = ndarray->shape[i+1];
+            _shape_strides.strides[i] = ndarray->strides[i+1];
         }
     }
     return _shape_strides;
