@@ -1,3 +1,9 @@
+Tue, 9 Feb 2021
+
+version 2.3.3
+
+    linalg.norm should now work with the axis keyword argument
+
 Mon, 8 Feb 2021
 
 version 2.3.2
