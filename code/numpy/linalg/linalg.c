@@ -391,10 +391,12 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
         shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
         mp_float_t *rarray = NULL;
-        ndarray_obj_t *results;
-        if(axis != mp_const_none) {
+        ndarray_obj_t *results = NULL;
+        if((axis != mp_const_none) && (ndarray->ndim > 1)) {
             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_FLOAT);
             rarray = results->array;
+        } else {
+            rarray = m_new(mp_float_t, 1);
         }
 
         #if ULAB_MAX_DIMS > 3
@@ -420,8 +422,9 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
                         array += _shape_strides.strides[ULAB_MAX_DIMS - 1];
                         l++;
                     } while(l < _shape_strides.shape[ULAB_MAX_DIMS - 1]);
-                    if(axis != mp_const_none) {
-                        *rarray++ = MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1));
+                    *rarray = MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1));
+                    if(results != NULL) {
+                        rarray++;
                     }
                 #if ULAB_MAX_DIMS > 1
                     array -= _shape_strides.strides[ULAB_MAX_DIMS - 1] * _shape_strides.shape[ULAB_MAX_DIMS - 1];
@@ -441,8 +444,8 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
             i++;
         } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 4]);
         #endif
-        if(axis == mp_const_none) {
-            return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1)));
+        if(results == NULL) {
+            return mp_obj_new_float(*rarray);
         }
         return results;
     }
