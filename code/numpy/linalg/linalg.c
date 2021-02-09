@@ -419,30 +419,30 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
                     do {
                         value = func(array);
                         dot = dot + (value * value - dot) / count++;
-                        array += _shape_strides.strides[ULAB_MAX_DIMS - 1];
+                        array += _shape_strides.strides[0];
                         l++;
-                    } while(l < _shape_strides.shape[ULAB_MAX_DIMS - 1]);
+                    } while(l < _shape_strides.shape[0]);
                     *rarray = MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1));
                     if(results != NULL) {
                         rarray++;
                     }
                 #if ULAB_MAX_DIMS > 1
-                    array -= _shape_strides.strides[ULAB_MAX_DIMS - 1] * _shape_strides.shape[ULAB_MAX_DIMS - 1];
-                    array += _shape_strides.strides[ULAB_MAX_DIMS - 2];
+                    array -= _shape_strides.strides[0] * _shape_strides.shape[0];
+                    array += _shape_strides.strides[ULAB_MAX_DIMS - 1];
                     k++;
-                } while(k < _shape_strides.shape[ULAB_MAX_DIMS - 2]);
+                } while(k < _shape_strides.shape[ULAB_MAX_DIMS - 1]);
                 #endif
             #if ULAB_MAX_DIMS > 2
-                array -= _shape_strides.strides[ULAB_MAX_DIMS - 2] * _shape_strides.shape[ULAB_MAX_DIMS-2];
-                array += _shape_strides.strides[ULAB_MAX_DIMS - 3];
+                array -= _shape_strides.strides[ULAB_MAX_DIMS - 1] * _shape_strides.shape[ULAB_MAX_DIMS-1];
+                array += _shape_strides.strides[ULAB_MAX_DIMS - 2];
                 j++;
-            } while(j < _shape_strides.shape[ULAB_MAX_DIMS - 3]);
+            } while(j < _shape_strides.shape[ULAB_MAX_DIMS - 2]);
             #endif
         #if ULAB_MAX_DIMS > 3
-            array -= _shape_strides.strides[ULAB_MAX_DIMS - 3] * _shape_strides.shape[ULAB_MAX_DIMS-3];
-            array += _shape_strides.strides[ULAB_MAX_DIMS - 4];
+            array -= _shape_strides.strides[ULAB_MAX_DIMS - 2] * _shape_strides.shape[ULAB_MAX_DIMS-2];
+            array += _shape_strides.strides[ULAB_MAX_DIMS - 3];
             i++;
-        } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 4]);
+        } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 3]);
         #endif
         if(results == NULL) {
             return mp_obj_new_float(*rarray);

@@ -98,19 +98,19 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
                             l++;
                         } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
                     #if ULAB_MAX_DIMS > 1
-                        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS - 1];
                         array += ndarray->strides[ULAB_MAX_DIMS - 2];
                         k++;
                     } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
                     #endif
                 #if ULAB_MAX_DIMS > 2
-                    array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+                    array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS - 2];
                     array += ndarray->strides[ULAB_MAX_DIMS - 3];
                     j++;
                 } while(j < ndarray->shape[ULAB_MAX_DIMS - 3]);
                 #endif
             #if ULAB_MAX_DIMS > 3
-                array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+                array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS - 3];
                 array += ndarray->strides[ULAB_MAX_DIMS - 4];
                 i++;
             } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
@@ -141,33 +141,33 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
                                 // optype == NUMERICAL_ANY
                                 *rarray = 1;
                                 // since we are breaking out of the loop, move the pointer forward
-                                array += ndarray->strides[_shape_strides.index] * (ndarray->shape[_shape_strides.index] - l);
+                                array += _shape_strides.strides[0] * (_shape_strides.shape[0] - l);
                                 break;
                             } else if((value == MICROPY_FLOAT_CONST(0.0)) & anytype) {
                                 // optype == NUMERICAL_ALL
                                 *rarray = 0;
                                 // since we are breaking out of the loop, move the pointer forward
-                                array += ndarray->strides[_shape_strides.index] * (ndarray->shape[_shape_strides.index] - l);
+                                array += _shape_strides.strides[0] * (_shape_strides.shape[0] - l);
                                 break;
                             }
-                            array += ndarray->strides[_shape_strides.index];
+                            array += _shape_strides.strides[0];
                             l++;
-                        } while(l < ndarray->shape[_shape_strides.index]);
+                        } while(l < _shape_strides.shape[0]);
                     #if ULAB_MAX_DIMS > 1
                         rarray++;
-                        array -= ndarray->strides[_shape_strides.index] * ndarray->shape[_shape_strides.index];
+                        array -= _shape_strides.strides[0] * _shape_strides.shape[0];
                         array += _shape_strides.strides[ULAB_MAX_DIMS - 1];
                         k++;
                     } while(k < _shape_strides.shape[ULAB_MAX_DIMS - 1]);
                     #endif
                 #if ULAB_MAX_DIMS > 2
-                    array -= _shape_strides.strides[ULAB_MAX_DIMS - 1] * _shape_strides.shape[ULAB_MAX_DIMS-1];
+                    array -= _shape_strides.strides[ULAB_MAX_DIMS - 1] * _shape_strides.shape[ULAB_MAX_DIMS - 1];
                     array += _shape_strides.strides[ULAB_MAX_DIMS - 2];
                     j++;
                 } while(j < _shape_strides.shape[ULAB_MAX_DIMS - 2]);
                 #endif
             #if ULAB_MAX_DIMS > 3
-                array -= _shape_strides.strides[ULAB_MAX_DIMS - 2] * _shape_strides.shape[ULAB_MAX_DIMS-2];
+                array -= _shape_strides.strides[ULAB_MAX_DIMS - 2] * _shape_strides.shape[ULAB_MAX_DIMS - 2];
                 array += _shape_strides.strides[ULAB_MAX_DIMS - 3];
                 i++;
             } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 3])
