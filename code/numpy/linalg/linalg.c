@@ -354,7 +354,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 //|    ...
 //|
 
-static mp_obj_t linalg_norm(mp_obj_t x) {
+static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} } ,
+        { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t x = args[0].u_obj;
+    mp_obj_t axis = args[1].u_obj;
+    if((axis != mp_const_none) && (!MP_OBJ_IS_INT(axis))) {
+        mp_raise_TypeError(translate("axis must be None, or an integer"));
+    }
+
+
+// static mp_obj_t linalg_norm(mp_obj_t x) {
     mp_float_t dot = 0.0, value;
     size_t count = 1;
 
@@ -370,33 +386,74 @@ static mp_obj_t linalg_norm(mp_obj_t x) {
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1)));
     } else if(MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(x);
-        if((ndarray->ndim != 1) && (ndarray->ndim != 2)) {
-            mp_raise_ValueError(translate("norm is defined for 1D and 2D arrays"));
-        }
         uint8_t *array = (uint8_t *)ndarray->array;
-
+        // always get a float, so that we don't have to resolve the dtype later
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+        shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
+        mp_float_t *rarray = NULL;
+        ndarray_obj_t *results = NULL;
+        if((axis != mp_const_none) && (ndarray->ndim > 1)) {
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_FLOAT);
+            rarray = results->array;
+        } else {
+            rarray = m_new(mp_float_t, 1);
+        }
 
-        size_t k = 0;
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
         do {
-            size_t l = 0;
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
             do {
-                value = func(array);
-                dot = dot + (value * value - dot) / count++;
-                array += ndarray->strides[ULAB_MAX_DIMS - 1];
-                l++;
-            } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
-            array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS - 1];
-            array += ndarray->strides[ULAB_MAX_DIMS - 2];
-            k++;
-        } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
-        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1)));
-    } else {
-        mp_raise_TypeError(translate("argument must be an interable or ndarray"));
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    if(axis != mp_const_none) {
+                        count = 1;
+                        dot = 0.0;
+                    }
+                    do {
+                        value = func(array);
+                        dot = dot + (value * value - dot) / count++;
+                        array += _shape_strides.strides[0];
+                        l++;
+                    } while(l < _shape_strides.shape[0]);
+                    *rarray = MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1));
+                    if(results != NULL) {
+                        rarray++;
+                    }
+                #if ULAB_MAX_DIMS > 1
+                    array -= _shape_strides.strides[0] * _shape_strides.shape[0];
+                    array += _shape_strides.strides[ULAB_MAX_DIMS - 1];
+                    k++;
+                } while(k < _shape_strides.shape[ULAB_MAX_DIMS - 1]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                array -= _shape_strides.strides[ULAB_MAX_DIMS - 1] * _shape_strides.shape[ULAB_MAX_DIMS-1];
+                array += _shape_strides.strides[ULAB_MAX_DIMS - 2];
+                j++;
+            } while(j < _shape_strides.shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            array -= _shape_strides.strides[ULAB_MAX_DIMS - 2] * _shape_strides.shape[ULAB_MAX_DIMS-2];
+            array += _shape_strides.strides[ULAB_MAX_DIMS - 3];
+            i++;
+        } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 3]);
+        #endif
+        if(results == NULL) {
+            return mp_obj_new_float(*rarray);
+        }
+        return results;
     }
+    return mp_const_none; // we should never reach this point
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
+MP_DEFINE_CONST_FUN_OBJ_KW(linalg_norm_obj, 1, linalg_norm);
+// MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
 
 #if ULAB_MAX_DIMS > 1
 #if ULAB_LINALG_HAS_TRACE

@@ -17,13 +17,6 @@
 
 // TODO: implement cumsum
 
-typedef struct {
-    uint8_t index;
-    int8_t axis;
-    size_t *shape;
-    int32_t *strides;
-} shape_strides;
-
 #define RUN_ARGMIN1(ndarray, type, array, results, rarray, index, op)\
 ({\
     uint16_t best_index = 0;\
