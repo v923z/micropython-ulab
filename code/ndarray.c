@@ -632,7 +632,7 @@ ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dt
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
     strides[ULAB_MAX_DIMS-1] = dtype == NDARRAY_BOOL ? 1 : mp_binary_get_size('@', dtype, NULL);
     for(size_t i=ULAB_MAX_DIMS; i > 1; i--) {
-        strides[i-2] = strides[i-1] * shape[i-1];
+        strides[i-2] = strides[i-1] * MAX(1, shape[i-1]);
     }
     return ndarray_new_ndarray(ndim, shape, strides, dtype);
 }

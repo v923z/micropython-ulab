@@ -63,38 +63,6 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
     }
 }
 
-static shape_strides numerical_reduce_axes_(ndarray_obj_t *ndarray, mp_obj_t axis) {
-    // TODO: replace numerical_reduce_axes with this function, wherever applicable
-    int8_t ax = mp_obj_get_int(axis);
-    if(ax < 0) ax += ndarray->ndim;
-    if((ax < 0) || (ax > ndarray->ndim - 1)) {
-        mp_raise_ValueError(translate("index out of range"));
-    }
-    shape_strides _shape_strides;
-    _shape_strides.index = ULAB_MAX_DIMS - ndarray->ndim + ax;
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    _shape_strides.shape = shape;
-    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
-    _shape_strides.strides = strides;
-    if((ndarray->ndim == 1) && (_shape_strides.axis == 0)) {
-        _shape_strides.index = 0;
-        _shape_strides.shape[ULAB_MAX_DIMS - 1] = 1;
-    } else {
-        for(uint8_t i = ULAB_MAX_DIMS - 1; i > 0; i--) {
-            if(i > _shape_strides.index) {
-                _shape_strides.shape[i] = ndarray->shape[i];
-                _shape_strides.strides[i] = ndarray->strides[i];
-            } else {
-                _shape_strides.shape[i] = ndarray->shape[i-1];
-                _shape_strides.strides[i] = ndarray->strides[i-1];
-            }
-        }
-    }
-    return _shape_strides;
-}
-
 #if ULAB_NUMPY_HAS_ALL | ULAB_NUMPY_HAS_ANY
 static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
     bool anytype = optype == NUMERICAL_ALL ? 1 : 0;
@@ -148,7 +116,7 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
             } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
             #endif
         } else {
-            shape_strides _shape_strides = numerical_reduce_axes_(ndarray, axis);
+            shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
             ndarray_obj_t *results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_BOOL);
             uint8_t *rarray = (uint8_t *)results->array;
             if(optype == NUMERICAL_ALL) {
