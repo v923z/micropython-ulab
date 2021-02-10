@@ -14,7 +14,7 @@ print(np.linspace(0, 1, 9))
 
 # test ndarray constructor
 dtypes = [np.int8, np.uint8, np.int16, np.uint16, np.float, np.bool]
-shapes = [[1, 2, 3], (1, 2, 3), 3]
+shapes = [[3, 2], (3,), 3]
 for dtype in dtypes:
     for shape in shapes:
         x = np.ndarray(shape, dtype=dtype)
