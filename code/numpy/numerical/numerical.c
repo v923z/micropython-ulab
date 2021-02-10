@@ -190,10 +190,6 @@ static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, si
 
 static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype, size_t ddof) {
     uint8_t *array = (uint8_t *)ndarray->array;
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
 
     if(axis == mp_const_none) {
         // work with the flattened array
@@ -305,7 +301,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 RUN_MEAN(mp_float_t, array, results, r, _shape_strides);
             }
         } else { // this case is certainly the standard deviation
-            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_FLOAT);
             // we can return the 0 array here, if the degrees of freedom is larger than the length of the axis
             if(_shape_strides.shape[0] <= ddof) {
                 return MP_OBJ_FROM_PTR(results);
