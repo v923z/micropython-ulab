@@ -106,6 +106,12 @@ result = (np.linalg.norm(a))  ## Here is a problem
 ref_result = 16.881943016134134
 print(math.isclose(result, ref_result, rel_tol=1E-6, abs_tol=1E-6))
 
+a = np.array([[0, 1, 2], [5, 4, 8], [4, 4, 8] ], dtype=np.int16)
+result = (np.linalg.norm(a,axis=1))
+ref_result = np.array([2.236068, 10.24695, 9.797959]) #Problem when element > 10?
+for i in range(3):
+        print(math.isclose(result[i], ref_result[i], rel_tol=1E-6, abs_tol=1E-6))
+        
 if use_ulab:
     print(np.linalg.trace(np.eye(3)))
 else:
