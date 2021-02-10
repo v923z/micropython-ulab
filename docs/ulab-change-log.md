@@ -1,3 +1,9 @@
+Wed, 10 Feb 2021
+
+version 2.3.5
+
+    fixed invisible error in tools_reduce_axes, simplified the implementation of all/any 
+
 Tue, 9 Feb 2021
 
 version 2.3.4

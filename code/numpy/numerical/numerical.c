@@ -71,20 +71,31 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
         uint8_t *array = (uint8_t *)ndarray->array;
         // always get a float, so that we don't have to resolve the dtype later
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
-        if(axis == mp_const_none) {
-            #if ULAB_MAX_DIMS > 3
-            size_t i = 0;
+        ndarray_obj_t *results = NULL;
+        uint8_t *rarray = NULL;
+        shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
+        if(axis != mp_const_none) {
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_BOOL);
+            rarray = results->array;
+            if(optype == NUMERICAL_ALL) {
+                memset(rarray, 1, results->len);
+            }
+        }
+
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
             do {
             #endif
-                #if ULAB_MAX_DIMS > 2
-                size_t j = 0;
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
                 do {
                 #endif
-                    #if ULAB_MAX_DIMS > 1
-                    size_t k = 0;
-                    do {
-                    #endif
-                        size_t l = 0;
+                    size_t l = 0;
+                    if(axis == mp_const_none) {
                         do {
                             mp_float_t value = func(array);
                             if((value != MICROPY_FLOAT_CONST(0.0)) & !anytype) {
@@ -94,47 +105,10 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
                                 // optype == NUMERICAL_ALL
                                 return mp_const_false;
                             }
-                            array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                            array += _shape_strides.strides[0];
                             l++;
-                        } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
-                    #if ULAB_MAX_DIMS > 1
-                        array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS - 1];
-                        array += ndarray->strides[ULAB_MAX_DIMS - 2];
-                        k++;
-                    } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
-                    #endif
-                #if ULAB_MAX_DIMS > 2
-                    array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS - 2];
-                    array += ndarray->strides[ULAB_MAX_DIMS - 3];
-                    j++;
-                } while(j < ndarray->shape[ULAB_MAX_DIMS - 3]);
-                #endif
-            #if ULAB_MAX_DIMS > 3
-                array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS - 3];
-                array += ndarray->strides[ULAB_MAX_DIMS - 4];
-                i++;
-            } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
-            #endif
-        } else {
-            shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
-            ndarray_obj_t *results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_BOOL);
-            uint8_t *rarray = (uint8_t *)results->array;
-            if(optype == NUMERICAL_ALL) {
-                memset(rarray, 1, results->len);
-            }
-            #if ULAB_MAX_DIMS > 3
-            size_t i = 0;
-            do {
-            #endif
-                #if ULAB_MAX_DIMS > 2
-                size_t j = 0;
-                do {
-                #endif
-                    #if ULAB_MAX_DIMS > 1
-                    size_t k = 0;
-                    do {
-                    #endif
-                        size_t l = 0;
+                        } while(l < _shape_strides.shape[0]);
+                    } else { // a scalar axis keyword was supplied
                         do {
                             mp_float_t value = func(array);
                             if((value != MICROPY_FLOAT_CONST(0.0)) & !anytype) {
@@ -153,27 +127,27 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
                             array += _shape_strides.strides[0];
                             l++;
                         } while(l < _shape_strides.shape[0]);
-                    #if ULAB_MAX_DIMS > 1
-                        rarray++;
-                        array -= _shape_strides.strides[0] * _shape_strides.shape[0];
-                        array += _shape_strides.strides[ULAB_MAX_DIMS - 1];
-                        k++;
-                    } while(k < _shape_strides.shape[ULAB_MAX_DIMS - 1]);
-                    #endif
-                #if ULAB_MAX_DIMS > 2
-                    array -= _shape_strides.strides[ULAB_MAX_DIMS - 1] * _shape_strides.shape[ULAB_MAX_DIMS - 1];
-                    array += _shape_strides.strides[ULAB_MAX_DIMS - 2];
-                    j++;
-                } while(j < _shape_strides.shape[ULAB_MAX_DIMS - 2]);
+                    }
+                #if ULAB_MAX_DIMS > 1
+                    rarray++;
+                    array -= _shape_strides.strides[0] * _shape_strides.shape[0];
+                    array += _shape_strides.strides[ULAB_MAX_DIMS - 1];
+                    k++;
+                } while(k < _shape_strides.shape[ULAB_MAX_DIMS - 1]);
                 #endif
-            #if ULAB_MAX_DIMS > 3
-                array -= _shape_strides.strides[ULAB_MAX_DIMS - 2] * _shape_strides.shape[ULAB_MAX_DIMS - 2];
-                array += _shape_strides.strides[ULAB_MAX_DIMS - 3];
-                i++;
-            } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 3])
+            #if ULAB_MAX_DIMS > 2
+                array -= _shape_strides.strides[ULAB_MAX_DIMS - 1] * _shape_strides.shape[ULAB_MAX_DIMS - 1];
+                array += _shape_strides.strides[ULAB_MAX_DIMS - 2];
+                j++;
+            } while(j < _shape_strides.shape[ULAB_MAX_DIMS - 2]);
             #endif
-            return results;
-        }
+        #if ULAB_MAX_DIMS > 3
+            array -= _shape_strides.strides[ULAB_MAX_DIMS - 2] * _shape_strides.shape[ULAB_MAX_DIMS - 2];
+            array += _shape_strides.strides[ULAB_MAX_DIMS - 3];
+            i++;
+        } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 3])
+        #endif
+        return results;
     } else if(mp_obj_is_int(oin) || mp_obj_is_float(oin)) {
         return mp_obj_is_true(oin) ? mp_const_true : mp_const_false;
     } else {

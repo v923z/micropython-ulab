@@ -16,7 +16,6 @@
 #define SWAP(t, a, b) { t tmp = a; a = b; b = tmp; }
 
 typedef struct _shape_strides_t {
-    uint8_t index;
     int8_t axis;
     size_t *shape;
     int32_t *strides;
