@@ -167,13 +167,12 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
 
 #if ULAB_NUMPY_HAS_SUM | ULAB_NUMPY_HAS_MEAN | ULAB_NUMPY_HAS_STD
 static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, size_t ddof) {
-    mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0, sum = 0.0;
+    mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0;
     size_t count = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t item, iterable = mp_getiter(oin, &iter_buf);
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         value = mp_obj_get_float(item);
-        sum += value;
         m = M + (value - M) / (count + 1);
         s = S + (value - M) * (value - m);
         M = m;
@@ -181,7 +180,7 @@ static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, si
         count++;
     }
     if(optype == NUMERICAL_SUM) {
-        return mp_obj_new_float(sum);
+        return mp_obj_new_float(m * count);
     } else if(optype == NUMERICAL_MEAN) {
         return count > 0 ? mp_obj_new_float(m) : mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
     } else { // this should be the case of the standard deviation
