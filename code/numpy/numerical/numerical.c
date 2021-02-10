@@ -262,34 +262,28 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(S / (ndarray->len - ddof)));
         }
     } else {
-        int8_t ax = mp_obj_get_int(axis);
-        if(ax < 0) ax += ndarray->ndim;
-        if((ax < 0) || (ax > ndarray->ndim - 1)) {
-            mp_raise_ValueError(translate("index out of range"));
-        }
-        numerical_reduce_axes(ndarray, ax, shape, strides);
-        uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
         ndarray_obj_t *results = NULL;
         uint8_t *rarray = NULL;
 
         if(optype == NUMERICAL_SUM) {
-             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, ndarray->dtype);
+             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, ndarray->dtype);
              rarray = (uint8_t *)results->array;
             // TODO: numpy promotes the output to the highest integer type
             if(ndarray->dtype == NDARRAY_UINT8) {
-                RUN_SUM(ndarray, uint8_t, array, results, rarray, shape, strides, index);
+                RUN_SUM(uint8_t, array, results, rarray, _shape_strides);
             } else if(ndarray->dtype == NDARRAY_INT8) {
-                RUN_SUM(ndarray, int8_t, array, results, rarray, shape, strides, index);
+                RUN_SUM(int8_t, array, results, rarray, _shape_strides);
             } else if(ndarray->dtype == NDARRAY_UINT16) {
-                RUN_SUM(ndarray, uint16_t, array, results, rarray, shape, strides, index);
+                RUN_SUM(uint16_t, array, results, rarray, _shape_strides);
             } else if(ndarray->dtype == NDARRAY_INT16) {
-                RUN_SUM(ndarray, int16_t, array, results, rarray, shape, strides, index);
+                RUN_SUM(int16_t, array, results, rarray, _shape_strides);
             } else {
                 // for floats, the sum might be inaccurate with the naive summation
                 // call mean, and multiply with the number of samples
                 mp_float_t *r = (mp_float_t *)results->array;
-                RUN_MEAN(ndarray, mp_float_t, array, results, r, shape, strides, index);
-                mp_float_t norm = (mp_float_t)ndarray->shape[index];
+                RUN_MEAN(mp_float_t, array, results, r, _shape_strides);
+                mp_float_t norm = (mp_float_t)_shape_strides.shape[0];
                 // re-wind the array here
                 r = (mp_float_t *)results->array;
                 for(size_t i=0; i < results->len; i++) {
@@ -297,37 +291,37 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 }
             }
         } else if(optype == NUMERICAL_MEAN) {
-            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
+            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_FLOAT);
             mp_float_t *r = (mp_float_t *)results->array;
             if(ndarray->dtype == NDARRAY_UINT8) {
-                RUN_MEAN(ndarray, uint8_t, array, results, r, shape, strides, index);
+                RUN_MEAN(uint8_t, array, results, r, _shape_strides);
             } else if(ndarray->dtype == NDARRAY_INT8) {
-                RUN_MEAN(ndarray, int8_t, array, results, r, shape, strides, index);
+                RUN_MEAN(int8_t, array, results, r, _shape_strides);
             } else if(ndarray->dtype == NDARRAY_UINT16) {
-                RUN_MEAN(ndarray, uint16_t, array, results, r, shape, strides, index);
+                RUN_MEAN(uint16_t, array, results, r, _shape_strides);
             } else if(ndarray->dtype == NDARRAY_INT16) {
-                RUN_MEAN(ndarray, int16_t, array, results, r, shape, strides, index);
+                RUN_MEAN(int16_t, array, results, r, _shape_strides);
             } else {
-                RUN_MEAN(ndarray, mp_float_t, array, results, r, shape, strides, index);
+                RUN_MEAN(mp_float_t, array, results, r, _shape_strides);
             }
         } else { // this case is certainly the standard deviation
             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), shape, NDARRAY_FLOAT);
             // we can return the 0 array here, if the degrees of freedom is larger than the length of the axis
-            if(ndarray->shape[index] <= ddof) {
+            if(_shape_strides.shape[0] <= ddof) {
                 return MP_OBJ_FROM_PTR(results);
             }
-            mp_float_t div = (mp_float_t)(ndarray->shape[index] - ddof);
+            mp_float_t div = (mp_float_t)(_shape_strides.shape[0] - ddof);
             mp_float_t *r = (mp_float_t *)results->array;
             if(ndarray->dtype == NDARRAY_UINT8) {
-                RUN_STD(ndarray, uint8_t, array, results, r, shape, strides, index, div);
+                RUN_STD(uint8_t, array, results, r, _shape_strides, div);
             } else if(ndarray->dtype == NDARRAY_INT8) {
-                RUN_STD(ndarray, int8_t, array, results, r, shape, strides, index, div);
+                RUN_STD(int8_t, array, results, r, _shape_strides, div);
             } else if(ndarray->dtype == NDARRAY_UINT16) {
-                RUN_STD(ndarray, uint16_t, array, results, r, shape, strides, index, div);
+                RUN_STD(uint16_t, array, results, r, _shape_strides, div);
             } else if(ndarray->dtype == NDARRAY_INT16) {
-                RUN_STD(ndarray, int16_t, array, results, r, shape, strides, index, div);
+                RUN_STD(int16_t, array, results, r, _shape_strides, div);
             } else {
-                RUN_STD(ndarray, mp_float_t, array, results, r, shape, strides, index, div);
+                RUN_STD(mp_float_t, array, results, r, _shape_strides, div);
             }
         }
         if(ndarray->ndim == 1) { // return a scalar here

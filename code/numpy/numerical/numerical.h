@@ -46,12 +46,12 @@
     (rarray) += (results)->itemsize;\
 })
 
-#define RUN_SUM1(ndarray, type, array, results, rarray, index)\
+#define RUN_SUM1(type, array, results, rarray, ss)\
 ({\
     type sum = 0;\
-    for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
+    for(size_t i=0; i < (ss).shape[0]; i++) {\
         sum += *((type *)(array));\
-        (array) += (ndarray)->strides[(index)];\
+        (array) += (ss).strides[0];\
     }\
     memcpy((rarray), &sum, (results)->itemsize);\
     (rarray) += (results)->itemsize;\
@@ -59,33 +59,33 @@
 
 // The mean could be calculated by simply dividing the sum by
 // the number of elements, but that method is numerically unstable
-#define RUN_MEAN1(ndarray, type, array, results, r, index)\
+#define RUN_MEAN1(type, array, results, r, ss)\
 ({\
     mp_float_t M, m;\
     M = m = (mp_float_t)(*(type *)(array));\
-    for(size_t i=1; i < (ndarray)->shape[(index)]; i++) {\
-        (array) += (ndarray)->strides[(index)];\
+    for(size_t i=1; i < (ss).shape[0]; i++) {\
+        (array) += (ss).strides[0];\
         mp_float_t value = (mp_float_t)(*(type *)(array));\
         m = M + (value - M) / (mp_float_t)(i+1);\
         M = m;\
     }\
-    (array) += (ndarray)->strides[(index)];\
+    (array) += (ss).strides[0];\
     *(r)++ = M;\
 })
 
 // Instead of the straightforward implementation of the definition,
 // we take the numerically stable Welford algorithm here
 // https://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation/
-#define RUN_STD1(ndarray, type, array, results, r, index, div)\
+#define RUN_STD1(type, array, results, r, ss, div)\
 ({\
     mp_float_t M = 0.0, m = 0.0, S = 0.0, s = 0.0;\
-    for(size_t i=0; i < (ndarray)->shape[(index)]; i++) {\
+    for(size_t i=0; i < (ss).shape[0]; i++) {\
         mp_float_t value = (mp_float_t)(*(type *)(array));\
         m = M + (value - M) / (mp_float_t)(i+1);\
         s = S + (value - M) * (value - m);\
         M = m;\
         S = s;\
-        (array) += (ndarray)->strides[(index)];\
+        (array) += (ss).strides[0];\
     }\
     *(r)++ = MICROPY_FLOAT_C_FUN(sqrt)(s / (div));\
 })
@@ -177,16 +177,16 @@
 })
 
 #if ULAB_MAX_DIMS == 1
-#define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
-    RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
+#define RUN_SUM(type, array, results, rarray, ss) do {\
+    RUN_SUM1(type, (array), (results), (rarray), (ss));\
 } while(0)
 
-#define RUN_MEAN(ndarray, type, array, results, r, shape, strides, index) do {\
-    RUN_MEAN1((ndarray), type, (array), (results), (r), (index));\
+#define RUN_MEAN(type, array, results, r, ss) do {\
+    RUN_MEAN1(type, (array), (results), (r), (ss));\
 } while(0)
 
-#define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
-    RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
+#define RUN_STD(type, array, results, r, ss, div) do {\
+    RUN_STD1(type, (array), (results), (r), (ss), (div));\
 } while(0)
 
 #define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
@@ -208,34 +208,34 @@
 #endif
 
 #if ULAB_MAX_DIMS == 2
-#define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
+#define RUN_SUM(type, array, results, rarray, ss) do {\
     size_t l = 0;\
     do {\
-        RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
-        (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        RUN_SUM1(type, (array), (results), (rarray), (ss));\
+        (array) -= (ss).strides[0] * (ss).shape[0];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
         l++;\
-    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+    } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
 } while(0)
 
-#define RUN_MEAN(ndarray, type, array, results, r, shape, strides, index) do {\
+#define RUN_MEAN(type, array, results, r, ss) do {\
     size_t l = 0;\
     do {\
-        RUN_MEAN1((ndarray), type, (array), (results), (r), (index));\
-        (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        RUN_MEAN1(type, (array), (results), (r), (ss));\
+        (array) -= (ss).strides[0] * (ss).shape[0];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
         l++;\
-    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+    } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
 } while(0)
 
-#define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
+#define RUN_STD(type, array, results, r, ss, div) do {\
     size_t l = 0;\
     do {\
-        RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
-        (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-        (array) += (strides)[ULAB_MAX_DIMS - 1];\
+        RUN_STD1(type, (array), (results), (r), (ss), (div));\
+        (array) -= (ss).strides[0] * (ss).shape[0];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
         l++;\
-    } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
+    } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
 } while(0)
 
 #define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
@@ -282,52 +282,52 @@
 #endif
 
 #if ULAB_MAX_DIMS == 3
-#define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
+#define RUN_SUM(type, array, results, rarray, ss) do {\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
-            (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-            (array) += (strides)[ULAB_MAX_DIMS - 1];\
+            RUN_SUM1(type, (array), (results), (rarray), (ss));\
+            (array) -= (ss).strides[0] * (ss).shape[0];\
+            (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
             l++;\
-        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-        (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
-        (array) += (strides)[ULAB_MAX_DIMS - 2];\
+        } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
-    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+    } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
 } while(0)
 
-#define RUN_MEAN(ndarray, type, array, results, r, shape, strides, index) do {\
+#define RUN_MEAN(type, array, results, r, ss) do {\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            RUN_MEAN1((ndarray), type, (array), (results), (r), (index));\
-            (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-            (array) += (strides)[ULAB_MAX_DIMS - 1];\
+            RUN_MEAN1(type, (array), (results), (r), (ss));\
+            (array) -= (ss).strides[0] * (ss).shape[0];\
+            (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
             l++;\
-        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-        (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
-        (array) += (strides)[ULAB_MAX_DIMS - 2];\
+        } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
-    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+    } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
 } while(0)
 
-#define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
+#define RUN_STD(type, array, results, r, ss, div) do {\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
-            (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-            (array) += (strides)[ULAB_MAX_DIMS - 1];\
+            RUN_STD1(type, (array), (results), (r), (ss), (div));\
+            (array) -= (ss).strides[0] * (ss).shape[0];\
+            (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
             l++;\
-        } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-        (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
-        (array) += (strides)[ULAB_MAX_DIMS - 2];\
+        } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
-    } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
+    } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
 } while(0)
 
 #define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
@@ -402,70 +402,70 @@
 #endif
 
 #if ULAB_MAX_DIMS == 4
-#define RUN_SUM(ndarray, type, array, results, rarray, shape, strides, index) do {\
+#define RUN_SUM(type, array, results, rarray, shape, strides, index) do {\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                RUN_SUM1((ndarray), type, (array), (results), (rarray), (index));\
-                (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-                (array) += (strides)[ULAB_MAX_DIMS - 1];\
+                RUN_SUM1(type, (array), (results), (rarray), (ss));\
+                (array) -= (ss).strides[0] * (ss).shape[0];\
+                (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
                 l++;\
-            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
-            (array) += (strides)[ULAB_MAX_DIMS - 2];\
+            } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
+            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+            (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
             k++;\
-        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
-        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
-        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS-2];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\
-    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+    } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
 } while(0)
 
-#define RUN_MEAN(ndarray, type, array, results, r, shape, strides, index) do {\
+#define RUN_MEAN(type, array, results, r, ss) do {\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                RUN_MEAN1((ndarray), type, (array), (results), (r), (index));\
-                (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-                (array) += (strides)[ULAB_MAX_DIMS - 1];\
+                RUN_MEAN1(type, (array), (results), (r), (ss));\
+                (array) -= (ss).strides[0] * (ss).shape[0];\
+                (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
                 l++;\
-            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
-            (array) += (strides)[ULAB_MAX_DIMS - 2];\
+            } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
+            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+            (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
             k++;\
-        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
-        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
-        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS-2];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\
-    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+    } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
 } while(0)
 
-#define RUN_STD(ndarray, type, array, results, r, shape, strides, index, div) do {\
+#define RUN_STD(type, array, results, r, ss, div) do {\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                RUN_STD1((ndarray), type, (array), (results), (r), (index), (div));\
-                (array) -= (ndarray)->strides[(index)] * (ndarray)->shape[(index)];\
-                (array) += (strides)[ULAB_MAX_DIMS - 1];\
+                RUN_STD1(type, (array), (results), (r), (ss), (div));\
+                (array) -= (ss).strides[0] * (ss).shape[0];\
+                (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
                 l++;\
-            } while(l < (shape)[ULAB_MAX_DIMS - 1]);\
-            (array) -= (strides)[ULAB_MAX_DIMS - 1] * (shape)[ULAB_MAX_DIMS-1];\
-            (array) += (strides)[ULAB_MAX_DIMS - 2];\
+            } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
+            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+            (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
             k++;\
-        } while(k < (shape)[ULAB_MAX_DIMS - 2]);\
-        (array) -= (strides)[ULAB_MAX_DIMS - 2] * (shape)[ULAB_MAX_DIMS-2];\
-        (array) += (strides)[ULAB_MAX_DIMS - 3];\
+        } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS-2];\
+        (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\
-    } while(j < (shape)[ULAB_MAX_DIMS - 3]);\
+    } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
 } while(0)
 
 #define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\
