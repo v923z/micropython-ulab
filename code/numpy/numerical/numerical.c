@@ -259,6 +259,11 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
         }
     } else {
         shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
+        // if(ndarray->ndim == 1) {
+        //     // if we have the single dimension, axis = 0 is equivalent to axis = None
+        //     // the call to tools_reduce_axes() has made sure that axis = 0
+        //     return numerical_sum_mean_std_ndarray(ndarray, mp_const_none, optype, ddof);
+        // }
         ndarray_obj_t *results = NULL;
         uint8_t *rarray = NULL;
 
@@ -278,7 +283,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 // for floats, the sum might be inaccurate with the naive summation
                 // call mean, and multiply with the number of samples
                 mp_float_t *r = (mp_float_t *)results->array;
-                RUN_MEAN(mp_float_t, array, results, r, _shape_strides);
+                RUN_MEAN_STD(mp_float_t, array, r, _shape_strides, 0.0, 0);
                 mp_float_t norm = (mp_float_t)_shape_strides.shape[0];
                 // re-wind the array here
                 r = (mp_float_t *)results->array;
@@ -286,38 +291,25 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                     *r++ *= norm;
                 }
             }
-        } else if(optype == NUMERICAL_MEAN) {
-            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_FLOAT);
-            mp_float_t *r = (mp_float_t *)results->array;
-            if(ndarray->dtype == NDARRAY_UINT8) {
-                RUN_MEAN(uint8_t, array, results, r, _shape_strides);
-            } else if(ndarray->dtype == NDARRAY_INT8) {
-                RUN_MEAN(int8_t, array, results, r, _shape_strides);
-            } else if(ndarray->dtype == NDARRAY_UINT16) {
-                RUN_MEAN(uint16_t, array, results, r, _shape_strides);
-            } else if(ndarray->dtype == NDARRAY_INT16) {
-                RUN_MEAN(int16_t, array, results, r, _shape_strides);
-            } else {
-                RUN_MEAN(mp_float_t, array, results, r, _shape_strides);
-            }
-        } else { // this case is certainly the standard deviation
+        } else {
+            bool isStd = optype == NUMERICAL_STD ? 1 : 0;
             results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_FLOAT);
             // we can return the 0 array here, if the degrees of freedom is larger than the length of the axis
-            if(_shape_strides.shape[0] <= ddof) {
+            if((optype == NUMERICAL_STD) && (_shape_strides.shape[0] <= ddof)) {
                 return MP_OBJ_FROM_PTR(results);
             }
-            mp_float_t div = (mp_float_t)(_shape_strides.shape[0] - ddof);
-            mp_float_t *r = (mp_float_t *)results->array;
+            mp_float_t div = optype == NUMERICAL_STD ? (mp_float_t)(_shape_strides.shape[0] - ddof) : 0.0;
+            mp_float_t *rarray = (mp_float_t *)results->array;
             if(ndarray->dtype == NDARRAY_UINT8) {
-                RUN_STD(uint8_t, array, results, r, _shape_strides, div);
+                RUN_MEAN_STD(uint8_t, array, rarray, _shape_strides, div, isStd);
             } else if(ndarray->dtype == NDARRAY_INT8) {
-                RUN_STD(int8_t, array, results, r, _shape_strides, div);
+                RUN_MEAN_STD(int8_t, array, rarray, _shape_strides, div, isStd);
             } else if(ndarray->dtype == NDARRAY_UINT16) {
-                RUN_STD(uint16_t, array, results, r, _shape_strides, div);
+                RUN_MEAN_STD(uint16_t, array, rarray, _shape_strides, div, isStd);
             } else if(ndarray->dtype == NDARRAY_INT16) {
-                RUN_STD(int16_t, array, results, r, _shape_strides, div);
+                RUN_MEAN_STD(int16_t, array, rarray, _shape_strides, div, isStd);
             } else {
-                RUN_STD(mp_float_t, array, results, r, _shape_strides, div);
+                RUN_MEAN_STD(mp_float_t, array, rarray, _shape_strides, div, isStd);
             }
         }
         if(ndarray->ndim == 1) { // return a scalar here
