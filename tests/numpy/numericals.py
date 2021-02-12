@@ -3,7 +3,7 @@ try:
     from ulab import numpy as np
 except ImportError:
     import numpy as np
-    
+
 print("Testing np.min:")
 print(np.min([1]))
 print(np.min(np.array([1], dtype=np.float)))
@@ -173,7 +173,6 @@ print("Testing np.std:")
 a = np.array([253, 254, 255], dtype=np.uint8)
 #print(np.std(a))
 print(math.isclose(np.std(a), 0.816496580927726, rel_tol=1e-06, abs_tol=1e-06))
-#print(np.std(a, axis=0))  ## Here is problem
 print(math.isclose(np.std(a, axis=0), 0.816496580927726, rel_tol=1e-06, abs_tol=1e-06))
 a = np.array([range(255-3, 255),range(240-3, 240),range(250-3,250)], dtype=np.float)
 #print(np.std(a))
@@ -213,4 +212,3 @@ a = np.array([1,2,3,4,5,6,7], dtype=np.int8)
 print(np.clip(a, 3, 5))
 a = np.array([1,2,3,4,5,6,7], dtype=np.float)
 print(np.clip(a, 3, 5))
-

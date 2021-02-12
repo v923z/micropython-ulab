@@ -318,7 +318,7 @@
             (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
             l++;\
         } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
@@ -334,7 +334,7 @@
             (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
             l++;\
         } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
@@ -350,7 +350,7 @@
             (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
             l++;\
         } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
@@ -366,7 +366,7 @@
             (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
             l++;\
         } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
@@ -456,11 +456,11 @@
                 (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
             (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS-2];\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
@@ -478,11 +478,11 @@
                 (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
             (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS-2];\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
@@ -500,11 +500,11 @@
                 (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
             (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS-2];\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
@@ -522,11 +522,11 @@
                 (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
                 l++;\
             } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS-1];\
+            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
             (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS-2];\
+        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
