@@ -75,7 +75,7 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
         uint8_t *rarray = NULL;
         shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
         if(axis != mp_const_none) {
-            results = ndarray_new_dense_ndarray(MAX(1, ndarray->ndim-1), _shape_strides.shape, NDARRAY_BOOL);
+            results = ndarray_new_dense_ndarray(_shape_strides.ndim, _shape_strides.shape, NDARRAY_BOOL);
             rarray = results->array;
             if(optype == NUMERICAL_ALL) {
                 memset(rarray, 1, results->len);
@@ -129,7 +129,7 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
                         } while(l < _shape_strides.shape[0]);
                     }
                 #if ULAB_MAX_DIMS > 1
-                    rarray++;
+                    rarray += _shape_strides.increment;
                     array -= _shape_strides.strides[0] * _shape_strides.shape[0];
                     array += _shape_strides.strides[ULAB_MAX_DIMS - 1];
                     k++;
