@@ -615,7 +615,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 #endif
 
 #if ULAB_NUMPY_HAS_ARGSORT
-//| def argsort(array: ulab.array, *, axis: int = -1) -> ulab.array:
+//| def argsort(array: ulab.ndarray, *, axis: int = -1) -> ulab.ndarray:
 //|     """Returns an array which gives indices into the input array from least to greatest."""
 //|     ...
 //|
@@ -724,7 +724,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 #endif
 
 #if ULAB_NUMPY_HAS_CROSS
-//| def cross(a: ulab.array, b: ulab.array) -> ulab.array:
+//| def cross(a: ulab.ndarray, b: ulab.ndarray) -> ulab.ndarray:
 //|     """Return the cross product of two vectors of length 3"""
 //|     ...
 //|
@@ -802,7 +802,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(numerical_cross_obj, numerical_cross);
 #endif /* ULAB_NUMERICAL_HAS_CROSS */
 
 #if ULAB_NUMPY_HAS_DIFF
-//| def diff(array: ulab.array, *, n: int = 1, axis: int = -1) -> ulab.array:
+//| def diff(array: ulab.ndarray, *, n: int = 1, axis: int = -1) -> ulab.ndarray:
 //|     """Return the numerical derivative of successive elements of the array, as
 //|        an array.  axis=None is not supported."""
 //|     ...
@@ -883,7 +883,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
 #endif
 
 #if ULAB_NUMPY_HAS_FLIP
-//| def flip(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
+//| def flip(array: ulab.ndarray, *, axis: Optional[int] = None) -> ulab.ndarray:
 //|     """Returns a new array that reverses the order of the elements along the
 //|        given axis, or along all axes if axis is None."""
 //|     ...
@@ -957,7 +957,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 #endif
 
 #if ULAB_NUMPY_HAS_MEDIAN
-//| def median(array: ulab.array, *, axis: int = -1) -> ulab.array:
+//| def median(array: ulab.ndarray, *, axis: int = -1) -> ulab.ndarray:
 //|     """Find the median value in an array along the given axis, or along all axes if axis is None."""
 //|     ...
 //|
@@ -1065,7 +1065,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
 #endif
 
 #if ULAB_NUMPY_HAS_ROLL
-//| def roll(array: ulab.array, distance: int, *, axis: Optional[int] = None) -> None:
+//| def roll(array: ulab.ndarray, distance: int, *, axis: Optional[int] = None) -> None:
 //|     """Shift the content of a vector by the positions given as the second
 //|        argument. If the ``axis`` keyword is supplied, the shift is applied to
 //|        the given axis.  The array is modified in place."""
@@ -1230,7 +1230,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 #endif
 
 #if ULAB_NUMPY_HAS_SORT
-//| def sort(array: ulab.array, *, axis: int = -1) -> ulab.array:
+//| def sort(array: ulab.ndarray, *, axis: int = -1) -> ulab.ndarray:
 //|     """Sort the array along the given axis, or along all axes if axis is None.
 //|        The array is modified in place."""
 //|     ...
@@ -1306,7 +1306,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
 #endif
 
 #if ULAB_NUMPY_HAS_SUM
-//| def sum(array: _ArrayLike, *, axis: Optional[int] = None) -> Union[float, int, ulab.array]:
+//| def sum(array: _ArrayLike, *, axis: Optional[int] = None) -> Union[float, int, ulab.ndarray]:
 //|     """Return the sum of the array, as a number if axis is None, otherwise as an array."""
 //|     ...
 //|

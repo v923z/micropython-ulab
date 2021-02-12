@@ -778,7 +778,7 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
     return _dtype;
 }
 
-STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
+mp_obj_t ndarray_array_constructor(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
 
     if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
@@ -913,11 +913,37 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-mp_obj_t ndarray_array_constructor(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // array constructor for ndarray, equivalent to numpy.array(...)
-    return ndarray_make_new_core(&ulab_ndarray_type, n_args, kw_args->used, pos_args, kw_args);
-}
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_array_constructor_obj, 1, ndarray_array_constructor);
+
+STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
+    (void) type;
+    mp_arg_check_num(n_args, n_kw, 1, 2, true);
+    uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
+
+    mp_obj_t mp_shape = args[0];
+    mp_obj_t mp_ndim_maybe = mp_obj_len_maybe(mp_shape);
+    // single-number shapes "x" are interpreted the same as "(x,)"
+    mp_int_t ndim;
+    size_t shape[ULAB_MAX_DIMS];
+    
+    if (mp_ndim_maybe == MP_OBJ_NULL) {
+        ndim = 1;
+        shape[ULAB_MAX_DIMS - 1] = MP_OBJ_SMALL_INT_VALUE(mp_shape);
+    } else {
+        mp_obj_get_int_maybe(mp_ndim_maybe, &ndim);
+
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t mp_shape_iter = mp_getiter(mp_shape, &iter_buf);
+
+        for (uint8_t i = ULAB_MAX_DIMS - ndim; i < ULAB_MAX_DIMS; i++) {
+            shape[i] = MP_OBJ_SMALL_INT_VALUE(mp_iternext(mp_shape_iter));
+        }
+    }
+
+    return MP_OBJ_FROM_PTR(
+        ndarray_new_dense_ndarray(ndim, shape, dtype)
+    );
+}
 
 #ifdef CIRCUITPY
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -927,7 +953,6 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj
     if (kw_args != 0) {
         n_kw = kw_args->used;
     }
-    mp_map_init_fixed_table(kw_args, n_kw, args + n_args);
     return ndarray_make_new_core(type, n_args, n_kw, args, kw_args);
 }
 #else

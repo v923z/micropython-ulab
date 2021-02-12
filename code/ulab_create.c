@@ -82,9 +82,9 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
 
 #if ULAB_NUMPY_HAS_ARANGE
 //| @overload
-//| def arange(stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.array: ...
+//| def arange(stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.ndarray: ...
 //| @overload
-//| def arange(start: _float, stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.array:
+//| def arange(start: _float, stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|     """
 //|     .. param: start
 //|       First value in the array, optional, defaults to 0
@@ -149,7 +149,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 #endif
 
 #if ULAB_NUMPY_HAS_CONCATENATE
-//| def concatenate(arrays: Tuple[ulab.array], *, axis: int = 0) -> ulab.array:
+//| def concatenate(arrays: Tuple[ulab.ndarray], *, axis: int = 0) -> ulab.ndarray:
 //|     """
 //|     .. param: arrays
 //|       tuple of ndarrays
@@ -274,7 +274,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_concatenate_obj, 1, create_concatenate);
 #endif
 
 #if ULAB_NUMPY_HAS_DIAG
-//| def diag(a: ulab.array, *, k: int = 0) -> ulab.array:
+//| def diag(a: ulab.ndarray, *, k: int = 0) -> ulab.ndarray:
 //|     """
 //|     .. param: a
 //|       an ndarray
@@ -347,7 +347,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_diag_obj, 1, create_diag);
 
 #if ULAB_MAX_DIMS > 1
 #if ULAB_NUMPY_HAS_EYE
-//| def eye(size: int, *, M: Optional[int] = None, k: int = 0, dtype: _DType = ulab.float) -> ulab.array:
+//| def eye(size: int, *, M: Optional[int] = None, k: int = 0, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|     """Return a new square array of size, with the diagonal elements set to 1
 //|        and the other elements set to 0."""
 //|     ...
@@ -396,7 +396,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 #endif /* ULAB_MAX_DIMS > 1 */
 
 #if ULAB_NUMPY_HAS_FULL
-//| def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[_float, _bool], *, dtype: _DType = ulab.float) -> ulab.array:
+//| def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[_float, _bool], *, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of integers (for tensors of higher rank)
@@ -437,7 +437,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_full_obj, 0, create_full);
 //|     num: int = 50,
 //|     endpoint: _bool = True,
 //|     retstep: _bool = False
-//| ) -> ulab.array:
+//| ) -> ulab.ndarray:
 //|     """
 //|     .. param: start
 //|       First value in the array
@@ -503,7 +503,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 //|     num: int = 50,
 //|     endpoint: _bool = True,
 //|     base: _float = 10.0
-//| ) -> ulab.array:
+//| ) -> ulab.ndarray:
 //|     """
 //|     .. param: start
 //|       First value in the array
@@ -577,7 +577,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_logspace_obj, 2, create_logspace);
 #endif
 
 #if ULAB_NUMPY_HAS_ONES
-//| def ones(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.array:
+//| def ones(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
@@ -606,7 +606,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 #endif
 
 #if ULAB_NUMPY_HAS_ZEROS
-//| def zeros(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.array:
+//| def zeros(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
