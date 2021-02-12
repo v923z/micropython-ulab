@@ -598,7 +598,6 @@ bool ndarray_is_dense(ndarray_obj_t *ndarray) {
 
 ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
     // Creates the base ndarray with shape, and initialises the values to straight 0s
-    // the function should work in the general n-dimensional case
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
     ndarray->dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
@@ -618,10 +617,12 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
         ndarray->len *= shape[i-1];
     }
 
-    uint8_t *array = m_new(byte, ndarray->itemsize * ndarray->len);
+    // if the length is 0, still allocate a single item, so that contractions can be handled
+    size_t len = ndarray->itemsize * MAX(1, ndarray->len);
+    uint8_t *array = m_new(byte, len);
     // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
     // we could, perhaps, leave this step out, and initialise the array only, when needed
-    memset(array, 0, ndarray->len * ndarray->itemsize);
+    memset(array, 0, len);
     ndarray->array = array;
     return ndarray;
 }
