@@ -237,19 +237,19 @@ make erase && make deploy
 
 # Issues, contributing, and testing
 
-If you find a problem with the code, please, raise an [issue](#https://github.com/v923z/micropython-ulab/issues)! An issue should address a single problem, and should contain a minimal code snippet that demonstrates the difference from the expected behaviour. Reducing a problem to the bare minimum significantly increases the chances of a quick fix.
+If you find a problem with the code, please, raise an [issue](https://github.com/v923z/micropython-ulab/issues)! An issue should address a single problem, and should contain a minimal code snippet that demonstrates the difference from the expected behaviour. Reducing a problem to the bare minimum significantly increases the chances of a quick fix.
 
-Feature requests (porting a particular function from `numpy` or `scipy`) should also be posted at [ulab issue](#https://github.com/v923z/micropython-ulab/issues).
+Feature requests (porting a particular function from `numpy` or `scipy`) should also be posted at [ulab issue](https://github.com/v923z/micropython-ulab/issues).
 
-Contributions of any kind are always welcome. If you are a seasoned coder, you can simply issue a pull request. If you do so, please, try to adhere to `micropython`'s [coding conventions](#https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md#c-code-conventions).
+Contributions of any kind are always welcome. If you are a seasoned coder, you can simply issue a pull request. If you do so, please, try to adhere to `micropython`'s [coding conventions](https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md#c-code-conventions).
 
-However, you can also contribute to the documentation (preferably via the [jupyter notebooks](#https://github.com/v923z/micropython-ulab/tree/master/docs), or run [tests](#https://github.com/v923z/micropython-ulab/tree/master/tests). 
+However, you can also contribute to the documentation (preferably via the [jupyter notebooks](https://github.com/v923z/micropython-ulab/tree/master/docs), or run [tests](https://github.com/v923z/micropython-ulab/tree/master/tests). 
 
 ## Testing
 
 If you decide to lend a hand with testing, here are the steps:
 
 1. Write a test script that checks a particular function, or a set of related functions!
-1. Drop this script in one of the folders in [ulab tests](#https://github.com/v923z/micropython-ulab/tree/master/tests)!
-1. Run the [./build.sh](#https://github.com/v923z/micropython-ulab/blob/master/build.sh) script in the root directory of `ulab`! This will clone the latest `micropython`, compile the firmware for `unix`, execute all scripts in the `ulab/tests`, and compare the results to those in the expected results files, which are also in `ulab/tests`, and have an extension `.exp`. In case you have a new snippet, i.e., you have no expected results file, or if the results differ from those in the expected file, a new expected file will be generated in the root directory. You should inspect the contents of this file, and if they are satisfactory, then the file can be moved to the `ulab/tests` folder, alongside your snippet. 
+1. Drop this script in one of the folders in [ulab tests](https://github.com/v923z/micropython-ulab/tree/master/tests)!
+1. Run the [./build.sh](https://github.com/v923z/micropython-ulab/blob/master/build.sh) script in the root directory of `ulab`! This will clone the latest `micropython`, compile the firmware for `unix`, execute all scripts in the `ulab/tests`, and compare the results to those in the expected results files, which are also in `ulab/tests`, and have an extension `.exp`. In case you have a new snippet, i.e., you have no expected results file, or if the results differ from those in the expected file, a new expected file will be generated in the root directory. You should inspect the contents of this file, and if they are satisfactory, then the file can be moved to the `ulab/tests` folder, alongside your snippet. 
 
