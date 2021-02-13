@@ -29,21 +29,6 @@
 //|
 
 #if ULAB_MAX_DIMS > 1
-static ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
-    // Returns an ndarray, if the object is a square ndarray,
-    // raises the appropriate exception otherwise
-    if(!MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("size is defined for ndarrays only"));
-    }
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj);
-    if((ndarray->shape[ULAB_MAX_DIMS - 1] != ndarray->shape[ULAB_MAX_DIMS - 2]) || (ndarray->ndim != 2)) {
-        mp_raise_ValueError(translate("input must be square matrix"));
-    }
-    return ndarray;
-}
-#endif
-
-#if ULAB_MAX_DIMS > 1
 //| def cholesky(A: ulab.array) -> ulab.array:
 //|     """
 //|     :param ~ulab.array A: a positive definite, symmetric square matrix
@@ -55,7 +40,7 @@ static ndarray_obj_t *linalg_object_is_square(mp_obj_t obj) {
 //|
 
 static mp_obj_t linalg_cholesky(mp_obj_t oin) {
-    ndarray_obj_t *ndarray = linalg_object_is_square(oin);
+    ndarray_obj_t *ndarray = tools_object_is_square(oin);
     ndarray_obj_t *L = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, ndarray->shape[ULAB_MAX_DIMS - 1], ndarray->shape[ULAB_MAX_DIMS - 1]), NDARRAY_FLOAT);
     mp_float_t *Larray = (mp_float_t *)L->array;
 
@@ -121,7 +106,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
 //|
 
 static mp_obj_t linalg_det(mp_obj_t oin) {
-    ndarray_obj_t *ndarray = linalg_object_is_square(oin);
+    ndarray_obj_t *ndarray = tools_object_is_square(oin);
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
     mp_float_t *tmp = m_new(mp_float_t, N * N);
@@ -193,7 +178,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 //|
 
 static mp_obj_t linalg_eig(mp_obj_t oin) {
-    ndarray_obj_t *in = linalg_object_is_square(oin);
+    ndarray_obj_t *in = tools_object_is_square(oin);
     uint8_t *iarray = (uint8_t *)in->array;
     size_t S = in->shape[ULAB_MAX_DIMS - 1];
     mp_float_t *array = m_new(mp_float_t, S*S);
@@ -254,7 +239,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 //|     ...
 //|
 static mp_obj_t linalg_inv(mp_obj_t o_in) {
-    ndarray_obj_t *ndarray = linalg_object_is_square(o_in);
+    ndarray_obj_t *ndarray = tools_object_is_square(o_in);
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
     ndarray_obj_t *inverted = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, N, N), NDARRAY_FLOAT);
@@ -378,34 +363,6 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(linalg_norm_obj, 1, linalg_norm);
 // MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
 
-#if ULAB_MAX_DIMS > 1
-#if ULAB_LINALG_HAS_TRACE
-
-//| def trace(m: ulab.array) -> float:
-//|     """
-//|     :param m: a square matrix
-//|
-//|     Compute the trace of the matrix, the sum of its diagonal elements."""
-//|     ...
-//|
-
-static mp_obj_t linalg_trace(mp_obj_t oin) {
-    ndarray_obj_t *ndarray = linalg_object_is_square(oin);
-    mp_float_t trace = 0.0;
-    for(size_t i=0; i < ndarray->shape[ULAB_MAX_DIMS - 1]; i++) {
-        int32_t pos = i * (ndarray->strides[ULAB_MAX_DIMS - 1] + ndarray->strides[ULAB_MAX_DIMS - 2]);
-        trace += ndarray_get_float_index(ndarray->array, ndarray->dtype, pos/ndarray->itemsize);
-    }
-    if(ndarray->dtype == NDARRAY_FLOAT) {
-        return mp_obj_new_float(trace);
-    }
-    return mp_obj_new_int_from_float(trace);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(linalg_trace_obj, linalg_trace);
-#endif
-#endif
-
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
     #if ULAB_MAX_DIMS > 1
@@ -420,9 +377,6 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
         #endif
         #if ULAB_LINALG_HAS_INV
         { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
-        #endif
-        #if ULAB_LINALG_HAS_TRACE
-        { MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&linalg_trace_obj },
         #endif
     #endif
     #if ULAB_LINALG_HAS_NORM

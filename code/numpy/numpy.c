@@ -173,6 +173,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_DOT
         { MP_OBJ_NEW_QSTR(MP_QSTR_dot), (mp_obj_t)&transform_dot_obj },
     #endif
+    #if ULAB_NUMPY_HAS_TRACE
+    { MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&stats_trace_obj },
+    #endif
     #if ULAB_NUMPY_HAS_FLIP
         { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
     #endif

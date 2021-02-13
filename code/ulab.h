@@ -353,10 +353,6 @@
 #define ULAB_LINALG_HAS_NORM            (1)
 #endif
 
-#ifndef ULAB_LINALG_HAS_TRACE
-#define ULAB_LINALG_HAS_TRACE           (1)
-#endif
-
 // the FFT module; functions of the fft module still have
 // to be defined separately
 #ifndef ULAB_NUMPY_HAS_FFT_MODULE
@@ -445,6 +441,10 @@
 
 #ifndef ULAB_NUMPY_HAS_SUM
 #define ULAB_NUMPY_HAS_SUM              (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_TRACE
+#define ULAB_NUMPY_HAS_TRACE            (1)
 #endif
 
 #ifndef ULAB_NUMPY_HAS_TRAPZ

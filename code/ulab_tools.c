@@ -212,3 +212,19 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
 
     return _shape_strides;
 }
+
+
+#if ULAB_MAX_DIMS > 1
+ndarray_obj_t *tools_object_is_square(mp_obj_t obj) {
+    // Returns an ndarray, if the object is a square ndarray,
+    // raises the appropriate exception otherwise
+    if(!MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("size is defined for ndarrays only"));
+    }
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj);
+    if((ndarray->shape[ULAB_MAX_DIMS - 1] != ndarray->shape[ULAB_MAX_DIMS - 2]) || (ndarray->ndim != 2)) {
+        mp_raise_ValueError(translate("input must be square matrix"));
+    }
+    return ndarray;
+}
+#endif

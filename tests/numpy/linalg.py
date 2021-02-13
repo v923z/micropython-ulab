@@ -91,8 +91,3 @@ result = (np.linalg.norm(a,axis=1)) # fails on low tolerance
 ref_result = np.array([2.236068, 7.071068, 10.24695, 9.797959])
 for i in range(4):
         print(math.isclose(result[i], ref_result[i], rel_tol=1E-6, abs_tol=1E-6))
-
-if use_ulab:
-    print(np.linalg.trace(np.eye(3)))
-else:
-    print(np.trace(np.eye(3)))
