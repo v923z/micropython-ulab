@@ -241,9 +241,9 @@ If you find a problem with the code, please, raise an [issue](https://github.com
 
 Feature requests (porting a particular function from `numpy` or `scipy`) should also be posted at [ulab issue](https://github.com/v923z/micropython-ulab/issues).
 
-Contributions of any kind are always welcome. If you are a seasoned coder, you can simply issue a pull request. If you do so, please, try to adhere to `micropython`'s [coding conventions](https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md#c-code-conventions).
+Contributions of any kind are always welcome. If you feel like adding to the code, you can simply issue a pull request. If you do so, please, try to adhere to `micropython`'s [coding conventions](https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md#c-code-conventions).
 
-However, you can also contribute to the documentation (preferably via the [jupyter notebooks](https://github.com/v923z/micropython-ulab/tree/master/docs), or run [tests](https://github.com/v923z/micropython-ulab/tree/master/tests). 
+However, you can also contribute to the documentation (preferably via the [jupyter notebooks](https://github.com/v923z/micropython-ulab/tree/master/docs), or improve the [tests](https://github.com/v923z/micropython-ulab/tree/master/tests). 
 
 ## Testing
 
