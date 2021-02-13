@@ -33,4 +33,5 @@ uint8_t ndarray_upcast_dtype(uint8_t , uint8_t );
 void *ndarray_set_float_function(uint8_t );
 
 shape_strides tools_reduce_axes(ndarray_obj_t *, mp_obj_t );
+ndarray_obj_t *tools_object_is_square(mp_obj_t );
 #endif

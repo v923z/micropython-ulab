@@ -13,25 +13,27 @@ from ``numpy``.
 6.  `numpy.clip <#clip>`__
 7.  `numpy.convolve <#convolve>`__
 8.  `numpy.diff <#diff>`__
-9.  `numpy.equal <#equal>`__
-10. `numpy.flip <#flip>`__
-11. `numpy.interp <#interp>`__
-12. `numpy.isfinite <#isfinite>`__
-13. `numpy.isinf <#isinf>`__
-14. `numpy.max <#max>`__
-15. `numpy.maximum <#maximum>`__
-16. `numpy.mean <#mean>`__
-17. `numpy.median <#median>`__
-18. `numpy.min <#min>`__
-19. `numpy.minimum <#minimum>`__
-20. `numpy.not_equal <#equal>`__
-21. `numpy.polyfit <#polyfit>`__
-22. `numpy.polyval <#polyval>`__
-23. `numpy.roll <#roll>`__
-24. `numpy.sort <#sort>`__
-25. `numpy.std <#std>`__
-26. `numpy.sum <#sum>`__
-27. `numpy.trapz <#trapz>`__
+9.  `numpy.dot <#dot>`__
+10. `numpy.equal <#equal>`__
+11. `numpy.flip <#flip>`__
+12. `numpy.interp <#interp>`__
+13. `numpy.isfinite <#isfinite>`__
+14. `numpy.isinf <#isinf>`__
+15. `numpy.max <#max>`__
+16. `numpy.maximum <#maximum>`__
+17. `numpy.mean <#mean>`__
+18. `numpy.median <#median>`__
+19. `numpy.min <#min>`__
+20. `numpy.minimum <#minimum>`__
+21. `numpy.not_equal <#equal>`__
+22. `numpy.polyfit <#polyfit>`__
+23. `numpy.polyval <#polyval>`__
+24. `numpy.roll <#roll>`__
+25. `numpy.sort <#sort>`__
+26. `numpy.std <#std>`__
+27. `numpy.sum <#sum>`__
+28. `numpy.trace <#trace>`__
+29. `numpy.trapz <#trapz>`__
 
 all
 ---
@@ -395,6 +397,87 @@ and ``append`` keywords that can be found in ``numpy``.
            [-1.0, -1.0, -1.0],
            [3.0, 5.0, 7.0],
            [0.0, 0.0, 0.0]], dtype=float64)
+    
+    
+
+
+dot
+---
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.dot.html
+
+**WARNING:** numpy applies upcasting rules for the multiplication of
+matrices, while ``ulab`` simply returns a float matrix.
+
+Once you can invert a matrix, you might want to know, whether the
+inversion is correct. You can simply take the original matrix and its
+inverse, and multiply them by calling the ``dot`` function, which takes
+the two matrices as its arguments. If the matrix dimensions do not
+match, the function raises a ``ValueError``. The result of the
+multiplication is expected to be the unit matrix, which is demonstrated
+below.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    m = np.array([[1, 2, 3], [4, 5, 6], [7, 10, 9]], dtype=np.uint8)
+    n = np.linalg.inv(m)
+    print("m:\n", m)
+    print("\nm^-1:\n", n)
+    # this should be the unit matrix
+    print("\nm*m^-1:\n", np.dot(m, n))
+
+.. parsed-literal::
+
+    m:
+     array([[1, 2, 3],
+           [4, 5, 6],
+           [7, 10, 9]], dtype=uint8)
+    
+    m^-1:
+     array([[-1.25, 1.0, -0.25],
+           [0.4999999999999998, -1.0, 0.5],
+           [0.4166666666666668, 0.3333333333333333, -0.25]], dtype=float64)
+    
+    m*m^-1:
+     array([[1.0, 0.0, 0.0],
+           [4.440892098500626e-16, 1.0, 0.0],
+           [8.881784197001252e-16, 0.0, 1.0]], dtype=float64)
+    
+    
+
+
+Note that for matrix multiplication you don’t necessarily need square
+matrices, it is enough, if their dimensions are compatible (i.e., the
+the left-hand-side matrix has as many columns, as does the
+right-hand-side matrix rows):
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    m = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.uint8)
+    n = np.array([[1, 2], [3, 4], [5, 6], [7, 8]], dtype=np.uint8)
+    print(m)
+    print(n)
+    print(np.dot(m, n))
+
+.. parsed-literal::
+
+    array([[1, 2, 3, 4],
+           [5, 6, 7, 8]], dtype=uint8)
+    array([[1, 2],
+           [3, 4],
+           [5, 6],
+           [7, 8]], dtype=uint8)
+    array([[50.0, 60.0],
+           [114.0, 140.0]], dtype=float64)
     
     
 
@@ -1232,6 +1315,52 @@ array. Otherwise, the calculation is along the given axis.
     sum, flat array:  45.0
     sum, horizontal:  array([6.0, 15.0, 24.0], dtype=float64)
     std, vertical:  array([12.0, 15.0, 18.0], dtype=float64)
+    
+    
+
+
+trace
+-----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.trace.html
+
+The ``trace`` function returns the sum of the diagonal elements of a
+square matrix. If the input argument is not a square matrix, an
+exception will be raised.
+
+The scalar so returned will inherit the type of the input array, i.e.,
+integer arrays have integer trace, and floating point arrays a floating
+point trace.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]], dtype=np.int8)
+    print('a: ', a)
+    print('\ntrace of a: ', np.trace(a))
+    
+    b = np.array([[25, 15, -5], [15, 18,  0], [-5,  0, 11]], dtype=np.float)
+    
+    print('='*20 + '\nb: ', b)
+    print('\ntrace of b: ', np.trace(b))
+
+.. parsed-literal::
+
+    a:  array([[25, 15, -5],
+           [15, 18, 0],
+           [-5, 0, 11]], dtype=int8)
+    
+    trace of a:  54
+    ====================
+    b:  array([[25.0, 15.0, -5.0],
+           [15.0, 18.0, 0.0],
+           [-5.0, 0.0, 11.0]], dtype=float64)
+    
+    trace of b:  54.0
     
     
 
