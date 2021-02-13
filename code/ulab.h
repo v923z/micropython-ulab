@@ -341,10 +341,6 @@
 #define ULAB_LINALG_HAS_DET             (1)
 #endif
 
-#ifndef ULAB_LINALG_HAS_DOT
-#define ULAB_LINALG_HAS_DOT             (1)
-#endif
-
 #ifndef ULAB_LINALG_HAS_EIG
 #define ULAB_LINALG_HAS_EIG             (1)
 #endif
@@ -401,6 +397,10 @@
 
 #ifndef ULAB_NUMPY_HAS_DIFF
 #define ULAB_NUMPY_HAS_DIFF             (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_DOT
+#define ULAB_NUMPY_HAS_DOT              (1)
 #endif
 
 #ifndef ULAB_NUMPY_HAS_FLIP

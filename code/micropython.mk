@@ -19,6 +19,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/numpy/linalg/linalg_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/numerical/numerical.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/poly/poly.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/stats/stats.c
+SRC_USERMOD += $(USERMODULES_DIR)/numpy/transform/transform.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/vector/vector.c
 SRC_USERMOD += $(USERMODULES_DIR)/user/user.c
 
