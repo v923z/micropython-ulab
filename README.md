@@ -6,6 +6,16 @@ dimensions, and is fast. The library is a software-only standard `micropython` u
 i.e., it has no hardware dependencies, and can be compiled for any platform.
 The `float` implementation of `micropython` (`float`, or `double`) is automatically detected.
 
+1. [Supported functions](#supported-functions)
+    1. [ndarray](#ndarray)
+1. [Usage](#usage)
+1. [Customising the firmware](#customising-the-firmware)
+1. [Finding help](#finding-help)
+1. [Benchmarks](#benchmarks)
+1. [Firmware](#firmware)
+1. [Issues, contributing, and testing](#issues-contributing-and-testing)
+    1. [Testing](#testing)
+
 # Supported functions
 
 
@@ -21,7 +31,7 @@ iterables via the `array` constructor, or by means of the `arange`, `concatenate
 `shape`, `size`, `strides`, `tobytes`, and `transpose`.
 
 
-## Customising the firmware
+# Customising the firmware
 
 In addition to the `ndarray` operators and methods, `ulab` defines a great number of functions that can
 take `ndarray`s or `micropython` iterables as their arguments. Most of the functions have been ported from 
@@ -37,7 +47,7 @@ of the user manual.
 It is also possible to extend the library with arbitrary user-defined functions operating on numerical arrays, and add them to the namespace, as explaind in the   [programming manual](https://micropython-ulab.readthedocs.io/en/latest/ulab-programming.html).
 
 
-## Usage
+# Usage
 
 `ulab` sports a `numpy/scipy`-compatible interface, which makes porting of `CPython` code straightforward. The following
 snippet should run equally well in `micropython`, or on a PC.
@@ -224,3 +234,22 @@ If it compiles without error, you can plug in your ESP32 via USB and then flash 
 ```bash
 make erase && make deploy
 ```
+
+# Issues, contributing, and testing
+
+If you find a problem with the code, please, raise an [issue](#https://github.com/v923z/micropython-ulab/issues)! An issue should address a single problem, and should contain a minimal code snippet that demonstrates the difference from the expected behaviour. Reducing a problem to the bare minimum significantly increases the chances of a quick fix.
+
+Feature requests (porting a particular function from `numpy` or `scipy`) should also be posted at [ulab issue](#https://github.com/v923z/micropython-ulab/issues).
+
+Contributions of any kind are always welcome. If you are a seasoned coder, you can simply issue a pull request. If you do so, please, try to adhere to `micropython`'s [coding conventions](#https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md#c-code-conventions).
+
+However, you can also contribute to the documentation (preferably via the [jupyter notebooks](#https://github.com/v923z/micropython-ulab/tree/master/docs), or run [tests](#https://github.com/v923z/micropython-ulab/tree/master/tests). 
+
+## Testing
+
+If you decide to lend a hand with testing, here are the steps:
+
+1. Write a test script that checks a particular function, or a set of related functions!
+1. Drop this script in one of the folders in [ulab tests](#https://github.com/v923z/micropython-ulab/tree/master/tests)!
+1. Run the [./build.sh](#https://github.com/v923z/micropython-ulab/blob/master/build.sh) script in the root directory of `ulab`! This will clone the latest `micropython`, compile the firmware for `unix`, execute all scripts in the `ulab/tests`, and compare the results to those in the expected results files, which are also in `ulab/tests`, and have an extension `.exp`. In case you have a new snippet, i.e., you have no expected results file, or if the results differ from those in the expected file, a new expected file will be generated in the root directory. You should inspect the contents of this file, and if they are satisfactory, then the file can be moved to the `ulab/tests` folder, alongside your snippet. 
+
