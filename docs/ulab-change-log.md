@@ -1,8 +1,20 @@
+Sat, 13 Feb 2021
+
+version 2.3.7
+
+    fixed dot error
+
+Sat, 13 Feb 2021
+
+version 2.3.6
+
+    moved trace and dot to the top level
+
 Wed, 10 Feb 2021
 
 version 2.3.5
 
-    fixed invisible error in tools_reduce_axes, simplified the implementation of all/any 
+    fixed invisible error in tools_reduce_axes, simplified the implementation of all/any
 
 Tue, 9 Feb 2021
 
