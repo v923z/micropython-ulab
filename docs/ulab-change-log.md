@@ -1,3 +1,9 @@
+Fri, 12 Feb 2021
+
+version 2.4.0
+
+    added byteswap method
+
 Sun, 14 Feb 2021
 
 version 2.3.7

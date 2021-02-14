@@ -33,7 +33,7 @@
 
 #include "user/user.h"
 
-#define ULAB_VERSION 2.3.7
+#define ULAB_VERSION 2.4.0
 #define xstr(s) str(s)
 #define str(s) #s
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
@@ -50,6 +50,9 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
         #if NDARRAY_HAS_TRANSPOSE
             { MP_ROM_QSTR(MP_QSTR_transpose), MP_ROM_PTR(&ndarray_transpose_obj) },
         #endif
+    #endif
+    #if NDARRAY_HAS_BYTESWAP
+        { MP_ROM_QSTR(MP_QSTR_byteswap), MP_ROM_PTR(&ndarray_byteswap_obj) },
     #endif
     #if NDARRAY_HAS_COPY
         { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&ndarray_copy_obj) },
