@@ -345,10 +345,6 @@
 #define ULAB_LINALG_HAS_DET             (1)
 #endif
 
-#ifndef ULAB_LINALG_HAS_DOT
-#define ULAB_LINALG_HAS_DOT             (1)
-#endif
-
 #ifndef ULAB_LINALG_HAS_EIG
 #define ULAB_LINALG_HAS_EIG             (1)
 #endif
@@ -359,10 +355,6 @@
 
 #ifndef ULAB_LINALG_HAS_NORM
 #define ULAB_LINALG_HAS_NORM            (1)
-#endif
-
-#ifndef ULAB_LINALG_HAS_TRACE
-#define ULAB_LINALG_HAS_TRACE           (1)
 #endif
 
 // the FFT module; functions of the fft module still have
@@ -407,6 +399,10 @@
 #define ULAB_NUMPY_HAS_DIFF             (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_DOT
+#define ULAB_NUMPY_HAS_DOT              (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_FLIP
 #define ULAB_NUMPY_HAS_FLIP             (1)
 #endif
@@ -449,6 +445,10 @@
 
 #ifndef ULAB_NUMPY_HAS_SUM
 #define ULAB_NUMPY_HAS_SUM              (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_TRACE
+#define ULAB_NUMPY_HAS_TRACE            (1)
 #endif
 
 #ifndef ULAB_NUMPY_HAS_TRAPZ

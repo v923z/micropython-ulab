@@ -15,4 +15,6 @@
 #include "../../ulab.h"
 #include "../../ndarray.h"
 
+MP_DECLARE_CONST_FUN_OBJ_1(stats_trace_obj);
+
 #endif

@@ -4,6 +4,12 @@ version 2.4.0
 
     added byteswap method
 
+Sun, 14 Feb 2021
+
+version 2.3.7
+
+    fixed frombuffer implementation glitch
+
 Wed, 10 Feb 2021
 
 version 2.3.5
