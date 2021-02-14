@@ -669,10 +669,13 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 len = count;
             }
         }
-        ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
-        uint8_t *array = (uint8_t *)ndarray->array;
+        ndarray_obj_t *ndarray = ndarray_new_linear_array(1, dtype);
+        // at this point, ndarray->len = 1, ndarray->shape[ULAB_MAX_DIMS - 1] = 1
         uint8_t *buffer = bufinfo.buf;
-        memcpy(array, buffer + offset, len * sz);
+        ndarray->array = buffer + offset;
+        // fix the length and shape here
+        ndarray->len = len;
+        ndarray->shape[ULAB_MAX_DIMS - 1] = len;
         return MP_OBJ_FROM_PTR(ndarray);
     }
     return mp_const_none;
