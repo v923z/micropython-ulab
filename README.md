@@ -164,16 +164,18 @@ In case you got stuck somewhere in the process, a bit more detailed instructions
 
 ### ESP32-based boards
 
-```bash
-cd $BUILD_DIR/micropython
-git checkout b137d064e9e0bfebd2a59a9b312935031252e742
-# choose micropython version - note v1.12 is incompatible with ulab
-# and v1.13 is currently broken in some ways (on some platforms) https://github.com/BradenM/micropy-cli/issues/167
-# - the patch is not live yet (should be in 1.14), but is at this commit
-git submodule update --init
-cd $BUILD_DIR/micropython/mpy-cross && make # build cross-compiler (required)
+After version 1.14, `micropython` switched to `cmake` on the `ESP32` port, thus breaking compatibility with user modules. `ulab` can, however, still be compiled with version 1.14. You can check out a particular version by pinning the release tag as 
 
-cd $BUILD_DIR/micropython/ports/esp32
+```bash
+git clone https://github.com/micropython/micropython.git
+
+cd ./micropython/
+git checkout tags/v1.14
+
+git submodule update --init
+cd ./mpy-cross && make # build cross-compiler (required)
+
+cd ./micropython/ports/esp32
 make ESPIDF= # will display supported ESP-IDF commit hashes
 # output should look like: """
 # ...
@@ -188,7 +190,7 @@ ESPIDF_VER=9e70825d1e1cbf7988cf36981774300066580ea7
 
 # Download and prepare the SDK
 git clone https://github.com/espressif/esp-idf.git $BUILD_DIR/esp-idf
-cd $BUILD_DIR/esp-idf
+cd ./esp-idf
 git checkout $ESPIDF_VER
 git submodule update --init --recursive # get idf submodules
 pip install -r ./requirements.txt # install python reqs
@@ -197,8 +199,6 @@ pip install -r ./requirements.txt # install python reqs
 Next, install the ESP32 compiler. If using an ESP-IDF version >= 4.x (chosen by `$ESPIDF_VER` above), this can be done by running `. $BUILD_DIR/esp-idf/install.sh`. Otherwise, (for version 3.x) run:
 
 ```bash
-cd $BUILD_DIR
-
 # for 64 bit linux
 curl https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar xvz
 
@@ -213,18 +213,18 @@ curl https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2
 We can now clone the `ulab` repository
 
 ```
-git clone https://github.com/v923z/micropython-ulab $BUILD_DIR/ulab
+git clone https://github.com/v923z/micropython-ulab ulab
 ```
 
 Finally, build the firmware:
 
 ```bash
-cd $BUILD_DIR/micropython/ports/esp32
+cd ./micropython/ports/esp32
 # temporarily add esp32 compiler to path
-export PATH=$BUILD_DIR/xtensa-esp32-elf/bin:$PATH
-export ESPIDF=$BUILD_DIR/esp-idf # req'd by Makefile
+export PATH=xtensa-esp32-elf/bin:$PATH
+export ESPIDF=esp-idf # req'd by Makefile
 export BOARD=GENERIC # options are dirs in ./boards
-export USER_C_MODULES=$BUILD_DIR/ulab # include ulab in firmware
+export USER_C_MODULES=./ulab # include ulab in firmware
 
 make submodules & make all
 ```
