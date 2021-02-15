@@ -791,6 +791,63 @@ can be called. With the exception of the flatten and transpose
 operators, properties return an object that describe some feature of the
 array, while the methods return a new array-like object.
 
+1.  `.byteswap <#.byteswap>`__
+2.  `.copy <#.copy>`__
+3.  `.dtype <#.dtype>`__
+4.  `.flatten <#.flatten>`__
+5.  `.itemsize <#.itemsize>`__
+6.  `.reshape <#.reshape>`__
+7.  `.shape <#.shape>`__
+8.  `.size <#.size>`__
+9.  `.transpose <.#transpose>`__
+10. `.sort <#.sort>`__
+
+.byteswap
+~~~~~~~~~
+
+``numpy``
+https://numpy.org/doc/stable/reference/generated/numpy.char.chararray.byteswap.html
+
+The method takes a single keyword argument, ``inplace``, with values
+``True`` or ``False``, and swaps the bytes in the array. If
+``inplace = False``, a new ``ndarray`` is returned, otherwise the
+original values are overwritten.
+
+The ``frombuffer`` function is a convenient way of receiving data from
+peripheral devices that work with buffers. However, it is not guaranteed
+that the byte order (in other words, the *endianness*) of the peripheral
+device matches that of the microcontroller. The ``.byteswap`` method
+makes it possible to change the endianness of the incoming data stream.
+
+Obviously, byteswapping makes sense only for those cases, when a datum
+occupies more than one byte, i.e., for the ``uint16``, ``int16``, and
+``float`` ``dtype``\ s. When ``dtype`` is either ``uint8``, or ``int8``,
+the method simply returns a view or copy of self, depending upon the
+value of ``inplace``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    buffer = b'\x01\x02\x03\x04\x05\x06\x07\x08'
+    print('buffer: ', buffer)
+    
+    a = np.frombuffer(buffer, dtype=np.uint16)
+    print('a: ', a)
+    b = a.byteswap()
+    print('b: ', b)
+
+.. parsed-literal::
+
+    buffer:  b'\x01\x02\x03\x04\x05\x06\x07\x08'
+    a:  array([513, 1027, 1541, 2055], dtype=uint16)
+    b:  array([258, 772, 1286, 1800], dtype=uint16)
+    
+    
+
+
 .copy
 ~~~~~
 
