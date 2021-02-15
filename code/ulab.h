@@ -180,6 +180,10 @@
 
 
 // determines, which ndarray methods are available
+#ifndef NDARRAY_HAS_BYTESWAP
+#define NDARRAY_HAS_BYTESWAP            (1)
+#endif
+
 #ifndef NDARRAY_HAS_COPY
 #define NDARRAY_HAS_COPY                (1)
 #endif

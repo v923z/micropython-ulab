@@ -140,6 +140,11 @@ size_t *ndarray_new_coords(uint8_t );
 void ndarray_rewind_array(uint8_t , uint8_t *, size_t *, int32_t *, size_t *);
 
 // various ndarray methods
+#if NDARRAY_HAS_BYTESWAP
+mp_obj_t ndarray_byteswap(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_byteswap_obj);
+#endif
+
 #if NDARRAY_HAS_COPY
 mp_obj_t ndarray_copy(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_copy_obj);

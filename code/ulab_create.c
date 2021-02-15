@@ -669,10 +669,18 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 len = count;
             }
         }
-        ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
-        uint8_t *array = (uint8_t *)ndarray->array;
+        ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
+        ndarray->base.type = &ulab_ndarray_type;
+        ndarray->dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
+        ndarray->boolean = dtype == NDARRAY_BOOL ? NDARRAY_BOOLEAN : NDARRAY_NUMERIC;
+        ndarray->ndim = 1;
+        ndarray->len = len;
+        ndarray->itemsize = sz;
+        ndarray->shape[ULAB_MAX_DIMS - 1] = len;
+        ndarray->strides[ULAB_MAX_DIMS - 1] = sz;
+
         uint8_t *buffer = bufinfo.buf;
-        memcpy(array, buffer + offset, len * sz);
+        ndarray->array = buffer + offset;
         return MP_OBJ_FROM_PTR(ndarray);
     }
     return mp_const_none;

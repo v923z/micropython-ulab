@@ -701,7 +701,6 @@ void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target) {
 
 ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *shape, int32_t *strides, int32_t offset) {
     // creates a new view from the input arguments
-    // the function should work in the n-dimensional case
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
     ndarray->boolean = source->boolean;
@@ -736,6 +735,84 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
     ndarray_copy_array(source, ndarray);
     return ndarray;
 }
+
+#if NDARRAY_HAS_BYTESWAP
+mp_obj_t ndarray_byteswap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // changes the endiannes of an array
+    // if the dtype of the input uint8/int8/bool, simply return a copy or view
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_inplace, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_false } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(args[0].u_obj);
+    ndarray_obj_t *ndarray = NULL;
+    if(args[1].u_obj == mp_const_false) {
+        ndarray = ndarray_copy_view(self);
+    } else {
+        ndarray = ndarray_new_view(self, self->ndim, self->shape, self->strides, 0);
+    }
+    if((self->dtype == NDARRAY_BOOL) || (self->dtype == NDARRAY_UINT8) || (self->dtype == NDARRAY_INT8)) {
+        return MP_OBJ_FROM_PTR(ndarray);
+    } else {
+        uint8_t *array = (uint8_t *)ndarray->array;
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        if(self->dtype == NDARRAY_FLOAT) {
+                            #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+                            SWAP(uint8_t, array[0], array[3]);
+                            SWAP(uint8_t, array[1], array[2]);
+                            #else
+                            SWAP(uint8_t, array[0], array[7]);
+                            SWAP(uint8_t, array[1], array[6]);
+                            SWAP(uint8_t, array[2], array[5]);
+                            SWAP(uint8_t, array[3], array[4]);
+                            #endif
+                        } else {
+                            SWAP(uint8_t, array[0], array[1]);
+                        }
+                        array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                    array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+                array += ndarray->strides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < ndarray->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+            array += ndarray->strides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < ndarray->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+    }
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_byteswap_obj, 1, ndarray_byteswap);
+#endif
 
 #if NDARRAY_HAS_COPY
 mp_obj_t ndarray_copy(mp_obj_t self_in) {

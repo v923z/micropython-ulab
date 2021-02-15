@@ -1,8 +1,20 @@
 Sat, 13 Feb 2021
 
-version 2.3.7
+version 2.4.1
 
     fixed dot error
+
+Fri, 12 Feb 2021
+
+version 2.4.0
+
+    added byteswap method
+
+Sun, 14 Feb 2021
+
+version 2.3.7
+
+    fixed frombuffer implementation glitch
 
 Sat, 13 Feb 2021
 
