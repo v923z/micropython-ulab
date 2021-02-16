@@ -267,18 +267,18 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             rarray = (uint8_t *)results->array;
             // TODO: numpy promotes the output to the highest integer type
             if(ndarray->dtype.type == NDARRAY_UINT8) {
-                RUN_SUM(uint8_t, array, results, rarray, _shape_strides);
+                RUN_SUM(uint8_t, ndarray, array, results, rarray, _shape_strides);
             } else if(ndarray->dtype.type == NDARRAY_INT8) {
-                RUN_SUM(int8_t, array, results, rarray, _shape_strides);
+                RUN_SUM(int8_t, ndarray, array, results, rarray, _shape_strides);
             } else if(ndarray->dtype.type == NDARRAY_UINT16) {
-                RUN_SUM(uint16_t, array, results, rarray, _shape_strides);
+                RUN_SUM(uint16_t, ndarray, array, results, rarray, _shape_strides);
             } else if(ndarray->dtype.type == NDARRAY_INT16) {
-                RUN_SUM(int16_t, array, results, rarray, _shape_strides);
+                RUN_SUM(int16_t, ndarray, array, results, rarray, _shape_strides);
             } else {
                 // for floats, the sum might be inaccurate with the naive summation
                 // call mean, and multiply with the number of samples
                 farray = (mp_float_t *)results->array;
-                RUN_MEAN_STD(mp_float_t, array, farray, _shape_strides, 0.0, 0);
+                RUN_MEAN_STD(mp_float_t, ndarray, array, farray, _shape_strides, 0.0, 0);
                 mp_float_t norm = (mp_float_t)_shape_strides.shape[0];
                 // re-wind the array here
                 farray = (mp_float_t *)results->array;
@@ -296,15 +296,15 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             }
             mp_float_t div = optype == NUMERICAL_STD ? (mp_float_t)(_shape_strides.shape[0] - ddof) : 0.0;
             if(ndarray->dtype.type == NDARRAY_UINT8) {
-                RUN_MEAN_STD(uint8_t, array, farray, _shape_strides, div, isStd);
+                RUN_MEAN_STD(uint8_t, ndarray, array, farray, _shape_strides, div, isStd);
             } else if(ndarray->dtype.type == NDARRAY_INT8) {
-                RUN_MEAN_STD(int8_t, array, farray, _shape_strides, div, isStd);
+                RUN_MEAN_STD(int8_t, ndarray, array, farray, _shape_strides, div, isStd);
             } else if(ndarray->dtype.type == NDARRAY_UINT16) {
-                RUN_MEAN_STD(uint16_t, array, farray, _shape_strides, div, isStd);
+                RUN_MEAN_STD(uint16_t, ndarray, array, farray, _shape_strides, div, isStd);
             } else if(ndarray->dtype.type == NDARRAY_INT16) {
-                RUN_MEAN_STD(int16_t, array, farray, _shape_strides, div, isStd);
+                RUN_MEAN_STD(int16_t, ndarray, array, farray, _shape_strides, div, isStd);
             } else {
-                RUN_MEAN_STD(mp_float_t, array, farray, _shape_strides, div, isStd);
+                RUN_MEAN_STD(mp_float_t, ndarray, array, farray, _shape_strides, div, isStd);
             }
         }
         if(results->ndim == 0) { // return a scalar here
