@@ -40,12 +40,16 @@
 
 // The maximum number of dimensions the firmware should be able to support
 // Possible values lie between 1, and 4, inclusive
-#define ULAB_MAX_DIMS                       2
+#ifndef ULAB_MAX_DIMS
+#define ULAB_MAX_DIMS                       (2)
+#endif
 
 // By setting this constant to 1, iteration over array dimensions will be implemented
 // as a function (ndarray_rewind_array), instead of writing out the loops in macros
 // This reduces firmware size at the expense of speed
+#ifndef ULAB_HAS_FUNCTION_ITERATOR
 #define ULAB_HAS_FUNCTION_ITERATOR          (0)
+#endif
 
 // If NDARRAY_IS_ITERABLE is 1, the ndarray object defines its own iterator function
 // This option saves approx. 250 bytes of flash space
@@ -63,8 +67,8 @@
 #ifndef ULAB_HAS_PRINTOPTIONS
 #define ULAB_HAS_PRINTOPTIONS               (1)
 #endif
-#define NDARRAY_PRINT_THRESHOLD             10
-#define NDARRAY_PRINT_EDGEITEMS             3
+#define NDARRAY_PRINT_THRESHOLD             (10)
+#define NDARRAY_PRINT_EDGEITEMS             (3)
 
 // determines, whether the dtype is an object, or simply a character
 // the object implementation is numpythonic, but requires more space
