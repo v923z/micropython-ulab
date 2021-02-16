@@ -46,7 +46,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         
         #if ULAB_VECTORISE_USES_FUN_POINTER
         
-            mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
+            mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype.type);
             
             #if ULAB_MAX_DIMS > 3
             size_t i = 0;
@@ -86,13 +86,13 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
             } while(i < source->shape[ULAB_MAX_DIMS - 4]);
             #endif /* ULAB_MAX_DIMS > 3 */
         #else
-        if(source->dtype == NDARRAY_UINT8) {
+        if(source->dtype.type == NDARRAY_UINT8) {
             ITERATE_VECTOR(uint8_t, array, source, sarray);
-        } else if(source->dtype == NDARRAY_INT8) {
+        } else if(source->dtype.type == NDARRAY_INT8) {
             ITERATE_VECTOR(int8_t, array, source, sarray);
-        } else if(source->dtype == NDARRAY_UINT16) {
+        } else if(source->dtype.type == NDARRAY_UINT16) {
             ITERATE_VECTOR(uint16_t, array, source, sarray);
-        } else if(source->dtype == NDARRAY_INT16) {
+        } else if(source->dtype.type == NDARRAY_INT16) {
             ITERATE_VECTOR(int16_t, array, source, sarray);
         } else {
             ITERATE_VECTOR(mp_float_t, array, source, sarray);
@@ -183,7 +183,7 @@ mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     mp_float_t *narray = (mp_float_t *)ndarray->array;
     uint8_t *sarray = (uint8_t *)source->array;
 
-    mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
+    mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype.type);
 
     #if ULAB_MAX_DIMS > 3
     size_t i = 0;
@@ -267,8 +267,8 @@ mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
     ndarray_obj_t *results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
     mp_float_t *rarray = (mp_float_t *)results->array;
 
-    mp_float_t (*funcx)(void *) = ndarray_get_float_function(ndarray_x->dtype);
-    mp_float_t (*funcy)(void *) = ndarray_get_float_function(ndarray_y->dtype);
+    mp_float_t (*funcx)(void *) = ndarray_get_float_function(ndarray_x->dtype.type);
+    mp_float_t (*funcy)(void *) = ndarray_get_float_function(ndarray_y->dtype.type);
 
     #if ULAB_MAX_DIMS > 3
     size_t i = 0;
@@ -556,7 +556,7 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
         ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0]);
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, self->otypes);
         for(size_t i=0; i < source->len; i++) {
-            avalue[0] = mp_binary_get_val_array(source->dtype, source->array, i);
+            avalue[0] = mp_binary_get_val_array(source->dtype.type, source->array, i);
             fvalue = self->type->call(self->fun, 1, 0, avalue);
             mp_binary_set_val_array(self->otypes, ndarray->array, i, fvalue);
         }

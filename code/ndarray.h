@@ -63,9 +63,17 @@ enum NDARRAY_TYPE {
     NDARRAY_FLOAT = FLOAT_TYPECODE,
 };
 
+typedef struct _dtype_dtype {
+    uint8_t type;
+    #if ULAB_DTYPE_HAS_FUNC_POINTER
+    uint8_t flags = 0;
+    void *arrfunc;
+    #endif
+} dtype_dtype;
+
 typedef struct _ndarray_obj_t {
     mp_obj_base_t base;
-    uint8_t dtype;
+    dtype_dtype dtype;
     uint8_t itemsize;
     uint8_t boolean;
     uint8_t ndim;
@@ -80,7 +88,7 @@ extern const mp_obj_type_t ulab_dtype_type;
 
 typedef struct _dtype_obj_t {
     mp_obj_base_t base;
-    uint8_t dtype;
+    dtype_dtype dtype;
 } dtype_obj_t;
 
 void ndarray_dtype_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );

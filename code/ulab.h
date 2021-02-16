@@ -72,6 +72,12 @@
 #define ULAB_HAS_DTYPE_OBJECT               (0)
 #endif
 
+// This constant determines, whether a function pointer can be attached to the dtype object
+// Such function pointers are useful for custom data types
+#ifndef ULAB_DTYPE_IS_EXTENDABLE
+#define ULAB_DTYPE_IS_EXTENDABLE            (0)
+#endif
+
 // the ndarray binary operators
 #ifndef NDARRAY_HAS_BINARY_OPS
 #define NDARRAY_HAS_BINARY_OPS              (1)

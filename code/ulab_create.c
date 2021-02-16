@@ -179,7 +179,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     // first check, whether the arrays are compatible
     ndarray_obj_t *_ndarray = MP_OBJ_TO_PTR(ndarrays->items[0]);
-    uint8_t dtype = _ndarray->dtype;
+    uint8_t dtype = _ndarray->dtype.type;
     uint8_t ndim = _ndarray->ndim;
     if(axis < 0) {
         axis += ndim;
@@ -196,7 +196,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     for(uint8_t i=1; i < ndarrays->len; i++) {
         _ndarray = MP_OBJ_TO_PTR(ndarrays->items[i]);
         // check, whether the arrays are compatible
-        if((dtype != _ndarray->dtype) || (ndim != _ndarray->ndim)) {
+        if((dtype != _ndarray->dtype.type) || (ndim != _ndarray->ndim)) {
             mp_raise_ValueError(translate("input arrays are not compatible"));
         }
         for(uint8_t j=0; j < ULAB_MAX_DIMS; j++) {
@@ -298,7 +298,7 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     }
     ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
     if(source->ndim == 1) { // return a rank-2 tensor with the prescribed diagonal
-        ndarray_obj_t *target = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, source->len, source->len), source->dtype);
+        ndarray_obj_t *target = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, source->len, source->len), source->dtype.type);
         uint8_t *sarray = (uint8_t *)source->array;
         uint8_t *tarray = (uint8_t *)target->array;
         for(size_t i=0; i < source->len; i++) {
@@ -330,7 +330,7 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
         mp_raise_ValueError(translate("offset is too large"));
     }
 
-    ndarray_obj_t *target = ndarray_new_linear_array(len, source->dtype);
+    ndarray_obj_t *target = ndarray_new_linear_array(len, source->dtype.type);
     uint8_t *tarray = (uint8_t *)target->array;
 
     for(size_t i=0; i < len; i++) {
@@ -671,7 +671,7 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         }
         ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
         ndarray->base.type = &ulab_ndarray_type;
-        ndarray->dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
+        ndarray->dtype.type = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
         ndarray->boolean = dtype == NDARRAY_BOOL ? NDARRAY_BOOLEAN : NDARRAY_NUMERIC;
         ndarray->ndim = 1;
         ndarray->len = len;

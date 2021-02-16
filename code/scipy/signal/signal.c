@@ -79,7 +79,7 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #endif
         uint8_t *iarray = (uint8_t *)inarray->array;
         for(size_t i=0; i < lenx; i++) {
-            *yarray++ = ndarray_get_float_value(iarray, inarray->dtype);
+            *yarray++ = ndarray_get_float_value(iarray, inarray->dtype.type);
             iarray += inarray->strides[ULAB_MAX_DIMS - 1];
         }
         yarray -= lenx;
@@ -103,7 +103,7 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             if((zi->shape[ULAB_MAX_DIMS - 1] != lensos) || (zi->shape[ULAB_MAX_DIMS - 1] != 2)) {
                 mp_raise_ValueError(translate("zi must be of shape (n_section, 2)"));
             }
-            if(zi->dtype != NDARRAY_FLOAT) {
+            if(zi->dtype.type != NDARRAY_FLOAT) {
                 mp_raise_ValueError(translate("zi must be of float type"));
             }
             // TODO: this won't work with sparse arrays

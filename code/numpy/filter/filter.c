@@ -69,8 +69,8 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         for(int32_t n=bot_n; n < top_n; n++) {
             int32_t idx_c = (len_c - n - 1) * cs;
             int32_t idx_a = (n + k) * as;
-            mp_float_t ai = ndarray_get_float_index(aarray, a->dtype, idx_a);
-            mp_float_t ci = ndarray_get_float_index(carray, c->dtype, idx_c);
+            mp_float_t ai = ndarray_get_float_index(aarray, a->dtype.type, idx_a);
+            mp_float_t ci = ndarray_get_float_index(carray, c->dtype.type, idx_c);
             accum += ai * ci;
         }
         *outptr++ = accum;

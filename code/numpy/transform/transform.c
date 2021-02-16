@@ -42,8 +42,8 @@ mp_obj_t transform_dot(mp_obj_t _m1, mp_obj_t _m2) {
     uint8_t *array1 = (uint8_t *)m1->array;
     uint8_t *array2 = (uint8_t *)m2->array;
 
-    mp_float_t (*func1)(void *) = ndarray_get_float_function(m1->dtype);
-    mp_float_t (*func2)(void *) = ndarray_get_float_function(m2->dtype);
+    mp_float_t (*func1)(void *) = ndarray_get_float_function(m1->dtype.type);
+    mp_float_t (*func2)(void *) = ndarray_get_float_function(m2->dtype.type);
 
     #if ULAB_MAX_DIMS > 1
     if ((m1->ndim == 1) && (m2->ndim == 1)) {

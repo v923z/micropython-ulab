@@ -39,29 +39,29 @@ static mp_obj_t user_square(mp_obj_t arg) {
 
     // if the input is a dense array, create `results` with the same number of
     // dimensions, shape, and dtype
-    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, ndarray->shape, ndarray->dtype);
+    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, ndarray->shape, ndarray->dtype.type);
 
     // since in a dense array the iteration over the elements is trivial, we
     // can cast the data arrays ndarray->array and results->array to the actual type
-    if(ndarray->dtype == NDARRAY_UINT8) {
+    if(ndarray->dtype.type == NDARRAY_UINT8) {
         uint8_t *array = (uint8_t *)ndarray->array;
         uint8_t *rarray = (uint8_t *)results->array;
         for(size_t i=0; i < ndarray->len; i++, array++) {
             *rarray++ = (*array) * (*array);
         }
-    } else if(ndarray->dtype == NDARRAY_INT8) {
+    } else if(ndarray->dtype.type == NDARRAY_INT8) {
         int8_t *array = (int8_t *)ndarray->array;
         int8_t *rarray = (int8_t *)results->array;
         for(size_t i=0; i < ndarray->len; i++, array++) {
             *rarray++ = (*array) * (*array);
         }
-    } else if(ndarray->dtype == NDARRAY_UINT16) {
+    } else if(ndarray->dtype.type == NDARRAY_UINT16) {
         uint16_t *array = (uint16_t *)ndarray->array;
         uint16_t *rarray = (uint16_t *)results->array;
         for(size_t i=0; i < ndarray->len; i++, array++) {
             *rarray++ = (*array) * (*array);
         }
-    } else if(ndarray->dtype == NDARRAY_INT16) {
+    } else if(ndarray->dtype.type == NDARRAY_INT16) {
         int16_t *array = (int16_t *)ndarray->array;
         int16_t *rarray = (int16_t *)results->array;
         for(size_t i=0; i < ndarray->len; i++, array++) {
