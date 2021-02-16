@@ -80,9 +80,31 @@ static mp_obj_t user_square(mp_obj_t arg) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(user_square_obj, user_square);
 
+static uint8_t user_imreader(ndarray_obj_t *ndarray, void *array, int32_t strides, size_t i) {
+    return (uint8_t)i*i;
+}
+
+static mp_obj_t user_imread(mp_obj_t shape) {
+
+    size_t len = mp_obj_get_int(shape);
+
+    ndarray_obj_t *ndarray = ndarray_new_linear_array(len, NDARRAY_UINT8);
+    uint8_t *array = (uint8_t *)ndarray->array;
+    for(size_t i=0; i < len; i++) {
+        array[i] = i;
+    }
+    ndarray->dtype.flags = 1;
+    ndarray->dtype.arrfunc = user_imreader;
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+
+MP_DEFINE_CONST_FUN_OBJ_1(user_imread_obj, user_imread);
+
 static const mp_rom_map_elem_t ulab_user_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_user) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_square), (mp_obj_t)&user_square_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_imread), (mp_obj_t)&user_imread_obj },
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_ulab_user_globals, ulab_user_globals_table);

@@ -46,6 +46,7 @@
     (rarray) += (results)->itemsize;\
 })
 
+#if !(ULAB_DTYPE_IS_EXTENDABLE)
 #define RUN_SUM1(type, ndarray, array, results, rarray, ss)\
 ({\
     type sum = 0;\
@@ -56,6 +57,26 @@
     memcpy((rarray), &sum, (results)->itemsize);\
     (rarray) += (results)->itemsize;\
 })
+#else
+#define RUN_SUM1(type, ndarray, array, results, rarray, ss)\
+({\
+    type sum = 0;\
+    if((ndarray)->dtype.flags == 0) {\
+        for(size_t i=0; i < (ss).shape[0]; i++) {\
+            sum += *((type *)(array));\
+            (array) += (ss).strides[0];\
+        }\
+    } else {\
+        type (*arrfunc)(ndarray_obj_t *, void *, int32_t , size_t ) = (ndarray)->dtype.arrfunc;\
+        for(size_t i=0; i < (ss).shape[0]; i++) {\
+            sum += arrfunc((ndarray), (array), (ss).strides[0], i);\
+            (array) += (ss).strides[0];\
+        }\
+    }\
+    memcpy((rarray), &sum, (results)->itemsize);\
+    (rarray) += (results)->itemsize;\
+})
+#endif
 
 #define RUN_SUM2(type, ndarray, array, results, rarray, ss) do {\
     size_t l = 0;\

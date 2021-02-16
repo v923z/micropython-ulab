@@ -601,6 +601,10 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
     ndarray->dtype.type = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
+    #if ULAB_DTYPE_IS_EXTENDABLE
+    ndarray->dtype.flags = 0;
+    ndarray->dtype.arrfunc = NULL;
+    #endif
     ndarray->boolean = dtype == NDARRAY_BOOL ? NDARRAY_BOOLEAN : NDARRAY_NUMERIC;
     ndarray->ndim = ndim;
     ndarray->len = ndim == 0 ? 0 : 1;

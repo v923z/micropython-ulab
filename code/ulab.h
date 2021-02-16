@@ -79,7 +79,7 @@
 // This constant determines, whether a function pointer can be attached to the dtype object
 // Such function pointers are useful for custom data types
 #ifndef ULAB_DTYPE_IS_EXTENDABLE
-#define ULAB_DTYPE_IS_EXTENDABLE            (0)
+#define ULAB_DTYPE_IS_EXTENDABLE            (1)
 #endif
 
 // the ndarray binary operators
@@ -622,7 +622,7 @@
 // user-defined module; source of the module and
 // its sub-modules should be placed in code/user/
 #ifndef ULAB_HAS_USER_MODULE
-#define ULAB_HAS_USER_MODULE                (0)
+#define ULAB_HAS_USER_MODULE                (1)
 #endif
 
 #endif
