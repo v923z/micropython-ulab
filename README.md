@@ -54,14 +54,14 @@ snippet should run equally well in `micropython`, or on a PC.
 
 ```python
 try:
-    from ulab import numpy as np
-    from ulab import scipy as spy
+    from ulab import numpy
+    from ulab import scipy
 except ImportError:
-    import numpy as np
-    import scipy as spy
+    import numpy
+    import scipy.special
 
-x = np.array([1, 2, 3])
-spy.special.erf(x)
+x = numpy.array([1, 2, 3])
+scipy.special.erf(x)
 ```
 
 # Finding help
