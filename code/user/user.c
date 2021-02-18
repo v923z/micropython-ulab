@@ -82,7 +82,7 @@ static mp_obj_t user_square(mp_obj_t arg) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(user_square_obj, user_square);
 
-static size_t user_imreader(ndarray_obj_t *ndarray, void *array, int32_t *strides, size_t count) {
+static void user_imreader(ndarray_obj_t *ndarray, void *array, int32_t *strides, size_t count) {
     uint16_t *subarray = (uint16_t *)ndarray->dtype.subarray;
     // if necessary, get the coordinates in the original reference frame, i.e.,
     // in the coordinates used at the time of the creation of the object
@@ -94,8 +94,6 @@ static size_t user_imreader(ndarray_obj_t *ndarray, void *array, int32_t *stride
     // since strides is going to be used in computation loops, and subarray is
     // meant to be a dense array, simply overwrite strides with the itemsize
     *strides = ndarray->itemsize;
-    // uint8_t *_array = (uint8_t *)subarray;
-    return 0; //ndarray->itemsize;
 }
 
 static mp_obj_t user_imread(mp_obj_t shape) {

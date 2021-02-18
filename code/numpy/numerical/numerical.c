@@ -264,7 +264,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
         mp_float_t *farray = NULL;
 
         #if ULAB_DTYPE_IS_EXTENDABLE
-        size_t (*arrfunc)(ndarray_obj_t *, void *, int32_t *, size_t) = NULL;
+        void (*arrfunc)(ndarray_obj_t *, void *, int32_t *, size_t) = NULL;
         if(ndarray->dtype.flags) {
             arrfunc = ndarray->dtype.arrfunc;
         }
