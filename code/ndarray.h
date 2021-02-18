@@ -68,6 +68,10 @@ typedef struct _dtype_dtype {
     #if ULAB_DTYPE_IS_EXTENDABLE
     uint8_t flags;
     void *arrfunc;
+    uint8_t *subarray;
+    size_t shape[ULAB_MAX_DIMS];
+    void *origin;
+    uint8_t *name;
     #endif
 } dtype_dtype;
 

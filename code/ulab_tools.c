@@ -10,6 +10,7 @@
 
 
 #include <string.h>
+#include <math.h>
 #include "py/runtime.h"
 
 #include "ulab.h"
@@ -226,5 +227,20 @@ ndarray_obj_t *tools_object_is_square(mp_obj_t obj) {
         mp_raise_ValueError(translate("input must be square matrix"));
     }
     return ndarray;
+}
+#endif
+
+#if ULAB_DTYPE_IS_EXTENDABLE
+size_t *tools_coords_from_pointer(void *p1, ndarray_obj_t *ndarray) {
+    // calculates the coordinates in the original tensor from the position of the pointer
+    // The original view is assumed to be dense, i.e., the strides can be computed from the shape
+    size_t diff = (uint8_t *)p1 - (uint8_t *)ndarray->dtype.origin;
+    size_t accumulator = 1;
+    size_t *coords = m_new(size_t, ULAB_MAX_DIMS);
+    for(uint8_t i = 1; i < ndarray->ndim + 1; i++) {
+        accumulator *= ndarray->dtype.shape[ULAB_MAX_DIMS - i];
+        coords[ULAB_MAX_DIMS - i] = diff % accumulator;
+    }
+    return coords;
 }
 #endif
