@@ -7,6 +7,7 @@ def print_as_buffer(a):
     print(len(memoryview(a)), list(memoryview(a)))
 print_as_buffer(np.ones(3))
 print_as_buffer(np.zeros(3))
+print_as_buffer(np.eye(4))
 print_as_buffer(np.ones(1, dtype=np.int8))
 print_as_buffer(np.ones(2, dtype=np.uint8))
 print_as_buffer(np.ones(3, dtype=np.int16))
