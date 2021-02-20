@@ -26,6 +26,7 @@
 
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
+#include "blocks/blocks.h"
 #include "numpy/fft/fft.h"
 #include "numpy/linalg/linalg.h"
 // TODO: we should get rid of this; array.sort depends on it
@@ -127,9 +128,12 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ndarray_dtype_obj },
         #endif /* NDARRAY_HAS_DTYPE */
     #endif /* ULAB_HAS_DTYPE_OBJECT */
-        { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
+    { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
     #if ULAB_HAS_SCIPY
         { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR(&ulab_scipy_module) },
+    #endif
+    #if ULAB_HAS_BLOCKS
+        { MP_ROM_QSTR(MP_QSTR_blocks), MP_ROM_PTR(&ulab_blocks_module) },
     #endif
     #if ULAB_HAS_USER_MODULE
         { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },

@@ -69,7 +69,7 @@
     }\
     for(size_t i=0; i < (ss).shape[0]; i++) {\
         sum += *((type *)((ndarray)->dtype.subarray));\
-        (array) += increment;\
+        (ndarray)->dtype.subarray += increment;\
     }\
     (array) += (ss).shape[0] * (ss).strides[0];\
     memcpy((rarray), &sum, (results)->itemsize);\

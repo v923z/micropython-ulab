@@ -82,45 +82,9 @@ static mp_obj_t user_square(mp_obj_t arg) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(user_square_obj, user_square);
 
-static void user_imreader(ndarray_obj_t *ndarray, void *array, int32_t *strides, size_t count) {
-    uint16_t *subarray = (uint16_t *)ndarray->dtype.subarray;
-    // if necessary, get the coordinates in the original reference frame, i.e.,
-    // in the coordinates used at the time of the creation of the object
-    // size_t *coords = tools_coords_from_pointer(array, ndarray);
-    for(size_t i = 0; i < count; i += *strides/ndarray->itemsize) {
-        // fill up the array with dummy data
-        *subarray++ = i*i;
-    }
-    // since strides is going to be used in computation loops, and subarray is
-    // meant to be a dense array, simply overwrite strides with the itemsize
-    *strides = ndarray->itemsize;
-}
-
-static mp_obj_t user_imread(mp_obj_t shape) {
-
-    size_t len = mp_obj_get_int(shape);
-
-    ndarray_obj_t *ndarray = ndarray_new_linear_array(len, NDARRAY_UINT16);
-    uint16_t *array = (uint16_t *)ndarray->array;
-    for(size_t i = 0; i < len; i++) {
-        *array = (uint16_t)i;
-        array += 1;
-    }
-    ndarray->dtype.flags = 1;
-    ndarray->dtype.arrfunc = user_imreader;
-    uint8_t *subarray = m_new(uint8_t, ndarray->itemsize * ndarray->shape[ULAB_MAX_DIMS - 1]);
-    ndarray->dtype.subarray = subarray;
-    memcpy(&(ndarray->dtype.shape), &(ndarray->shape), sizeof(size_t) *ULAB_MAX_DIMS);
-    return MP_OBJ_FROM_PTR(ndarray);
-}
-
-
-MP_DEFINE_CONST_FUN_OBJ_1(user_imread_obj, user_imread);
-
 static const mp_rom_map_elem_t ulab_user_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_user) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_square), (mp_obj_t)&user_square_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_imread), (mp_obj_t)&user_imread_obj },
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_ulab_user_globals, ulab_user_globals_table);

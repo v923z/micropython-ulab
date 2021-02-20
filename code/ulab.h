@@ -38,6 +38,13 @@
 #define ULAB_HAS_SCIPY                      (1)
 #endif
 
+// Determines, whether the blocks module is defined in ulab. When ULAB_HAS_BLOCKS is
+// defined 1, a function pointer can be attached to the dtype object
+// Such function pointers are useful for custom data types
+#ifndef ULAB_HAS_BLOCKS
+#define ULAB_HAS_BLOCKS                      (1)
+#endif
+
 // The maximum number of dimensions the firmware should be able to support
 // Possible values lie between 1, and 4, inclusive
 #ifndef ULAB_MAX_DIMS
@@ -52,7 +59,7 @@
 #endif
 
 // If NDARRAY_IS_ITERABLE is 1, the ndarray object defines its own iterator function
-// This option saves approx. 250 bytes of flash space
+// Setting this option to 0 saves approx. 250 bytes of flash space
 #ifndef NDARRAY_IS_ITERABLE
 #define NDARRAY_IS_ITERABLE                 (1)
 #endif
@@ -63,12 +70,12 @@
 #endif
 
 // The default threshold for pretty printing. These variables can be overwritten
-// at run-time via the set_printoptions() function
+// at run-time via the set_printoptions() function, if ULAB_HAS_PRINTOPTIONS is 1
+#define NDARRAY_PRINT_THRESHOLD             (10)
+#define NDARRAY_PRINT_EDGEITEMS             (3)
 #ifndef ULAB_HAS_PRINTOPTIONS
 #define ULAB_HAS_PRINTOPTIONS               (1)
 #endif
-#define NDARRAY_PRINT_THRESHOLD             (10)
-#define NDARRAY_PRINT_EDGEITEMS             (3)
 
 // determines, whether the dtype is an object, or simply a character
 // the object implementation is numpythonic, but requires more space
@@ -76,19 +83,15 @@
 #define ULAB_HAS_DTYPE_OBJECT               (0)
 #endif
 
-// This constant determines, whether a function pointer can be attached to the dtype object
-// Such function pointers are useful for custom data types
-#ifndef ULAB_DTYPE_IS_EXTENDABLE
-#define ULAB_DTYPE_IS_EXTENDABLE            (0)
-#endif
-
-// the ndarray binary operators
+// The ndarray binary operators
+// If, e.g., only FFTs are required, massive savings of
+// flash space can be had by disabling the binary operators
 #ifndef NDARRAY_HAS_BINARY_OPS
 #define NDARRAY_HAS_BINARY_OPS              (1)
 #endif
 
 // Firmware size can be reduced at the expense of speed by using function
-// pointers in iterations. For each operator, he function pointer saves around
+// pointers in iterations. For each operator, the function pointer saves around
 // 2 kB in the two-dimensional case, and around 4 kB in the four-dimensional case.
 
 #ifndef NDARRAY_BINARY_USES_FUN_POINTER
@@ -189,7 +192,7 @@
 #endif
 
 
-// determines, which ndarray methods are available
+// Constants in the following section determine, which ndarray methods are available
 #ifndef NDARRAY_HAS_BYTESWAP
 #define NDARRAY_HAS_BYTESWAP            (1)
 #endif

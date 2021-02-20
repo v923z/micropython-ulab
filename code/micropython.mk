@@ -1,7 +1,6 @@
 
 USERMODULES_DIR := $(USERMOD_DIR)
 
-# Add all C files to SRC_USERMOD.
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/optimize/optimize.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/signal/signal.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/special/special.c
@@ -22,6 +21,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/numpy/stats/stats.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/transform/transform.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/vector/vector.c
 SRC_USERMOD += $(USERMODULES_DIR)/user/user.c
+SRC_USERMOD += $(USERMODULES_DIR)/blocks/blocks.c
 
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/numpy.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/scipy.c

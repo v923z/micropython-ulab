@@ -65,7 +65,7 @@ enum NDARRAY_TYPE {
 
 typedef struct _dtype_dtype {
     uint8_t type;
-    #if ULAB_DTYPE_IS_EXTENDABLE
+    #if ULAB_HAS_BLOCKS
     uint8_t flags;
     void *arrfunc;
     uint8_t *subarray;

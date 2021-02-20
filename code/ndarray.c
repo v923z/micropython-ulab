@@ -625,7 +625,7 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     memset(array, 0, len);
     ndarray->array = array;
 
-    #if ULAB_DTYPE_IS_EXTENDABLE
+    #if ULAB_HAS_BLOCKS
     // indicate that the array doesn't need special treatment in the readout function
     ndarray->dtype.flags = 0;
     ndarray->dtype.origin = array;
