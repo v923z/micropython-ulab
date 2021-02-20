@@ -13,5 +13,6 @@ print_as_buffer(np.ones(2, dtype=np.uint8))
 print_as_buffer(np.ones(3, dtype=np.int16))
 print_as_buffer(np.ones(4, dtype=np.uint16))
 print_as_buffer(np.ones(5, dtype=np.float))
+print_as_buffer(np.ones((3,2), dtype=np.bool))
 print_as_buffer(np.linspace(0, 1, 9))
 
