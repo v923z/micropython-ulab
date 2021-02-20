@@ -1,3 +1,9 @@
+Sat, 20 Feb 2021
+
+version 1.7.3
+
+    fix buffer protocol, and ndarray_is_dense
+
 Fri, 29 Jan 2021
 
 version 1.7.2
