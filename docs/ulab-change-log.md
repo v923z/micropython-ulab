@@ -1,5 +1,11 @@
 Sat, 20 Feb 2021
 
+version 1.7.4
+
+    fix eye, ones, full, zeros for bool dtype
+
+Sat, 20 Feb 2021
+
 version 1.7.3
 
     fix buffer protocol, and ndarray_is_dense
