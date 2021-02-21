@@ -33,7 +33,7 @@
 
 #include "user/user.h"
 
-#define ULAB_VERSION 2.4.2
+#define ULAB_VERSION 2.4.3
 #define xstr(s) str(s)
 #define str(s) #s
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
@@ -105,6 +105,7 @@ const mp_obj_type_t ulab_ndarray_type = {
     #if NDARRAY_HAS_BINARY_OPS
     .binary_op = ndarray_binary_op,
     #endif
+    .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 
