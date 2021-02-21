@@ -590,10 +590,11 @@ bool ndarray_is_dense(ndarray_obj_t *ndarray) {
     // the array should be dense, if the very first stride can be calculated from shape
     int32_t stride = ndarray->itemsize;
     for(uint8_t i = ULAB_MAX_DIMS - 1; i > ULAB_MAX_DIMS-ndarray->ndim; i--) {
-         stride *= ndarray->shape[i];
+        stride *= ndarray->shape[i];
     }
     return stride == ndarray->strides[ULAB_MAX_DIMS-ndarray->ndim] ? true : false;
- }
+}
+
 
 ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
     // Creates the base ndarray with shape, and initialises the values to straight 0s

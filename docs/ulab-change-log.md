@@ -1,3 +1,15 @@
+Sun, 21 Feb 2021
+
+version 2.4.3
+
+    re-introduce ndarray_get_buffer, and buffer protocol
+
+Sun, 21 Feb 2021
+
+version 2.4.2
+
+    fix ndarray_is_dense, eye, ones, full, and zeros for Boolean type
+
 Sat, 13 Feb 2021
 
 version 2.4.1
