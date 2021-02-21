@@ -2032,3 +2032,21 @@ mp_obj_t ndarray_info(mp_obj_t obj_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_info_obj, ndarray_info);
 #endif
+
+// (the get_buffer protocol returns 0 for success, 1 for failure)
+mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if ULAB_HAS_BLOCKS
+    if(!ndarray_is_dense(self) || self->dtype.flags) {
+        return 1;
+    }
+    #else
+    if(!ndarray_is_dense(self)) {
+        return 1;
+    }
+    #endif
+    bufinfo->len = self->itemsize * self->len;
+    bufinfo->buf = self->array;
+    bufinfo->typecode = self->dtype.type;
+    return 0;
+}

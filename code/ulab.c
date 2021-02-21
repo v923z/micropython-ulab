@@ -106,6 +106,7 @@ const mp_obj_type_t ulab_ndarray_type = {
     #if NDARRAY_HAS_BINARY_OPS
     .binary_op = ndarray_binary_op,
     #endif
+    .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
 };
 
