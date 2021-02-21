@@ -646,7 +646,7 @@ bool ndarray_is_dense(ndarray_obj_t *ndarray) {
     // the array should be dense, if the very first stride can be calculated from shape
     int32_t stride = ndarray->itemsize;
     for(uint8_t i = ULAB_MAX_DIMS - 1; i > ULAB_MAX_DIMS-ndarray->ndim; i--) {
-        stride *= ndarray->shape[i - 1];
+        stride *= ndarray->shape[i];
     }
     return stride == ndarray->strides[ULAB_MAX_DIMS-ndarray->ndim] ? true : false;
 }
@@ -1989,8 +1989,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_info_obj, ndarray_info);
 // (the get_buffer protocol returns 0 for success, 1 for failure)
 mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->ndim != 1 || self->strides[0] > 1) {
-        // For now, only allow fetching buffer of a 1d-array
+    if(!ndarray_is_dense(self)) {
         return 1;
     }
     bufinfo->len = self->itemsize * self->len;
