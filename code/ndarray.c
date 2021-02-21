@@ -588,13 +588,12 @@ void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t 
 bool ndarray_is_dense(ndarray_obj_t *ndarray) {
     // returns true, if the array is dense, false otherwise
     // the array should be dense, if the very first stride can be calculated from shape
-    // TODO: this function could probably be removed
     int32_t stride = ndarray->itemsize;
-    for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndarray->ndim; i--) {
-        stride *= ndarray->shape[i];
+    for(uint8_t i = ULAB_MAX_DIMS - 1; i > ULAB_MAX_DIMS-ndarray->ndim; i--) {
+         stride *= ndarray->shape[i];
     }
-    return stride == ndarray->strides[ULAB_MAX_DIMS-ndarray->ndim-1] ? true : false;
-}
+    return stride == ndarray->strides[ULAB_MAX_DIMS-ndarray->ndim] ? true : false;
+ }
 
 ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
     // Creates the base ndarray with shape, and initialises the values to straight 0s
@@ -1850,7 +1849,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         #if NDARRAY_HAS_UNARY_OP_ABS
         case MP_UNARY_OP_ABS:
             ndarray = ndarray_copy_view(self);
-            // if Booleam, NDARRAY_UINT8, or NDARRAY_UINT16, there is nothing to do
+            // if Boolean, NDARRAY_UINT8, or NDARRAY_UINT16, there is nothing to do
             if(self->dtype.type == NDARRAY_INT8) {
                 int8_t *array = (int8_t *)ndarray->array;
                 for(size_t i=0; i < self->len; i++, array++) {

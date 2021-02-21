@@ -46,6 +46,14 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
         ndarray = ndarray_new_dense_ndarray(len, shape, dtype);
     }
     if(value != mp_const_none) {
+        if(dtype == NDARRAY_BOOL) {
+            dtype = NDARRAY_UINT8;
+            if(mp_obj_is_true(value)) {
+                value = mp_obj_new_int(1);
+            } else {
+                value = mp_obj_new_int(0);
+            }
+        }
         for(size_t i=0; i < ndarray->len; i++) {
             mp_binary_set_val_array(dtype, ndarray->array, i, value);
         }
@@ -373,6 +381,9 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
         m = mp_obj_get_int(args[1].u_rom_obj);
     }
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, n, m), dtype);
+    if(dtype == NDARRAY_BOOL) {
+        dtype = NDARRAY_UINT8;
+    }
     mp_obj_t one = mp_obj_new_int(1);
     size_t i = 0;
     if((args[2].u_int >= 0)) {
