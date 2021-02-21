@@ -1,5 +1,5 @@
 try:
-    import ulab as np
+    from ulab import numpy as np
 except:
     import numpy as np
 
