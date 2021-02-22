@@ -595,9 +595,8 @@ bool ndarray_is_dense(ndarray_obj_t *ndarray) {
     return stride == ndarray->strides[ULAB_MAX_DIMS-ndarray->ndim] ? true : false;
 }
 
-
-ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
-    // Creates the base ndarray with shape, and initialises the values to straight 0s
+ndarray_obj_t *ndarray_new_ndarray_header(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
+    // creates an empty ndarray, i.e., one with header, but without data
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
     ndarray->dtype.type = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
@@ -617,6 +616,16 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
         ndarray->len *= shape[i-1];
     }
 
+    #if ULAB_HAS_BLOCKS
+    // indicate that the array doesn't need special treatment in the readout function
+    ndarray->dtype.flags = 0;
+    #endif
+    return ndarray;
+}
+
+ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
+    // Creates the base ndarray with shape, and initialises the values to straight 0s
+    ndarray_obj_t *ndarray = ndarray_new_ndarray_header(ndim, shape, strides, dtype);
     // if the length is 0, still allocate a single item, so that contractions can be handled
     size_t len = ndarray->itemsize * MAX(1, ndarray->len);
     uint8_t *array = m_new(byte, len);
@@ -626,8 +635,6 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     ndarray->array = array;
 
     #if ULAB_HAS_BLOCKS
-    // indicate that the array doesn't need special treatment in the readout function
-    ndarray->dtype.flags = 0;
     ndarray->dtype.origin = array;
     #endif
 
@@ -1961,7 +1968,7 @@ mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
 
     mp_obj_tuple_t *shape = MP_OBJ_TO_PTR(_shape);
     if(shape->len > ULAB_MAX_DIMS) {
-        mp_raise_ValueError(translate("maximum number of dimensions is 4"));
+        mp_raise_ValueError(translate("too many dimensions"));
     }
     size_t *new_shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(new_shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
