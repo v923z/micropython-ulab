@@ -1,3 +1,9 @@
+Sun, 21 Feb 2021
+
+version 1.7.6
+
+    fixed ndarray_is_dense function
+
 Sat, 20 Feb 2021
 
 version 1.7.5
