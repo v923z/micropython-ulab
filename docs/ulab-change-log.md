@@ -1,3 +1,9 @@
+Tue, 23 Feb 2021
+
+version 2.4.5
+
+    fix dot function
+
 Sun, 21 Feb 2021
 
 version 2.4.3
