@@ -46,7 +46,7 @@
     (rarray) += (results)->itemsize;\
 })
 
-#if !(ULAB_DTYPE_IS_EXTENDABLE)
+#if !(ULAB_HAS_BLOCKS)
 #define RUN_SUM1(type, ndarray, array, results, rarray, ss, arrfunc)\
 ({\
     type sum = 0;\
@@ -63,9 +63,10 @@
 ({\
     type sum = 0;\
     int32_t increment = (ss).strides[0];\
-    (ndarray)->dtype.subarray = (array);\
     if((ndarray)->dtype.flags) {\
         (arrfunc)((ndarray), (array), &increment, (ss).shape[0]);\
+    } else {\
+        (ndarray)->dtype.subarray = array;\
     }\
     for(size_t i=0; i < (ss).shape[0]; i++) {\
         sum += *((type *)((ndarray)->dtype.subarray));\
@@ -110,7 +111,7 @@
 // Instead of the straightforward implementation of the definition,
 // we take the numerically stable Welford algorithm here
 // https://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation/
-#if !(ULAB_DTYPE_IS_EXTENDABLE)
+#if !(ULAB_HAS_BLOCKS)
 #define RUN_MEAN_STD1(type, ndarray, array, rarray, ss, div, isStd, arrfunc)\
 ({\
     mp_float_t M = 0.0, m = 0.0, S = 0.0;\

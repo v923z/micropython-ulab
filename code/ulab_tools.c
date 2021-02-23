@@ -230,7 +230,7 @@ ndarray_obj_t *tools_object_is_square(mp_obj_t obj) {
 }
 #endif
 
-#if ULAB_DTYPE_IS_EXTENDABLE
+#if ULAB_HAS_BLOCKS
 size_t *tools_coords_from_pointer(void *p1, ndarray_obj_t *ndarray) {
     // calculates the coordinates in the original tensor from the position of the pointer
     // The original view is assumed to be dense, i.e., the strides can be computed from the shape
