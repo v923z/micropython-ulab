@@ -59,18 +59,19 @@
     (rarray) += (results)->itemsize;\
 })
 #else
-#define RUN_SUM1(type, ndarray, array, results, rarray, ss, arrfunc)\
+#define RUN_SUM1(type, ndarray, array, results, rarray, ss)\
 ({\
     type sum = 0;\
+    uint8_t *barray = (array);\
     int32_t increment = (ss).strides[0];\
-    if((ndarray)->dtype.flags) {\
-        (arrfunc)((ndarray), (array), &increment, (ss).shape[0]);\
-    } else {\
-        (ndarray)->dtype.subarray = array;\
+    if((ndarray)->flags) {\
+        void (*arrfunc)(ndarray_obj_t *, void *, int32_t *, size_t) = (ndarray)->block->arrfunc;\
+        arrfunc((ndarray), (array), &increment, (ss).shape[0]);\
+        barray = (ndarray)->block->subarray;\
     }\
     for(size_t i=0; i < (ss).shape[0]; i++) {\
-        sum += *((type *)((ndarray)->dtype.subarray));\
-        (ndarray)->dtype.subarray += increment;\
+        sum += *((type *)(barray));\
+        barray += increment;\
     }\
     (array) += (ss).shape[0] * (ss).strides[0];\
     memcpy((rarray), &sum, (results)->itemsize);\
@@ -78,30 +79,30 @@
 })
 #endif
 
-#define RUN_SUM2(type, ndarray, array, results, rarray, ss, arrfunc) do {\
+#define RUN_SUM2(type, ndarray, array, results, rarray, ss) do {\
     size_t l = 0;\
     do {\
-        RUN_SUM1(type, (ndarray), (array), (results), (rarray), (ss), (arrfunc));\
+        RUN_SUM1(type, (ndarray), (array), (results), (rarray), (ss));\
         (array) -= (ss).strides[0] * (ss).shape[0];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
 } while(0)
 
-#define RUN_SUM3(type, ndarray, array, results, rarray, ss, arrfunc) do {\
+#define RUN_SUM3(type, ndarray, array, results, rarray, ss) do {\
     size_t k = 0;\
     do {\
-        RUN_SUM2(type, (ndarray), (array), (results), (rarray), (ss), (arrfunc));\
+        RUN_SUM2(type, (ndarray), (array), (results), (rarray), (ss));\
         (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
 } while(0)
 
-#define RUN_SUM4(type, ndarray, array, results, rarray, ss, arrfunc) do {\
+#define RUN_SUM4(type, ndarray, array, results, rarray, ss) do {\
     size_t j = 0;\
     do {\
-        RUN_SUM3(type, (ndarray), (array), (results), (rarray), (ss), (arrfunc));\
+        RUN_SUM3(type, (ndarray), (array), (results), (rarray), (ss));\
         (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\
@@ -111,8 +112,9 @@
 // Instead of the straightforward implementation of the definition,
 // we take the numerically stable Welford algorithm here
 // https://www.johndcook.com/blog/2008/09/26/comparing-three-methods-of-computing-standard-deviation/
+
 #if !(ULAB_HAS_BLOCKS)
-#define RUN_MEAN_STD1(type, ndarray, array, rarray, ss, div, isStd, arrfunc)\
+#define RUN_MEAN_STD1(type, ndarray, array, rarray, ss, div, isStd)\
 ({\
     mp_float_t M = 0.0, m = 0.0, S = 0.0;\
     for(size_t i=0; i < (ss).shape[0]; i++) {\
@@ -127,52 +129,54 @@
     *(rarray)++ = isStd ? MICROPY_FLOAT_C_FUN(sqrt)(S / (div)) : M;\
 })
 #else
-#define RUN_MEAN_STD1(type, ndarray, array, rarray, ss, div, isStd, arrfunc)\
+#define RUN_MEAN_STD1(type, ndarray, array, rarray, ss, div, isStd)\
 ({\
     mp_float_t M = 0.0, m = 0.0, S = 0.0;\
+    uint8_t *barray = (array);\
     int32_t increment = (ss).strides[0];\
-    (ndarray)->dtype.subarray = (array);\
-    if((ndarray)->dtype.flags) {\
-        (arrfunc)((ndarray), (array), &increment, (ss).shape[0]);\
+    if((ndarray)->flags) {\
+        void (*arrfunc)(ndarray_obj_t *, void *, int32_t *, size_t) = (ndarray)->block->arrfunc;\
+        arrfunc((ndarray), (array), &increment, (ss).shape[0]);\
+        barray = (ndarray)->block->subarray;\
     }\
     for(size_t i=0; i < (ss).shape[0]; i++) {\
-        mp_float_t value = (mp_float_t)(*(type *)((ndarray)->dtype.subarray));\
+        mp_float_t value = (mp_float_t)(*(type *)(barray));\
         m = M + (value - M) / (mp_float_t)(i+1);\
         if(isStd) {\
             S += (value - M) * (value - m);\
         }\
         M = m;\
-        (ndarray)->dtype.subarray += increment;\
+        barray += increment;\
     }\
     (array) += (ss).shape[0] * (ss).strides[0];\
     *(rarray)++ = isStd ? MICROPY_FLOAT_C_FUN(sqrt)(S / (div)) : M;\
 })
 #endif
 
-#define RUN_MEAN_STD2(type, ndarray, array, rarray, ss, div, isStd, arrfunc) do {\
+#define RUN_MEAN_STD2(type, ndarray, array, rarray, ss, div, isStd) do {\
     size_t l = 0;\
     do {\
-        RUN_MEAN_STD1(type, (ndarray), (array), (rarray), (ss), (div), (isStd), (arrfunc));\
+        RUN_MEAN_STD1(type, (ndarray), (array), (rarray), (ss), (div), (isStd));\
         (array) -= (ss).strides[0] * (ss).shape[0];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
         l++;\
     } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
 } while(0)
 
-#define RUN_MEAN_STD3(type, ndarray, array, rarray, ss, div, isStd, arrfunc) do {\
+#define RUN_MEAN_STD3(type, ndarray, array, rarray, ss, div, isStd) do {\
     size_t k = 0;\
     do {\
-        RUN_MEAN_STD2(type, (ndarray), (array), (rarray), (ss), (div), (isStd), (arrfunc));\
+        RUN_MEAN_STD2(type, (ndarray), (array), (rarray), (ss), (div), (isStd));\
         (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
 } while(0)
 
-#define RUN_MEAN_STD4(type, ndarray, array, rarray, ss, div, isStd, arrfunc) do {\
+#define RUN_MEAN_STD4(type, ndarray, array, rarray, ss, div, isStd) do {\
     size_t j = 0;\
     do {\
-        RUN_MEAN_STD3(type, (ndarray), (array), (rarray), (ss), (div), (isStd), (arrfunc));\
+        RUN_MEAN_STD3(type, (ndarray), (array), (rarray), (ss), (div), (isStd));\
         (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
         (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
         j++;\

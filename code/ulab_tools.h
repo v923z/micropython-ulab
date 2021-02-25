@@ -34,5 +34,4 @@ void *ndarray_set_float_function(uint8_t );
 
 shape_strides tools_reduce_axes(ndarray_obj_t *, mp_obj_t );
 ndarray_obj_t *tools_object_is_square(mp_obj_t );
-size_t *tools_coords_from_pointer(void *, ndarray_obj_t *);
 #endif

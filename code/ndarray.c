@@ -24,6 +24,7 @@
 #include "ulab_tools.h"
 #include "ndarray.h"
 #include "ndarray_operators.h"
+#include "blocks/blocks.h"
 
 mp_uint_t ndarray_print_threshold = NDARRAY_PRINT_THRESHOLD;
 mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
@@ -501,6 +502,13 @@ static void ndarray_print_bracket(const mp_print_t *print, const size_t conditio
 void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if ULAB_HAS_BLOCKS
+    if(self->flags) {
+        const mp_obj_type_t *type = mp_obj_get_type(self->block);
+        type->print((mp_print_t *)print, self->block, kind);
+        return;
+    }
+    #endif
     uint8_t *array = (uint8_t *)self->array;
     mp_print_str(print, "array(");
     if(self->len == 0) {
@@ -618,7 +626,7 @@ ndarray_obj_t *ndarray_new_ndarray_header(uint8_t ndim, size_t *shape, int32_t *
 
     #if ULAB_HAS_BLOCKS
     // indicate that the array doesn't need special treatment in the readout function
-    ndarray->dtype.flags = 0;
+    ndarray->flags = BLOCK_NO_FLAG;
     #endif
     return ndarray;
 }
@@ -633,11 +641,6 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     // we could, perhaps, leave this step out, and initialise the array only, when needed
     memset(array, 0, len);
     ndarray->array = array;
-
-    #if ULAB_HAS_BLOCKS
-    ndarray->dtype.origin = array;
-    #endif
-
     return ndarray;
 }
 
@@ -2045,7 +2048,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_info_obj, ndarray_info);
 mp_int_t ndarray_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     #if ULAB_HAS_BLOCKS
-    if(!ndarray_is_dense(self) || self->dtype.flags) {
+    if(!ndarray_is_dense(self) || self->flags) {
         return 1;
     }
     #else

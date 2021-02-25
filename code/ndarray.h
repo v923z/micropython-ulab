@@ -65,15 +65,17 @@ enum NDARRAY_TYPE {
 
 typedef struct _dtype_dtype {
     uint8_t type;
-    #if ULAB_HAS_BLOCKS
-    uint8_t flags;
+} dtype_dtype;
+
+typedef struct _blocks_block_obj_t {
+    mp_obj_base_t base;
+    // TODO: can the garbage collector deal with circular references?
+    void *ndarray;
     void *arrfunc;
     uint8_t *subarray;
-    size_t shape[ULAB_MAX_DIMS]; // original shape of array; this member should never be overwritten
-    void *origin; // origin stores the address of ndarray->array at the time of creation, and should never be changed
-    uint8_t *name;
-    #endif
-} dtype_dtype;
+    size_t shape[ULAB_MAX_DIMS];
+    void *origin;
+} blocks_block_obj_t;
 
 typedef struct _ndarray_obj_t {
     mp_obj_base_t base;
@@ -85,6 +87,10 @@ typedef struct _ndarray_obj_t {
     size_t shape[ULAB_MAX_DIMS];
     int32_t strides[ULAB_MAX_DIMS];
     void *array;
+    #if ULAB_HAS_BLOCKS
+    uint8_t flags;
+    blocks_block_obj_t *block;
+    #endif
 } ndarray_obj_t;
 
 #if ULAB_HAS_DTYPE_OBJECT
