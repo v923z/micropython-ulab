@@ -316,29 +316,34 @@ void fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     }
 }
 
+void ndarray_print_dtype(const mp_print_t *print, ndarray_obj_t *ndarray) {
+    if(ndarray->boolean) {
+        mp_printf(print, "bool");
+    } else if(ndarray->dtype.type == NDARRAY_UINT8) {
+        mp_printf(print, "uint8");
+    } else if(ndarray->dtype.type == NDARRAY_INT8) {
+        mp_printf(print, "int8");
+    } else if(ndarray->dtype.type == NDARRAY_UINT16) {
+        mp_printf(print, "uint16");
+    } else if(ndarray->dtype.type == NDARRAY_INT16) {
+        mp_printf(print, "int16");
+    } else if(ndarray->dtype.type == NDARRAY_FLOAT) {
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        mp_print_str(print, "float32");
+        #else
+        mp_print_str(print, "float64");
+        #endif
+    }
+}
+
 #if NDARRAY_HAS_DTYPE
 #if ULAB_HAS_DTYPE_OBJECT
 void ndarray_dtype_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     dtype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_print_str(print, "dtype('");
-    if(self->dtype.type == NDARRAY_BOOLEAN) {
-        mp_print_str(print, "bool')");
-    } else if(self->dtype.type == NDARRAY_UINT8) {
-        mp_print_str(print, "uint8')");
-    } else if(self->dtype.type == NDARRAY_INT8) {
-        mp_print_str(print, "int8')");
-    } else if(self->dtype.type == NDARRAY_UINT16) {
-        mp_print_str(print, "uint16')");
-    } else if(self->dtype.type == NDARRAY_INT16) {
-        mp_print_str(print, "int16')");
-    } else {
-        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-        mp_print_str(print, "float32')");
-        #else
-        mp_print_str(print, "float64')");
-        #endif
-    }
+    ndarray_print_dtype(print, self);
+    mp_print_str(print, "')");
 }
 
 mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -553,23 +558,9 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     } while(i < self->shape[ULAB_MAX_DIMS-4]);
     ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-4], "]");
     #endif
-    if(self->boolean) {
-        mp_print_str(print, ", dtype=bool)");
-    } else if(self->dtype.type == NDARRAY_UINT8) {
-        mp_print_str(print, ", dtype=uint8)");
-    } else if(self->dtype.type == NDARRAY_INT8) {
-        mp_print_str(print, ", dtype=int8)");
-    } else if(self->dtype.type == NDARRAY_UINT16) {
-        mp_print_str(print, ", dtype=uint16)");
-    } else if(self->dtype.type == NDARRAY_INT16) {
-        mp_print_str(print, ", dtype=int16)");
-    } else {
-        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-        mp_print_str(print, ", dtype=float32)");
-        #else
-        mp_print_str(print, ", dtype=float64)");
-        #endif
-    }
+    mp_print_str(print, ", dtype=");
+    ndarray_print_dtype(print, self);
+    mp_print_str(print, ")");
 }
 
 void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t dtype, size_t *idx) {
@@ -2005,7 +1996,13 @@ mp_obj_t ndarray_info(mp_obj_t obj_in) {
     if(!MP_OBJ_IS_TYPE(ndarray, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("function is defined for ndarrays only"));
     }
+    #if ULAB_HAS_BLOCKS
+    if(ndarray->flags) {
+        mp_printf(MP_PYTHON_PRINTER, "class: block\n");
+    }
+    #else
     mp_printf(MP_PYTHON_PRINTER, "class: ndarray\n");
+    #endif
     mp_printf(MP_PYTHON_PRINTER, "shape: (");
     if(ndarray->ndim == 1) {
         mp_printf(MP_PYTHON_PRINTER, "%d,", ndarray->shape[ULAB_MAX_DIMS-1]);
@@ -2025,19 +2022,10 @@ mp_obj_t ndarray_info(mp_obj_t obj_in) {
     mp_printf(MP_PYTHON_PRINTER, "itemsize: %d\n", ndarray->itemsize);
     mp_printf(MP_PYTHON_PRINTER, "data pointer: 0x%p\n", ndarray->array);
     mp_printf(MP_PYTHON_PRINTER, "type: ");
-    if(ndarray->boolean) {
-        mp_printf(MP_PYTHON_PRINTER, "bool\n");
-    } else if(ndarray->dtype.type == NDARRAY_UINT8) {
-        mp_printf(MP_PYTHON_PRINTER, "uint8\n");
-    } else if(ndarray->dtype.type == NDARRAY_INT8) {
-        mp_printf(MP_PYTHON_PRINTER, "int8\n");
-    } else if(ndarray->dtype.type == NDARRAY_UINT16) {
-        mp_printf(MP_PYTHON_PRINTER, "uint16\n");
-    } else if(ndarray->dtype.type == NDARRAY_INT16) {
-        mp_printf(MP_PYTHON_PRINTER, "int16\n");
-    } else if(ndarray->dtype.type == NDARRAY_FLOAT) {
-        mp_printf(MP_PYTHON_PRINTER, "float\n");
-    }
+    ndarray_print_dtype(MP_PYTHON_PRINTER, ndarray);
+    #if ULAB_HAS_BLOCKS
+    mp_printf(MP_PYTHON_PRINTER, "\nflags: %d\n", ndarray->flags);
+    #endif
     return mp_const_none;
 }
 

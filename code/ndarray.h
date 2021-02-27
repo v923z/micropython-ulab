@@ -101,14 +101,14 @@ typedef struct _dtype_obj_t {
     dtype_dtype dtype;
 } dtype_obj_t;
 
-void ndarray_dtype_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
-
 #ifdef CIRCUITPY
 mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 #else
 mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_t *);
 #endif /* CIRCUITPY */
 #endif /* ULAB_HAS_DTYPE_OBJECT */
+
+void ndarray_print_dtype(const mp_print_t *, ndarray_obj_t *);
 
 mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , mp_obj_iter_buf_t *);
 
