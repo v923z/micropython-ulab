@@ -724,6 +724,10 @@ ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *sha
     uint8_t *pointer = (uint8_t *)source->array;
     pointer += offset;
     ndarray->array = pointer;
+    #if ULAB_HAS_BLOCKS
+    ndarray->flags = source->flags;
+    ndarray->block = source->block;
+    #endif
     return ndarray;
 }
 
@@ -1440,7 +1444,18 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
         if(ndarray->ndim == 1) { // we have a linear array
             array += self->cur * ndarray->strides[ULAB_MAX_DIMS - 1];
             self->cur++;
+            #if ULAB_HAS_BLOCKS
+            if(ndarray->flags) {
+                void (*arrfunc)(ndarray_obj_t *, void *, int32_t *, size_t) = ndarray->block->arrfunc;
+                int32_t increment;
+                arrfunc(ndarray, array, &increment, 1);
+                return ndarray_get_item(ndarray, ndarray->block->subarray);
+            } else {
+                return ndarray_get_item(ndarray, array);
+            }
+            #else
             return ndarray_get_item(ndarray, array);
+            #endif
         } else { // we have a tensor, return the reduced view
             size_t offset = self->cur * ndarray->strides[ULAB_MAX_DIMS - ndarray->ndim];
             self->cur++;
