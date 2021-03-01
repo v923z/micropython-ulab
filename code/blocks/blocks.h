@@ -25,6 +25,8 @@ typedef struct _blocks_transformer_obj_t {
     void *array;
 } blocks_transformer_obj_t;
 
+extern const mp_obj_type_t blocks_transformer_type;
+
 extern const mp_obj_type_t blocks_block_type;
 extern mp_obj_module_t ulab_blocks_module;
 

@@ -47,10 +47,9 @@
 })
 
 #if !(ULAB_HAS_BLOCKS)
-#define RUN_SUM1(type, ndarray, array, results, rarray, ss, arrfunc)\
+#define RUN_SUM1(type, ndarray, array, results, rarray, ss)\
 ({\
     type sum = 0;\
-    (void)arrfunc;\
     for(size_t i=0; i < (ss).shape[0]; i++) {\
         sum += *((type *)(array));\
         (array) += (ss).strides[0];\

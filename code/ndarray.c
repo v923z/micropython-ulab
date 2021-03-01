@@ -242,13 +242,13 @@ void ndarray_fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
     }
 }
 
-#if ULAB_HAS_FUNCTION_ITERATOR
 size_t *ndarray_new_coords(uint8_t ndim) {
     size_t *coords = m_new(size_t, ndim);
     memset(coords, 0, ndim*sizeof(size_t));
     return coords;
 }
 
+#if ULAB_HAS_FUNCTION_ITERATOR
 void ndarray_rewind_array(uint8_t ndim, uint8_t *array, size_t *shape, int32_t *strides, size_t *coords) {
     // resets the data pointer of a single array, whenever an axis is full
     // since we always iterate over the very last axis, we have to keep track of
@@ -1398,6 +1398,11 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) { // return value(s)
         return ndarray_get_slice(self, index, NULL);
     } else { // assignment to slices; the value must be an ndarray, or a scalar
+        #if ULAB_HAS_BLOCKS
+        if(self->flags) {
+            mp_raise_ValueError(translate("blocks cannot be assigned to"));
+        }
+        #endif
         ndarray_obj_t *values = ndarray_from_mp_obj(value);
         return ndarray_get_slice(self, index, values);
     }
