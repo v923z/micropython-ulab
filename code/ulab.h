@@ -615,4 +615,12 @@
 #define ULAB_HAS_USER_MODULE                (0)
 #endif
 
+#ifndef ULAB_HAS_UTILS_MODULE
+#define ULAB_HAS_UTILS_MODULE               (1)
+#endif
+
+#ifndef ULAB_HAS_UTILS_HAS_FROM_INTBUFFER
+#define ULAB_HAS_UTILS_HAS_FROM_INTBUFFER   (1)
+#endif
+
 #endif

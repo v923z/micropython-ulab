@@ -21,10 +21,11 @@ SRC_USERMOD += $(USERMODULES_DIR)/numpy/poly/poly.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/stats/stats.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/transform/transform.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/vector/vector.c
-SRC_USERMOD += $(USERMODULES_DIR)/user/user.c
 
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/numpy.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/scipy.c
+SRC_USERMOD += $(USERMODULES_DIR)/user/user.c
+SRC_USERMOD += $(USERMODULES_DIR)/utils/utils.c
 SRC_USERMOD += $(USERMODULES_DIR)/ulab.c
 
 CFLAGS_USERMOD += -I$(USERMODULES_DIR)
