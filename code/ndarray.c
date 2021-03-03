@@ -727,6 +727,7 @@ ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *sha
     #if ULAB_HAS_BLOCKS
     ndarray->flags = source->flags;
     ndarray->block = source->block;
+    ndarray->block->ndarray = ndarray;
     #endif
     return ndarray;
 }

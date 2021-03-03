@@ -90,10 +90,12 @@ void imreader_imreader(ndarray_obj_t *ndarray, void *array, int32_t *strides, si
     uint8_t *barray = (uint8_t *)block->subarray;
     // if necessary, get the coordinates in the original reference frame, i.e.,
     // in the coordinates used at the time of the creation of the object
-    // size_t *coords = blocks_coords_from_pointer(array, ndarray);
+    size_t *coords = blocks_coords_from_pointer(array, ndarray);
+    uint8_t x = (uint8_t)coords[ULAB_MAX_DIMS - 2] * (uint8_t)coords[ULAB_MAX_DIMS - 1];
+    printf("coords: %ld, %ld\n", coords[ULAB_MAX_DIMS - 2], coords[ULAB_MAX_DIMS - 1]);
     for(size_t i = 0; i < count; i++) {
         // fill up the array with dummy data
-        *barray++ = (uint8_t)i * i;
+        *barray++ = (uint8_t)(x + i) * (x + i);
     }
     // The subarray is a forward propagating dense array, so set the strides to the itemsize
     *strides = ndarray->itemsize;

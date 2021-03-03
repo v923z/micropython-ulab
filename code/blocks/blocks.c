@@ -28,15 +28,21 @@ const mp_obj_type_t blocks_transformer_type = {
 };
 
 size_t *blocks_coords_from_pointer(void *p1, ndarray_obj_t *ndarray) {
-    // calculates the coordinates in the original tensor from the position of the pointer
+        // Calculates the coordinates in the original tensor from the position of the pointer
     // The original view is assumed to be dense, i.e., the strides can be computed from the shape
+    // This is a utility function, and is not exposed to the python interpreter
     blocks_block_obj_t *block = ndarray->block;
     size_t diff = (uint8_t *)p1 - (uint8_t *)block->origin;
-    size_t accumulator = 1;
+    printf("pointer: 0x%p, 0x%p, 0x%p, %ld\n", p1, ndarray->array, block->origin, diff);
+    size_t accumulator = ndarray->itemsize;
     size_t *coords = m_new(size_t, ULAB_MAX_DIMS);
-    for(uint8_t i = 1; i < ndarray->ndim + 1; i++) {
-        accumulator *= block->shape[ULAB_MAX_DIMS - i];
+
+    for(uint8_t i = 0; i < ndarray->ndim; i++) {
+        accumulator *= block->shape[ULAB_MAX_DIMS - i - 1];
         coords[ULAB_MAX_DIMS - i] = diff % accumulator;
+        // diff -= coords[ULAB_MAX_DIMS - i] * block->shape[ULAB_MAX_DIMS - i];
+        diff -= coords[ULAB_MAX_DIMS - i - 1] * block->shape[ULAB_MAX_DIMS - i - 1];
+        printf("accumulator: %ld\n", diff);
     }
     return coords;
 }
@@ -45,14 +51,14 @@ void blocks_block_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
     (void)kind;
     blocks_block_obj_t *self = MP_OBJ_TO_PTR(self_in);
     ndarray_obj_t *ndarray = (ndarray_obj_t *)self->ndarray;
-    mp_print_str(print, "block(shape=(");
-    for(uint8_t i = 0; i < ndarray->ndim - 1; i++) {
-        mp_printf(print, "%ld, ", ndarray->shape[ULAB_MAX_DIMS - ndarray->ndim + i]);
+    mp_printf(print, "block(shape=(%ld,", ndarray->shape[ULAB_MAX_DIMS - ndarray->ndim]);
+    for(uint8_t i = 1; i < ndarray->ndim - 1; i++) {
+        mp_printf(print, " %ld,", ndarray->shape[ULAB_MAX_DIMS - ndarray->ndim + i]);
     }
-    mp_printf(print, "%ld), ", ndarray->shape[ULAB_MAX_DIMS - 1]);
-    // mp_printf(print, "transformer=%s, ", self->);
-    // this is duplicate from ndarray.c:ndarray_print, but allows complete decoupling
-    mp_print_str(print, "dtype=");
+    if(ndarray->ndim > 1) {
+        mp_printf(print, " %ld", ndarray->shape[ULAB_MAX_DIMS - 1]);
+    }
+    mp_print_str(print, "), dtype=");
     ndarray_print_dtype(print, ndarray);
     mp_print_str(print, ")");
 }
