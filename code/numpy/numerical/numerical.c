@@ -279,16 +279,6 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
         uint8_t *rarray = NULL;
         mp_float_t *farray = NULL;
 
-        // #if ULAB_HAS_BLOCKS
-        // blocks_block_obj_t *block = NULL;
-        // if(ndarray->flags) {
-        //     block = ndarray->block;
-        //     // return mp_const_none;
-        // }
-        // #else
-        // uint8_t block = 0;
-        // #endif
-
         if(optype == NUMERICAL_SUM) {
             results = ndarray_new_dense_ndarray(_shape_strides.ndim, _shape_strides.shape, ndarray->dtype.type);
             rarray = (uint8_t *)results->array;

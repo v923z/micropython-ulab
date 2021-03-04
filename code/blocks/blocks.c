@@ -33,16 +33,17 @@ size_t *blocks_coords_from_pointer(void *p1, ndarray_obj_t *ndarray) {
     // This is a utility function, and is not exposed to the python interpreter
     blocks_block_obj_t *block = ndarray->block;
     size_t diff = (uint8_t *)p1 - (uint8_t *)block->origin;
-    printf("pointer: 0x%p, 0x%p, 0x%p, %ld\n", p1, ndarray->array, block->origin, diff);
-    size_t accumulator = ndarray->itemsize;
+    size_t stride = ndarray->itemsize;
     size_t *coords = m_new(size_t, ULAB_MAX_DIMS);
 
-    for(uint8_t i = 0; i < ndarray->ndim; i++) {
-        accumulator *= block->shape[ULAB_MAX_DIMS - i - 1];
-        coords[ULAB_MAX_DIMS - i] = diff % accumulator;
-        // diff -= coords[ULAB_MAX_DIMS - i] * block->shape[ULAB_MAX_DIMS - i];
-        diff -= coords[ULAB_MAX_DIMS - i - 1] * block->shape[ULAB_MAX_DIMS - i - 1];
-        printf("accumulator: %ld\n", diff);
+    // first, calculate the very first stride
+    for(uint8_t i = 0; i < block->ndim - 1; i++) {
+        stride *= block->shape[ULAB_MAX_DIMS - i - 1];
+    }
+    for(uint8_t i = block->ndim; i > 1; i--) {
+        coords[ULAB_MAX_DIMS - i] = diff / stride;
+        diff -= coords[ULAB_MAX_DIMS - i] * block->shape[ULAB_MAX_DIMS - i];
+        stride /= block->shape[ULAB_MAX_DIMS - i + 1];
     }
     return coords;
 }
@@ -113,6 +114,7 @@ mp_obj_t blocks_new_ndarray(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     ndarray->flags = BLOCK_IS_READ_ONLY;
     blocks_block_obj_t *block = m_new_obj(blocks_block_obj_t);
     block->base.type = &blocks_block_type;
+    block->ndim = ndarray->ndim;
     // store a pointer to the ndarray
     block->ndarray = ndarray;
 

@@ -69,6 +69,7 @@ typedef struct _dtype_dtype {
 
 typedef struct _blocks_block_obj_t {
     mp_obj_base_t base;
+    uint8_t ndim;
     void *ndarray;
     void *arrfunc;
     uint8_t *subarray;
