@@ -726,8 +726,11 @@ ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *sha
     ndarray->array = pointer;
     #if ULAB_HAS_BLOCKS
     ndarray->flags = source->flags;
-    ndarray->block = source->block;
-    ndarray->block->ndarray = ndarray;
+    if(source->flags) {
+        // copy the block, only if ndarray has a block object
+        ndarray->block = source->block;
+        ndarray->block->ndarray = ndarray;
+    }
     #endif
     return ndarray;
 }
