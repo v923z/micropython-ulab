@@ -76,18 +76,17 @@ static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_a
         mp_float_t *array = (mp_float_t *)ndarray->array;
         if(args[4].u_obj == mp_const_true) {
             // swap the bytes before conversion
-            uint8_t *tmpbuff = m_new(uint8_t, 4);
+            uint8_t *tmpbuff = m_new(uint8_t, sizeof(int32_t));
             for(size_t i = 0; i < len; i++) {
                 tmpbuff += sizeof(int32_t);
                 for(uint8_t j = 0; j < sizeof(int32_t); j++) {
-                    memcpy(tmpbuff--, buffer++, 1);
+                    memcpy(--tmpbuff, buffer++, 1);
                 }
                 if(buffer_type == UTILS_INT32_BUFFER) {
                     *array++ = (mp_float_t)(*(int32_t *)tmpbuff);
                 } else {
                     *array++ = (mp_float_t)(*(uint32_t *)tmpbuff);
                 }
-                buffer += sizeof(int32_t);
             }
         } else {
             for(uint8_t i = 0; i < len; i++) {
