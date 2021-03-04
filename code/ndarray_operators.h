@@ -24,54 +24,54 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 
 #define UNWRAP_INPLACE_OPERATOR(lhs, larray, rarray, rstrides, OPERATOR)\
 ({\
-    if((lhs)->dtype == NDARRAY_UINT8) {\
-        if((rhs)->dtype == NDARRAY_UINT8) {\
+    if((lhs)->dtype.type == NDARRAY_UINT8) {\
+        if((rhs)->dtype.type == NDARRAY_UINT8) {\
             INPLACE_LOOP((lhs), uint8_t, uint8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_INT8) {\
+        } else if(rhs->dtype.type == NDARRAY_INT8) {\
             INPLACE_LOOP((lhs), uint8_t, int8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_UINT16) {\
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {\
             INPLACE_LOOP((lhs), uint8_t, uint16_t, (larray), (rarray), (rstrides), OPERATOR);\
         } else {\
             INPLACE_LOOP((lhs), uint8_t, int16_t, (larray), (rarray), (rstrides), OPERATOR);\
         }\
-    } else if(lhs->dtype == NDARRAY_INT8) {\
-        if(rhs->dtype == NDARRAY_UINT8) {\
+    } else if(lhs->dtype.type == NDARRAY_INT8) {\
+        if(rhs->dtype.type == NDARRAY_UINT8) {\
             INPLACE_LOOP((lhs), int8_t, uint8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_INT8) {\
+        } else if(rhs->dtype.type == NDARRAY_INT8) {\
             INPLACE_LOOP((lhs), int8_t, int8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_UINT16) {\
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {\
             INPLACE_LOOP((lhs), int8_t, uint16_t, (larray), (rarray), (rstrides), OPERATOR);\
         } else {\
             INPLACE_LOOP((lhs), int8_t, int16_t, (larray), (rarray), (rstrides), OPERATOR);\
         }\
-    } else if(lhs->dtype == NDARRAY_UINT16) {\
-        if(rhs->dtype == NDARRAY_UINT8) {\
+    } else if(lhs->dtype.type == NDARRAY_UINT16) {\
+        if(rhs->dtype.type == NDARRAY_UINT8) {\
             INPLACE_LOOP((lhs), uint16_t, uint8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_INT8) {\
+        } else if(rhs->dtype.type == NDARRAY_INT8) {\
             INPLACE_LOOP((lhs), uint16_t, int8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_UINT16) {\
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {\
             INPLACE_LOOP((lhs), uint16_t, uint16_t, (larray), (rarray), (rstrides), OPERATOR);\
         } else {\
             INPLACE_LOOP((lhs), uint16_t, int16_t, (larray), (rarray), (rstrides), OPERATOR);\
         }\
-    } else if(lhs->dtype == NDARRAY_INT16) {\
-        if(rhs->dtype == NDARRAY_UINT8) {\
+    } else if(lhs->dtype.type == NDARRAY_INT16) {\
+        if(rhs->dtype.type == NDARRAY_UINT8) {\
             INPLACE_LOOP((lhs), int16_t, uint8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_INT8) {\
+        } else if(rhs->dtype.type == NDARRAY_INT8) {\
             INPLACE_LOOP((lhs), int16_t, int8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_UINT16) {\
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {\
             INPLACE_LOOP((lhs), int16_t, uint16_t, (larray), (rarray), (rstrides), OPERATOR);\
         } else {\
             INPLACE_LOOP((lhs), int16_t, int16_t, (larray), (rarray), (rstrides), OPERATOR);\
         }\
-    } else if(lhs->dtype == NDARRAY_FLOAT) {\
-        if(rhs->dtype == NDARRAY_UINT8) {\
+    } else if(lhs->dtype.type == NDARRAY_FLOAT) {\
+        if(rhs->dtype.type == NDARRAY_UINT8) {\
             INPLACE_LOOP((lhs), mp_float_t, uint8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_INT8) {\
+        } else if(rhs->dtype.type == NDARRAY_INT8) {\
             INPLACE_LOOP((lhs), mp_float_t, int8_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_UINT16) {\
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {\
             INPLACE_LOOP((lhs), mp_float_t, uint16_t, (larray), (rarray), (rstrides), OPERATOR);\
-        } else if(rhs->dtype == NDARRAY_INT16) {\
+        } else if(rhs->dtype.type == NDARRAY_INT16) {\
             INPLACE_LOOP((lhs), mp_float_t, int16_t, (larray), (rarray), (rstrides), OPERATOR);\
         } else {\
             INPLACE_LOOP((lhs), mp_float_t, mp_float_t, (larray), (rarray), (rstrides), OPERATOR);\

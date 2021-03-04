@@ -162,7 +162,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
         ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
         
-        mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
+        mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype.type);
 
         // TODO: these loops are really nothing, but the re-impplementation of 
         // ITERATE_VECTOR from vectorise.c. We could pass a function pointer here

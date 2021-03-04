@@ -63,9 +63,23 @@ enum NDARRAY_TYPE {
     NDARRAY_FLOAT = FLOAT_TYPECODE,
 };
 
+typedef struct _dtype_dtype {
+    uint8_t type;
+} dtype_dtype;
+
+typedef struct _blocks_block_obj_t {
+    mp_obj_base_t base;
+    uint8_t ndim;
+    void *ndarray;
+    void *arrfunc;
+    uint8_t *subarray;
+    size_t shape[ULAB_MAX_DIMS];
+    void *origin;
+} blocks_block_obj_t;
+
 typedef struct _ndarray_obj_t {
     mp_obj_base_t base;
-    uint8_t dtype;
+    dtype_dtype dtype;
     uint8_t itemsize;
     uint8_t boolean;
     uint8_t ndim;
@@ -73,6 +87,10 @@ typedef struct _ndarray_obj_t {
     size_t shape[ULAB_MAX_DIMS];
     int32_t strides[ULAB_MAX_DIMS];
     void *array;
+    #if ULAB_HAS_BLOCKS
+    uint8_t flags;
+    blocks_block_obj_t *block;
+    #endif
 } ndarray_obj_t;
 
 #if ULAB_HAS_DTYPE_OBJECT
@@ -80,10 +98,8 @@ extern const mp_obj_type_t ulab_dtype_type;
 
 typedef struct _dtype_obj_t {
     mp_obj_base_t base;
-    uint8_t dtype;
+    dtype_dtype dtype;
 } dtype_obj_t;
-
-void ndarray_dtype_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
 
 #ifdef CIRCUITPY
 mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
@@ -91,6 +107,8 @@ mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, const 
 mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_t *);
 #endif /* CIRCUITPY */
 #endif /* ULAB_HAS_DTYPE_OBJECT */
+
+void ndarray_print_dtype(const mp_print_t *, ndarray_obj_t *);
 
 mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , mp_obj_iter_buf_t *);
 
@@ -114,6 +132,7 @@ void ndarray_assign_elements(ndarray_obj_t *, mp_obj_t , uint8_t , size_t *);
 size_t *ndarray_contract_shape(ndarray_obj_t *, uint8_t );
 int32_t *ndarray_contract_strides(ndarray_obj_t *, uint8_t );
 
+ndarray_obj_t *ndarray_new_ndarray_header(uint8_t , size_t *, int32_t *, uint8_t );
 ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t , size_t *, uint8_t );
 ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *, uint8_t );
 ndarray_obj_t *ndarray_new_ndarray(uint8_t , size_t *, int32_t *, uint8_t );

@@ -108,7 +108,7 @@ mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_i
     mp_float_t *data_re = (mp_float_t *)out_re->array;
 
     uint8_t *array = (uint8_t *)re->array;
-    mp_float_t (*func)(void *) = ndarray_get_float_function(re->dtype);
+    mp_float_t (*func)(void *) = ndarray_get_float_function(re->dtype.type);
 
     for(size_t i=0; i < len; i++) {
         *data_re++ = func(array);
@@ -129,7 +129,7 @@ mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_i
             mp_raise_ValueError(translate("real and imaginary parts must be of equal length"));
         }
         array = (uint8_t *)im->array;
-        func = ndarray_get_float_function(im->dtype);
+        func = ndarray_get_float_function(im->dtype.type);
         for(size_t i=0; i < len; i++) {
            *data_im++ = func(array);
            array += im->strides[ULAB_MAX_DIMS - 1];

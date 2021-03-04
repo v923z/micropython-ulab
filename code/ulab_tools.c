@@ -10,6 +10,7 @@
 
 
 #include <string.h>
+#include <math.h>
 #include "py/runtime.h"
 
 #include "ulab.h"

@@ -39,9 +39,9 @@ static mp_obj_t stats_trace(mp_obj_t oin) {
     mp_float_t trace = 0.0;
     for(size_t i=0; i < ndarray->shape[ULAB_MAX_DIMS - 1]; i++) {
         int32_t pos = i * (ndarray->strides[ULAB_MAX_DIMS - 1] + ndarray->strides[ULAB_MAX_DIMS - 2]);
-        trace += ndarray_get_float_index(ndarray->array, ndarray->dtype, pos/ndarray->itemsize);
+        trace += ndarray_get_float_index(ndarray->array, ndarray->dtype.type, pos/ndarray->itemsize);
     }
-    if(ndarray->dtype == NDARRAY_FLOAT) {
+    if(ndarray->dtype.type == NDARRAY_FLOAT) {
         return mp_obj_new_float(trace);
     }
     return mp_obj_new_int_from_float(trace);

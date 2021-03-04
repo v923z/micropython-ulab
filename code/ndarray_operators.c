@@ -47,50 +47,50 @@ mp_obj_t ndarray_binary_equality(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 
     #if NDARRAY_HAS_BINARY_OP_EQUAL
     if(op == MP_BINARY_OP_EQUAL) {
-        if(lhs->dtype == NDARRAY_UINT8) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        if(lhs->dtype.type == NDARRAY_UINT8) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, uint8_t, int8_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, uint8_t, int16_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, ==);
             }
-        } else if(lhs->dtype == NDARRAY_INT8) {
-            if(rhs->dtype == NDARRAY_INT8) {
+        } else if(lhs->dtype.type == NDARRAY_INT8) {
+            if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, int8_t, int8_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, int8_t, uint16_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, int8_t, int16_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, ==);
             } else {
                 return ndarray_binary_op(op, rhs, lhs);
             }
-        } else if(lhs->dtype == NDARRAY_UINT16) {
-            if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(lhs->dtype.type == NDARRAY_UINT16) {
+            if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, uint16_t, int16_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ==);
             } else {
                 return ndarray_binary_op(op, rhs, lhs);
             }
-        } else if(lhs->dtype == NDARRAY_INT16) {
-            if(rhs->dtype == NDARRAY_INT16) {
+        } else if(lhs->dtype.type == NDARRAY_INT16) {
+            if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, int16_t, int16_t, larray, lstrides, rarray, rstrides, ==);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, int16_t, mp_float_t, larray, lstrides, rarray, rstrides, ==);
             } else {
                 return ndarray_binary_op(op, rhs, lhs);
             }
-        } else if(lhs->dtype == NDARRAY_FLOAT) {
-            if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+            if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, ==);
             } else {
                 return ndarray_binary_op(op, rhs, lhs);
@@ -101,50 +101,50 @@ mp_obj_t ndarray_binary_equality(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 
     #if NDARRAY_HAS_BINARY_OP_NOT_EQUAL
     if(op == MP_BINARY_OP_NOT_EQUAL) {
-        if(lhs->dtype == NDARRAY_UINT8) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        if(lhs->dtype.type == NDARRAY_UINT8) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, uint8_t, int8_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, uint8_t, int16_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, !=);
             }
-        } else if(lhs->dtype == NDARRAY_INT8) {
-            if(rhs->dtype == NDARRAY_INT8) {
+        } else if(lhs->dtype.type == NDARRAY_INT8) {
+            if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, int8_t, int8_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, int8_t, uint16_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, int8_t, int16_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, !=);
             } else {
                 return ndarray_binary_op(op, rhs, lhs);
             }
-        } else if(lhs->dtype == NDARRAY_UINT16) {
-            if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(lhs->dtype.type == NDARRAY_UINT16) {
+            if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, uint16_t, int16_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, !=);
             } else {
                 return ndarray_binary_op(op, rhs, lhs);
             }
-        } else if(lhs->dtype == NDARRAY_INT16) {
-            if(rhs->dtype == NDARRAY_INT16) {
+        } else if(lhs->dtype.type == NDARRAY_INT16) {
+            if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, int16_t, int16_t, larray, lstrides, rarray, rstrides, !=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, int16_t, mp_float_t, larray, lstrides, rarray, rstrides, !=);
             } else {
                 return ndarray_binary_op(op, rhs, lhs);
             }
-        } else if(lhs->dtype == NDARRAY_FLOAT) {
-            if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+            if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, !=);
             } else {
                 return ndarray_binary_op(op, rhs, lhs);
@@ -165,64 +165,64 @@ mp_obj_t ndarray_binary_add(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
 
-    if(lhs->dtype == NDARRAY_UINT8) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    if(lhs->dtype.type == NDARRAY_UINT8) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, +);
         }
-    } else if(lhs->dtype == NDARRAY_INT8) {
-        if(rhs->dtype == NDARRAY_INT8) {
+    } else if(lhs->dtype.type == NDARRAY_INT8) {
+        if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT8);
             BINARY_LOOP(results, int8_t, int8_t, int8_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int8_t, int16_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, +);
         } else {
             return ndarray_binary_op(MP_BINARY_OP_ADD, rhs, lhs);
         }
-    } else if(lhs->dtype == NDARRAY_UINT16) {
-        if(rhs->dtype == NDARRAY_UINT16) {
+    } else if(lhs->dtype.type == NDARRAY_UINT16) {
+        if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, +);
         } else {
             return ndarray_binary_op(MP_BINARY_OP_ADD, rhs, lhs);
         }
-    } else if(lhs->dtype == NDARRAY_INT16) {
-        if(rhs->dtype == NDARRAY_INT16) {
+    } else if(lhs->dtype.type == NDARRAY_INT16) {
+        if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, +);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, int16_t, mp_float_t, larray, lstrides, rarray, rstrides, +);
         } else {
             return ndarray_binary_op(MP_BINARY_OP_ADD, rhs, lhs);
         }
-    } else if(lhs->dtype == NDARRAY_FLOAT) {
-        if(rhs->dtype == NDARRAY_FLOAT) {
+    } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+        if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, +);
         } else {
@@ -242,64 +242,64 @@ mp_obj_t ndarray_binary_multiply(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
 
-    if(lhs->dtype == NDARRAY_UINT8) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    if(lhs->dtype.type == NDARRAY_UINT8) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, *);
         }
-    } else if(lhs->dtype == NDARRAY_INT8) {
-        if(rhs->dtype == NDARRAY_INT8) {
+    } else if(lhs->dtype.type == NDARRAY_INT8) {
+        if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT8);
             BINARY_LOOP(results, int8_t, int8_t, int8_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int8_t, int16_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, *);
         } else {
             return ndarray_binary_op(MP_BINARY_OP_MULTIPLY, rhs, lhs);
         }
-    } else if(lhs->dtype == NDARRAY_UINT16) {
-        if(rhs->dtype == NDARRAY_UINT16) {
+    } else if(lhs->dtype.type == NDARRAY_UINT16) {
+        if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, *);
         } else {
             return ndarray_binary_op(MP_BINARY_OP_MULTIPLY, rhs, lhs);
         }
-    } else if(lhs->dtype == NDARRAY_INT16) {
-        if(rhs->dtype == NDARRAY_INT16) {
+    } else if(lhs->dtype.type == NDARRAY_INT16) {
+        if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, *);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, int16_t, mp_float_t, larray, lstrides, rarray, rstrides, *);
         } else {
             return ndarray_binary_op(MP_BINARY_OP_MULTIPLY, rhs, lhs);
         }
-    } else if(lhs->dtype == NDARRAY_FLOAT) {
-        if(rhs->dtype == NDARRAY_FLOAT) {
+    } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+        if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, *);
         } else {
@@ -323,64 +323,64 @@ mp_obj_t ndarray_binary_more(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 
     #if NDARRAY_HAS_BINARY_OP_MORE | NDARRAY_HAS_BINARY_OP_LESS
     if(op == MP_BINARY_OP_MORE) {
-        if(lhs->dtype == NDARRAY_UINT8) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        if(lhs->dtype.type == NDARRAY_UINT8) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, uint8_t, int8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, uint8_t, int16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, >);
             }
-        } else if(lhs->dtype == NDARRAY_INT8) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        } else if(lhs->dtype.type == NDARRAY_INT8) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, int8_t, uint8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, int8_t, int8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, int8_t, uint16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, int8_t, int16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, >);
             }
-        } else if(lhs->dtype == NDARRAY_UINT16) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        } else if(lhs->dtype.type == NDARRAY_UINT16) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, uint16_t, uint8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, uint16_t, int8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, uint16_t, int16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, >);
             }
-        } else if(lhs->dtype == NDARRAY_INT16) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        } else if(lhs->dtype.type == NDARRAY_INT16) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, int16_t, uint8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, int16_t, int8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, int16_t, uint16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, int16_t, int16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, >);
             }
-        } else if(lhs->dtype == NDARRAY_FLOAT) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, mp_float_t, int8_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, mp_float_t, int16_t, larray, lstrides, rarray, rstrides, >);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, >);
             }
         }
@@ -388,64 +388,64 @@ mp_obj_t ndarray_binary_more(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     #endif /* NDARRAY_HAS_BINARY_OP_MORE | NDARRAY_HAS_BINARY_OP_LESS*/
     #if NDARRAY_HAS_BINARY_OP_MORE_EQUAL | NDARRAY_HAS_BINARY_OP_LESS_EQUAL
     if(op == MP_BINARY_OP_MORE_EQUAL) {
-        if(lhs->dtype == NDARRAY_UINT8) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        if(lhs->dtype.type == NDARRAY_UINT8) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, uint8_t, int8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, uint8_t, int16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, >=);
             }
-        } else if(lhs->dtype == NDARRAY_INT8) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        } else if(lhs->dtype.type == NDARRAY_INT8) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, int8_t, uint8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, int8_t, int8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, int8_t, uint16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, int8_t, int16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, >=);
             }
-        } else if(lhs->dtype == NDARRAY_UINT16) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        } else if(lhs->dtype.type == NDARRAY_UINT16) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, uint16_t, uint8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, uint16_t, int8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, uint16_t, int16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, >=);
             }
-        } else if(lhs->dtype == NDARRAY_INT16) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        } else if(lhs->dtype.type == NDARRAY_INT16) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, int16_t, uint8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, int16_t, int8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, int16_t, uint16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, int16_t, int16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, >=);
             }
-        } else if(lhs->dtype == NDARRAY_FLOAT) {
-            if(rhs->dtype == NDARRAY_UINT8) {
+        } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+            if(rhs->dtype.type == NDARRAY_UINT8) {
                 EQUALITY_LOOP(results, array, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT8) {
+            } else if(rhs->dtype.type == NDARRAY_INT8) {
                 EQUALITY_LOOP(results, array, mp_float_t, int8_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_UINT16) {
+            } else if(rhs->dtype.type == NDARRAY_UINT16) {
                 EQUALITY_LOOP(results, array, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_INT16) {
+            } else if(rhs->dtype.type == NDARRAY_INT16) {
                 EQUALITY_LOOP(results, array, mp_float_t, int16_t, larray, lstrides, rarray, rstrides, >=);
-            } else if(rhs->dtype == NDARRAY_FLOAT) {
+            } else if(rhs->dtype.type == NDARRAY_FLOAT) {
                 EQUALITY_LOOP(results, array, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, >=);
             }
         }
@@ -464,88 +464,88 @@ mp_obj_t ndarray_binary_subtract(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
 
-    if(lhs->dtype == NDARRAY_UINT8) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    if(lhs->dtype.type == NDARRAY_UINT8) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT8);
             BINARY_LOOP(results, uint8_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, -);
         }
-    } else if(lhs->dtype == NDARRAY_INT8) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_INT8) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int8_t, uint8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT8);
             BINARY_LOOP(results, int8_t, int8_t, int8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int8_t, int16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, -);
         }
-    } else if(lhs->dtype == NDARRAY_UINT16) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_UINT16) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint16_t, uint8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint16_t, int8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, -);
         }
-    } else if(lhs->dtype == NDARRAY_INT16) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_INT16) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int16_t, uint8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int16_t, int8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, int16_t, uint16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_INT16);
             BINARY_LOOP(results, int16_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, -);
         }
-    } else if(lhs->dtype == NDARRAY_FLOAT) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, mp_float_t, int8_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, mp_float_t, int16_t, larray, lstrides, rarray, rstrides, -);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
             BINARY_LOOP(results, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, -);
         }
@@ -564,8 +564,8 @@ mp_obj_t ndarray_binary_true_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *rarray = (uint8_t *)rhs->array;
 
     #if NDARRAY_BINARY_USES_FUN_POINTER
-    mp_float_t (*get_lhs)(void *) = ndarray_get_float_function(lhs->dtype);
-    mp_float_t (*get_rhs)(void *) = ndarray_get_float_function(rhs->dtype);
+    mp_float_t (*get_lhs)(void *) = ndarray_get_float_function(lhs->dtype.type);
+    mp_float_t (*get_rhs)(void *) = ndarray_get_float_function(rhs->dtype.type);
 
     uint8_t *array = (uint8_t *)results->array;
     void (*set_result)(void *, mp_float_t ) = ndarray_set_float_function(NDARRAY_FLOAT);
@@ -574,64 +574,64 @@ mp_obj_t ndarray_binary_true_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     FUNC_POINTER_LOOP(results, array, get_lhs, get_rhs, larray, lstrides, rarray, rstrides, lvalue/rvalue);
 
     #else
-    if(lhs->dtype == NDARRAY_UINT8) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    if(lhs->dtype.type == NDARRAY_UINT8) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             BINARY_LOOP(results, mp_float_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             BINARY_LOOP(results, mp_float_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             BINARY_LOOP(results, mp_float_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             BINARY_LOOP(results, mp_float_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             BINARY_LOOP(results, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, /);
         }
-    } else if(lhs->dtype == NDARRAY_INT8) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_INT8) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             BINARY_LOOP(results, mp_float_t, int8_t, uint8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             BINARY_LOOP(results, mp_float_t, int8_t, int8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             BINARY_LOOP(results, mp_float_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             BINARY_LOOP(results, mp_float_t, int8_t, int16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             BINARY_LOOP(results, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides, /);
         }
-    } else if(lhs->dtype == NDARRAY_UINT16) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_UINT16) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             BINARY_LOOP(results, mp_float_t, uint16_t, uint8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             BINARY_LOOP(results, mp_float_t, uint16_t, int8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             BINARY_LOOP(results, mp_float_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             BINARY_LOOP(results, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             BINARY_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, /);
         }
-    } else if(lhs->dtype == NDARRAY_INT16) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_INT16) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             BINARY_LOOP(results, mp_float_t, int16_t, uint8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             BINARY_LOOP(results, mp_float_t, int16_t, int8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             BINARY_LOOP(results, mp_float_t, int16_t, uint16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             BINARY_LOOP(results, mp_float_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             BINARY_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, /);
         }
-    } else if(lhs->dtype == NDARRAY_FLOAT) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             BINARY_LOOP(results, mp_float_t, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             BINARY_LOOP(results, mp_float_t, mp_float_t, int8_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             BINARY_LOOP(results, mp_float_t, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             BINARY_LOOP(results, mp_float_t, mp_float_t, int16_t, larray, lstrides, rarray, rstrides, /);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             BINARY_LOOP(results, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides, /);
         }
     }
@@ -652,8 +652,8 @@ mp_obj_t ndarray_binary_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     uint8_t *rarray = (uint8_t *)rhs->array;
 
     #if NDARRAY_BINARY_USES_FUN_POINTER
-    mp_float_t (*get_lhs)(void *) = ndarray_get_float_function(lhs->dtype);
-    mp_float_t (*get_rhs)(void *) = ndarray_get_float_function(rhs->dtype);
+    mp_float_t (*get_lhs)(void *) = ndarray_get_float_function(lhs->dtype.type);
+    mp_float_t (*get_rhs)(void *) = ndarray_get_float_function(rhs->dtype.type);
 
     uint8_t *array = (uint8_t *)results->array;
     void (*set_result)(void *, mp_float_t ) = ndarray_set_float_function(NDARRAY_FLOAT);
@@ -662,64 +662,64 @@ mp_obj_t ndarray_binary_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     FUNC_POINTER_LOOP(results, array, get_lhs, get_rhs, larray, lstrides, rarray, rstrides, MICROPY_FLOAT_C_FUN(pow)(lvalue, rvalue));
 
     #else
-    if(lhs->dtype == NDARRAY_UINT8) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    if(lhs->dtype.type == NDARRAY_UINT8) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             POWER_LOOP(results, mp_float_t, uint8_t, uint8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             POWER_LOOP(results, mp_float_t, uint8_t, int8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             POWER_LOOP(results, mp_float_t, uint8_t, uint16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             POWER_LOOP(results, mp_float_t, uint8_t, int16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             POWER_LOOP(results, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides);
         }
-    } else if(lhs->dtype == NDARRAY_INT8) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_INT8) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             POWER_LOOP(results, mp_float_t, int8_t, uint8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             POWER_LOOP(results, mp_float_t, int8_t, int8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             POWER_LOOP(results, mp_float_t, int8_t, uint16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             POWER_LOOP(results, mp_float_t, int8_t, int16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             POWER_LOOP(results, mp_float_t, int8_t, mp_float_t, larray, lstrides, rarray, rstrides);
         }
-    } else if(lhs->dtype == NDARRAY_UINT16) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_UINT16) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             POWER_LOOP(results, mp_float_t, uint16_t, uint8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             POWER_LOOP(results, mp_float_t, uint16_t, int8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             POWER_LOOP(results, mp_float_t, uint16_t, uint16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             POWER_LOOP(results, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             POWER_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides);
         }
-    } else if(lhs->dtype == NDARRAY_INT16) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_INT16) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             POWER_LOOP(results, mp_float_t, int16_t, uint8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             POWER_LOOP(results, mp_float_t, int16_t, int8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             POWER_LOOP(results, mp_float_t, int16_t, uint16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             POWER_LOOP(results, mp_float_t, int16_t, int16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             POWER_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides);
         }
-    } else if(lhs->dtype == NDARRAY_FLOAT) {
-        if(rhs->dtype == NDARRAY_UINT8) {
+    } else if(lhs->dtype.type == NDARRAY_FLOAT) {
+        if(rhs->dtype.type == NDARRAY_UINT8) {
             POWER_LOOP(results, mp_float_t, mp_float_t, uint8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT8) {
+        } else if(rhs->dtype.type == NDARRAY_INT8) {
             POWER_LOOP(results, mp_float_t, mp_float_t, int8_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_UINT16) {
+        } else if(rhs->dtype.type == NDARRAY_UINT16) {
             POWER_LOOP(results, mp_float_t, mp_float_t, uint16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_INT16) {
+        } else if(rhs->dtype.type == NDARRAY_INT16) {
             POWER_LOOP(results, mp_float_t, mp_float_t, int16_t, larray, lstrides, rarray, rstrides);
-        } else if(rhs->dtype == NDARRAY_FLOAT) {
+        } else if(rhs->dtype.type == NDARRAY_FLOAT) {
             POWER_LOOP(results, mp_float_t, mp_float_t, mp_float_t, larray, lstrides, rarray, rstrides);
         }
     }
@@ -732,7 +732,7 @@ mp_obj_t ndarray_binary_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 #if NDARRAY_HAS_INPLACE_ADD || NDARRAY_HAS_INPLACE_MULTIPLY || NDARRAY_HAS_INPLACE_SUBTRACT
 mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides, uint8_t optype) {
 
-    if((lhs->dtype != NDARRAY_FLOAT) && (rhs->dtype == NDARRAY_FLOAT)) {
+    if((lhs->dtype.type != NDARRAY_FLOAT) && (rhs->dtype.type == NDARRAY_FLOAT)) {
         mp_raise_TypeError(translate("cannot cast output with casting rule"));
     }
     uint8_t *larray = (uint8_t *)lhs->array;
@@ -761,21 +761,21 @@ mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rs
 #if NDARRAY_HAS_INPLACE_TRUE_DIVIDE
 mp_obj_t ndarray_inplace_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides) {
 
-    if((lhs->dtype != NDARRAY_FLOAT)) {
+    if((lhs->dtype.type != NDARRAY_FLOAT)) {
         mp_raise_TypeError(translate("results cannot be cast to specified type"));
     }
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
 
-    if(rhs->dtype == NDARRAY_UINT8) {
+    if(rhs->dtype.type == NDARRAY_UINT8) {
         INPLACE_LOOP(lhs, mp_float_t, uint8_t, larray, rarray, rstrides, /=);
-    } else if(rhs->dtype == NDARRAY_INT8) {
+    } else if(rhs->dtype.type == NDARRAY_INT8) {
         INPLACE_LOOP(lhs, mp_float_t, int8_t, larray, rarray, rstrides, /=);
-    } else if(rhs->dtype == NDARRAY_UINT16) {
+    } else if(rhs->dtype.type == NDARRAY_UINT16) {
         INPLACE_LOOP(lhs, mp_float_t, uint16_t, larray, rarray, rstrides, /=);
-    } else if(rhs->dtype == NDARRAY_INT16) {
+    } else if(rhs->dtype.type == NDARRAY_INT16) {
         INPLACE_LOOP(lhs, mp_float_t, int16_t, larray, rarray, rstrides, /=);
-    } else if(lhs->dtype == NDARRAY_FLOAT) {
+    } else if(lhs->dtype.type == NDARRAY_FLOAT) {
         INPLACE_LOOP(lhs, mp_float_t, mp_float_t, larray, rarray, rstrides, /=);
     }
     return MP_OBJ_FROM_PTR(lhs);
@@ -785,21 +785,21 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t 
 #if NDARRAY_HAS_INPLACE_POWER
 mp_obj_t ndarray_inplace_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides) {
 
-    if((lhs->dtype != NDARRAY_FLOAT)) {
+    if((lhs->dtype.type != NDARRAY_FLOAT)) {
         mp_raise_TypeError(translate("results cannot be cast to specified type"));
     }
     uint8_t *larray = (uint8_t *)lhs->array;
     uint8_t *rarray = (uint8_t *)rhs->array;
 
-    if(rhs->dtype == NDARRAY_UINT8) {
+    if(rhs->dtype.type == NDARRAY_UINT8) {
         INPLACE_POWER(lhs, mp_float_t, uint8_t, larray, rarray, rstrides);
-    } else if(rhs->dtype == NDARRAY_INT8) {
+    } else if(rhs->dtype.type == NDARRAY_INT8) {
         INPLACE_POWER(lhs, mp_float_t, int8_t, larray, rarray, rstrides);
-    } else if(rhs->dtype == NDARRAY_UINT16) {
+    } else if(rhs->dtype.type == NDARRAY_UINT16) {
         INPLACE_POWER(lhs, mp_float_t, uint16_t, larray, rarray, rstrides);
-    } else if(rhs->dtype == NDARRAY_INT16) {
+    } else if(rhs->dtype.type == NDARRAY_INT16) {
         INPLACE_POWER(lhs, mp_float_t, int16_t, larray, rarray, rstrides);
-    } else if(lhs->dtype == NDARRAY_FLOAT) {
+    } else if(lhs->dtype.type == NDARRAY_FLOAT) {
         INPLACE_POWER(lhs, mp_float_t, mp_float_t, larray, rarray, rstrides);
     }
     return MP_OBJ_FROM_PTR(lhs);

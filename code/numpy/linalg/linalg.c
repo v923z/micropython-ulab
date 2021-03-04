@@ -46,7 +46,7 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
     uint8_t *array = (uint8_t *)ndarray->array;
-    mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+    mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype.type);
 
     for(size_t m=0; m < N; m++) { // rows
         for(size_t n=0; n < N; n++) { // columns
@@ -112,7 +112,7 @@ static mp_obj_t linalg_det(mp_obj_t oin) {
     mp_float_t *tmp = m_new(mp_float_t, N * N);
     for(size_t m=0; m < N; m++) { // rows
         for(size_t n=0; n < N; n++) { // columns
-            *tmp++ = ndarray_get_float_value(array, ndarray->dtype);
+            *tmp++ = ndarray_get_float_value(array, ndarray->dtype.type);
             array += ndarray->strides[ULAB_MAX_DIMS - 1];
         }
         array -= ndarray->strides[ULAB_MAX_DIMS - 1] * N;
@@ -184,7 +184,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
     mp_float_t *array = m_new(mp_float_t, S*S);
     for(size_t i=0; i < S; i++) { // rows
         for(size_t j=0; j < S; j++) { // columns
-            *array++ = ndarray_get_float_value(iarray, in->dtype);
+            *array++ = ndarray_get_float_value(iarray, in->dtype.type);
             iarray += in->strides[ULAB_MAX_DIMS - 1];
         }
         iarray -= in->strides[ULAB_MAX_DIMS - 1] * S;
@@ -245,7 +245,7 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
     ndarray_obj_t *inverted = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, N, N), NDARRAY_FLOAT);
     mp_float_t *iarray = (mp_float_t *)inverted->array;
 
-    mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+    mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype.type);
 
     for(size_t i=0; i < N; i++) { // rows
         for(size_t j=0; j < N; j++) { // columns
@@ -304,7 +304,7 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(x);
         uint8_t *array = (uint8_t *)ndarray->array;
         // always get a float, so that we don't have to resolve the dtype later
-        mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
+        mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype.type);
         shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
         ndarray_obj_t *results = ndarray_new_dense_ndarray(_shape_strides.ndim, _shape_strides.shape, NDARRAY_FLOAT);
         mp_float_t *rarray = (mp_float_t *)results->array;

@@ -69,20 +69,20 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_float_t left_value, right_value;
     uint8_t *xparray = (uint8_t *)xp->array;
 
-    mp_float_t xp_left = ndarray_get_float_value(xparray, xp->dtype);
+    mp_float_t xp_left = ndarray_get_float_value(xparray, xp->dtype.type);
     xparray += (xp->len-1) * xp->strides[ULAB_MAX_DIMS - 1];
-    mp_float_t xp_right = ndarray_get_float_value(xparray, xp->dtype);
+    mp_float_t xp_right = ndarray_get_float_value(xparray, xp->dtype.type);
 
     uint8_t *fparray = (uint8_t *)fp->array;
 
     if(args[3].u_obj == mp_const_none) {
-        left_value = ndarray_get_float_value(fparray, fp->dtype);
+        left_value = ndarray_get_float_value(fparray, fp->dtype.type);
     } else {
         left_value = mp_obj_get_float(args[3].u_obj);
     }
     if(args[4].u_obj == mp_const_none) {
         fparray += (fp->len-1) * fp->strides[ULAB_MAX_DIMS - 1];
-        right_value = ndarray_get_float_value(fparray, fp->dtype);
+        right_value = ndarray_get_float_value(fparray, fp->dtype.type);
     } else {
         right_value = mp_obj_get_float(args[4].u_obj);
     }
@@ -95,7 +95,7 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     uint8_t *temp;
 
     for(size_t i=0; i < x->len; i++, yarray++) {
-        mp_float_t x_value = ndarray_get_float_value(xarray, x->dtype);
+        mp_float_t x_value = ndarray_get_float_value(xarray, x->dtype.type);
         xarray += x->strides[ULAB_MAX_DIMS - 1];
         if(x_value < xp_left) {
             *yarray = left_value;
@@ -108,7 +108,7 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
             while(right_index - left_index > 1) {
                 middle_index = left_index + (right_index - left_index) / 2;
                 temp = xparray + middle_index * xp->strides[ULAB_MAX_DIMS - 1];
-                mp_float_t xp_middle = ndarray_get_float_value(temp, xp->dtype);
+                mp_float_t xp_middle = ndarray_get_float_value(temp, xp->dtype.type);
                 if(x_value <= xp_middle) {
                     right_index = middle_index;
                 } else {
@@ -116,16 +116,16 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
                 }
             }
             temp = xparray + left_index * xp->strides[ULAB_MAX_DIMS - 1];
-            xp_left_ = ndarray_get_float_value(temp, xp->dtype);
+            xp_left_ = ndarray_get_float_value(temp, xp->dtype.type);
 
             temp = xparray + right_index * xp->strides[ULAB_MAX_DIMS - 1];
-            xp_right_ = ndarray_get_float_value(temp, xp->dtype);
+            xp_right_ = ndarray_get_float_value(temp, xp->dtype.type);
 
             temp = fparray + left_index * fp->strides[ULAB_MAX_DIMS - 1];
-            fp_left = ndarray_get_float_value(temp, fp->dtype);
+            fp_left = ndarray_get_float_value(temp, fp->dtype.type);
 
             temp = fparray + right_index * fp->strides[ULAB_MAX_DIMS - 1];
-            fp_right = ndarray_get_float_value(temp, fp->dtype);
+            fp_right = ndarray_get_float_value(temp, fp->dtype.type);
 
             *yarray = fp_left + (x_value - xp_left_) * (fp_right - fp_left) / (xp_right_ - xp_left_);
         }
@@ -167,7 +167,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         mp_raise_ValueError(translate("trapz is defined for 1D arrays"));
     }
 
-    mp_float_t (*funcy)(void *) = ndarray_get_float_function(y->dtype);
+    mp_float_t (*funcy)(void *) = ndarray_get_float_function(y->dtype.type);
     uint8_t *yarray = (uint8_t *)y->array;
 
     size_t count = 1;
@@ -179,7 +179,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             mp_raise_ValueError(translate("trapz is defined for 1D arrays of equal length"));
         }
 
-        mp_float_t (*funcx)(void *) = ndarray_get_float_function(x->dtype);
+        mp_float_t (*funcx)(void *) = ndarray_get_float_function(x->dtype.type);
         uint8_t *xarray = (uint8_t *)x->array;
         mp_float_t x1, x2;
 
@@ -206,7 +206,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         yarray += y->strides[ULAB_MAX_DIMS - 1];
 
         for(size_t i=1; i < y->len; i++) {
-            y2 = ndarray_get_float_index(y->array, y->dtype, i);
+            y2 = ndarray_get_float_index(y->array, y->dtype.type, i);
             mp_float_t value = (y2 + y1);
             m = mean + (value - mean) / (mp_float_t)count;
             mean = m;
