@@ -18,21 +18,31 @@
 
 #if ULAB_HAS_UTILS_MODULE
 
-#if ULAB_HAS_UTILS_HAS_FROM_INTBUFFER
-static mp_obj_t utils_from_intbuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+enum UTILS_BUFFER_TYPE {
+    UTILS_INT32_BUFFER,
+    UTILS_UINT32_BUFFER,
+};
+
+#if ULAB_UTILS_HAS_FROM_INTBUFFER | ULAB_UTILS_HAS_FROM_UINTBUFFER
+static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t buffer_type) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } } ,
         { MP_QSTR_count, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(-1) } },
         { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(0) } },
-        { MP_QSTR_inplace, MP_ARG_OBJ, { .u_rom_obj = mp_const_false } },
+        { MP_QSTR_out, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_byteswap, MP_ARG_OBJ, { .u_rom_obj = mp_const_false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(args[3].u_obj == mp_const_true) {
-        mp_raise_NotImplementedError(translate("inplace conversion is not implemented"));
+    ndarray_obj_t *ndarray = NULL;
+
+    if(args[3].u_obj != mp_const_none) {
+        ndarray = MP_OBJ_TO_PTR(args[3].u_obj);
+        if((ndarray->dtype != NDARRAY_FLOAT) || !ndarray_is_dense(ndarray)) {
+            mp_raise_TypeError(translate("out must be a float dense array"));
+        }
     }
 
     size_t offset = mp_obj_get_int(args[2].u_obj);
@@ -54,7 +64,13 @@ static mp_obj_t utils_from_intbuffer(size_t n_args, const mp_obj_t *pos_args, mp
                 len = count;
             }
         }
-        ndarray_obj_t *ndarray = ndarray_new_linear_array(len, NDARRAY_FLOAT);
+        if(args[3].u_obj == mp_const_none) {
+            ndarray = ndarray_new_linear_array(len, NDARRAY_FLOAT);
+        } else {
+            if(ndarray->len < len) {
+                mp_raise_ValueError(translate("out array is too small"));
+            }
+        }
         uint8_t *buffer = bufinfo.buf;
 
         mp_float_t *array = (mp_float_t *)ndarray->array;
@@ -66,12 +82,20 @@ static mp_obj_t utils_from_intbuffer(size_t n_args, const mp_obj_t *pos_args, mp
                 for(uint8_t j = 0; j < sizeof(int32_t); j++) {
                     memcpy(tmpbuff--, buffer++, 1);
                 }
-                *array++ = (mp_float_t)(*(int32_t *)tmpbuff);
+                if(buffer_type == UTILS_INT32_BUFFER) {
+                    *array++ = (mp_float_t)(*(int32_t *)tmpbuff);
+                } else {
+                    *array++ = (mp_float_t)(*(uint32_t *)tmpbuff);
+                }
                 buffer += sizeof(int32_t);
             }
         } else {
             for(uint8_t i = 0; i < len; i++) {
-                *array++ = (mp_float_t)(*(int32_t *)buffer);
+                if(buffer_type == UTILS_INT32_BUFFER) {
+                    *array++ = (mp_float_t)(*(int32_t *)buffer);
+                } else {
+                    *array++ = (mp_float_t)(*(uint32_t *)buffer);
+                }
                 buffer += sizeof(int32_t);
             }
         }
@@ -80,13 +104,27 @@ static mp_obj_t utils_from_intbuffer(size_t n_args, const mp_obj_t *pos_args, mp
     return mp_const_none;
 }
 
+static mp_obj_t utils_from_intbuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return utils_from_intbuffer_helper(n_args, pos_args, kw_args, UTILS_INT32_BUFFER);
+}
+
 MP_DEFINE_CONST_FUN_OBJ_KW(utils_from_intbuffer_obj, 1, utils_from_intbuffer);
+
+static mp_obj_t utils_from_uintbuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return utils_from_intbuffer_helper(n_args, pos_args, kw_args, UTILS_UINT32_BUFFER);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(utils_from_uintbuffer_obj, 1, utils_from_uintbuffer);
+
 #endif
 
 static const mp_rom_map_elem_t ulab_utils_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utils) },
-    #if ULAB_HAS_UTILS_HAS_FROM_INTBUFFER
+    #if ULAB_UTILS_HAS_FROM_INTBUFFER
         { MP_OBJ_NEW_QSTR(MP_QSTR_from_intbuffer), (mp_obj_t)&utils_from_intbuffer_obj },
+    #endif
+    #if ULAB_UTILS_HAS_FROM_UINTBUFFER
+        { MP_OBJ_NEW_QSTR(MP_QSTR_from_uintbuffer), (mp_obj_t)&utils_from_uintbuffer_obj },
     #endif
 };
 
