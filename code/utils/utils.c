@@ -23,7 +23,7 @@ enum UTILS_BUFFER_TYPE {
     UTILS_UINT32_BUFFER,
 };
 
-#if ULAB_UTILS_HAS_FROM_INTBUFFER | ULAB_UTILS_HAS_FROM_UINTBUFFER
+#if ULAB_UTILS_HAS_FROM_INT32_BUFFER | ULAB_UTILS_HAS_FROM_UINT32_BUFFER
 static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t buffer_type) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } } ,
@@ -122,10 +122,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(utils_from_uint32_buffer_obj, 1, utils_from_uint32_bu
 
 static const mp_rom_map_elem_t ulab_utils_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utils) },
-    #if ULAB_UTILS_HAS_FROM_INTBUFFER
+    #if ULAB_UTILS_HAS_FROM_INT32_BUFFER
         { MP_OBJ_NEW_QSTR(MP_QSTR_from_int32_buffer), (mp_obj_t)&utils_from_int32_buffer_obj },
     #endif
-    #if ULAB_UTILS_HAS_FROM_UINTBUFFER
+    #if ULAB_UTILS_HAS_FROM_UINT32_BUFFER
         { MP_OBJ_NEW_QSTR(MP_QSTR_from_uint32_buffer), (mp_obj_t)&utils_from_uint32_buffer_obj },
     #endif
 };
