@@ -9,15 +9,15 @@ signal with 32-bit resolution. For such cases, ``ulab`` defines the
 ``utils`` module, which, at the moment, has two functions that are not
 ``numpy`` compatible.
 
-from_intbuffer, from_uintbuffer
--------------------------------
+from_int32_buffer, from_uint32_buffer
+-------------------------------------
 
-With the help of ``utils.from_intbuffer``, and
-``utils.from_uintbuffer``, it is possible to convert 32-bit integer
+With the help of ``utils.from_int32_buffer``, and
+``utils.from_uint32_buffer``, it is possible to convert 32-bit integer
 buffers to ``ndarrays`` of float type. These functions have a syntax
 similar to ``numpy.frombuffer``; they support the ``count=-1``, and
-``offset=0`` keyword argument. However, in addition, they also accept
-the ``out``, and ``byteswap=False``.
+``offset=0`` keyword arguments. However, in addition, they also accept
+``out=None``, and ``byteswap=False``.
 
 Here is an example without keyword arguments
 
@@ -31,12 +31,12 @@ Here is an example without keyword arguments
     a = bytearray([1, 1, 0, 0, 0, 0, 0, 255])
     print('a: ', a)
     print()
-    print('unsigned integers: ', utils.from_uintbuffer(a))
+    print('unsigned integers: ', utils.from_uint32_buffer(a))
     
     b = bytearray([1, 1, 0, 0, 0, 0, 0, 255])
     print('\nb:  ', b)
     print()
-    print('signed integers: ', utils.from_intbuffer(b))
+    print('signed integers: ', utils.from_int32_buffer(b))
 
 .. parsed-literal::
 
@@ -72,7 +72,7 @@ of ``out`` is not ``float``, a ``TypeError`` exception will be raised.
     a = np.array([1, 2], dtype=np.float)
     b = bytearray([1, 0, 1, 0, 0, 1, 0, 1])
     print('b: ', b)
-    utils.from_uintbuffer(b, out=a)
+    utils.from_uint32_buffer(b, out=a)
     print('a: ', a)
 
 .. parsed-literal::
@@ -97,8 +97,8 @@ microcontroller, ``from_(u)intbuffer`` allows a conversion via the
     
     a = bytearray([1, 0, 0, 0, 0, 0, 0, 1])
     print('a: ', a)
-    print('buffer without byteswapping: ', utils.from_uintbuffer(a))
-    print('buffer with byteswapping: ', utils.from_uintbuffer(a, byteswap=True))
+    print('buffer without byteswapping: ', utils.from_uint32_buffer(a))
+    print('buffer with byteswapping: ', utils.from_uint32_buffer(a, byteswap=True))
 
 .. parsed-literal::
 

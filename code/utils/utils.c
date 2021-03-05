@@ -89,13 +89,16 @@ static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_a
                 }
             }
         } else {
-            for(size_t i = 0; i < len; i++) {
-                if(buffer_type == UTILS_INT32_BUFFER) {
+            if(buffer_type == UTILS_INT32_BUFFER) {
+                for(size_t i = 0; i < len; i++) {
                     *array++ = (mp_float_t)(*(int32_t *)buffer);
-                } else {
-                    *array++ = (mp_float_t)(*(uint32_t *)buffer);
+                    buffer += sizeof(int32_t);
                 }
-                buffer += sizeof(int32_t);
+            } else {
+                for(size_t i = 0; i < len; i++) {
+                    *array++ = (mp_float_t)(*(uint32_t *)buffer);
+                    buffer += sizeof(int32_t);
+                }
             }
         }
         return MP_OBJ_FROM_PTR(ndarray);
@@ -103,27 +106,27 @@ static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_a
     return mp_const_none;
 }
 
-static mp_obj_t utils_from_intbuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t utils_from_int32_buffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return utils_from_intbuffer_helper(n_args, pos_args, kw_args, UTILS_INT32_BUFFER);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(utils_from_intbuffer_obj, 1, utils_from_intbuffer);
+MP_DEFINE_CONST_FUN_OBJ_KW(utils_from_int32_buffer_obj, 1, utils_from_int32_buffer);
 
-static mp_obj_t utils_from_uintbuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t utils_from_uint32_buffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return utils_from_intbuffer_helper(n_args, pos_args, kw_args, UTILS_UINT32_BUFFER);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(utils_from_uintbuffer_obj, 1, utils_from_uintbuffer);
+MP_DEFINE_CONST_FUN_OBJ_KW(utils_from_uint32_buffer_obj, 1, utils_from_uint32_buffer);
 
 #endif
 
 static const mp_rom_map_elem_t ulab_utils_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utils) },
     #if ULAB_UTILS_HAS_FROM_INTBUFFER
-        { MP_OBJ_NEW_QSTR(MP_QSTR_from_intbuffer), (mp_obj_t)&utils_from_intbuffer_obj },
+        { MP_OBJ_NEW_QSTR(MP_QSTR_from_int32_buffer), (mp_obj_t)&utils_from_int32_buffer_obj },
     #endif
     #if ULAB_UTILS_HAS_FROM_UINTBUFFER
-        { MP_OBJ_NEW_QSTR(MP_QSTR_from_uintbuffer), (mp_obj_t)&utils_from_uintbuffer_obj },
+        { MP_OBJ_NEW_QSTR(MP_QSTR_from_uint32_buffer), (mp_obj_t)&utils_from_uint32_buffer_obj },
     #endif
 };
 
