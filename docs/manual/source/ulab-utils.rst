@@ -6,8 +6,29 @@ There might be cases, when the format of your data does not conform to
 ``ulab``, i.e., there is no obvious way to map the data to any of the
 five supported ``dtype``\ s. A trivial example is an ADC or microphone
 signal with 32-bit resolution. For such cases, ``ulab`` defines the
-``utils`` module, which, at the moment, has two functions that are not
-``numpy`` compatible.
+``utils`` module, which, at the moment, has four functions that are not
+``numpy`` compatible, but which should ease interfacing ``ndarray``\ s
+to peripheral devices.
+
+The ``utils`` module can be enabled by setting the
+``ULAB_HAS_UTILS_MODULE`` constant to 1 in
+`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__:
+
+.. code:: c
+
+   #ifndef ULAB_HAS_UTILS_MODULE
+   #define ULAB_HAS_UTILS_MODULE               (1)
+   #endif
+
+This still does not compile any functions into the firmware. You can add
+a function by setting the corresponding pre-processor constant to 1.
+E.g.,
+
+.. code:: c
+
+   #ifndef ULAB_UTILS_HAS_FROM_INT16_BUFFER
+   #define ULAB_UTILS_HAS_FROM_INT16_BUFFER    (1)
+   #endif
 
 from_int32_buffer, from_uint32_buffer
 -------------------------------------
@@ -108,6 +129,13 @@ microcontroller, ``from_(u)intbuffer`` allows a conversion via the
     
     
 
+
+from_int16_buffer, from_uint16_buffer
+-------------------------------------
+
+These two functions are identical to ``utils.from_int32_buffer``, and
+``utils.from_uint32_buffer``, with the exception that they convert
+16-bit integers to floating point ``ndarray``\ s.
 
 .. code::
 
