@@ -89,7 +89,7 @@ static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_a
                 }
             }
         } else {
-            for(uint8_t i = 0; i < len; i++) {
+            for(size_t i = 0; i < len; i++) {
                 if(buffer_type == UTILS_INT32_BUFFER) {
                     *array++ = (mp_float_t)(*(int32_t *)buffer);
                 } else {
