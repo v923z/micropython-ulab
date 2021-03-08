@@ -68,7 +68,12 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
     mp_float_t value = start;
 
     ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
-    if(dtype == NDARRAY_UINT8) {
+    if(ndarray->boolean == NDARRAY_BOOLEAN) {
+        uint8_t *array = (uint8_t *)ndarray->array;
+        for(size_t i=0; i < len; i++, value += step) {
+            *array++ = value == MICROPY_FLOAT_CONST(0.0) ? 0 : 1;
+        }
+    } else if(dtype == NDARRAY_UINT8) {
         uint8_t *array = (uint8_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value += step) *array++ = (uint8_t)value;
     } else if(dtype == NDARRAY_INT8) {
@@ -560,21 +565,26 @@ mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     start = mp_obj_get_float(args[0].u_obj);
     uint8_t dtype = args[5].u_int;
     mp_float_t base = mp_obj_get_float(args[3].u_obj);
-    if(args[4].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-start)/(len-1);
-    else step = (mp_obj_get_float(args[1].u_obj)-start)/len;
+    if(args[4].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj) - start)/(len - 1);
+    else step = (mp_obj_get_float(args[1].u_obj) - start) / len;
     quotient = MICROPY_FLOAT_C_FUN(pow)(base, step);
     ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
+
     mp_float_t value = MICROPY_FLOAT_C_FUN(pow)(base, start);
-    if(dtype == NDARRAY_UINT8) {
+    if(ndarray->dtype == NDARRAY_UINT8) {
         uint8_t *array = (uint8_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value *= quotient) *array++ = (uint8_t)value;
-    } else if(dtype == NDARRAY_INT8) {
+        if(ndarray->boolean) {
+            memset(array, 1, len);
+        } else {
+            for(size_t i=0; i < len; i++, value *= quotient) *array++ = (uint8_t)value;
+        }
+    } else if(ndarray->dtype == NDARRAY_INT8) {
         int8_t *array = (int8_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value *= quotient) *array++ = (int8_t)value;
-    } else if(dtype == NDARRAY_UINT16) {
+    } else if(ndarray->dtype == NDARRAY_UINT16) {
         uint16_t *array = (uint16_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value *= quotient) *array++ = (uint16_t)value;
-    } else if(dtype == NDARRAY_INT16) {
+    } else if(ndarray->dtype == NDARRAY_INT16) {
         int16_t *array = (int16_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value *= quotient) *array++ = (int16_t)value;
     } else {

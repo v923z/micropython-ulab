@@ -1,3 +1,9 @@
+Mon, 8 Mar 2021
+
+version 2.5.1
+
+    fix linspace/logspace/arange for Boolean dtypes
+
 Tue, 23 Feb 2021
 
 version 2.4.5
