@@ -1,0 +1,8 @@
+array([1.0, 256.0, 65280.0, 65535.00000000001], dtype=float64)
+array([1.0, 256.0, -256.0, -1.0], dtype=float64)
+array([16777217.0, 4294967040.0], dtype=float64)
+array([16777217.0, -256.0], dtype=float64)
+array([16777217.0, 4294901760.0], dtype=float64)
+array([16777217.0, -65536.0], dtype=float64)
+array([1.0, 16777216.0], dtype=float64)
+array([1.0, 16777216.0], dtype=float64)
