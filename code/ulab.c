@@ -34,7 +34,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 2.5.0
+#define ULAB_VERSION 2.5.1
 #define xstr(s) str(s)
 #define str(s) #s
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
