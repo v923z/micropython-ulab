@@ -25,7 +25,7 @@ Welcome to the ulab book!
    scipy-optimize
    scipy-signal
    scipy-special
-    ulab-utils
+   ulab-utils
    ulab-programming
 
 Indices and tables
