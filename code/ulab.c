@@ -32,6 +32,7 @@
 #include "numpy/numerical/numerical.h"
 
 #include "user/user.h"
+#include "utils/utils.h"
 
 #define ULAB_VERSION 2.5.1
 #define xstr(s) str(s)
@@ -134,6 +135,9 @@ STATIC const mp_map_elem_t ulab_globals_table[] = {
     #endif
     #if ULAB_HAS_USER_MODULE
         { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
+    #endif
+    #if ULAB_HAS_UTILS_MODULE
+        { MP_ROM_QSTR(MP_QSTR_utils), MP_ROM_PTR(&ulab_utils_module) },
     #endif
 };
 

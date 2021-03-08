@@ -4,6 +4,12 @@ version 2.5.1
 
     fix linspace/logspace/arange for Boolean dtypes
 
+Wed, 03 Mar 2021
+
+version 2.5.0
+
+    added utils sub-module with from_intbuffer function
+    
 Tue, 23 Feb 2021
 
 version 2.4.5

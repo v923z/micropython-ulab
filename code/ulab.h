@@ -615,4 +615,24 @@
 #define ULAB_HAS_USER_MODULE                (0)
 #endif
 
+#ifndef ULAB_HAS_UTILS_MODULE
+#define ULAB_HAS_UTILS_MODULE               (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_FROM_INT16_BUFFER
+#define ULAB_UTILS_HAS_FROM_INT16_BUFFER    (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_FROM_UINT16_BUFFER
+#define ULAB_UTILS_HAS_FROM_UINT16_BUFFER   (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_FROM_INT32_BUFFER
+#define ULAB_UTILS_HAS_FROM_INT32_BUFFER    (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_FROM_UINT32_BUFFER
+#define ULAB_UTILS_HAS_FROM_UINT32_BUFFER   (1)
+#endif
+
 #endif

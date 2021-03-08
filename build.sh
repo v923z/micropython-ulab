@@ -44,7 +44,7 @@ make -C micropython/ports/unix -j${NPROC} axtls
 make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0
 
 
-for dir in "numpy" "common"
+for dir in "numpy" "common" "utils"
 do
 	if ! env MICROPY_MICROPYTHON=micropython/ports/unix/micropython ./run-tests -d tests/"$dir"; then
 		for exp in *.exp; do
