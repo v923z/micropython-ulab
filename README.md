@@ -234,6 +234,48 @@ If it compiles without error, you can plug in your ESP32 via USB and then flash 
 ```bash
 make erase && make deploy
 ```
+### RP2-based Port
+
+Building micropython with ulab currently requires the `continous-integration` branch of [this fork of micropython](https://github.com/pimoroni/micropython/tree/continuous-integration) and the `patch-cmake-user-c-module-support` branch of [this fork of ulab](https://github.com/pimoroni/micropython-ulab/tree/patch-cmake-user-c-module-support).
+
+Once the pull requests for these forks are resolved you should be able to use the official repositories, but for now you'll have to use these forks. To get started, run the commands below.
+
+First, clone the micropython fork and checkout the `continous-integration` branch.
+```bash
+git clone git@github.com:pimoroni/micropython.git micropython
+cd micropython
+git checkout continuous-integration
+```
+
+Then, setup the required submodules.
+```bash
+git submodule update --init lib/tinyusb
+git submodule update --init lib/pico-sdk
+cd lib/pico-sdk
+git submodule update --init lib/tinyusb
+```
+
+You'll also need to compile `mpy-cross`.
+```bash
+cd ../../mpy-cross
+make
+```
+
+That's all you need to do for the `micropython` repository. Now, let's clone the fork of `ulab` (in a directory outside of the micropython repository).
+```bash
+cd ../../
+git clone git@github.com:pimoroni/micropython-ulab.git ulab
+cd ulab
+git checkout patch-cmake-user-c-module-support
+```
+
+With all of this setup, we can now build the firmware. Back in the micropython repository, use these commands.
+```bash
+cd ports/rp2
+make USER_C_MODULE=/path/to/ulab/code
+```
+Since micropython and ulab were in the same folder on my computer, I used `USER_C_MODULES=../../../ulab/code`. The firmware can be found in `micropython/ports/rp2/build`.
+
 
 # Issues, contributing, and testing
 
