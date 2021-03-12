@@ -35,7 +35,8 @@ iterables via the `array` constructor, or by means of the `arange`, `concatenate
 
 In addition to the `ndarray` operators and methods, `ulab` defines a great number of functions that can
 take `ndarray`s or `micropython` iterables as their arguments. Most of the functions have been ported from 
-`numpy`, but several are re-implementations of `scipy` features. For a complete list, see
+`numpy`, but several are re-implementations of `scipy` features. In addition, the `utils` module adds functions that 
+interface `ndarray`s with peripheral devices. For a complete list, see
 [micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest)!
 
 If flash space is a concern, unnecessary functions can be excluded from the compiled firmware with 
@@ -236,9 +237,9 @@ make erase && make deploy
 ```
 ### RP2-based Port
 
-Building micropython with ulab currently requires the `continous-integration` branch of [this fork of micropython](https://github.com/pimoroni/micropython/tree/continuous-integration) and the `patch-cmake-user-c-module-support` branch of [this fork of ulab](https://github.com/pimoroni/micropython-ulab/tree/patch-cmake-user-c-module-support).
+Building micropython with ulab currently requires the Pimoroni's [micropython fork](https://github.com/pimoroni/micropython/tree/continuous-integration) and the `patch-cmake-user-c-module-support` branch of the [ulab fork](https://github.com/pimoroni/micropython-ulab/tree/patch-cmake-user-c-module-support).
 
-Once the pull requests for these forks are resolved you should be able to use the official repositories, but for now you'll have to use these forks. To get started, run the commands below.
+Once the pull requests for these forks are resolved you should be able to use the official repositories. To get started, run the commands below.
 
 First, clone the micropython fork and checkout the `continous-integration` branch.
 ```bash
@@ -261,7 +262,7 @@ cd ../../mpy-cross
 make
 ```
 
-That's all you need to do for the `micropython` repository. Now, let's clone the fork of `ulab` (in a directory outside of the micropython repository).
+That's all you need to do for the `micropython` repository. Now, let us clone the fork of `ulab` (in a directory outside the micropython repository).
 ```bash
 cd ../../
 git clone git@github.com:pimoroni/micropython-ulab.git ulab
@@ -269,12 +270,13 @@ cd ulab
 git checkout patch-cmake-user-c-module-support
 ```
 
-With all of this setup, we can now build the firmware. Back in the micropython repository, use these commands.
+With all of this setup, we can now build the firmware. Back in the `micropython` repository, use these commands:
+
 ```bash
 cd ports/rp2
 make USER_C_MODULE=/path/to/ulab/code
 ```
-Since micropython and ulab were in the same folder on my computer, I used `USER_C_MODULES=../../../ulab/code`. The firmware can be found in `micropython/ports/rp2/build`.
+If `micropython` and `ulab` were in the same folder on the computer, you can set `USER_C_MODULES=../../../ulab/code`. The compiled firmware will be placed in `micropython/ports/rp2/build`.
 
 
 # Issues, contributing, and testing
