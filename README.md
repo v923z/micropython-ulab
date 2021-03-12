@@ -237,9 +237,9 @@ make erase && make deploy
 ```
 ### RP2-based Port
 
-Building micropython with ulab currently requires the Pimoroni's [micropython fork](https://github.com/pimoroni/micropython/tree/continuous-integration) and the `patch-cmake-user-c-module-support` branch of the [ulab fork](https://github.com/pimoroni/micropython-ulab/tree/patch-cmake-user-c-module-support).
+Building `micropython` with `ulab` currently requires Pimoroni's [micropython fork](https://github.com/pimoroni/micropython/tree/continuous-integration).
 
-Once the pull requests for these forks are resolved you should be able to use the official repositories. To get started, run the commands below.
+Once the pull request for this fork is resolved you should be able to use the official repository. To get started, run the commands below.
 
 First, clone the micropython fork and checkout the `continous-integration` branch.
 ```bash
@@ -265,12 +265,10 @@ make
 That's all you need to do for the `micropython` repository. Now, let us clone the fork of `ulab` (in a directory outside the micropython repository).
 ```bash
 cd ../../
-git clone git@github.com:pimoroni/micropython-ulab.git ulab
-cd ulab
-git checkout patch-cmake-user-c-module-support
+git clone https://github.com/v923z/micropython-ulab ulab
 ```
 
-With all of this setup, we can now build the firmware. Back in the `micropython` repository, use these commands:
+With this setup, we can now build the firmware. Back in the `micropython` repository, use these commands:
 
 ```bash
 cd ports/rp2
