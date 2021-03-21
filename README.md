@@ -223,7 +223,7 @@ CODECONVENTIONS.md  docs             examples  LICENSE  ports      tests
 CODEOFCONDUCT.md    drivers          extmod    logo     py         tools
 ```
 
-In `.micropython/esp32`, download the software development kit with
+In `./micropython/esp32`, download the software development kit with
 
 ```bash
 git clone https://github.com/espressif/esp-idf.git esp-idf
@@ -233,7 +233,7 @@ git submodule update --init --recursive # get idf submodules
 pip install -r ./requirements.txt # install python reqs
 ```
 
-Next, install the ESP32 compiler. If using an ESP-IDF version >= 4.x (chosen by `$ESPIDF_VER` above), this can be done by running `. $BUILD_DIR/esp-idf/install.sh`. Otherwise, for version 3.x, run the following commands in in `.micropython/esp32/esp-idf`:
+Next, still staying in `./micropython/eps32/esd-idf/`, install the ESP32 compiler. If using an ESP-IDF version >= 4.x (chosen by `$ESPIDF_VER` above), this can be done by running `. $BUILD_DIR/esp-idf/install.sh`. Otherwise, for version 3.x, run the following commands in in `.micropython/esp32/esp-idf`:
 
 ```bash
 # for 64 bit linux
