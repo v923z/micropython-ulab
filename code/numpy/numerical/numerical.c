@@ -167,7 +167,11 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
 
 #if ULAB_NUMPY_HAS_SUM | ULAB_NUMPY_HAS_MEAN | ULAB_NUMPY_HAS_STD
 static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, size_t ddof) {
-    mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0;
+    mp_float_t value = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t M = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t m = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t S = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t s = MICROPY_FLOAT_CONST(0.0);
     size_t count = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t item, iterable = mp_getiter(oin, &iter_buf);
@@ -199,7 +203,10 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             return mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
         }
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
-        mp_float_t M = 0.0, m = 0.0, S = 0.0, s = 0.0;
+        mp_float_t M =MICROPY_FLOAT_CONST(0.0);
+        mp_float_t m = MICROPY_FLOAT_CONST(0.0);
+        mp_float_t S = MICROPY_FLOAT_CONST(0.0);
+        mp_float_t s = MICROPY_FLOAT_CONST(0.0);
         size_t count = 0;
 
         #if ULAB_MAX_DIMS > 3
@@ -278,7 +285,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 // for floats, the sum might be inaccurate with the naive summation
                 // call mean, and multiply with the number of samples
                 farray = (mp_float_t *)results->array;
-                RUN_MEAN_STD(mp_float_t, array, farray, _shape_strides, 0.0, 0);
+                RUN_MEAN_STD(mp_float_t, array, farray, _shape_strides, MICROPY_FLOAT_CONST(0.0), 0);
                 mp_float_t norm = (mp_float_t)_shape_strides.shape[0];
                 // re-wind the array here
                 farray = (mp_float_t *)results->array;
@@ -294,7 +301,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             if((optype == NUMERICAL_STD) && (_shape_strides.shape[0] <= ddof)) {
                 return MP_OBJ_FROM_PTR(results);
             }
-            mp_float_t div = optype == NUMERICAL_STD ? (mp_float_t)(_shape_strides.shape[0] - ddof) : 0.0;
+            mp_float_t div = optype == NUMERICAL_STD ? (mp_float_t)(_shape_strides.shape[0] - ddof) : MICROPY_FLOAT_CONST(0.0);
             if(ndarray->dtype == NDARRAY_UINT8) {
                 RUN_MEAN_STD(uint8_t, array, farray, _shape_strides, div, isStd);
             } else if(ndarray->dtype == NDARRAY_INT8) {
