@@ -255,7 +255,7 @@ cd ./micropython/ports/esp32
 export PATH=../../esp32/esp-idf/xtensa-esp32-elf/bin:$PATH
 export ESPIDF=esp-idf # req'd by Makefile
 export BOARD=GENERIC # options are dirs in ./boards
-export USER_C_MODULES=../../../../ulab # include ulab in firmware
+export USER_C_MODULES=../../../ulab # include ulab in firmware
 
 make submodules & make all
 ```
