@@ -223,7 +223,7 @@ CODECONVENTIONS.md  docs             examples  LICENSE  ports      tests
 CODEOFCONDUCT.md    drivers          extmod    logo     py         tools
 ```
 
-In `.micropython/eps32`, download the software development kit with
+In `.micropython/esp32`, download the software development kit with
 
 ```bash
 git clone https://github.com/espressif/esp-idf.git esp-idf
