@@ -139,16 +139,14 @@ https://github.com/peterhinch/micropython-fourier/blob/master/README.md#8-perfor
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import vector
-    from ulab import fft
+    from ulab import numpy as np
     
     x = np.linspace(0, 10, num=1024)
-    y = vector.sin(x)
+    y = np.sin(x)
     
     @timeit
     def np_fft(y):
-        return fft.fft(y)
+        return np.fft.fft(y)
     
     a, b = np_fft(y)
 
