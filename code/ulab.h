@@ -331,6 +331,10 @@
 #define ULAB_NUMPY_HAS_NOTEQUAL         (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_WHERE
+#define ULAB_NUMPY_HAS_WHERE            (1)
+#endif
+
 // the linalg module; functions of the linalg module still have
 // to be defined separately
 #ifndef ULAB_NUMPY_HAS_LINALG_MODULE
