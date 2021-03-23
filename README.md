@@ -165,7 +165,7 @@ In case you got stuck somewhere in the process, a bit more detailed instructions
 
 ### ESP32-based boards
 
-The firmware can be compiled either by downloading and running the [build script](#https://github.com/v923z/micropython-ulab/blob/master/build/esp32.sh), or following the steps below:
+The firmware can be compiled either by downloading and running the [build script](https://github.com/v923z/micropython-ulab/blob/master/build/esp32.sh), or following the steps below:
 
 First, clone `ulab` with
 
