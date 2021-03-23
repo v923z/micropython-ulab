@@ -11,7 +11,7 @@ target_include_directories(usermod_ulab INTERFACE
 )
 
 target_compile_definitions(usermod_ulab INTERFACE
-    -DMODULE_ULAB_ENABLED=1
+    MODULE_ULAB_ENABLED=1
 )
 
 target_link_libraries(usermod INTERFACE usermod_ulab)
