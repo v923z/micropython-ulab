@@ -273,14 +273,16 @@ Building `micropython` with `ulab` currently requires Pimoroni's [micropython fo
 
 Once the pull request for this fork is resolved you should be able to use the official repository. To get started, run the commands below.
 
-First, clone the micropython fork and checkout the `continous-integration` branch.
+First, clone the micropython fork and checkout the `continous-integration` branch:
+
 ```bash
 git clone git@github.com:pimoroni/micropython.git micropython
 cd micropython
 git checkout continuous-integration
 ```
 
-Then, setup the required submodules.
+Then, setup the required submodules:
+
 ```bash
 git submodule update --init lib/tinyusb
 git submodule update --init lib/pico-sdk
@@ -288,13 +290,15 @@ cd lib/pico-sdk
 git submodule update --init lib/tinyusb
 ```
 
-You'll also need to compile `mpy-cross`.
+You'll also need to compile `mpy-cross`:
+
 ```bash
 cd ../../mpy-cross
 make
 ```
 
-That's all you need to do for the `micropython` repository. Now, let us clone the fork of `ulab` (in a directory outside the micropython repository).
+That's all you need to do for the `micropython` repository. Now, let us clone the fork of `ulab` (in a directory outside the micropython repository):
+
 ```bash
 cd ../../
 git clone https://github.com/v923z/micropython-ulab ulab
@@ -304,9 +308,10 @@ With this setup, we can now build the firmware. Back in the `micropython` reposi
 
 ```bash
 cd ports/rp2
-make USER_C_MODULE=/path/to/ulab/code
+make USER_C_MODULE=/path/to/ulab/code/micropython.cmake
 ```
-If `micropython` and `ulab` were in the same folder on the computer, you can set `USER_C_MODULES=../../../ulab/code`. The compiled firmware will be placed in `micropython/ports/rp2/build`.
+
+If `micropython` and `ulab` were in the same folder on the computer, you can set `USER_C_MODULES=../../../ulab/code/micropython.cmake`. The compiled firmware will be placed in `micropython/ports/rp2/build`.
 
 
 # Issues, contributing, and testing
