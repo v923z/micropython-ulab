@@ -7,9 +7,8 @@ i.e., it has no hardware dependencies, and can be compiled for any platform.
 The `float` implementation of `micropython` (`float`, or `double`) is automatically detected.
 
 1. [Supported functions](#supported-functions)
-    1. [ndarray](#ndarray)
-1. [Usage](#usage)
 1. [Customising the firmware](#customising-the-firmware)
+1. [Usage](#usage)
 1. [Finding help](#finding-help)
 1. [Benchmarks](#benchmarks)
 1. [Firmware](#firmware)
