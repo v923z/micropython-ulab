@@ -13,7 +13,11 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 1. [Finding help](#finding-help)
 1. [Benchmarks](#benchmarks)
 1. [Firmware](#firmware)
-1. [Issues, contributing, and testing](#issues-contributing-and-testing)
+    1. [UNIX](#unix-port)
+    2. [STM-based boards](#stm-based-boards)
+    3. [ESP32-based boards](#esp32-based-boards)
+    4. [RP2-based boards](#rp2-based-boards)
+3. [Issues, contributing, and testing](#issues-contributing-and-testing)
     1. [Testing](#testing)
 
 # Supported functions
@@ -79,6 +83,8 @@ Representative numbers on performance can be found under [ulab samples](https://
 
 # Firmware
 
+## Compiled 
+
 Compiled firmware for many hardware platforms can be downloaded from Roberto Colistete's
 gitlab repository: for the [pyboard](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/Pyboard/Firmware/), and
 for [ESP8266](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/ESP8266/Firmware).
@@ -94,7 +100,8 @@ in question.
 1. `MicroPython for K210` https://github.com/loboris/MicroPython_K210_LoBo
 1. `MaixPy` https://github.com/sipeed/MaixPy
 1. `OpenMV` https://github.com/openmv/openmv
-1. `pycom` https://pycom.io/
+1. `pimoroni-pico` https://github.com/pimoroni/pimoroni-pico
+3. `pycom` https://pycom.io/
 
 ## Compiling
 
@@ -267,11 +274,11 @@ If it compiles without error, you can plug in your ESP32 via USB and then flash 
 ```bash
 make erase && make deploy
 ```
-### RP2-based Port
+### RP2-based boards
 
 Building `micropython` with `ulab` currently requires Pimoroni's [micropython fork](https://github.com/pimoroni/micropython/tree/continuous-integration).
 
-Once the pull request for this fork is resolved you should be able to use the official repository. To get started, run the commands below.
+Once the pull request for this fork is resolved you should be able to use the official repository. The firmware can be compiled either by downloading and running the single [build script](https://github.com/v923z/micropython-ulab/blob/master/build/rp2.sh), or executing the commands below.
 
 First, clone the micropython fork and checkout the `continous-integration` branch:
 
