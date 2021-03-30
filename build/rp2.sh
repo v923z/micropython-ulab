@@ -12,7 +12,7 @@ fi
 
 if [ ! -d $MPY_DIR ]; then
     printf "Cloning MicroPython\n"
-    git clone https://github.com/pimoroni/micropython.git -b continuous-integration
+    git clone https://github.com/micropython/micropython.git micropython
 fi
 
 cd $MPY_DIR
