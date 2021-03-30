@@ -275,21 +275,18 @@ make erase && make deploy
 ```
 ### RP2-based boards
 
-Building `micropython` with `ulab` currently requires Pimoroni's [micropython fork](https://github.com/pimoroni/micropython/tree/continuous-integration).
+RP2 firmware can be compiled either by downloading and running the single [build script](https://github.com/v923z/micropython-ulab/blob/master/build/rp2.sh), or executing the commands below.
 
-Once the pull request for this fork is resolved you should be able to use the official repository. The firmware can be compiled either by downloading and running the single [build script](https://github.com/v923z/micropython-ulab/blob/master/build/rp2.sh), or executing the commands below.
-
-First, clone the micropython fork and checkout the `continous-integration` branch:
+First, clone `micropython`:
 
 ```bash
-git clone git@github.com:pimoroni/micropython.git micropython
-cd micropython
-git checkout continuous-integration
+git clone https://github.com/micropython/micropython.git
 ```
 
 Then, setup the required submodules:
 
 ```bash
+cd micropython
 git submodule update --init lib/tinyusb
 git submodule update --init lib/pico-sdk
 cd lib/pico-sdk
@@ -303,7 +300,7 @@ cd ../../mpy-cross
 make
 ```
 
-That's all you need to do for the `micropython` repository. Now, let us clone the fork of `ulab` (in a directory outside the micropython repository):
+That's all you need to do for the `micropython` repository. Now, let us clone `ulab` (in a directory outside the micropython repository):
 
 ```bash
 cd ../../
