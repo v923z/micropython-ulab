@@ -1019,8 +1019,8 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
 
 // broadcasting is used at a number of places, always include
 bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
-    // returns True or False, depending on, whether the two arrays can be broadcast together
-    // numpy's broadcasting rules are as follows:
+    // Returns true or false, depending on, whether the two arrays can be broadcast together
+    // with numpy's broadcasting rules. These are as follows:
     //
     // 1. the two shapes are either equal
     // 2. one of the shapes is 1
@@ -1613,7 +1613,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
     ndarray_obj_t *ndarray;
     if(MP_OBJ_IS_INT(obj)) {
         int32_t ivalue = mp_obj_get_int(obj);
-        if((ivalue > 0) && (ivalue < 256)) {
+        if((ivalue >= 0) && (ivalue < 256)) {
             ndarray = ndarray_new_linear_array(1, NDARRAY_UINT8);
             uint8_t *array = (uint8_t *)ndarray->array;
             array[0] = (uint8_t)ivalue;

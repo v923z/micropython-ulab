@@ -91,7 +91,7 @@ mp_float_t ndarray_get_float_value(void *data, uint8_t dtype) {
     }
 }
 
-#if NDARRAY_BINARY_USES_FUN_POINTER
+#if NDARRAY_BINARY_USES_FUN_POINTER | ULAB_NUMPY_HAS_WHERE
 uint8_t ndarray_upcast_dtype(uint8_t ldtype, uint8_t rdtype) {
     // returns a single character that corresponds to the broadcasting rules
     // - if one of the operarands is a float, the result is always float
@@ -123,11 +123,14 @@ uint8_t ndarray_upcast_dtype(uint8_t ldtype, uint8_t rdtype) {
     return NDARRAY_FLOAT;
 }
 
+// The following five functions are the inverse of the ndarray_get_... functions,
+// and write a floating point datum into a void pointer
+
 void ndarray_set_float_uint8(void *data, mp_float_t datum) {
     *((uint8_t *)data) = (uint8_t)datum;
 }
 
-void ndarray_set_float_int8(void *data, int8_t datum) {
+void ndarray_set_float_int8(void *data, mp_float_t datum) {
     *((int8_t *)data) = (int8_t)datum;
 }
 
@@ -135,7 +138,7 @@ void ndarray_set_float_uint16(void *data, mp_float_t datum) {
     *((uint16_t *)data) = (uint16_t)datum;
 }
 
-void ndarray_set_float_int16(void *data, int8_t datum) {
+void ndarray_set_float_int16(void *data, mp_float_t datum) {
     *((int16_t *)data) = (int16_t)datum;
 }
 

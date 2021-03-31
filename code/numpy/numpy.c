@@ -146,6 +146,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_MINIMUM
         { MP_OBJ_NEW_QSTR(MP_QSTR_minimum), (mp_obj_t)&compare_minimum_obj },
     #endif
+    #if ULAB_NUMPY_HAS_WHERE
+        { MP_OBJ_NEW_QSTR(MP_QSTR_where), (mp_obj_t)&compare_where_obj },
+    #endif
     // functions of the filter sub-module
     #if ULAB_NUMPY_HAS_CONVOLVE
         { MP_OBJ_NEW_QSTR(MP_QSTR_convolve), (mp_obj_t)&filter_convolve_obj },
