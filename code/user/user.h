@@ -12,8 +12,8 @@
 #ifndef _USER_
 #define _USER_
 
-#include "ulab.h"
-#include "ndarray.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 extern mp_obj_module_t ulab_user_module;
 

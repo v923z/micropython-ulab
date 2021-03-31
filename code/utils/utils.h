@@ -11,8 +11,8 @@
 #ifndef _UTILS_
 #define _UTILS_
 
-#include "ulab.h"
-#include "ndarray.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 extern mp_obj_module_t ulab_utils_module;
 
