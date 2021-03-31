@@ -1613,7 +1613,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
     ndarray_obj_t *ndarray;
     if(MP_OBJ_IS_INT(obj)) {
         int32_t ivalue = mp_obj_get_int(obj);
-        if((ivalue > 0) && (ivalue < 256)) {
+        if((ivalue >= 0) && (ivalue < 256)) {
             ndarray = ndarray_new_linear_array(1, NDARRAY_UINT8);
             uint8_t *array = (uint8_t *)ndarray->array;
             array[0] = (uint8_t)ivalue;
