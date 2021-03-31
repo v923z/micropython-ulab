@@ -39,6 +39,16 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 
+#ifdef OPENMV
+typedef struct _mp_obj_slice_t {
+    mp_obj_base_t base;
+    mp_obj_t start;
+    mp_obj_t stop;
+    mp_obj_t step;
+} mp_obj_slice_t;
+#define MP_ERROR_TEXT(x) x
+#endif
+
 #if CIRCUITPY
 #define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
 #define mp_obj_is_int(x) (MP_OBJ_IS_INT((x)))
