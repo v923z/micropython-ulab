@@ -27,6 +27,9 @@
 #include "poly/poly.h"
 #include "vector/vector.h"
 
+//| """Compatibility layer for numpy"""
+//|
+
 // math constants
 #if ULAB_NUMPY_HAS_E
 mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MP_E};
