@@ -13,8 +13,8 @@
 #ifndef _SCIPY_SIGNAL_
 #define _SCIPY_SIGNAL_
 
-#include "ulab.h"
-#include "ndarray.h"
+#include "../../ulab.h"
+#include "../../ndarray.h"
 
 extern mp_obj_module_t ulab_scipy_signal_module;
 
