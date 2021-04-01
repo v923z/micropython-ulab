@@ -39,7 +39,7 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 
-#ifdef OPENMV
+#if MICROPY_VERSION_MAJOR == 1 && MICROPY_VERSION_MINOR == 11
 typedef struct _mp_obj_slice_t {
     mp_obj_base_t base;
     mp_obj_t start;
