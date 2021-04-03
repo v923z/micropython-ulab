@@ -32,6 +32,8 @@
 //| """Compatibility layer for numpy"""
 //|
 
+//| class ndarray: ...
+
 // math constants
 #if ULAB_NUMPY_HAS_E
 mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MP_E};
