@@ -119,7 +119,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
 }
 
 #if ULAB_NUMPY_HAS_ACOS
-//| def acos(a: _ArrayLike) -> ulab.array:
+//| def acos(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the inverse cosine function"""
 //|    ...
 //|
@@ -129,7 +129,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acos_obj, vectorise_acos);
 #endif
 
 #if ULAB_NUMPY_HAS_ACOSH
-//| def acosh(a: _ArrayLike) -> ulab.array:
+//| def acosh(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the inverse hyperbolic cosine function"""
 //|    ...
 //|
@@ -139,7 +139,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_acosh_obj, vectorise_acosh);
 #endif
 
 #if ULAB_NUMPY_HAS_ASIN
-//| def asin(a: _ArrayLike) -> ulab.array:
+//| def asin(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the inverse sine function"""
 //|    ...
 //|
@@ -149,7 +149,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asin_obj, vectorise_asin);
 #endif
 
 #if ULAB_NUMPY_HAS_ASINH
-//| def asinh(a: _ArrayLike) -> ulab.array:
+//| def asinh(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the inverse hyperbolic sine function"""
 //|    ...
 //|
@@ -159,7 +159,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_asinh_obj, vectorise_asinh);
 #endif
 
 #if ULAB_NUMPY_HAS_AROUND
-//| def around(a: _ArrayLike, *, decimals: int = 0) -> ulab.array:
+//| def around(a: _ArrayLike, *, decimals: int = 0) -> ulab.ndarray:
 //|    """Returns a new float array in which each element is rounded to
 //|       ``decimals`` places."""
 //|    ...
@@ -229,7 +229,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(vectorise_around_obj, 1, vectorise_around);
 #endif
 
 #if ULAB_NUMPY_HAS_ATAN
-//| def atan(a: _ArrayLike) -> ulab.array:
+//| def atan(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the inverse tangent function; the return values are in the
 //|       range [-pi/2,pi/2]."""
 //|    ...
@@ -240,7 +240,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 #endif
 
 #if ULAB_NUMPY_HAS_ARCTAN2
-//| def arctan2(ya: _ArrayLike, xa: _ArrayLike) -> ulab.array:
+//| def arctan2(ya: _ArrayLike, xa: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the inverse tangent function of y/x; the return values are in
 //|       the range [-pi, pi]."""
 //|    ...
@@ -323,7 +323,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(vectorise_arctan2_obj, vectorise_arctan2);
 #endif /* ULAB_VECTORISE_HAS_ARCTAN2 */
 
 #if ULAB_NUMPY_HAS_ATANH
-//| def atanh(a: _ArrayLike) -> ulab.array:
+//| def atanh(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the inverse hyperbolic tangent function"""
 //|    ...
 //|
@@ -333,7 +333,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atanh_obj, vectorise_atanh);
 #endif
 
 #if ULAB_NUMPY_HAS_CEIL
-//| def ceil(a: _ArrayLike) -> ulab.array:
+//| def ceil(a: _ArrayLike) -> ulab.ndarray:
 //|    """Rounds numbers up to the next whole number"""
 //|    ...
 //|
@@ -343,7 +343,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_ceil_obj, vectorise_ceil);
 #endif
 
 #if ULAB_NUMPY_HAS_COS
-//| def cos(a: _ArrayLike) -> ulab.array:
+//| def cos(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the cosine function"""
 //|    ...
 //|
@@ -353,7 +353,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cos_obj, vectorise_cos);
 #endif
 
 #if ULAB_NUMPY_HAS_COSH
-//| def cosh(a: _ArrayLike) -> ulab.array:
+//| def cosh(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the hyperbolic cosine function"""
 //|    ...
 //|
@@ -363,7 +363,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_cosh_obj, vectorise_cosh);
 #endif
 
 #if ULAB_NUMPY_HAS_DEGREES
-//| def degrees(a: _ArrayLike) -> ulab.array:
+//| def degrees(a: _ArrayLike) -> ulab.ndarray:
 //|    """Converts angles from radians to degrees"""
 //|    ...
 //|
@@ -380,7 +380,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_degrees_obj, vectorise_degrees);
 #endif
 
 #if ULAB_SCIPY_SPECIAL_HAS_ERF
-//| def erf(a: _ArrayLike) -> ulab.array:
+//| def erf(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the error function, which has applications in statistics"""
 //|    ...
 //|
@@ -390,7 +390,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erf_obj, vectorise_erf);
 #endif
 
 #if ULAB_SCIPY_SPECIAL_HAS_ERFC
-//| def erfc(a: _ArrayLike) -> ulab.array:
+//| def erfc(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the complementary error function, which has applications in statistics"""
 //|    ...
 //|
@@ -400,7 +400,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erfc_obj, vectorise_erfc);
 #endif
 
 #if ULAB_NUMPY_HAS_EXP
-//| def exp(a: _ArrayLike) -> ulab.array:
+//| def exp(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the exponent function."""
 //|    ...
 //|
@@ -410,7 +410,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_exp_obj, vectorise_exp);
 #endif
 
 #if ULAB_NUMPY_HAS_EXPM1
-//| def expm1(a: _ArrayLike) -> ulab.array:
+//| def expm1(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes $e^x-1$.  In certain applications, using this function preserves numeric accuracy better than the `exp` function."""
 //|    ...
 //|
@@ -420,7 +420,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_expm1_obj, vectorise_expm1);
 #endif
 
 #if ULAB_NUMPY_HAS_FLOOR
-//| def floor(a: _ArrayLike) -> ulab.array:
+//| def floor(a: _ArrayLike) -> ulab.ndarray:
 //|    """Rounds numbers up to the next whole number"""
 //|    ...
 //|
@@ -430,7 +430,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_floor_obj, vectorise_floor);
 #endif
 
 #if ULAB_SCIPY_SPECIAL_HAS_GAMMA
-//| def gamma(a: _ArrayLike) -> ulab.array:
+//| def gamma(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the gamma function"""
 //|    ...
 //|
@@ -440,7 +440,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_gamma_obj, vectorise_gamma);
 #endif
 
 #if ULAB_SCIPY_SPECIAL_HAS_GAMMALN
-//| def lgamma(a: _ArrayLike) -> ulab.array:
+//| def lgamma(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the natural log of the gamma function"""
 //|    ...
 //|
@@ -450,7 +450,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_lgamma_obj, vectorise_lgamma);
 #endif
 
 #if ULAB_NUMPY_HAS_LOG
-//| def log(a: _ArrayLike) -> ulab.array:
+//| def log(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the natural log"""
 //|    ...
 //|
@@ -460,7 +460,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log_obj, vectorise_log);
 #endif
 
 #if ULAB_NUMPY_HAS_LOG10
-//| def log10(a: _ArrayLike) -> ulab.array:
+//| def log10(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the log base 10"""
 //|    ...
 //|
@@ -470,7 +470,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log10_obj, vectorise_log10);
 #endif
 
 #if ULAB_NUMPY_HAS_LOG2
-//| def log2(a: _ArrayLike) -> ulab.array:
+//| def log2(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the log base 2"""
 //|    ...
 //|
@@ -480,7 +480,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_log2_obj, vectorise_log2);
 #endif
 
 #if ULAB_NUMPY_HAS_RADIANS
-//| def radians(a: _ArrayLike) -> ulab.array:
+//| def radians(a: _ArrayLike) -> ulab.ndarray:
 //|    """Converts angles from degrees to radians"""
 //|    ...
 //|
@@ -497,7 +497,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_radians_obj, vectorise_radians);
 #endif
 
 #if ULAB_NUMPY_HAS_SIN
-//| def sin(a: _ArrayLike) -> ulab.array:
+//| def sin(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the sine function"""
 //|    ...
 //|
@@ -507,7 +507,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sin_obj, vectorise_sin);
 #endif
 
 #if ULAB_NUMPY_HAS_SINH
-//| def sinh(a: _ArrayLike) -> ulab.array:
+//| def sinh(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the hyperbolic sine"""
 //|    ...
 //|
@@ -517,7 +517,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sinh_obj, vectorise_sinh);
 #endif
 
 #if ULAB_NUMPY_HAS_SQRT
-//| def sqrt(a: _ArrayLike) -> ulab.array:
+//| def sqrt(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the square root"""
 //|    ...
 //|
@@ -527,7 +527,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_sqrt_obj, vectorise_sqrt);
 #endif
 
 #if ULAB_NUMPY_HAS_TAN
-//| def tan(a: _ArrayLike) -> ulab.array:
+//| def tan(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the tangent"""
 //|    ...
 //|
@@ -537,7 +537,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_tan_obj, vectorise_tan);
 #endif
 
 #if ULAB_NUMPY_HAS_TANH
-//| def tanh(a: _ArrayLike) -> ulab.array:
+//| def tanh(a: _ArrayLike) -> ulab.ndarray:
 //|    """Computes the hyperbolic tangent"""
 //|    ...
 
@@ -595,7 +595,7 @@ const mp_obj_type_t vectorise_function_type = {
 //|     f: Union[Callable[[int], float], Callable[[float], float]],
 //|     *,
 //|     otypes: Optional[_DType] = None
-//| ) -> Callable[[_ArrayLike], ulab.array]:
+//| ) -> Callable[[_ArrayLike], ulab.ndarray]:
 //|    """
 //|    :param callable f: The function to wrap
 //|    :param otypes: List of array types that may be returned by the function.  None is interpreted to mean the return value is float.
