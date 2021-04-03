@@ -233,7 +233,7 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //|     """alternate constructor function for `ulab.ndarray`. Mirrors numpy.array"""
 //|     ...
 
-#if MICROPY_VERSION_MAJOR == 1 && MICROPY_VERSION_MINOR == 11
+#if defined(MICROPY_VERSION_MAJOR) && MICROPY_VERSION_MAJOR == 1 && MICROPY_VERSION_MINOR == 11
 
 void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result) {
     mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
