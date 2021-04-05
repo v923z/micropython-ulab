@@ -1,0 +1,14 @@
+# for extract-pyi
+isort
+black
+
+# For docs
+Sphinx<4
+sphinx-rtd-theme
+recommonmark
+sphinx-autoapi
+sphinxcontrib-svg2pdfconverter
+
+# for check-stubs
+mypy
+
