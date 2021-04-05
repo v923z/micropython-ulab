@@ -57,4 +57,5 @@ do
 	fi
 done
 
-#(cd circuitpython && sphinx-build -E -W -b html . _build/html)
+(cd circuitpython && sphinx-build -E -W -b html . _build/html)
+(cd circuitpython && make check-stubs)
