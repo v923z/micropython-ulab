@@ -21,9 +21,9 @@
 #include "../../numpy/fft/fft_tools.h"
 
 #if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
-//| def spectrogram(r: ulab.array) -> ulab.array:
+//| def spectrogram(r: ulab.ndarray) -> ulab.ndarray:
 //|     """
-//|     :param ulab.array r: A 1-dimension array of values whose size is a power of 2
+//|     :param ulab.ndarray r: A 1-dimension array of values whose size is a power of 2
 //|
 //|     Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
 //|     This function is similar to scipy's ``scipy.signal.spectrogram``."""

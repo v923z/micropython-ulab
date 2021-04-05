@@ -25,14 +25,17 @@
 #include "linalg.h"
 
 #if ULAB_NUMPY_HAS_LINALG_MODULE
+//|
+//| import ulab.numpy
+//|
 //| """Linear algebra functions"""
 //|
 
 #if ULAB_MAX_DIMS > 1
-//| def cholesky(A: ulab.array) -> ulab.array:
+//| def cholesky(A: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
 //|     """
-//|     :param ~ulab.array A: a positive definite, symmetric square matrix
-//|     :return ~ulab.array L: a square root matrix in the lower triangular form
+//|     :param ~ulab.numpy.ndarray A: a positive definite, symmetric square matrix
+//|     :return ~ulab.numpy.ndarray L: a square root matrix in the lower triangular form
 //|     :raises ValueError: If the input does not fulfill the necessary conditions
 //|
 //|     The returned matrix satisfies the equation m=LL*"""
@@ -96,7 +99,7 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
 
-//| def det(m: ulab.array) -> float:
+//| def det(m: ulab.numpy.ndarray) -> float:
 //|     """
 //|     :param: m, a square matrix
 //|     :return float: The determinant of the matrix
@@ -168,7 +171,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 #endif
 
 #if ULAB_MAX_DIMS > 1
-//| def eig(m: ulab.array) -> Tuple[ulab.array, ulab.array]:
+//| def eig(m: ulab.numpy.ndarray) -> Tuple[ulab.numpy.ndarray, ulab.numpy.ndarray]:
 //|     """
 //|     :param m: a square matrix
 //|     :return tuple (eigenvectors, eigenvalues):
@@ -229,9 +232,9 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 
-//| def inv(m: ulab.array) -> ulab.array:
+//| def inv(m: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
 //|     """
-//|     :param ~ulab.array m: a square matrix
+//|     :param ~ulab.numpy.ndarray m: a square matrix
 //|     :return: The inverse of the matrix, if it exists
 //|     :raises ValueError: if the matrix is not invertible
 //|
@@ -267,9 +270,9 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 #endif
 
-//| def norm(x: ulab.array) -> float:
+//| def norm(x: ulab.numpy.ndarray) -> float:
 //|    """
-//|    :param ~ulab.array x: a vector or a matrix
+//|    :param ~ulab.numpy.ndarray x: a vector or a matrix
 //|
 //|    Computes the 2-norm of a vector or a matrix, i.e., ``sqrt(sum(x*x))``, however, without the RAM overhead."""
 //|    ...
