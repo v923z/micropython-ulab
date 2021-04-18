@@ -261,7 +261,7 @@ Finally, build the firmware:
 cd ./micropython/ports/esp32
 # temporarily add esp32 compiler to path
 export PATH=../../esp32/esp-idf/xtensa-esp32-elf/bin:$PATH
-export ESPIDF=esp-idf # req'd by Makefile
+export ESPIDF=../../esp32/esp-idf # req'd by Makefile
 export BOARD=GENERIC # options are dirs in ./boards
 export USER_C_MODULES=../../../ulab # include ulab in firmware
 
