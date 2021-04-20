@@ -231,3 +231,13 @@ ndarray_obj_t *tools_object_is_square(mp_obj_t obj) {
     return ndarray;
 }
 #endif
+
+#if ULAB_SUPPORTS_COMPLEX
+uint8_t mp_binary_get_complex_size(uint8_t dtype) {
+    if(dtype == NDARRAY_COMPLEX) {
+        return 2 * (uint8_t)mp_binary_get_size('@', NDARRAY_FLOAT, NULL);
+    } else {
+        return dtype == NDARRAY_BOOL ? 1 : mp_binary_get_size('@', dtype, NULL);
+    }
+}
+#endif

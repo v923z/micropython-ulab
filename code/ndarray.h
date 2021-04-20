@@ -61,6 +61,9 @@ enum NDARRAY_TYPE {
     NDARRAY_UINT16 = 'H',
     NDARRAY_INT16 = 'h',
     NDARRAY_FLOAT = FLOAT_TYPECODE,
+    #if ULAB_SUPPORTS_COMPLEX
+        NDARRAY_COMPLEX = 'c',
+    #endif
 };
 
 typedef struct _ndarray_obj_t {

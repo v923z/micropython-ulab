@@ -271,7 +271,11 @@ void ndarray_rewind_array(uint8_t ndim, uint8_t *array, size_t *shape, int32_t *
 static int32_t *strides_from_shape(size_t *shape, uint8_t dtype) {
     // returns a strides array that corresponds to a dense array with the prescribed shape
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_size('@', dtype, NULL);
+    #if ULAB_SUPPORTS_COMPLEX
+        strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_complex_size(dtype);
+    #else
+        strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_size('@', dtype, NULL);
+    #endif
     for(uint8_t i=ULAB_MAX_DIMS; i > 1; i--) {
         strides[i-2] = strides[i-1] * shape[i-1];
     }
@@ -331,7 +335,13 @@ void ndarray_dtype_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
         mp_print_str(print, "uint16')");
     } else if(self->dtype == NDARRAY_INT16) {
         mp_print_str(print, "int16')");
-    } else {
+    }
+    #if ULAB_SUPPORTS_COMPLEX
+    else if(self->dtype == NDARRAY_COMPLEX) {
+        mp_print_str(print, "complex')");
+    }
+    #endif
+    else {
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
         mp_print_str(print, "float32')");
         #else
@@ -380,7 +390,13 @@ mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, size_t
                 _dtype = NDARRAY_INT16;
             } else if(memcmp(_dtype_, "float", 5) == 0) {
                 _dtype = NDARRAY_FLOAT;
-            } else {
+            }
+            #if ULAB_SUPPORTS_COMPLEX
+            else if(memcmp(_dtype_, "complex", 7) == 0) {
+                _dtype = NDARRAY_FLOAT;
+            }
+            #endif
+            else {
                 mp_raise_TypeError(translate("data type not understood"));
             }
         }
@@ -408,7 +424,11 @@ mp_obj_t ndarray_dtype(mp_obj_t self_in) {
         GET_STR_DATA_LEN(self_in, _dtype, len);
         if((len != 1) || ((*_dtype != NDARRAY_BOOL) && (*_dtype != NDARRAY_UINT8)
             && (*_dtype != NDARRAY_INT8) && (*_dtype != NDARRAY_UINT16)
-            && (*_dtype != NDARRAY_INT16) && (*_dtype != NDARRAY_FLOAT))) {
+            && (*_dtype != NDARRAY_INT16) && (*_dtype != NDARRAY_FLOAT)
+            #if ULAB_SUPPORTS_COMPLEX
+                && (*_dtype != NDARRAY_COMPLEX)
+            #endif
+        )) {
             mp_raise_TypeError(translate("data type not understood"));
         }
         dtype = *_dtype;
@@ -461,32 +481,55 @@ mp_obj_t ndarray_get_item(ndarray_obj_t *ndarray, void *array) {
     }
 }
 
+STATIC void ndarray_print_element(const mp_print_t *print, ndarray_obj_t *ndarray, uint8_t *array) {
+    #if ULAB_SUPPORTS_COMPLEX
+        if(ndarray->dtype == NDARRAY_COMPLEX) {
+            // real part first
+            mp_float_t fvalue = *(mp_float_t *)array;
+            mp_obj_print_helper(print, mp_obj_new_float(fvalue), PRINT_REPR);
+            // imaginary part
+            array += ndarray->itemsize / 2;
+            fvalue = *(mp_float_t *)array;
+            if(fvalue >= MICROPY_FLOAT_CONST(0.0) || isnan(fvalue)) {
+                mp_print_str(print, "+");
+            }
+            array += ndarray->itemsize / 2;
+            mp_obj_print_helper(print, mp_obj_new_float(fvalue), PRINT_REPR);
+            mp_print_str(print, "j");
+        } else {
+            mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
+        }
+    #else
+        mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
+    #endif
+}
+
 static void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, uint8_t *array, size_t stride, size_t n) {
     if(n == 0) {
         return;
     }
     mp_print_str(print, "[");
     if((n <= ndarray_print_threshold) || (n <= 2*ndarray_print_edgeitems)) { // if the array is short, print everything
-        mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
+        ndarray_print_element(print, ndarray, array);
         array += stride;
         for(size_t i=1; i < n; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
+            ndarray_print_element(print, ndarray, array);
         }
     } else {
         mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
         array += stride;
         for(size_t i=1; i < ndarray_print_edgeitems; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
+            ndarray_print_element(print, ndarray, array);
         }
         mp_printf(print, ", ..., ");
-        array += stride * (n - 2 *  ndarray_print_edgeitems);
-        mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
+        array += stride * (n - 2 * ndarray_print_edgeitems);
+        ndarray_print_element(print, ndarray, array);
         array += stride;
         for(size_t i=1; i < ndarray_print_edgeitems; i++, array += stride) {
             mp_print_str(print, ", ");
-            mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
+            ndarray_print_element(print, ndarray, array);
         }
     }
     mp_print_str(print, "]");
@@ -555,7 +598,13 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         mp_print_str(print, ", dtype=uint16)");
     } else if(self->dtype == NDARRAY_INT16) {
         mp_print_str(print, ", dtype=int16)");
-    } else {
+    }
+    #if ULAB_SUPPORTS_COMPLEX
+    else if(self->dtype == NDARRAY_COMPLEX) {
+        mp_print_str(print, ", dtype=complex)");
+    }
+    #endif
+    else {
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
         mp_print_str(print, ", dtype=float32)");
         #else
@@ -580,7 +629,19 @@ void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t 
         }
     } else {
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            mp_binary_set_val_array(dtype, ndarray->array, (*idx)++, item);
+            #if ULAB_SUPPORTS_COMPLEX
+                mp_float_t real;
+                mp_float_t imag;
+                if(dtype == NDARRAY_COMPLEX) {
+                    mp_obj_get_complex(item, &real, &imag);
+                    mp_binary_set_val_array(NDARRAY_FLOAT, ndarray->array, (*idx)++, mp_obj_new_float(real));
+                    mp_binary_set_val_array(NDARRAY_FLOAT, ndarray->array, (*idx)++, mp_obj_new_float(imag));
+                } else {
+                    mp_binary_set_val_array(dtype, ndarray->array, (*idx)++, item);
+                }
+            #else
+                mp_binary_set_val_array(dtype, ndarray->array, (*idx)++, item);
+            #endif
         }
     }
 }
@@ -604,7 +665,11 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     ndarray->boolean = dtype == NDARRAY_BOOL ? NDARRAY_BOOLEAN : NDARRAY_NUMERIC;
     ndarray->ndim = ndim;
     ndarray->len = ndim == 0 ? 0 : 1;
-    ndarray->itemsize = mp_binary_get_size('@', ndarray->dtype, NULL);
+    #if ULAB_SUPPORTS_COMPLEX
+        ndarray->itemsize = mp_binary_get_complex_size(dtype);
+    #else
+        ndarray->itemsize = mp_binary_get_size('@', dtype, NULL);
+    #endif
     int32_t *_strides;
     if(strides == NULL) {
         _strides = strides_from_shape(shape, ndarray->dtype);
@@ -631,7 +696,11 @@ ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dt
     // creates a dense array, i.e., one, where the strides are derived directly from the shapes
     // the function should work in the general n-dimensional case
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    strides[ULAB_MAX_DIMS-1] = dtype == NDARRAY_BOOL ? 1 : mp_binary_get_size('@', dtype, NULL);
+    #if ULAB_SUPPORTS_COMPLEX
+        strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_complex_size(dtype);
+    #else
+        strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_size('@', dtype, NULL);
+    #endif
     for(size_t i=ULAB_MAX_DIMS; i > 1; i--) {
         strides[i-2] = strides[i-1] * MAX(1, shape[i-1]);
     }
@@ -1874,7 +1943,11 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             if(ndarray->boolean) {
                 for(size_t i=0; i < ndarray->len; i++, array++) *array = *array ^ 0x01;
             } else {
-                uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
+                #if ULAB_SUPPORTS_COMPLEX
+                    uint8_t itemsize = mp_binary_get_complex_size(self->dtype);
+                #else
+                    uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
+                #endif
                 for(size_t i=0; i < ndarray->len*itemsize; i++, array++) *array ^= 0xFF;
             }
             return MP_OBJ_FROM_PTR(ndarray);
