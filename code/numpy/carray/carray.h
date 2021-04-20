@@ -12,7 +12,7 @@
 #ifndef _CARRAY_
 #define _CARRAY_
 
-mp_obj_t carray_real(mp_obj_t);
-mp_obj_t carray_imag(mp_obj_t);
+MP_DECLARE_CONST_FUN_OBJ_1(carray_real_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(carray_imag_obj);
 
 #endif
