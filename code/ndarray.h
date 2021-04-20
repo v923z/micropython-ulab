@@ -124,7 +124,7 @@ ndarray_obj_t *ndarray_new_linear_array(size_t , uint8_t );
 ndarray_obj_t *ndarray_new_view(ndarray_obj_t *, uint8_t , size_t *, int32_t *, int32_t );
 bool ndarray_is_dense(ndarray_obj_t *);
 ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *);
-void ndarray_copy_array(ndarray_obj_t *, ndarray_obj_t *);
+void ndarray_copy_array(ndarray_obj_t *, ndarray_obj_t *, uint8_t );
 
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_array_constructor_obj);
 #ifdef CIRCUITPY

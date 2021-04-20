@@ -19,6 +19,7 @@
 #include "numpy.h"
 #include "../ulab_create.h"
 #include "approx/approx.h"
+#include "carray/carray.h"
 #include "compare/compare.h"
 #include "fft/fft.h"
 #include "filter/filter.h"
@@ -291,6 +292,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #endif
     #if ULAB_NUMPY_HAS_VECTORIZE
     { MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vectorise_vectorize_obj },
+    #endif
+    #if ULAB_SUPPORTS_COMPLEX
+    { MP_OBJ_NEW_QSTR(MP_QSTR_real), (mp_obj_t)&carray_real_obj },
     #endif
 
 };

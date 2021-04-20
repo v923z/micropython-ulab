@@ -721,13 +721,18 @@ ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dt
     return ndarray_new_dense_ndarray(_shape->len, shape, dtype);
 }
 
-void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target) {
+void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target, uint8_t shift) {
     // TODO: if the array is dense, the content could be copied in a single pass
     // copies the content of source->array into a new dense void pointer
     // it is assumed that the dtypes in source and target are the same
     // Since the target is a new array, it is supposed to be dense
     uint8_t *sarray = (uint8_t *)source->array;
     uint8_t *tarray = (uint8_t *)target->array;
+    #if ULAB_SUPPORTS_COMPLEX
+    if(source->dtype == NDARRAY_COMPLEX) {
+        sarray += shift;
+    }
+    #endif
 
     #if ULAB_MAX_DIMS > 3
     size_t i = 0;
@@ -743,7 +748,7 @@ void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target) {
             #endif
                 size_t l = 0;
                 do {
-                    memcpy(tarray, sarray, source->itemsize);
+                    memcpy(tarray, sarray, target->itemsize);
                     tarray += target->itemsize;
                     sarray += source->strides[ULAB_MAX_DIMS - 1];
                     l++;
@@ -801,7 +806,7 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
         dtype = NDARRAY_BOOLEAN;
     }
     ndarray_obj_t *ndarray = ndarray_new_ndarray(source->ndim, source->shape, strides, dtype);
-    ndarray_copy_array(source, ndarray);
+    ndarray_copy_array(source, ndarray, 0);
     return ndarray;
 }
 
@@ -2046,7 +2051,7 @@ mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
         ndarray = ndarray_new_view(source, shape->len, new_shape, new_strides, 0);
     } else {
         ndarray = ndarray_new_ndarray_from_tuple(shape, source->dtype);
-        ndarray_copy_array(source, ndarray);
+        ndarray_copy_array(source, ndarray, 0);
     }
     return MP_OBJ_FROM_PTR(ndarray);
 }

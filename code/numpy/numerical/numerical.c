@@ -913,7 +913,7 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
     if(args[1].u_obj == mp_const_none) { // flip the flattened array
         results = ndarray_new_linear_array(ndarray->len, ndarray->dtype);
-        ndarray_copy_array(ndarray, results);
+        ndarray_copy_array(ndarray, results, 0);
         uint8_t *rarray = (uint8_t *)results->array;
         rarray += (results->len - 1) * results->itemsize;
         results->array = rarray;
