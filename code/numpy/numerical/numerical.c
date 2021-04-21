@@ -66,10 +66,10 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
 
 #if ULAB_NUMPY_HAS_ALL | ULAB_NUMPY_HAS_ANY
 static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     bool anytype = optype == NUMERICAL_ALL ? 1 : 0;
     if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
         uint8_t *array = (uint8_t *)ndarray->array;
         // always get a float, so that we don't have to resolve the dtype later
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
@@ -195,6 +195,8 @@ static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, si
 }
 
 static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype, size_t ddof) {
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
+
     uint8_t *array = (uint8_t *)ndarray->array;
     shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
 
@@ -361,7 +363,6 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
 }
 
 static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     // TODO: treat the flattened array
     if(ndarray->len == 0) {
         mp_raise_ValueError(translate("attempt to get (arg)min/(arg)max of empty sequence"));
@@ -517,9 +518,11 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_MAX:
             case NUMERICAL_ARGMIN:
             case NUMERICAL_ARGMAX:
+                COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
                 return numerical_argmin_argmax_ndarray(ndarray, axis, optype);
             case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
+                COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
                 return numerical_sum_mean_std_ndarray(ndarray, axis, optype, 0);
             default:
                 mp_raise_NotImplementedError(translate("operation is not implemented on ndarrays"));
@@ -532,15 +535,13 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
 
 #if ULAB_NUMPY_HAS_SORT | NDARRAY_HAS_SORT
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
     }
 
-    ndarray_obj_t *ndarray;
-    if(inplace == 1) {
-        ndarray = MP_OBJ_TO_PTR(oin);
-    } else {
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
+    if(inplace == 0) {
         ndarray = ndarray_copy_view(MP_OBJ_TO_PTR(oin));
     }
 
@@ -608,7 +609,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_any_obj, 1, numerical_any);
 //|
 
 mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMAX);
 }
 
@@ -620,7 +620,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmax_obj, 1, numerical_argmax);
 //|
 
 static mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMIN);
 }
 
@@ -634,7 +633,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 //|
 
 mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -646,6 +644,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     }
 
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     if(args[1].u_obj == mp_const_none) {
         // bail out, though dense arrays could still be sorted
         mp_raise_NotImplementedError(translate("argsort is not implemented for flattened arrays"));
@@ -744,12 +743,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 //|
 
 static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     if (!MP_OBJ_IS_TYPE(_a, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_b, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("arguments must be ndarrays"));
     }
     ndarray_obj_t *a = MP_OBJ_TO_PTR(_a);
     ndarray_obj_t *b = MP_OBJ_TO_PTR(_b);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(a->dtype)
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(b->dtype)
     if((a->ndim != 1) || (b->ndim != 1) || (a->len != b->len) || (a->len != 3)) {
         mp_raise_ValueError(translate("cross is defined for 1D arrays of length 3"));
     }
@@ -824,7 +824,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(numerical_cross_obj, numerical_cross);
 //|
 
 mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_n, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 } },
@@ -839,6 +838,7 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     int8_t ax = args[2].u_int;
     if(ax < 0) ax += ndarray->ndim;
 
@@ -906,7 +906,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
 //|
 
 mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -954,7 +953,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_flip_obj, 1, numerical_flip);
 //|
 
 mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MAX);
 }
 
@@ -968,7 +966,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_max_obj, 1, numerical_max);
 //|
 
 mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MEAN);
 }
 
@@ -982,7 +979,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 //|
 
 mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -995,6 +991,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     }
 
     ndarray_obj_t *ndarray = numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
 
     if((args[1].u_obj == mp_const_none) || (ndarray->ndim == 1)) {
         // at this point, the array holding the sorted values should be flat
@@ -1078,7 +1075,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_median_obj, 1, numerical_median);
 //|
 
 mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MIN);
 }
 
@@ -1094,7 +1090,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
 //|
 
 mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none  } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -1108,6 +1103,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_TypeError(translate("roll argument must be an ndarray"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     uint8_t *array = ndarray->array;
     ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, ndarray->shape, ndarray->dtype);
 
@@ -1259,7 +1255,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 //|
 
 mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -1277,7 +1272,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_obj, 1, numerical_sort);
 #if NDARRAY_HAS_SORT
 // method of an ndarray
 static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
@@ -1299,7 +1293,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace
 //|
 
 mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } } ,
         { MP_QSTR_axis, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -1337,7 +1330,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
 //|
 
 mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_SUM);
 }
 
