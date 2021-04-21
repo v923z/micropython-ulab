@@ -20,6 +20,7 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
+#include "../carray/carray_tools.h"
 #include "fft.h"
 
 //| """Frequency-domain functions"""
@@ -39,6 +40,7 @@
 //|     ...
 //|
 static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     if(n_args == 2) {
         return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_FFT);
     } else {
@@ -59,6 +61,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 //|
 
 static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     if(n_args == 2) {
         return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_IFFT);
     } else {
