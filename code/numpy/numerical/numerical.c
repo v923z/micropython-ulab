@@ -22,6 +22,7 @@
 
 #include "../../ulab.h"
 #include "../../ulab_tools.h"
+#include "../carray/carray_tools.h"
 #include "numerical.h"
 
 enum NUMERICAL_FUNCTION_TYPE {
@@ -65,6 +66,7 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
 
 #if ULAB_NUMPY_HAS_ALL | ULAB_NUMPY_HAS_ANY
 static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     bool anytype = optype == NUMERICAL_ALL ? 1 : 0;
     if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
@@ -359,6 +361,7 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
 }
 
 static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     // TODO: treat the flattened array
     if(ndarray->len == 0) {
         mp_raise_ValueError(translate("attempt to get (arg)min/(arg)max of empty sequence"));
@@ -529,6 +532,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
 
 #if ULAB_NUMPY_HAS_SORT | NDARRAY_HAS_SORT
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
     }
@@ -604,6 +608,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_any_obj, 1, numerical_any);
 //|
 
 mp_obj_t numerical_argmax(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMAX);
 }
 
@@ -615,6 +620,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmax_obj, 1, numerical_argmax);
 //|
 
 static mp_obj_t numerical_argmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_ARGMIN);
 }
 
@@ -628,6 +634,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 //|
 
 mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -737,6 +744,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 //|
 
 static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     if (!MP_OBJ_IS_TYPE(_a, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_b, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("arguments must be ndarrays"));
     }
@@ -816,6 +824,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(numerical_cross_obj, numerical_cross);
 //|
 
 mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_n, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 } },
@@ -897,6 +906,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
 //|
 
 mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -944,6 +954,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_flip_obj, 1, numerical_flip);
 //|
 
 mp_obj_t numerical_max(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MAX);
 }
 
@@ -957,6 +968,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_max_obj, 1, numerical_max);
 //|
 
 mp_obj_t numerical_mean(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MEAN);
 }
 
@@ -970,6 +982,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 //|
 
 mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -1065,6 +1078,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_median_obj, 1, numerical_median);
 //|
 
 mp_obj_t numerical_min(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_MIN);
 }
 
@@ -1080,6 +1094,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
 //|
 
 mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none  } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -1244,6 +1259,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 //|
 
 mp_obj_t numerical_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -1261,6 +1277,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_obj, 1, numerical_sort);
 #if NDARRAY_HAS_SORT
 // method of an ndarray
 static mp_obj_t numerical_sort_inplace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = -1 } },
@@ -1282,6 +1299,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sort_inplace_obj, 1, numerical_sort_inplace
 //|
 
 mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } } ,
         { MP_QSTR_axis, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -1319,6 +1337,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
 //|
 
 mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_SUM);
 }
 
