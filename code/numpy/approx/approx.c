@@ -153,7 +153,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(approx_interp_obj, 2, approx_interp);
 //|
 
 STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_x, MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -163,6 +162,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(y->dtype)
     ndarray_obj_t *x;
     mp_float_t mean = MICROPY_FLOAT_CONST(0.0);
     if(y->len < 2) {
@@ -180,6 +180,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     if(args[1].u_obj != mp_const_none) {
         x = ndarray_from_mp_obj(args[1].u_obj); // x must hold an increasing sequence of independent values
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(x->dtype)
         if((x->ndim != 1) || (y->len != x->len)) {
             mp_raise_ValueError(translate("trapz is defined for 1D arrays of equal length"));
         }
