@@ -20,6 +20,7 @@
 #include "../../ulab.h"
 #include "../../ndarray_operators.h"
 #include "../../ulab_tools.h"
+#include "../carray/carray_tools.h"
 #include "compare.h"
 
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
@@ -138,6 +139,7 @@ mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
     // RUN_COMPARE_LOOP. However, that would add around 2 kB of compile size, while we
     // would not gain a factor of two in speed, since the two comparisons should still be
     // evaluated. In contrast, calling the function twice adds only 140 bytes to the firmware
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     if(mp_obj_is_int(x1) || mp_obj_is_float(x1)) {
         mp_float_t v1 = mp_obj_get_float(x1);
         mp_float_t v2 = mp_obj_get_float(x2);
@@ -160,6 +162,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(compare_clip_obj, compare_clip);
 #if ULAB_NUMPY_HAS_EQUAL
 
 mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     return compare_equal_helper(x1, x2, COMPARE_EQUAL);
 }
 
@@ -169,6 +172,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_equal_obj, compare_equal);
 #if ULAB_NUMPY_HAS_NOTEQUAL
 
 mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     return compare_equal_helper(x1, x2, COMPARE_NOT_EQUAL);
 }
 
@@ -179,6 +183,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
 static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
     // mask should signify, whether the function is called from isinf (mask = 1),
     // or from isfinite (mask = 0)
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     if(MP_OBJ_IS_INT(_x)) {
         if(mask) {
             return mp_const_false;
@@ -279,6 +284,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(compare_isinf_obj, compare_isinf);
 #if ULAB_NUMPY_HAS_MAXIMUM
 mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return maximum(3, 4) properly
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     mp_obj_t result = compare_function(x1, x2, COMPARE_MAXIMUM);
     if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(result);
@@ -294,6 +300,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
 
 mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return minimum(3, 4) properly
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     mp_obj_t result = compare_function(x1, x2, COMPARE_MINIMUM);
     if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(result);
@@ -309,6 +316,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
 
 mp_obj_t compare_where(mp_obj_t _condition, mp_obj_t _x, mp_obj_t _y) {
     // this implementation will work with ndarrays, and scalars only
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *c = ndarray_from_mp_obj(_condition);
     ndarray_obj_t *x = ndarray_from_mp_obj(_x);
     ndarray_obj_t *y = ndarray_from_mp_obj(_y);
