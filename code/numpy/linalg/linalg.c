@@ -22,6 +22,7 @@
 
 #include "../../ulab.h"
 #include "../../ulab_tools.h"
+#include "../carray/carray_tools.h"
 #include "linalg.h"
 
 #if ULAB_NUMPY_HAS_LINALG_MODULE
@@ -40,6 +41,7 @@
 //|
 
 static mp_obj_t linalg_cholesky(mp_obj_t oin) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *ndarray = tools_object_is_square(oin);
     ndarray_obj_t *L = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, ndarray->shape[ULAB_MAX_DIMS - 1], ndarray->shape[ULAB_MAX_DIMS - 1]), NDARRAY_FLOAT);
     mp_float_t *Larray = (mp_float_t *)L->array;
@@ -106,6 +108,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
 //|
 
 static mp_obj_t linalg_det(mp_obj_t oin) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *ndarray = tools_object_is_square(oin);
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
@@ -178,6 +181,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 //|
 
 static mp_obj_t linalg_eig(mp_obj_t oin) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *in = tools_object_is_square(oin);
     uint8_t *iarray = (uint8_t *)in->array;
     size_t S = in->shape[ULAB_MAX_DIMS - 1];
@@ -239,6 +243,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 //|     ...
 //|
 static mp_obj_t linalg_inv(mp_obj_t o_in) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *ndarray = tools_object_is_square(o_in);
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
@@ -276,6 +281,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 //|
 
 static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} } ,
         { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
