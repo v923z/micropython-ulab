@@ -19,6 +19,7 @@
 #include "numpy.h"
 #include "../ulab_create.h"
 #include "approx/approx.h"
+#include "carray/carray.h"
 #include "compare/compare.h"
 #include "fft/fft.h"
 #include "filter/filter.h"
@@ -78,6 +79,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uint16), MP_ROM_INT(NDARRAY_UINT16) },
     { MP_ROM_QSTR(MP_QSTR_int16), MP_ROM_INT(NDARRAY_INT16) },
     { MP_ROM_QSTR(MP_QSTR_float), MP_ROM_INT(NDARRAY_FLOAT) },
+    #if ULAB_SUPPORTS_COMPLEX
+        { MP_ROM_QSTR(MP_QSTR_complex), MP_ROM_INT(NDARRAY_COMPLEX) },
+    #endif
     // modules of numpy
     #if ULAB_NUMPY_HAS_FFT_MODULE
         { MP_ROM_QSTR(MP_QSTR_fft), MP_ROM_PTR(&ulab_fft_module) },
@@ -293,6 +297,10 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #endif
     #if ULAB_NUMPY_HAS_VECTORIZE
     { MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vectorise_vectorize_obj },
+    #endif
+    #if ULAB_SUPPORTS_COMPLEX
+    { MP_OBJ_NEW_QSTR(MP_QSTR_real), (mp_obj_t)&carray_real_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_imag), (mp_obj_t)&carray_imag_obj },
     #endif
 
 };

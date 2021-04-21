@@ -18,6 +18,7 @@
 
 #include "../../ulab.h"
 #include "../../ndarray.h"
+#include "../../numpy/carray/carray_tools.h"
 #include "../../numpy/fft/fft_tools.h"
 
 #if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
@@ -66,6 +67,13 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     if(!ndarray_object_is_array_like(args[0].u_obj) || !ndarray_object_is_array_like(args[1].u_obj)) {
         mp_raise_TypeError(translate("sosfilt requires iterable arguments"));
     }
+    #if ULAB_SUPPORTS_COMPLEX
+    if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_ndarray_type)) {
+        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[1].u_obj);
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)        
+    }
+    #endif
+
     size_t lenx = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[1].u_obj));
     ndarray_obj_t *y = ndarray_new_linear_array(lenx, NDARRAY_FLOAT);
     mp_float_t *yarray = (mp_float_t *)y->array;
