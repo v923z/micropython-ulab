@@ -14,4 +14,10 @@
 
 void raise_complex_NotImplementedError(void);
 
+#if ULAB_SUPPORTS_COMPLEX
+    #define NOT_IMPLEMENTED_FOR_COMPLEX() raise_complex_NotImplementedError();
+#else
+    #define NOT_IMPLEMENTED_FOR_COMPLEX() // do nothing
+#endif
+
 #endif

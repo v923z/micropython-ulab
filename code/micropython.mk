@@ -11,6 +11,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/ndarray.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/approx/approx.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/compare/compare.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/carray/carray.c
+SRC_USERMOD += $(USERMODULES_DIR)/numpy/carray/carray_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/ulab_create.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/fft/fft.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/fft/fft_tools.c
