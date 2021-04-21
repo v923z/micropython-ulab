@@ -21,11 +21,13 @@
 
 #include "../../ulab.h"
 #include "../../scipy/signal/signal.h"
+#include "../carray/carray_tools.h"
 #include "filter.h"
 
 #if ULAB_NUMPY_HAS_CONVOLVE
 
 mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_v, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -57,7 +59,7 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_float_t *outptr = (mp_float_t *)out->array;
     uint8_t *aarray = (uint8_t *)a->array;
     uint8_t *carray = (uint8_t *)c->array;
-    
+
     int32_t off = len_c - 1;
     int32_t as = a->strides[ULAB_MAX_DIMS - 1] / a->itemsize;
     int32_t cs = c->strides[ULAB_MAX_DIMS - 1] / c->itemsize;
