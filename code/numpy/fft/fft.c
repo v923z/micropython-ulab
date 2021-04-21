@@ -40,7 +40,6 @@
 //|     ...
 //|
 static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     if(n_args == 2) {
         return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_FFT);
     } else {
