@@ -16,8 +16,10 @@ void raise_complex_NotImplementedError(void);
 
 #if ULAB_SUPPORTS_COMPLEX
     #define NOT_IMPLEMENTED_FOR_COMPLEX() raise_complex_NotImplementedError();
+    #define COMPLEX_DTYPE_NOT_IMPLEMENTED(dtype) if((dtype) == NDARRAY_COMPLEX) raise_complex_NotImplementedError();
 #else
-    #define NOT_IMPLEMENTED_FOR_COMPLEX() // do nothing
+    #define NOT_IMPLEMENTED_FOR_COMPLEX(); // do nothing
+    #define COMPLEX_DTYPE_NOT_IMPLEMENTED(dtype) // do nothing
 #endif
 
 #endif
