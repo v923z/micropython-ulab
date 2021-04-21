@@ -41,8 +41,8 @@
 //|
 
 static mp_obj_t linalg_cholesky(mp_obj_t oin) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *ndarray = tools_object_is_square(oin);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     ndarray_obj_t *L = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, ndarray->shape[ULAB_MAX_DIMS - 1], ndarray->shape[ULAB_MAX_DIMS - 1]), NDARRAY_FLOAT);
     mp_float_t *Larray = (mp_float_t *)L->array;
 
@@ -108,8 +108,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
 //|
 
 static mp_obj_t linalg_det(mp_obj_t oin) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *ndarray = tools_object_is_square(oin);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
     mp_float_t *tmp = m_new(mp_float_t, N * N);
@@ -181,8 +181,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_det_obj, linalg_det);
 //|
 
 static mp_obj_t linalg_eig(mp_obj_t oin) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *in = tools_object_is_square(oin);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(in->dtype)
     uint8_t *iarray = (uint8_t *)in->array;
     size_t S = in->shape[ULAB_MAX_DIMS - 1];
     mp_float_t *array = m_new(mp_float_t, S*S);
@@ -243,8 +243,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
 //|     ...
 //|
 static mp_obj_t linalg_inv(mp_obj_t o_in) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     ndarray_obj_t *ndarray = tools_object_is_square(o_in);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     uint8_t *array = (uint8_t *)ndarray->array;
     size_t N = ndarray->shape[ULAB_MAX_DIMS - 1];
     ndarray_obj_t *inverted = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, N, N), NDARRAY_FLOAT);
@@ -281,7 +281,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 //|
 
 static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} } ,
         { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -308,6 +307,7 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1)));
     } else if(MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(x);
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
         uint8_t *array = (uint8_t *)ndarray->array;
         // always get a float, so that we don't have to resolve the dtype later
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
