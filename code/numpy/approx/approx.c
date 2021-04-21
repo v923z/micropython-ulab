@@ -48,7 +48,6 @@ const mp_obj_float_t approx_trapz_dx = {{&mp_type_float}, MICROPY_FLOAT_CONST(1.
 //|
 
 STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -63,6 +62,9 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj);
     ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj); // xp must hold an increasing sequence of independent values
     ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(x->dtype)
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(xp->dtype)
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(fp->dtype)
     if((xp->ndim != 1) || (fp->ndim != 1) || (xp->len < 2) || (fp->len < 2) || (xp->len != fp->len)) {
         mp_raise_ValueError(translate("interp is defined for 1D arrays of equal length"));
     }
