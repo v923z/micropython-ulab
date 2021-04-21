@@ -27,7 +27,6 @@
 #if ULAB_NUMPY_HAS_CONVOLVE
 
 mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    NOT_IMPLEMENTED_FOR_COMPLEX()
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
         { MP_QSTR_v, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -42,6 +41,8 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 
     ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
     ndarray_obj_t *c = MP_OBJ_TO_PTR(args[1].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(a->dtype)
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(c->dtype)
     // deal with linear arrays only
     #if ULAB_MAX_DIMS > 1
     if((a->ndim != 1) || (c->ndim != 1)) {
