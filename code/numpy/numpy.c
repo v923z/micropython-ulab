@@ -184,7 +184,7 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&stats_trace_obj },
     #endif
     #if ULAB_NUMPY_HAS_FLIP
-        { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },
+        { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&transform_flip_obj },
     #endif
     #if ULAB_NUMPY_HAS_MINMAX
         { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },

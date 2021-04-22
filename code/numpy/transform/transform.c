@@ -92,3 +92,51 @@ mp_obj_t transform_dot(mp_obj_t _m1, mp_obj_t _m2) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(transform_dot_obj, transform_dot);
 #endif
+
+#if ULAB_NUMPY_HAS_FLIP
+//| def flip(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
+//|     """Returns a new array that reverses the order of the elements along the
+//|        given axis, or along all axes if axis is None."""
+//|     ...
+//|
+
+mp_obj_t transform_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("flip argument must be an ndarray"));
+    }
+
+    ndarray_obj_t *results = NULL;
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    if(args[1].u_obj == mp_const_none) { // flip the flattened array
+        results = ndarray_new_linear_array(ndarray->len, ndarray->dtype);
+        ndarray_copy_array(ndarray, results, 0);
+        uint8_t *rarray = (uint8_t *)results->array;
+        rarray += (results->len - 1) * results->itemsize;
+        results->array = rarray;
+        results->strides[ULAB_MAX_DIMS - 1] = -results->strides[ULAB_MAX_DIMS - 1];
+    } else if(MP_OBJ_IS_INT(args[1].u_obj)){
+        int8_t ax = mp_obj_get_int(args[1].u_obj);
+        if(ax < 0) ax += ndarray->ndim;
+        if((ax < 0) || (ax > ndarray->ndim - 1)) {
+            mp_raise_ValueError(translate("index out of range"));
+        }
+        ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        int32_t offset = (ndarray->shape[ax] - 1) * ndarray->strides[ax];
+        results = ndarray_new_view(ndarray, ndarray->ndim, ndarray->shape, ndarray->strides, offset);
+        results->strides[ax] = -results->strides[ax];
+    } else {
+        mp_raise_TypeError(translate("wrong axis index"));
+    }
+    return results;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(transform_flip_obj, 1, transform_flip);
+#endif

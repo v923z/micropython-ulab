@@ -24,5 +24,6 @@
 #include "transform.h"
 
 MP_DECLARE_CONST_FUN_OBJ_2(transform_dot_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(transform_flip_obj);
 
 #endif
