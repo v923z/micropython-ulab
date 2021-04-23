@@ -361,6 +361,10 @@
 #define ULAB_LINALG_HAS_NORM            (1)
 #endif
 
+#ifndef ULAB_LINALG_HAS_QR
+#define ULAB_LINALG_HAS_QR              (1)
+#endif
+
 // the FFT module; functions of the fft module still have
 // to be defined separately
 #ifndef ULAB_NUMPY_HAS_FFT_MODULE
