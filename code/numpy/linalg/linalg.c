@@ -364,7 +364,107 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(linalg_norm_obj, 1, linalg_norm);
-// MP_DEFINE_CONST_FUN_OBJ_1(linalg_norm_obj, linalg_norm);
+
+#if ULAB_MAX_DIMS > 1
+//| def qr(m: ulab.numpy.ndarray) -> Tuple[ulab.numpy.ndarray, ulab.numpy.ndarray]:
+//|     """
+//|     :param m: a matrix
+//|     :return tuple (Q, R):
+//|
+//|     Computes the QR decomposition of a matrix"""
+//|     ...
+//|
+
+static mp_obj_t linalg_qr(mp_obj_t M) {
+    if(!mp_obj_is_type(M, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("operation is defined for ndarrays only"));
+    }
+    ndarray_obj_t *source = MP_OBJ_TO_PTR(M);
+    if(source->ndim != 2) {
+        mp_raise_ValueError(translate("operation is defined for 2D arrays only"));
+    }
+
+    size_t m = source->shape[ULAB_MAX_DIMS - 2]; // rows
+    size_t n = source->shape[ULAB_MAX_DIMS - 1]; // columns
+
+    ndarray_obj_t *Q = ndarray_new_dense_ndarray(2, source->shape, NDARRAY_FLOAT);
+    ndarray_obj_t *R = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, n, n), NDARRAY_FLOAT);
+
+    mp_float_t *qarray = (mp_float_t *)Q->array;
+    mp_float_t *rarray = (mp_float_t *)R->array;
+
+    // simply copy the entries of source to a float array
+    mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
+    uint8_t *sarray = (uint8_t *)source->array;
+
+    for(size_t i = 0; i < m; i++) {
+        for(size_t j = 0; j < n; j++) {
+            *rarray++ = func(sarray);
+            sarray += source->strides[ULAB_MAX_DIMS - 1];
+        }
+        sarray -= n * source->strides[ULAB_MAX_DIMS - 1];
+        sarray += source->strides[ULAB_MAX_DIMS - 2];
+    }
+    rarray -= m * n;
+
+    // start with the unit matrix
+    for(size_t i = 0; i < m; i++) {
+        qarray[i * (n + 1)] = 1.0;
+    }
+
+    for(size_t j = 0; j < n; j++) {
+        for(size_t i = m - 1; i > j; i--) {
+            mp_float_t c, s;
+            // Givens matrix:
+            // ( (c  s),
+            //   (-s c) )
+            if(rarray[i * n + j] == 0.0) {
+                c = (rarray[(i - 1) * n + j] >= 0.0) ? 1.0 : -1.0;
+                s = 0.0;
+            } else if(rarray[(i - 1) * n + j] == 0.0) {
+                c = 0.0;
+                s = (rarray[i * n + j] >= 0.0) ? -1.0 : 1.0;
+            } else {
+                mp_float_t t, u;
+                if(MICROPY_FLOAT_C_FUN(fabs)(rarray[(i - 1) * n + j]) > MICROPY_FLOAT_C_FUN(fabs)(rarray[i * n + j])) {
+                    t = rarray[i * n + j] / rarray[(i - 1) * n + j];
+                    u = MICROPY_FLOAT_C_FUN(sqrt)(1 + t * t);
+                    c = 1.0 / u;
+                    s = c * t;
+                } else {
+                    t = rarray[(i - 1) * n + j] / rarray[i * n + j];
+                    u = MICROPY_FLOAT_C_FUN(sqrt)(1 + t * t);
+                    s = 1.0 / u;
+                    c = s * t;
+                }
+            }
+            mp_float_t r1 = 0.0, r2 = 0.0;
+            // update R: multiply with the rotation matrix from the left
+            for(size_t k = 0; k < n; k++) {
+                r1 = rarray[(i - 1) * n + k];
+                r2 = rarray[i * n + k];
+                rarray[(i - 1) * n + k] = c * r1 + s * r2;
+                rarray[i * n + k] = - s * r1 + c * r2;
+            }
+
+            // update Q: multiply with the transpose of the rotation matrix from the right
+            for(size_t k = 0; k < n; k++) {
+                r1 = qarray[k * n + (i - 1)];
+                r2 = qarray[k * n + i];
+                qarray[k * n + (i - 1)] = c * r1 - s * r2;
+                qarray[k * n + i] = s * r1 + c * r2;
+            }
+        }
+    }
+
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+    tuple->items[0] = MP_OBJ_FROM_PTR(Q);
+    tuple->items[1] = MP_OBJ_FROM_PTR(R);
+    return tuple;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(linalg_qr_obj, linalg_qr);
+#endif
 
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
@@ -380,6 +480,9 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
         #endif
         #if ULAB_LINALG_HAS_INV
         { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
+        #endif
+        #if ULAB_LINALG_HAS_QR
+        { MP_ROM_QSTR(MP_QSTR_qr), (mp_obj_t)&linalg_qr_obj },
         #endif
     #endif
     #if ULAB_LINALG_HAS_NORM
