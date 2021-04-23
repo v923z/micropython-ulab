@@ -221,7 +221,7 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
 ndarray_obj_t *tools_object_is_square(mp_obj_t obj) {
     // Returns an ndarray, if the object is a square ndarray,
     // raises the appropriate exception otherwise
-    if(!MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("size is defined for ndarrays only"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj);

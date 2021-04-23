@@ -122,7 +122,7 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
 static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype) {
     // scalar comparisons should return a single object of mp_obj_t type
     mp_obj_t result = compare_function(x1, x2, comptype);
-    if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
+    if((mp_obj_is_int(x1) || mp_obj_is_float(x1)) && (mp_obj_is_int(x2) || mp_obj_is_float(x2))) {
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t iterable = mp_getiter(result, &iter_buf);
         mp_obj_t item = mp_iternext(iterable);
@@ -179,7 +179,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
 static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
     // mask should signify, whether the function is called from isinf (mask = 1),
     // or from isfinite (mask = 0)
-    if(MP_OBJ_IS_INT(_x)) {
+    if(mp_obj_is_int(_x)) {
         if(mask) {
             return mp_const_false;
         } else {
@@ -195,7 +195,7 @@ static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
         } else { // called from isfinite
             return isinf(x) ? mp_const_false : mp_const_true;
         }
-    } else if(MP_OBJ_IS_TYPE(_x, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(_x, &ulab_ndarray_type)) {
         ndarray_obj_t *x = MP_OBJ_TO_PTR(_x);
         ndarray_obj_t *results = ndarray_new_dense_ndarray(x->ndim, x->shape, NDARRAY_BOOL);
         // At this point, results is all False
@@ -280,7 +280,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(compare_isinf_obj, compare_isinf);
 mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return maximum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MAXIMUM);
-    if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
+    if((mp_obj_is_int(x1) || mp_obj_is_float(x1)) && (mp_obj_is_int(x2) || mp_obj_is_float(x2))) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(result);
         return mp_binary_get_val_array(ndarray->dtype, ndarray->array, 0);
     }
@@ -295,7 +295,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
 mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return minimum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MINIMUM);
-    if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
+    if((mp_obj_is_int(x1) || mp_obj_is_float(x1)) && (mp_obj_is_int(x2) || mp_obj_is_float(x2))) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(result);
         return mp_binary_get_val_array(ndarray->dtype, ndarray->array, 0);
     }

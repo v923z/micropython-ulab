@@ -733,7 +733,7 @@ iterables as its argument), we find this out by evaluating
 
 .. code:: c
 
-   MP_OBJ_IS_TYPE(object_in, &ulab_ndarray_type)
+   mp_obj_is_type(object_in, &ulab_ndarray_type)
 
 which should return ``true``. Once the pointer is at our disposal, we
 can get a pointer to the underlying numerical array as discussed
@@ -813,7 +813,7 @@ And now the function:
        // element-wise square of its entries
        
        // raise a TypeError exception, if the input is not an ndarray
-       if(!MP_OBJ_IS_TYPE(arg, &ulab_ndarray_type)) {
+       if(!mp_obj_is_type(arg, &ulab_ndarray_type)) {
            mp_raise_TypeError(translate("input must be an ndarray"));
        }
        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(arg);

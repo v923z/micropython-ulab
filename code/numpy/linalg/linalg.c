@@ -293,7 +293,7 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_float_t dot = 0.0, value;
     size_t count = 1;
 
-    if(MP_OBJ_IS_TYPE(x, &mp_type_tuple) || MP_OBJ_IS_TYPE(x, &mp_type_list) || MP_OBJ_IS_TYPE(x, &mp_type_range)) {
+    if(mp_obj_is_type(x, &mp_type_tuple) || mp_obj_is_type(x, &mp_type_list) || mp_obj_is_type(x, &mp_type_range)) {
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t item, iterable = mp_getiter(x, &iter_buf);
         while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -303,7 +303,7 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
             dot = dot + (value * value - dot) / count++;
         }
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(dot * (count - 1)));
-    } else if(MP_OBJ_IS_TYPE(x, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(x, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(x);
         uint8_t *array = (uint8_t *)ndarray->array;
         // always get a float, so that we don't have to resolve the dtype later

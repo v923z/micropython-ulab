@@ -70,7 +70,7 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     ndarray_obj_t *y = ndarray_new_linear_array(lenx, NDARRAY_FLOAT);
     mp_float_t *yarray = (mp_float_t *)y->array;
     mp_float_t coeffs[6];
-    if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type)) {
         ndarray_obj_t *inarray = MP_OBJ_TO_PTR(args[1].u_obj);
         #if ULAB_MAX_DIMS > 1
         if(inarray->ndim > 1) {
@@ -96,7 +96,7 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_float_t *zf_array = (mp_float_t *)zf->array;
 
     if(args[2].u_obj != mp_const_none) {
-        if(!MP_OBJ_IS_TYPE(args[2].u_obj, &ulab_ndarray_type)) {
+        if(!mp_obj_is_type(args[2].u_obj, &ulab_ndarray_type)) {
             mp_raise_TypeError(translate("zi must be an ndarray"));
         } else {
             ndarray_obj_t *zi = MP_OBJ_TO_PTR(args[2].u_obj);

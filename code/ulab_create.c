@@ -22,14 +22,14 @@
 
 #if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL
 static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t value) {
-    if(!MP_OBJ_IS_INT(oshape) && !MP_OBJ_IS_TYPE(oshape, &mp_type_tuple) && !MP_OBJ_IS_TYPE(oshape, &mp_type_list)) {
+    if(!mp_obj_is_int(oshape) && !mp_obj_is_type(oshape, &mp_type_tuple) && !mp_obj_is_type(oshape, &mp_type_list)) {
         mp_raise_TypeError(translate("input argument must be an integer, a tuple, or a list"));
     }
     ndarray_obj_t *ndarray = NULL;
-    if(MP_OBJ_IS_INT(oshape)) {
+    if(mp_obj_is_int(oshape)) {
         size_t n = mp_obj_get_int(oshape);
         ndarray = ndarray_new_linear_array(n, dtype);
-    } else if(MP_OBJ_IS_TYPE(oshape, &mp_type_tuple) || MP_OBJ_IS_TYPE(oshape, &mp_type_list)) {
+    } else if(mp_obj_is_type(oshape, &mp_type_tuple) || mp_obj_is_type(oshape, &mp_type_list)) {
         uint8_t len = (uint8_t)mp_obj_get_int(mp_obj_len_maybe(oshape));
         if(len > ULAB_MAX_DIMS) {
             mp_raise_TypeError(translate("too many dimensions"));
@@ -182,7 +182,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
+    if(!mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
         mp_raise_TypeError(translate("first argument must be a tuple of ndarrays"));
     }
     int8_t axis = (int8_t)args[1].u_int;
@@ -306,7 +306,7 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("input must be an ndarray"));
     }
     ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);

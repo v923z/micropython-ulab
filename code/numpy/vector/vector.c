@@ -35,10 +35,10 @@
 
 static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     // Return a single value, if o_in is not iterable
-    if(mp_obj_is_float(o_in) || MP_OBJ_IS_INT(o_in)) {
+    if(mp_obj_is_float(o_in) || mp_obj_is_int(o_in)) {
         return mp_obj_new_float(f(mp_obj_get_float(o_in)));
     }
-    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
         uint8_t *sarray = (uint8_t *)source->array;
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
@@ -100,8 +100,8 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         #endif /* ULAB_VECTORISE_USES_FUN_POINTER */
         
         return MP_OBJ_FROM_PTR(ndarray);
-    } else if(MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(o_in, &mp_type_list) ||
-        MP_OBJ_IS_TYPE(o_in, &mp_type_range)) { // i.e., the input is a generic iterable
+    } else if(mp_obj_is_type(o_in, &mp_type_tuple) || mp_obj_is_type(o_in, &mp_type_list) ||
+        mp_obj_is_type(o_in, &mp_type_range)) { // i.e., the input is a generic iterable
             mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
             ndarray_obj_t *out = ndarray_new_linear_array(o->len, NDARRAY_FLOAT);
             mp_float_t *array = (mp_float_t *)out->array;
@@ -173,7 +173,7 @@ mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("first argument must be an ndarray"));
     }
     int8_t n = args[1].u_int;
@@ -552,7 +552,7 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
     vectorized_function_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t avalue[1];
     mp_obj_t fvalue;
-    if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+    if(mp_obj_is_type(args[0], &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0]);
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, self->otypes);
         for(size_t i=0; i < source->len; i++) {
@@ -561,8 +561,8 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
             mp_binary_set_val_array(self->otypes, ndarray->array, i, fvalue);
         }
         return MP_OBJ_FROM_PTR(ndarray);
-    } else if(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || MP_OBJ_IS_TYPE(args[0], &mp_type_list) ||
-        MP_OBJ_IS_TYPE(args[0], &mp_type_range)) { // i.e., the input is a generic iterable
+    } else if(mp_obj_is_type(args[0], &mp_type_tuple) || mp_obj_is_type(args[0], &mp_type_list) ||
+        mp_obj_is_type(args[0], &mp_type_range)) { // i.e., the input is a generic iterable
         size_t len = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
         ndarray_obj_t *ndarray = ndarray_new_linear_array(len, self->otypes);
         mp_obj_iter_buf_t iter_buf;
