@@ -376,7 +376,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_norm_obj, 1, linalg_norm);
 //|
 
 static mp_obj_t linalg_qr(mp_obj_t M) {
-    if(!mp_obj_is_type(M, &ulab_ndarray_type)) {
+    if(!MP_OBJ_IS_TYPE(M, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("operation is defined for ndarrays only"));
     }
     ndarray_obj_t *source = MP_OBJ_TO_PTR(M);
