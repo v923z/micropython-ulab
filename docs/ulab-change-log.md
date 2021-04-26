@@ -1,9 +1,22 @@
+Mon, 26 Apr 2021
+
+version 2.6.2
+
+    fix optimize zero condition
+
+Sat, 23 Apr 2021
+
+version 2.6.1
+
+    fix implementation of math constants
+
+
 Mon, 22 Mar 2021
 
 version 2.6.0
 
     add where function
-    
+
 Mon, 8 Mar 2021
 
 version 2.5.1
