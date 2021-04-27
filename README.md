@@ -317,7 +317,7 @@ make USER_C_MODULE=/path/to/ulab/code/micropython.cmake
 
 If `micropython` and `ulab` were in the same folder on the computer, you can set `USER_C_MODULES=../../../ulab/code/micropython.cmake`. The compiled firmware will be placed in `micropython/ports/rp2/build`.
 
-# Compiling for circuitpython
+# Compiling for CircuitPython
 
 [Adafruit Industries](www.adafruit.com) always include a relatively recent version of `ulab` in their nightly builds. However, if you really need the bleeding edge, you can easily compile the firmware from the source. Simply clone `circuitpython`, and move the commit pointer to the latest version of `ulab` (`ulab` will automatically be cloned with `circuitpython`):
 
