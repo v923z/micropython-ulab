@@ -13,9 +13,10 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
 1. [Benchmarks](#benchmarks)
 1. [Firmware](#firmware)
     1. [UNIX](#unix-port)
-    2. [STM-based boards](#stm-based-boards)
-    3. [ESP32-based boards](#esp32-based-boards)
-    4. [RP2-based boards](#rp2-based-boards)
+    1. [STM-based boards](#stm-based-boards)
+    1. [ESP32-based boards](#esp32-based-boards)
+    1. [RP2-based boards](#rp2-based-boards)
+    1. [Compiling for circuitpython](#compiling-for-circuitpython)
 3. [Issues, contributing, and testing](#issues-contributing-and-testing)
     1. [Testing](#testing)
 
@@ -82,7 +83,7 @@ Representative numbers on performance can be found under [ulab samples](https://
 
 # Firmware
 
-## Compiled 
+## Compiled
 
 Compiled firmware for many hardware platforms can be downloaded from Roberto Colistete's
 gitlab repository: for the [pyboard](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/Pyboard/Firmware/), and
@@ -316,6 +317,29 @@ make USER_C_MODULE=/path/to/ulab/code/micropython.cmake
 
 If `micropython` and `ulab` were in the same folder on the computer, you can set `USER_C_MODULES=../../../ulab/code/micropython.cmake`. The compiled firmware will be placed in `micropython/ports/rp2/build`.
 
+# Compiling for circuitpython
+
+[Adafruit Industries](www.adafruit.com) always include a relatively recent version of `ulab` in their nightly builds. However, if you really need the bleeding edge, you can easily compile the firmware from the source. Simply clone `circuitpython`, and move the commit pointer to the latest version of `ulab` (`ulab` will automatically be cloned with `circuitpython`):
+
+```bash
+git clone https://github.com/adafruit/circuitpython.git
+
+cd circuitpyton/extmod/ulab
+
+# update ulab here
+git checkout master
+git pull
+```
+You might have to check, whether the `CIRCUITPY_ULAB` variable is set to `1` for the port that you want to compile for. You find this piece of information in the `make` fragment:
+
+```bash
+circuitpython/ports/port_of_your_choice/mpconfigport.mk
+```
+After this, you would run `make` with the single `BOARD` argument, e.g.:
+
+```bash
+make BOARD=mini_sam_m4
+```
 
 # Issues, contributing, and testing
 
