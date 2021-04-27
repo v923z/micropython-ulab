@@ -16,7 +16,7 @@ The `float` implementation of `micropython` (`float`, or `double`) is automatica
     1. [STM-based boards](#stm-based-boards)
     1. [ESP32-based boards](#esp32-based-boards)
     1. [RP2-based boards](#rp2-based-boards)
-    1. [Compiling for circuitpython](#compiling-for-circuitpython)
+    1. [Compiling for CircuitPython](#compiling-for-circuitpython)
 3. [Issues, contributing, and testing](#issues-contributing-and-testing)
     1. [Testing](#testing)
 
