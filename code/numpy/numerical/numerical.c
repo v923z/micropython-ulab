@@ -66,7 +66,7 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
 #if ULAB_NUMPY_HAS_ALL | ULAB_NUMPY_HAS_ANY
 static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
     bool anytype = optype == NUMERICAL_ALL ? 1 : 0;
-    if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         uint8_t *array = (uint8_t *)ndarray->array;
         // always get a float, so that we don't have to resolve the dtype later
@@ -486,15 +486,15 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_obj_t oin = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
-    if((axis != mp_const_none) && (!MP_OBJ_IS_INT(axis))) {
+    if((axis != mp_const_none) && (!mp_obj_is_int(axis))) {
         mp_raise_TypeError(translate("axis must be None, or an integer"));
     }
 
     if((optype == NUMERICAL_ALL) || (optype == NUMERICAL_ANY)) {
         return numerical_all_any(oin, axis, optype);
     }
-    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) ||
-        MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
+    if(mp_obj_is_type(oin, &mp_type_tuple) || mp_obj_is_type(oin, &mp_type_list) ||
+        mp_obj_is_type(oin, &mp_type_range)) {
         switch(optype) {
             case NUMERICAL_MIN:
             case NUMERICAL_ARGMIN:
@@ -507,7 +507,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             default: // we should never reach this point, but whatever
                 return mp_const_none;
         }
-    } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         switch(optype) {
             case NUMERICAL_MIN:
@@ -529,7 +529,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
 
 #if ULAB_NUMPY_HAS_SORT | NDARRAY_HAS_SORT
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
-    if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
     }
 
@@ -634,7 +634,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("argsort argument must be an ndarray"));
     }
 
@@ -737,7 +737,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 //|
 
 static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
-    if (!MP_OBJ_IS_TYPE(_a, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_b, &ulab_ndarray_type)) {
+    if (!mp_obj_is_type(_a, &ulab_ndarray_type) || !mp_obj_is_type(_b, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("arguments must be ndarrays"));
     }
     ndarray_obj_t *a = MP_OBJ_TO_PTR(_a);
@@ -825,7 +825,7 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("diff argument must be an ndarray"));
     }
 
@@ -905,7 +905,7 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("flip argument must be an ndarray"));
     }
 
@@ -918,7 +918,7 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         rarray += (results->len - 1) * results->itemsize;
         results->array = rarray;
         results->strides[ULAB_MAX_DIMS - 1] = -results->strides[ULAB_MAX_DIMS - 1];
-    } else if(MP_OBJ_IS_INT(args[1].u_obj)){
+    } else if(mp_obj_is_int(args[1].u_obj)){
         int8_t ax = mp_obj_get_int(args[1].u_obj);
         if(ax < 0) ax += ndarray->ndim;
         if((ax < 0) || (ax > ndarray->ndim - 1)) {
@@ -977,7 +977,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("median argument must be an ndarray"));
     }
 
@@ -1089,7 +1089,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("roll argument must be an ndarray"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
@@ -1151,7 +1151,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             i++;
         } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
         #endif
-    } else if(MP_OBJ_IS_INT(args[2].u_obj)){
+    } else if(mp_obj_is_int(args[2].u_obj)){
         int8_t ax = mp_obj_get_int(args[2].u_obj);
         if(ax < 0) ax += ndarray->ndim;
         if((ax < 0) || (ax > ndarray->ndim - 1)) {
@@ -1298,9 +1298,9 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         // this seems to pass with False, and True...
         mp_raise_ValueError(translate("axis must be None, or an integer"));
     }
-    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
+    if(mp_obj_is_type(oin, &mp_type_tuple) || mp_obj_is_type(oin, &mp_type_list) || mp_obj_is_type(oin, &mp_type_range)) {
         return numerical_sum_mean_std_iterable(oin, NUMERICAL_STD, ddof);
-    } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         return numerical_sum_mean_std_ndarray(ndarray, axis, NUMERICAL_STD, ddof);
     } else {

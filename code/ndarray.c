@@ -361,10 +361,10 @@ size_t *ndarray_shape_vector(size_t a, size_t b, size_t c, size_t d) {
 }
 
 bool ndarray_object_is_array_like(mp_obj_t o_in) {
-    if(MP_OBJ_IS_TYPE(o_in, &ulab_ndarray_type) ||
-      MP_OBJ_IS_TYPE(o_in, &mp_type_tuple) ||
-      MP_OBJ_IS_TYPE(o_in, &mp_type_list) ||
-      MP_OBJ_IS_TYPE(o_in, &mp_type_range)) {
+    if(mp_obj_is_type(o_in, &ulab_ndarray_type) ||
+      mp_obj_is_type(o_in, &mp_type_tuple) ||
+      mp_obj_is_type(o_in, &mp_type_list) ||
+      mp_obj_is_type(o_in, &mp_type_range)) {
         return true;
     }
     return false;
@@ -420,13 +420,13 @@ mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     dtype_obj_t *dtype = m_new_obj(dtype_obj_t);
     dtype->base.type = &ulab_dtype_type;
 
-    if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+    if(mp_obj_is_type(args[0], &ulab_ndarray_type)) {
         // return the dtype of the array
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0]);
         dtype->dtype = ndarray->dtype;
     } else {
         uint8_t _dtype;
-        if(MP_OBJ_IS_INT(_args[0].u_obj)) {
+        if(mp_obj_is_int(_args[0].u_obj)) {
             _dtype = mp_obj_get_int(_args[0].u_obj);
             if((_dtype != NDARRAY_BOOL) && (_dtype != NDARRAY_UINT8)
                 && (_dtype != NDARRAY_INT8) && (_dtype != NDARRAY_UINT16)
@@ -466,7 +466,7 @@ mp_obj_t ndarray_dtype(mp_obj_t self_in) {
 // this is the cheap implementation of tbe dtype
 mp_obj_t ndarray_dtype(mp_obj_t self_in) {
     uint8_t dtype;
-    if(MP_OBJ_IS_TYPE(self_in, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(self_in, &ulab_ndarray_type)) {
         ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
         dtype = self->dtype;
     } else { // we assume here that the input is a single character
@@ -908,7 +908,7 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     uint8_t _dtype;
     #if ULAB_HAS_DTYPE_OBJECT
-    if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_dtype_type)) {
+    if(mp_obj_is_type(args[1].u_obj, &ulab_dtype_type)) {
         dtype_obj_t *dtype = MP_OBJ_TO_PTR(args[1].u_obj);
         _dtype = dtype->dtype;
     } else { // this must be an integer defined as a class constant (ulba.uint8 etc.)
@@ -923,7 +923,7 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
 STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
 
-    if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+    if(mp_obj_is_type(args[0], &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0]);
         if(dtype == source->dtype) {
             return ndarray_copy_view(source);
@@ -1151,9 +1151,9 @@ static size_t slice_length(mp_bound_slice_t slice) {
 
 static mp_bound_slice_t generate_slice(mp_int_t n, mp_obj_t index) {
     mp_bound_slice_t slice;
-    if(MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+    if(mp_obj_is_type(index, &mp_type_slice)) {
         mp_obj_slice_indices(index, n, &slice);
-    } else if(MP_OBJ_IS_INT(index)) {
+    } else if(mp_obj_is_int(index)) {
         mp_int_t _index = mp_obj_get_int(index);
         if(_index < 0) {
             _index += n;
@@ -1185,7 +1185,7 @@ static ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tu
     }
     int32_t offset = 0;
     for(uint8_t i=0; i  < tuple->len; i++) {
-        if(MP_OBJ_IS_INT(tuple->items[i])) {
+        if(mp_obj_is_int(tuple->items[i])) {
             // if item is an int, the dimension will first be reduced ...
             ndim--;
             int32_t k = mp_obj_get_int(tuple->items[i]);
@@ -1411,7 +1411,7 @@ static mp_obj_t ndarray_assign_from_boolean_index(ndarray_obj_t *ndarray, ndarra
 }
 
 static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarray_obj_t *values) {
-    if(MP_OBJ_IS_TYPE(index, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(index, &ulab_ndarray_type)) {
         ndarray_obj_t *nindex = MP_OBJ_TO_PTR(index);
         if((nindex->ndim > 1) || (nindex->boolean == false)) {
             mp_raise_NotImplementedError(translate("operation is implemented for 1D Boolean arrays only"));
@@ -1422,9 +1422,9 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
             ndarray_assign_from_boolean_index(ndarray, index, values);
         }
     }
-    if(MP_OBJ_IS_TYPE(index, &mp_type_tuple) || MP_OBJ_IS_INT(index) || MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+    if(mp_obj_is_type(index, &mp_type_tuple) || mp_obj_is_int(index) || mp_obj_is_type(index, &mp_type_slice)) {
         mp_obj_tuple_t *tuple;
-        if(MP_OBJ_IS_TYPE(index, &mp_type_tuple)) {
+        if(mp_obj_is_type(index, &mp_type_tuple)) {
             tuple = MP_OBJ_TO_PTR(index);
             if(tuple->len > ndarray->ndim) {
                 mp_raise_msg(&mp_type_IndexError, translate("too many indices"));
@@ -1676,7 +1676,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
     // creates an ndarray from a micropython int or float
     // if the input is an ndarray, it is returned
     ndarray_obj_t *ndarray;
-    if(MP_OBJ_IS_INT(obj)) {
+    if(mp_obj_is_int(obj)) {
         int32_t ivalue = mp_obj_get_int(obj);
         if((ivalue >= 0) && (ivalue < 256)) {
             ndarray = ndarray_new_linear_array(1, NDARRAY_UINT8);
@@ -1704,7 +1704,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
         ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
         array[0] = (mp_float_t)fvalue;
-    } else if(MP_OBJ_IS_TYPE(obj, &ulab_ndarray_type)){
+    } else if(mp_obj_is_type(obj, &ulab_ndarray_type)){
         return obj;
     } else {
         mp_raise_TypeError(translate("wrong operand type"));
@@ -2013,7 +2013,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
 #if NDARRAY_HAS_RESHAPE
 mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
     ndarray_obj_t *source = MP_OBJ_TO_PTR(oin);
-    if(!MP_OBJ_IS_TYPE(_shape, &mp_type_tuple)) {
+    if(!mp_obj_is_type(_shape, &mp_type_tuple)) {
         mp_raise_TypeError(translate("shape must be a tuple"));
     }
 
@@ -2050,7 +2050,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
 #if ULAB_NUMPY_HAS_NDINFO
 mp_obj_t ndarray_info(mp_obj_t obj_in) {
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj_in);
-    if(!MP_OBJ_IS_TYPE(ndarray, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(ndarray, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("function is defined for ndarrays only"));
     }
     mp_printf(MP_PYTHON_PRINTER, "class: ndarray\n");
