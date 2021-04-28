@@ -172,7 +172,57 @@ In case you got stuck somewhere in the process, a bit more detailed instructions
 
 ### ESP32-based boards
 
-The firmware can be compiled either by downloading and running the [build script](https://github.com/v923z/micropython-ulab/blob/master/build/esp32.sh), or following the steps below:
+Firmware for `Espressif` boards can be built in two different ways. These are discussed in the next two paragraphs. A solution for issues with the firmware size is outlined in the [last paragraph](#what-to-do-if-the-firmware-is-too-large) in this section.
+
+#### Compiling with cmake
+
+Beginning with version 1.15, `micropython` switched to `cmake` on the ESP32 port. If your operating system supports `CMake > 3.12`, you can either simply download, and run the single [build script](https://github.com/v923z/micropython-ulab/blob/master/build/esp32-cmake.sh), or follow the step in this section. Otherwise, you should skip to the [next one](#compiling-with-make), where the old, `make`-based approach is discussed.
+
+In case you encounter difficulties during the build process, you can consult the (general instructions for the ESP32)[https://github.com/micropython/micropython/tree/master/ports/esp32#micropython-port-to-the-esp32].
+
+Frist, clone the `ulab`, the `micropython`, as well as the `espressif` repositories:
+
+```bash
+export BUILD_DIR=$(pwd)
+
+git clone https://github.com/v923z/micropython-ulab.git ulab
+git clone https://github.com/micropython/micropython.git
+
+cd $BUILD_DIR/micropython/
+
+git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
+
+```
+
+Then install the `ESP-IDF` tools:
+
+```bash
+cd esp-idf
+./install.sh
+. ./export.sh
+```
+
+Next, build the `micropython` cross-compiler, and the `ESP` sub-modules:
+
+```bash
+cd $BUILD_DIR/micropython/mpy-cross
+make
+cd $BUILD_DIR/micropython/ports/esp32
+make submodules
+```
+At this point, all requirements are installed and built. We can now compile the firmware with `ulab`. In `$BUILD_DIR/micropython/ports/esp32` create a `makefile` with the following content:
+
+```bash
+BOARD = GENERIC
+USER_C_MODULES = $(BUILD_DIR)/ulab/code/micropython.cmake
+
+include Makefile
+```
+You specify with the `BOARD` variable, what you want to compile for, a generic board, or `TINYPICO`, etc. Still in `$BUILD_DIR/micropython/ports/esp32`, you can now run `make`.
+
+#### Compiling with make
+
+If your operating system does not support a recent enough version of `CMake`, you have to stay with `micropython` version 1.14. The firmware can be compiled either by downloading and running the [build script](https://github.com/v923z/micropython-ulab/blob/master/build/esp32.sh), or following the steps below:
 
 First, clone `ulab` with
 
@@ -274,6 +324,29 @@ If it compiles without error, you can plug in your ESP32 via USB and then flash 
 ```bash
 make erase && make deploy
 ```
+
+#### What to do, if the firmware is too large?
+
+When selecting `BOARD=TINYPICO`, the firmware is built but fails to deploy, because it is too large for the standard partitions. We can rectify the problem by creating a new partition table. In order to do so, in `$BUILD_DIR/micropython/ports/esp32/`, copy the following 8 lines to a file named `partitions_ulab.cvs`:
+
+```
+# Notes: the offset of the partition table itself is set in
+# $ESPIDF/components/partition_table/Kconfig.projbuild and the
+# offset of the factory/ota_0 partition is set in makeimg.py
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     0x9000,  0x6000,
+phy_init, data, phy,     0xf000,  0x1000,
+factory,  app,  factory, 0x10000, 0x200000,
+vfs,      data, fat,     0x220000, 0x180000,
+```
+This expands the `factory` partition by 128 kB, and reduces the size of `vfs` by the same amount. Having defined the new partition table, we should extend `sdkconfig.board` by adding the following two lines:
+
+```
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_ulab.csv"
+```
+This file can be found in `$BUILD_DIR/micropython/ports/esp32/boards/TINYPICO/`. Finally, run `make clean`, and `make`. The new firmware contains the modified partition table, and should fit on the microcontroller.
+
 ### RP2-based boards
 
 RP2 firmware can be compiled either by downloading and running the single [build script](https://github.com/v923z/micropython-ulab/blob/master/build/rp2.sh), or executing the commands below.
