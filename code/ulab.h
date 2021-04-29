@@ -353,6 +353,10 @@
 #define ULAB_LINALG_HAS_INV             (1)
 #endif
 
+#ifndef ULAB_LINALG_HAS_SOLVE_TRIANGULAR
+#define ULAB_LINALG_HAS_SOLVE_TRIANGULAR (1)
+#endif
+
 #ifndef ULAB_LINALG_HAS_NORM
 #define ULAB_LINALG_HAS_NORM            (1)
 #endif

@@ -267,6 +267,46 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 #endif
 
+#if ULAB_MAX_DIMS > 1
+
+//| def solve_triangular(A: ulab.numpy.ndarray, b: ulab.numpy.ndarray, lower: bool) -> ulab.numpy.ndarray:
+//|    """
+//|    :param ~ulab.numpy.ndarray A: a matrix
+//|    :param ~ulab.numpy.ndarray b: a vector
+//|    :param ~bool lower: if true, use only data contained in lower triangle of A, else use upper triangle of A
+//|    :return: solution to the system A x = b. Shape of return matches b
+//|    :raises TypeError: if A and b are not of type ndarray and are not dense
+//|
+//|    Solve the equation A x = b for x, assuming A is a triangular matrix"""
+//|    ...
+//|
+
+static mp_obj_t solve_triangular(mp_obj_t _A, mp_obj_t _b, mp_obj_t _lower) {
+
+    if(!MP_OBJ_IS_TYPE(_A, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_b, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("first two arguments must be ndarrays"));
+    }
+
+    ndarray_obj_t *A = MP_OBJ_TO_PTR(_A);
+    ndarray_obj_t *b = MP_OBJ_TO_PTR(_b);
+    
+    if(!ndarray_is_dense(A) || !ndarray_is_dense(b)) {
+        mp_raise_TypeError(translate("input must be a dense ndarray"));
+    }
+
+    ndarray_obj_t *x;
+
+    // if lower is true, solve using lower triangle of A
+    // else solve using upper triangle of A
+    x = (mp_obj_is_true(_lower) ? solve_lower_triangular(A, b) : solve_upper_triangular(A, b));
+
+    return MP_OBJ_FROM_PTR(x);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_3(linalg_solve_triangular_obj, solve_triangular);
+
+#endif
+
 //| def norm(x: ulab.array) -> float:
 //|    """
 //|    :param ~ulab.array x: a vector or a matrix
@@ -377,6 +417,9 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
         #endif
         #if ULAB_LINALG_HAS_INV
         { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
+        #endif
+        #if ULAB_LINALG_HAS_SOLVE_TRIANGULAR
+        { MP_ROM_QSTR(MP_QSTR_solve_triangular), (mp_obj_t)&linalg_solve_triangular_obj },
         #endif
     #endif
     #if ULAB_LINALG_HAS_NORM

@@ -169,3 +169,65 @@ size_t linalg_jacobi_rotations(mp_float_t *array, mp_float_t *eigvectors, size_t
     
     return iterations;
 }
+
+/* 
+ * This function solves the equation A x = b for x, where A is considered as
+ * a lower triangular matrix
+ */
+
+ndarray_obj_t *solve_lower_triangular(ndarray_obj_t *A, ndarray_obj_t *b) {
+    mp_float_t *A_arr = (mp_float_t *)A->array;
+    mp_float_t *b_arr = (mp_float_t *)b->array;
+    size_t A_rows = A->shape[ULAB_MAX_DIMS - 2];
+    size_t A_cols = A->shape[ULAB_MAX_DIMS - 1];
+    size_t i, j;
+    
+    ndarray_obj_t *x = ndarray_new_dense_ndarray(b->ndim, b->shape, b->dtype);
+    mp_float_t *x_arr = (mp_float_t *)x->array;
+
+    // Solve the lower triangular matrix by iterating each row of A.
+    // Start by finding the first unknown using the first row.
+    // On finding this unknown, find the second unknown using the second row.
+    // Continue the same till the last unknown is found using the last row.
+    for (i = 0; i < A_rows; i++) {
+        mp_float_t sum = 0.0;
+        for (j = 0; j < i; j++) {
+            sum += (*(A_arr + ((i * A_cols) + j)))
+                        * (*(x_arr + j)); 
+        }
+        *(x_arr + i) = ((*(b_arr + i)) - sum) / (*(A_arr + ((i * A_cols) + i)));
+    }
+
+    return x;
+}
+
+/* 
+ * This function solves the equation A x = b for x, where A is considered as
+ * an upper triangular matrix
+ */
+
+ndarray_obj_t *solve_upper_triangular(ndarray_obj_t *A, ndarray_obj_t *b) {
+    mp_float_t *A_arr = (mp_float_t *)A->array;
+    mp_float_t *b_arr = (mp_float_t *)b->array;
+    size_t A_rows = A->shape[ULAB_MAX_DIMS - 2];
+    size_t A_cols = A->shape[ULAB_MAX_DIMS - 1];
+    size_t i, j;
+    
+    ndarray_obj_t *x = ndarray_new_dense_ndarray(b->ndim, b->shape, b->dtype);
+    mp_float_t *x_arr = (mp_float_t *)x->array;
+
+    // Solve the upper triangular matrix by iterating each row of A.
+    // Start by finding the last unknown using the last row.
+    // On finding this unknown, find the last-but-one unknown using the last-but-one row.
+    // Continue the same till the first unknown is found using the first row.
+    for (i = A_rows - 1; i < A_rows; i--) {
+        mp_float_t sum = 0.0;
+        for (j = i + 1; j < A_cols; j++) {
+            sum += (*(A_arr + ((i * A_cols) + j)))
+                        * (*(x_arr + j)); 
+        }
+        *(x_arr + i) = ((*(b_arr + i)) - sum) / (*(A_arr + ((i * A_cols) + i)));
+    }
+
+    return x;
+}
