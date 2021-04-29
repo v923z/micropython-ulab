@@ -22,14 +22,14 @@
 
 #if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL
 static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t value) {
-    if(!MP_OBJ_IS_INT(oshape) && !MP_OBJ_IS_TYPE(oshape, &mp_type_tuple) && !MP_OBJ_IS_TYPE(oshape, &mp_type_list)) {
+    if(!mp_obj_is_int(oshape) && !mp_obj_is_type(oshape, &mp_type_tuple) && !mp_obj_is_type(oshape, &mp_type_list)) {
         mp_raise_TypeError(translate("input argument must be an integer, a tuple, or a list"));
     }
     ndarray_obj_t *ndarray = NULL;
-    if(MP_OBJ_IS_INT(oshape)) {
+    if(mp_obj_is_int(oshape)) {
         size_t n = mp_obj_get_int(oshape);
         ndarray = ndarray_new_linear_array(n, dtype);
-    } else if(MP_OBJ_IS_TYPE(oshape, &mp_type_tuple) || MP_OBJ_IS_TYPE(oshape, &mp_type_list)) {
+    } else if(mp_obj_is_type(oshape, &mp_type_tuple) || mp_obj_is_type(oshape, &mp_type_list)) {
         uint8_t len = (uint8_t)mp_obj_get_int(mp_obj_len_maybe(oshape));
         if(len > ULAB_MAX_DIMS) {
             mp_raise_TypeError(translate("too many dimensions"));
@@ -68,7 +68,12 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
     mp_float_t value = start;
 
     ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
-    if(dtype == NDARRAY_UINT8) {
+    if(ndarray->boolean == NDARRAY_BOOLEAN) {
+        uint8_t *array = (uint8_t *)ndarray->array;
+        for(size_t i=0; i < len; i++, value += step) {
+            *array++ = value == MICROPY_FLOAT_CONST(0.0) ? 0 : 1;
+        }
+    } else if(dtype == NDARRAY_UINT8) {
         uint8_t *array = (uint8_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value += step) *array++ = (uint8_t)value;
     } else if(dtype == NDARRAY_INT8) {
@@ -90,9 +95,9 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
 
 #if ULAB_NUMPY_HAS_ARANGE
 //| @overload
-//| def arange(stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.array: ...
+//| def arange(stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.ndarray: ...
 //| @overload
-//| def arange(start: _float, stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.array:
+//| def arange(start: _float, stop: _float, step: _float = 1, *, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|     """
 //|     .. param: start
 //|       First value in the array, optional, defaults to 0
@@ -157,7 +162,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 #endif
 
 #if ULAB_NUMPY_HAS_CONCATENATE
-//| def concatenate(arrays: Tuple[ulab.array], *, axis: int = 0) -> ulab.array:
+//| def concatenate(arrays: Tuple[ulab.ndarray], *, axis: int = 0) -> ulab.ndarray:
 //|     """
 //|     .. param: arrays
 //|       tuple of ndarrays
@@ -177,7 +182,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &mp_type_tuple)) {
+    if(!mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
         mp_raise_TypeError(translate("first argument must be a tuple of ndarrays"));
     }
     int8_t axis = (int8_t)args[1].u_int;
@@ -282,7 +287,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_concatenate_obj, 1, create_concatenate);
 #endif
 
 #if ULAB_NUMPY_HAS_DIAG
-//| def diag(a: ulab.array, *, k: int = 0) -> ulab.array:
+//| def diag(a: ulab.ndarray, *, k: int = 0) -> ulab.ndarray:
 //|     """
 //|     .. param: a
 //|       an ndarray
@@ -301,7 +306,7 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("input must be an ndarray"));
     }
     ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
@@ -355,7 +360,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_diag_obj, 1, create_diag);
 
 #if ULAB_MAX_DIMS > 1
 #if ULAB_NUMPY_HAS_EYE
-//| def eye(size: int, *, M: Optional[int] = None, k: int = 0, dtype: _DType = ulab.float) -> ulab.array:
+//| def eye(size: int, *, M: Optional[int] = None, k: int = 0, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|     """Return a new square array of size, with the diagonal elements set to 1
 //|        and the other elements set to 0."""
 //|     ...
@@ -407,7 +412,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 #endif /* ULAB_MAX_DIMS > 1 */
 
 #if ULAB_NUMPY_HAS_FULL
-//| def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[_float, _bool], *, dtype: _DType = ulab.float) -> ulab.array:
+//| def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[_float, _bool], *, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of integers (for tensors of higher rank)
@@ -448,7 +453,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_full_obj, 0, create_full);
 //|     num: int = 50,
 //|     endpoint: _bool = True,
 //|     retstep: _bool = False
-//| ) -> ulab.array:
+//| ) -> ulab.ndarray:
 //|     """
 //|     .. param: start
 //|       First value in the array
@@ -514,7 +519,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 //|     num: int = 50,
 //|     endpoint: _bool = True,
 //|     base: _float = 10.0
-//| ) -> ulab.array:
+//| ) -> ulab.ndarray:
 //|     """
 //|     .. param: start
 //|       First value in the array
@@ -560,21 +565,26 @@ mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     start = mp_obj_get_float(args[0].u_obj);
     uint8_t dtype = args[5].u_int;
     mp_float_t base = mp_obj_get_float(args[3].u_obj);
-    if(args[4].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-start)/(len-1);
-    else step = (mp_obj_get_float(args[1].u_obj)-start)/len;
+    if(args[4].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj) - start)/(len - 1);
+    else step = (mp_obj_get_float(args[1].u_obj) - start) / len;
     quotient = MICROPY_FLOAT_C_FUN(pow)(base, step);
     ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
+
     mp_float_t value = MICROPY_FLOAT_C_FUN(pow)(base, start);
-    if(dtype == NDARRAY_UINT8) {
+    if(ndarray->dtype == NDARRAY_UINT8) {
         uint8_t *array = (uint8_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value *= quotient) *array++ = (uint8_t)value;
-    } else if(dtype == NDARRAY_INT8) {
+        if(ndarray->boolean) {
+            memset(array, 1, len);
+        } else {
+            for(size_t i=0; i < len; i++, value *= quotient) *array++ = (uint8_t)value;
+        }
+    } else if(ndarray->dtype == NDARRAY_INT8) {
         int8_t *array = (int8_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value *= quotient) *array++ = (int8_t)value;
-    } else if(dtype == NDARRAY_UINT16) {
+    } else if(ndarray->dtype == NDARRAY_UINT16) {
         uint16_t *array = (uint16_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value *= quotient) *array++ = (uint16_t)value;
-    } else if(dtype == NDARRAY_INT16) {
+    } else if(ndarray->dtype == NDARRAY_INT16) {
         int16_t *array = (int16_t *)ndarray->array;
         for(size_t i=0; i < len; i++, value *= quotient) *array++ = (int16_t)value;
     } else {
@@ -588,7 +598,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_logspace_obj, 2, create_logspace);
 #endif
 
 #if ULAB_NUMPY_HAS_ONES
-//| def ones(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.array:
+//| def ones(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
@@ -617,7 +627,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 #endif
 
 #if ULAB_NUMPY_HAS_ZEROS
-//| def zeros(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.array:
+//| def zeros(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.float) -> ulab.ndarray:
 //|    """
 //|    .. param: shape
 //|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)

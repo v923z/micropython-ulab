@@ -37,7 +37,7 @@ readlinkf_posix() {
 }
 NPROC=$(python -c 'import multiprocessing; print(multiprocessing.cpu_count())')
 HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
-[ -e circuitpython/py/py.mk ] || (git clone --no-recurse-submodules --depth 100 --branch 6.0.x https://github.com/adafruit/circuitpython && cd circuitpython && git submodule update --init lib/uzlib tools)
+[ -e circuitpython/py/py.mk ] || (git clone --no-recurse-submodules --depth 100 --branch main https://github.com/adafruit/circuitpython && cd circuitpython && git submodule update --init lib/uzlib tools)
 rm -rf circuitpython/extmod/ulab; ln -s "$HERE" circuitpython/extmod/ulab
 make -C circuitpython/mpy-cross -j$NPROC
 sed -e '/MICROPY_PY_UHASHLIB/s/1/0/' < circuitpython/ports/unix/mpconfigport.h > circuitpython/ports/unix/mpconfigport_ulab.h
@@ -57,4 +57,5 @@ do
 	fi
 done
 
-#(cd circuitpython && sphinx-build -E -W -b html . _build/html)
+(cd circuitpython && sphinx-build -E -W -b html . _build/html)
+(cd circuitpython && make check-stubs)

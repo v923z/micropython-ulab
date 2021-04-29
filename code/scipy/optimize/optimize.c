@@ -153,7 +153,7 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     uint16_t maxiter = (uint16_t)args[4].u_int;
 
     mp_float_t x0 = mp_obj_get_float(args[1].u_obj);
-    mp_float_t x1 = x0 != MICROPY_FLOAT_CONST(0.0) ? (MICROPY_FLOAT_CONST(1.0) + OPTIMIZE_NONZDELTA) * x0 : OPTIMIZE_ZDELTA;
+    mp_float_t x1 = MICROPY_FLOAT_C_FUN(fabs)(x0) > OPTIMIZE_EPSILON ? (MICROPY_FLOAT_CONST(1.0) + OPTIMIZE_NONZDELTA) * x0 : OPTIMIZE_ZDELTA;
     mp_obj_t *fargs = m_new(mp_obj_t, 1);
     mp_float_t f0 = optimize_python_call(type, fun, x0, fargs, 0);
     mp_float_t f1 = optimize_python_call(type, fun, x1, fargs, 0);

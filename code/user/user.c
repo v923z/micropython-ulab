@@ -27,7 +27,7 @@ static mp_obj_t user_square(mp_obj_t arg) {
     // element-wise square of its entries
 
     // raise a TypeError exception, if the input is not an ndarray
-    if(!MP_OBJ_IS_TYPE(arg, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(arg, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("input must be an ndarray"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(arg);

@@ -22,6 +22,9 @@
 
 #if ULAB_HAS_SCIPY
 
+//| """Compatibility layer for scipy"""
+//|
+
 static const mp_rom_map_elem_t ulab_scipy_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_scipy) },
     #if ULAB_SCIPY_HAS_OPTIMIZE_MODULE

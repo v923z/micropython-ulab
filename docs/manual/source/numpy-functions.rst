@@ -34,6 +34,7 @@ from ``numpy``.
 27. `numpy.sum <#sum>`__
 28. `numpy.trace <#trace>`__
 29. `numpy.trapz <#trapz>`__
+30. `numpy.where <#where>`__
 
 all
 ---
@@ -1398,6 +1399,71 @@ points corresponding to ``y``.
     ============================
     integral of y:  244.5
     integral of y at x:  244.5
+    
+    
+
+
+where
+-----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.where.html
+
+The function takes three positional arguments, ``condition``, ``x``, and
+``y``, and returns a new ``ndarray``, whose values are taken from either
+``x``, or ``y``, depending on the truthness of ``condition``. The three
+arguments are broadcast together, and the function raises a
+``ValueError`` exception, if broadcasting is not possible.
+
+The function is implemented for ``ndarray``\ s only: other iterable
+types can be passed after casting them to an ``ndarray`` by calling the
+``array`` constructor.
+
+If the ``dtype``\ s of ``x``, and ``y`` differ, the output is upcast as
+discussed earlier.
+
+Note that the ``condition`` is expanded into an Boolean ``ndarray``.
+This means that the storage required to hold the condition should be
+taken into account, whenever the function is called.
+
+The following example returns an ``ndarray`` of length 4, with 1 at
+positions, where ``condition`` is smaller than 3, and with -1 otherwise.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    
+    from ulab import numpy as np
+    
+    condition = np.array([1, 2, 3, 4], dtype=np.uint8)
+    print(np.where(condition < 3, 1, -1))
+
+.. parsed-literal::
+
+    array([1, 1, -1, -1], dtype=int16)
+    
+    
+
+
+The next snippet shows, how values from two arrays can be fed into the
+output:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    
+    from ulab import numpy as np
+    
+    condition = np.array([1, 2, 3, 4], dtype=np.uint8)
+    x = np.array([11, 22, 33, 44], dtype=np.uint8)
+    y = np.array([1, 2, 3, 4], dtype=np.uint8)
+    print(np.where(condition < 3, x, y))
+
+.. parsed-literal::
+
+    array([11, 22, 3, 4], dtype=uint8)
     
     
 

@@ -22,10 +22,10 @@
 
 
 #if ULAB_NUMPY_HAS_DOT
-//| def dot(m1: ulab.array, m2: ulab.array) -> Union[ulab.array, float]:
+//| def dot(m1: ulab.numpy.ndarray, m2: ulab.numpy.ndarray) -> Union[ulab.numpy.ndarray, float]:
 //|    """
-//|    :param ~ulab.array m1: a matrix, or a vector
-//|    :param ~ulab.array m2: a matrix, or a vector
+//|    :param ~ulab.numpy.ndarray m1: a matrix, or a vector
+//|    :param ~ulab.numpy.ndarray m2: a matrix, or a vector
 //|
 //|    Computes the product of two matrices, or two vectors. In the letter case, the inner product is returned."""
 //|    ...
@@ -34,7 +34,7 @@
 mp_obj_t transform_dot(mp_obj_t _m1, mp_obj_t _m2) {
     // TODO: should the results be upcast?
     // This implements 2D operations only!
-    if(!MP_OBJ_IS_TYPE(_m1, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_m2, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(_m1, &ulab_ndarray_type) || !mp_obj_is_type(_m2, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("arguments must be ndarrays"));
     }
     ndarray_obj_t *m1 = MP_OBJ_TO_PTR(_m1);

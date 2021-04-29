@@ -7,3 +7,5 @@
 /docs/.ipynb_checkpoints/
 /docs/ulab-test.ipynb
 /code/.atom-build.yml
+build/micropython
+build/ulab

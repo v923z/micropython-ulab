@@ -1,4 +1,3 @@
-
 /*
  * This file is part of the micropython-ulab project,
  *
@@ -9,12 +8,12 @@
  * Copyright (c) 2020-2021 Zoltán Vörös
 */
 
-#ifndef _USER_
-#define _USER_
+#ifndef _UTILS_
+#define _UTILS_
 
 #include "../ulab.h"
 #include "../ndarray.h"
 
-extern mp_obj_module_t ulab_user_module;
+extern mp_obj_module_t ulab_utils_module;
 
 #endif

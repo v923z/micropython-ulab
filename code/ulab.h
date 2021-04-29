@@ -331,6 +331,10 @@
 #define ULAB_NUMPY_HAS_NOTEQUAL         (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_WHERE
+#define ULAB_NUMPY_HAS_WHERE            (1)
+#endif
+
 // the linalg module; functions of the linalg module still have
 // to be defined separately
 #ifndef ULAB_NUMPY_HAS_LINALG_MODULE
@@ -617,6 +621,26 @@
 // its sub-modules should be placed in code/user/
 #ifndef ULAB_HAS_USER_MODULE
 #define ULAB_HAS_USER_MODULE                (0)
+#endif
+
+#ifndef ULAB_HAS_UTILS_MODULE
+#define ULAB_HAS_UTILS_MODULE               (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_FROM_INT16_BUFFER
+#define ULAB_UTILS_HAS_FROM_INT16_BUFFER    (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_FROM_UINT16_BUFFER
+#define ULAB_UTILS_HAS_FROM_UINT16_BUFFER   (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_FROM_INT32_BUFFER
+#define ULAB_UTILS_HAS_FROM_INT32_BUFFER    (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_FROM_UINT32_BUFFER
+#define ULAB_UTILS_HAS_FROM_UINT32_BUFFER   (1)
 #endif
 
 #endif

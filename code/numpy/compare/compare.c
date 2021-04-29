@@ -19,6 +19,7 @@
 
 #include "../../ulab.h"
 #include "../../ndarray_operators.h"
+#include "../../ulab_tools.h"
 #include "compare.h"
 
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
@@ -121,7 +122,7 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
 static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype) {
     // scalar comparisons should return a single object of mp_obj_t type
     mp_obj_t result = compare_function(x1, x2, comptype);
-    if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
+    if((mp_obj_is_int(x1) || mp_obj_is_float(x1)) && (mp_obj_is_int(x2) || mp_obj_is_float(x2))) {
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t iterable = mp_getiter(result, &iter_buf);
         mp_obj_t item = mp_iternext(iterable);
@@ -178,7 +179,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_not_equal_obj, compare_not_equal);
 static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
     // mask should signify, whether the function is called from isinf (mask = 1),
     // or from isfinite (mask = 0)
-    if(MP_OBJ_IS_INT(_x)) {
+    if(mp_obj_is_int(_x)) {
         if(mask) {
             return mp_const_false;
         } else {
@@ -194,7 +195,7 @@ static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
         } else { // called from isfinite
             return isinf(x) ? mp_const_false : mp_const_true;
         }
-    } else if(MP_OBJ_IS_TYPE(_x, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(_x, &ulab_ndarray_type)) {
         ndarray_obj_t *x = MP_OBJ_TO_PTR(_x);
         ndarray_obj_t *results = ndarray_new_dense_ndarray(x->ndim, x->shape, NDARRAY_BOOL);
         // At this point, results is all False
@@ -279,7 +280,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(compare_isinf_obj, compare_isinf);
 mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return maximum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MAXIMUM);
-    if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
+    if((mp_obj_is_int(x1) || mp_obj_is_float(x1)) && (mp_obj_is_int(x2) || mp_obj_is_float(x2))) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(result);
         return mp_binary_get_val_array(ndarray->dtype, ndarray->array, 0);
     }
@@ -294,7 +295,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
 mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return minimum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MINIMUM);
-    if((MP_OBJ_IS_INT(x1) || mp_obj_is_float(x1)) && (MP_OBJ_IS_INT(x2) || mp_obj_is_float(x2))) {
+    if((mp_obj_is_int(x1) || mp_obj_is_float(x1)) && (mp_obj_is_int(x2) || mp_obj_is_float(x2))) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(result);
         return mp_binary_get_val_array(ndarray->dtype, ndarray->array, 0);
     }
@@ -302,4 +303,115 @@ mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
+#endif
+
+#if ULAB_NUMPY_HAS_WHERE
+
+mp_obj_t compare_where(mp_obj_t _condition, mp_obj_t _x, mp_obj_t _y) {
+    // this implementation will work with ndarrays, and scalars only
+    ndarray_obj_t *c = ndarray_from_mp_obj(_condition);
+    ndarray_obj_t *x = ndarray_from_mp_obj(_x);
+    ndarray_obj_t *y = ndarray_from_mp_obj(_y);
+
+    int32_t *cstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    int32_t *xstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    int32_t *ystrides = m_new(int32_t, ULAB_MAX_DIMS);
+
+    size_t *oshape = m_new(size_t, ULAB_MAX_DIMS);
+
+    uint8_t ndim;
+
+    // establish the broadcasting conditions first
+    // if any two of the arrays can be broadcast together, then
+    // the three arrays can also be broadcast together
+    if(!ndarray_can_broadcast(c, x, &ndim, oshape, cstrides, ystrides) ||
+        !ndarray_can_broadcast(c, y, &ndim, oshape, cstrides, ystrides) ||
+        !ndarray_can_broadcast(x, y, &ndim, oshape, xstrides, ystrides)) {
+        mp_raise_ValueError(translate("operands could not be broadcast together"));
+    }
+
+    ndim = MAX(MAX(c->ndim, x->ndim), y->ndim);
+
+    for(uint8_t i = 1; i <= ndim; i++) {
+        cstrides[ULAB_MAX_DIMS - i] = c->shape[ULAB_MAX_DIMS - i] < 2 ? 0 : c->strides[ULAB_MAX_DIMS - i];
+        xstrides[ULAB_MAX_DIMS - i] = x->shape[ULAB_MAX_DIMS - i] < 2 ? 0 : x->strides[ULAB_MAX_DIMS - i];
+        ystrides[ULAB_MAX_DIMS - i] = y->shape[ULAB_MAX_DIMS - i] < 2 ? 0 : y->strides[ULAB_MAX_DIMS - i];
+        oshape[ULAB_MAX_DIMS - i] = MAX(MAX(c->shape[ULAB_MAX_DIMS - i], x->shape[ULAB_MAX_DIMS - i]), y->shape[ULAB_MAX_DIMS - i]);
+    }
+
+    uint8_t out_dtype = ndarray_upcast_dtype(x->dtype, y->dtype);
+    ndarray_obj_t *out = ndarray_new_dense_ndarray(ndim, oshape, out_dtype);
+
+    mp_float_t (*cfunc)(void *) = ndarray_get_float_function(c->dtype);
+    mp_float_t (*xfunc)(void *) = ndarray_get_float_function(x->dtype);
+    mp_float_t (*yfunc)(void *) = ndarray_get_float_function(y->dtype);
+    mp_float_t (*ofunc)(void *, mp_float_t ) = ndarray_set_float_function(out->dtype);
+
+    uint8_t *oarray = (uint8_t *)out->array;
+    uint8_t *carray = (uint8_t *)c->array;
+    uint8_t *xarray = (uint8_t *)x->array;
+    uint8_t *yarray = (uint8_t *)y->array;
+
+    #if ULAB_MAX_DIMS > 3
+    size_t i = 0;
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        size_t j = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            size_t k = 0;
+            do {
+            #endif
+                size_t l = 0;
+                do {
+                    mp_float_t value;
+                    mp_float_t cvalue = cfunc(carray);
+                    if(cvalue != MICROPY_FLOAT_CONST(0.0)) {
+                        value = xfunc(xarray);
+                    } else {
+                        value = yfunc(yarray);
+                    }
+                    ofunc(oarray, value);
+                    oarray += out->itemsize;
+                    carray += cstrides[ULAB_MAX_DIMS - 1];
+                    xarray += xstrides[ULAB_MAX_DIMS - 1];
+                    yarray += ystrides[ULAB_MAX_DIMS - 1];
+                    l++;
+                } while(l < out->shape[ULAB_MAX_DIMS - 1]);
+            #if ULAB_MAX_DIMS > 1
+                carray -= cstrides[ULAB_MAX_DIMS - 1] * c->shape[ULAB_MAX_DIMS-1];
+                carray += cstrides[ULAB_MAX_DIMS - 2];
+                xarray -= xstrides[ULAB_MAX_DIMS - 1] * x->shape[ULAB_MAX_DIMS-1];
+                xarray += xstrides[ULAB_MAX_DIMS - 2];
+                yarray -= ystrides[ULAB_MAX_DIMS - 1] * y->shape[ULAB_MAX_DIMS-1];
+                yarray += ystrides[ULAB_MAX_DIMS - 2];
+                k++;
+            } while(k < out->shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            carray -= cstrides[ULAB_MAX_DIMS - 2] * c->shape[ULAB_MAX_DIMS-2];
+            carray += cstrides[ULAB_MAX_DIMS - 3];
+            xarray -= xstrides[ULAB_MAX_DIMS - 2] * x->shape[ULAB_MAX_DIMS-2];
+            xarray += xstrides[ULAB_MAX_DIMS - 3];
+            yarray -= ystrides[ULAB_MAX_DIMS - 2] * y->shape[ULAB_MAX_DIMS-2];
+            yarray += ystrides[ULAB_MAX_DIMS - 3];
+            j++;
+        } while(j < out->shape[ULAB_MAX_DIMS - 3]);
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        carray -= cstrides[ULAB_MAX_DIMS - 3] * c->shape[ULAB_MAX_DIMS-3];
+        carray += cstrides[ULAB_MAX_DIMS - 4];
+        xarray -= xstrides[ULAB_MAX_DIMS - 3] * x->shape[ULAB_MAX_DIMS-3];
+        xarray += xstrides[ULAB_MAX_DIMS - 4];
+        yarray -= ystrides[ULAB_MAX_DIMS - 3] * y->shape[ULAB_MAX_DIMS-3];
+        yarray += ystrides[ULAB_MAX_DIMS - 4];
+        i++;
+    } while(i < out->shape[ULAB_MAX_DIMS - 4]);
+    #endif
+    return MP_OBJ_FROM_PTR(out);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_3(compare_where_obj, compare_where);
 #endif

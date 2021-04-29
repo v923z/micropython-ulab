@@ -156,7 +156,7 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     // polynomials are going to be of type float, except, when both 
     // the coefficients and the independent variable are integers
     ndarray_obj_t *ndarray;
-    if(MP_OBJ_IS_TYPE(o_x, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(o_x, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_x);
         uint8_t *sarray = (uint8_t *)source->array;
         ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);

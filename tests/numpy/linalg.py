@@ -1,50 +1,52 @@
 import math
+
 try:
     from ulab import numpy as np
-    use_ulab = True
 except ImportError:
     import numpy as np
-    use_ulab = False
 
-
-if use_ulab:
-    a = np.array([1,2,3], dtype=np.int16)
-    b = np.array([4,5,6], dtype=np.int16)
-    ab = np.dot(a.transpose(), b)
-    print(math.isclose(ab, 32.0, rel_tol=1E-9, abs_tol=1E-9))
-
-    a = np.array([1,2,3], dtype=np.int16)
-    b = np.array([4,5,6], dtype=np.float)
-    ab = np.dot(a.transpose(), b)
-    print(math.isclose(ab, 32.0, rel_tol=1E-9, abs_tol=1E-9))
-
-    a = np.array([[1., 2.], [3., 4.]])
-    b = np.linalg.inv(a)
-    ab = np.dot(a, b)
-    if use_ulab:
-        m, n = ab.shape()
-    else:
-        m, n = ab.shape
-    for i in range(m):
+def matrix_is_close(A, B, n):
+    # primitive (i.e., independent of other functions) check of closeness of two square matrices
+    for i in range(n):
         for j in range(n):
-            if i == j:
-                print(math.isclose(ab[i][j], 1.0, rel_tol=1E-9, abs_tol=1E-9))
-            else:
-                print(math.isclose(ab[i][j], 0.0, rel_tol=1E-9, abs_tol=1E-9))
+            print(math.isclose(A[i][j], B[i][j], rel_tol=1E-9, abs_tol=1E-9))
 
-    a = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
-    b = np.linalg.inv(a)
-    ab = np.dot(a, b)
-    if use_ulab:
-        m, n = ab.shape()
-    else:
-        m, n = ab.shape
-    for i in range(m):
-        for j in range(n):
-            if i == j:
-                print(math.isclose(ab[i][j], 1.0, rel_tol=1E-9, abs_tol=1E-9))
-            else:
-                print(math.isclose(ab[i][j], 0.0, rel_tol=1E-9, abs_tol=1E-9))
+a = np.array([1,2,3], dtype=np.int16)
+b = np.array([4,5,6], dtype=np.int16)
+ab = np.dot(a.transpose(), b)
+print(math.isclose(ab, 32.0, rel_tol=1E-9, abs_tol=1E-9))
+
+a = np.array([1,2,3], dtype=np.int16)
+b = np.array([4,5,6], dtype=np.float)
+ab = np.dot(a.transpose(), b)
+print(math.isclose(ab, 32.0, rel_tol=1E-9, abs_tol=1E-9))
+
+a = np.array([[1, 2], [3, 4]])
+b = np.array([[5, 6], [7, 8]])
+
+c = np.array([[19, 22], [43, 50]])
+matrix_is_close(np.dot(a, b), c, 2)
+
+c = np.array([[26, 30], [38, 44]])
+matrix_is_close(np.dot(a.transpose(), b), c, 2)
+
+c = np.array([[17, 23], [39, 53]])
+matrix_is_close(np.dot(a, b.transpose()), c, 2)
+
+c = np.array([[23, 31], [34, 46]])
+matrix_is_close(np.dot(a.transpose(), b.transpose()), c, 2)
+
+a = np.array([[1., 2.], [3., 4.]])
+b = np.linalg.inv(a)
+ab = np.dot(a, b)
+c = np.eye(2)
+matrix_is_close(ab, c, 2)
+
+a = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
+b = np.linalg.inv(a)
+ab = np.dot(a, b)
+c = np.eye(4)
+matrix_is_close(ab, c, 4)
 
 a = np.array([[1, 2, 3, 4], [4, 5, 6, 4], [7, 8.6, 9, 4], [3, 4, 5, 6]])
 result = (np.linalg.det(a))

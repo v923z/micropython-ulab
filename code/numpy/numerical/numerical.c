@@ -66,7 +66,7 @@ static void numerical_reduce_axes(ndarray_obj_t *ndarray, int8_t axis, size_t *s
 #if ULAB_NUMPY_HAS_ALL | ULAB_NUMPY_HAS_ANY
 static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
     bool anytype = optype == NUMERICAL_ALL ? 1 : 0;
-    if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         uint8_t *array = (uint8_t *)ndarray->array;
         // always get a float, so that we don't have to resolve the dtype later
@@ -167,7 +167,11 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
 
 #if ULAB_NUMPY_HAS_SUM | ULAB_NUMPY_HAS_MEAN | ULAB_NUMPY_HAS_STD
 static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, size_t ddof) {
-    mp_float_t value = 0.0, M = 0.0, m = 0.0, S = 0.0, s = 0.0;
+    mp_float_t value = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t M = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t m = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t S = MICROPY_FLOAT_CONST(0.0);
+    mp_float_t s = MICROPY_FLOAT_CONST(0.0);
     size_t count = 0;
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t item, iterable = mp_getiter(oin, &iter_buf);
@@ -199,7 +203,10 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             return mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
         }
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
-        mp_float_t M = 0.0, m = 0.0, S = 0.0, s = 0.0;
+        mp_float_t M =MICROPY_FLOAT_CONST(0.0);
+        mp_float_t m = MICROPY_FLOAT_CONST(0.0);
+        mp_float_t S = MICROPY_FLOAT_CONST(0.0);
+        mp_float_t s = MICROPY_FLOAT_CONST(0.0);
         size_t count = 0;
 
         #if ULAB_MAX_DIMS > 3
@@ -278,7 +285,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 // for floats, the sum might be inaccurate with the naive summation
                 // call mean, and multiply with the number of samples
                 farray = (mp_float_t *)results->array;
-                RUN_MEAN_STD(mp_float_t, array, farray, _shape_strides, 0.0, 0);
+                RUN_MEAN_STD(mp_float_t, array, farray, _shape_strides, MICROPY_FLOAT_CONST(0.0), 0);
                 mp_float_t norm = (mp_float_t)_shape_strides.shape[0];
                 // re-wind the array here
                 farray = (mp_float_t *)results->array;
@@ -294,7 +301,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             if((optype == NUMERICAL_STD) && (_shape_strides.shape[0] <= ddof)) {
                 return MP_OBJ_FROM_PTR(results);
             }
-            mp_float_t div = optype == NUMERICAL_STD ? (mp_float_t)(_shape_strides.shape[0] - ddof) : 0.0;
+            mp_float_t div = optype == NUMERICAL_STD ? (mp_float_t)(_shape_strides.shape[0] - ddof) : MICROPY_FLOAT_CONST(0.0);
             if(ndarray->dtype == NDARRAY_UINT8) {
                 RUN_MEAN_STD(uint8_t, array, farray, _shape_strides, div, isStd);
             } else if(ndarray->dtype == NDARRAY_INT8) {
@@ -479,15 +486,15 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_obj_t oin = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
-    if((axis != mp_const_none) && (!MP_OBJ_IS_INT(axis))) {
+    if((axis != mp_const_none) && (!mp_obj_is_int(axis))) {
         mp_raise_TypeError(translate("axis must be None, or an integer"));
     }
 
     if((optype == NUMERICAL_ALL) || (optype == NUMERICAL_ANY)) {
         return numerical_all_any(oin, axis, optype);
     }
-    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) ||
-        MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
+    if(mp_obj_is_type(oin, &mp_type_tuple) || mp_obj_is_type(oin, &mp_type_list) ||
+        mp_obj_is_type(oin, &mp_type_range)) {
         switch(optype) {
             case NUMERICAL_MIN:
             case NUMERICAL_ARGMIN:
@@ -500,7 +507,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             default: // we should never reach this point, but whatever
                 return mp_const_none;
         }
-    } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         switch(optype) {
             case NUMERICAL_MIN:
@@ -522,7 +529,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
 
 #if ULAB_NUMPY_HAS_SORT | NDARRAY_HAS_SORT
 static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inplace) {
-    if(!MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(oin, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("sort argument must be an ndarray"));
     }
 
@@ -615,7 +622,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argmin_obj, 1, numerical_argmin);
 #endif
 
 #if ULAB_NUMPY_HAS_ARGSORT
-//| def argsort(array: ulab.array, *, axis: int = -1) -> ulab.array:
+//| def argsort(array: ulab.ndarray, *, axis: int = -1) -> ulab.ndarray:
 //|     """Returns an array which gives indices into the input array from least to greatest."""
 //|     ...
 //|
@@ -627,7 +634,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("argsort argument must be an ndarray"));
     }
 
@@ -724,13 +731,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_argsort_obj, 1, numerical_argsort);
 #endif
 
 #if ULAB_NUMPY_HAS_CROSS
-//| def cross(a: ulab.array, b: ulab.array) -> ulab.array:
+//| def cross(a: ulab.ndarray, b: ulab.ndarray) -> ulab.ndarray:
 //|     """Return the cross product of two vectors of length 3"""
 //|     ...
 //|
 
 static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
-    if (!MP_OBJ_IS_TYPE(_a, &ulab_ndarray_type) || !MP_OBJ_IS_TYPE(_b, &ulab_ndarray_type)) {
+    if (!mp_obj_is_type(_a, &ulab_ndarray_type) || !mp_obj_is_type(_b, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("arguments must be ndarrays"));
     }
     ndarray_obj_t *a = MP_OBJ_TO_PTR(_a);
@@ -802,7 +809,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(numerical_cross_obj, numerical_cross);
 #endif /* ULAB_NUMERICAL_HAS_CROSS */
 
 #if ULAB_NUMPY_HAS_DIFF
-//| def diff(array: ulab.array, *, n: int = 1, axis: int = -1) -> ulab.array:
+//| def diff(array: ulab.ndarray, *, n: int = 1, axis: int = -1) -> ulab.ndarray:
 //|     """Return the numerical derivative of successive elements of the array, as
 //|        an array.  axis=None is not supported."""
 //|     ...
@@ -818,7 +825,7 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("diff argument must be an ndarray"));
     }
 
@@ -883,7 +890,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_diff_obj, 1, numerical_diff);
 #endif
 
 #if ULAB_NUMPY_HAS_FLIP
-//| def flip(array: ulab.array, *, axis: Optional[int] = None) -> ulab.array:
+//| def flip(array: ulab.ndarray, *, axis: Optional[int] = None) -> ulab.ndarray:
 //|     """Returns a new array that reverses the order of the elements along the
 //|        given axis, or along all axes if axis is None."""
 //|     ...
@@ -898,7 +905,7 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("flip argument must be an ndarray"));
     }
 
@@ -911,7 +918,7 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         rarray += (results->len - 1) * results->itemsize;
         results->array = rarray;
         results->strides[ULAB_MAX_DIMS - 1] = -results->strides[ULAB_MAX_DIMS - 1];
-    } else if(MP_OBJ_IS_INT(args[1].u_obj)){
+    } else if(mp_obj_is_int(args[1].u_obj)){
         int8_t ax = mp_obj_get_int(args[1].u_obj);
         if(ax < 0) ax += ndarray->ndim;
         if((ax < 0) || (ax > ndarray->ndim - 1)) {
@@ -957,7 +964,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_mean_obj, 1, numerical_mean);
 #endif
 
 #if ULAB_NUMPY_HAS_MEDIAN
-//| def median(array: ulab.array, *, axis: int = -1) -> ulab.array:
+//| def median(array: ulab.ndarray, *, axis: int = -1) -> ulab.ndarray:
 //|     """Find the median value in an array along the given axis, or along all axes if axis is None."""
 //|     ...
 //|
@@ -970,7 +977,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("median argument must be an ndarray"));
     }
 
@@ -1065,7 +1072,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_min_obj, 1, numerical_min);
 #endif
 
 #if ULAB_NUMPY_HAS_ROLL
-//| def roll(array: ulab.array, distance: int, *, axis: Optional[int] = None) -> None:
+//| def roll(array: ulab.ndarray, distance: int, *, axis: Optional[int] = None) -> None:
 //|     """Shift the content of a vector by the positions given as the second
 //|        argument. If the ``axis`` keyword is supplied, the shift is applied to
 //|        the given axis.  The array is modified in place."""
@@ -1082,7 +1089,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!MP_OBJ_IS_TYPE(args[0].u_obj, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("roll argument must be an ndarray"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
@@ -1144,7 +1151,7 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             i++;
         } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
         #endif
-    } else if(MP_OBJ_IS_INT(args[2].u_obj)){
+    } else if(mp_obj_is_int(args[2].u_obj)){
         int8_t ax = mp_obj_get_int(args[2].u_obj);
         if(ax < 0) ax += ndarray->ndim;
         if((ax < 0) || (ax > ndarray->ndim - 1)) {
@@ -1230,7 +1237,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_roll_obj, 2, numerical_roll);
 #endif
 
 #if ULAB_NUMPY_HAS_SORT
-//| def sort(array: ulab.array, *, axis: int = -1) -> ulab.array:
+//| def sort(array: ulab.ndarray, *, axis: int = -1) -> ulab.ndarray:
 //|     """Sort the array along the given axis, or along all axes if axis is None.
 //|        The array is modified in place."""
 //|     ...
@@ -1291,9 +1298,9 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         // this seems to pass with False, and True...
         mp_raise_ValueError(translate("axis must be None, or an integer"));
     }
-    if(MP_OBJ_IS_TYPE(oin, &mp_type_tuple) || MP_OBJ_IS_TYPE(oin, &mp_type_list) || MP_OBJ_IS_TYPE(oin, &mp_type_range)) {
+    if(mp_obj_is_type(oin, &mp_type_tuple) || mp_obj_is_type(oin, &mp_type_list) || mp_obj_is_type(oin, &mp_type_range)) {
         return numerical_sum_mean_std_iterable(oin, NUMERICAL_STD, ddof);
-    } else if(MP_OBJ_IS_TYPE(oin, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         return numerical_sum_mean_std_ndarray(ndarray, axis, NUMERICAL_STD, ddof);
     } else {
@@ -1306,7 +1313,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
 #endif
 
 #if ULAB_NUMPY_HAS_SUM
-//| def sum(array: _ArrayLike, *, axis: Optional[int] = None) -> Union[float, int, ulab.array]:
+//| def sum(array: _ArrayLike, *, axis: Optional[int] = None) -> Union[float, int, ulab.ndarray]:
 //|     """Return the sum of the array, as a number if axis is None, otherwise as an array."""
 //|     ...
 //|

@@ -26,7 +26,7 @@
 #if ULAB_MAX_DIMS > 1
 #if ULAB_NUMPY_HAS_TRACE
 
-//| def trace(m: ulab.array) -> float:
+//| def trace(m: ulab.numpy.ndarray) -> float:
 //|     """
 //|     :param m: a square matrix
 //|

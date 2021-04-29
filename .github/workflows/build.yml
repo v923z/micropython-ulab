@@ -46,39 +46,41 @@ jobs:
     - name: Run build.sh
       run: ./build.sh
 
-#  circuitpython:
-#    strategy:
-#        matrix:
-#            os:
-#                - ubuntu-16.04
-#                - macos-10.14
-#    runs-on: ${{ matrix.os }}
-#    steps:
-#    - name: Dump GitHub context
-#      env:
-#        GITHUB_CONTEXT: ${{ toJson(github) }}
-#      run: echo "$GITHUB_CONTEXT"
-#    - name: Set up Python 3.5
-#      uses: actions/setup-python@v1
-#      with:
-#        python-version: 3.8
-#
-#    - name: Versions
-#      run: |
-#        gcc --version
-#        python3 --version
-#
-#    - name: Checkout ulab
-#      uses: actions/checkout@v1
-#
-#    - name: Install requirements
-#      run: |
-#        if type -path apt-get; then
-#            sudo apt-get install gettext
-#        else
-#            brew install gettext
-#            echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
-#        fi
-#
-#    - name: Run build-cp.sh
-#      run: ./build-cp.sh
+  circuitpython:
+    strategy:
+        matrix:
+            os:
+                - ubuntu-16.04
+                - macos-10.14
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+    - name: Set up Python 3.5
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+
+    - name: Checkout ulab
+      uses: actions/checkout@v1
+
+    - name: Install requirements
+      run: |
+        if type -path apt-get; then
+            sudo apt-get install gettext librsvg2-bin
+        else
+            brew install gettext librsvg
+            echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
+            echo >>$GITHUB_PATH /usr/local/opt/librsvg/bin
+        fi
+        python3 -mpip install -r requirements_cp_dev.txt
+
+    - name: Run build-cp.sh
+      run: ./build-cp.sh

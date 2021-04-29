@@ -1,0 +1,6 @@
+False
+array([False, True, True, True], dtype=bool)
+array([False, True, True], dtype=bool)
+True
+array([True, True, True, True], dtype=bool)
+array([True, True, True], dtype=bool)

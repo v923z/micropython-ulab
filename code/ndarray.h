@@ -39,10 +39,17 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 
-#if CIRCUITPY
-#define mp_obj_is_bool(o) (MP_OBJ_IS_TYPE((o), &mp_type_bool))
-#define mp_obj_is_int(x) (MP_OBJ_IS_INT((x)))
-#else
+#if defined(MICROPY_VERSION_MAJOR) && MICROPY_VERSION_MAJOR == 1 && MICROPY_VERSION_MINOR == 11
+typedef struct _mp_obj_slice_t {
+    mp_obj_base_t base;
+    mp_obj_t start;
+    mp_obj_t stop;
+    mp_obj_t step;
+} mp_obj_slice_t;
+#define MP_ERROR_TEXT(x) x
+#endif
+
+#if !CIRCUITPY
 #define translate(x) MP_ERROR_TEXT(x)
 #endif
 
