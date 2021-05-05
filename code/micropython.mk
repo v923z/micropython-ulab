@@ -2,6 +2,7 @@
 USERMODULES_DIR := $(USERMOD_DIR)
 
 # Add all C files to SRC_USERMOD.
+SRC_USERMOD += $(USERMODULES_DIR)/scipy/linalg/linalg.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/optimize/optimize.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/signal/signal.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/special/special.c

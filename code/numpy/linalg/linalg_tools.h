@@ -11,8 +11,6 @@
 #ifndef _TOOLS_TOOLS_
 #define _TOOLS_TOOLS_
 
-#include <ndarray.h>
-
 #ifndef LINALG_EPSILON
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define LINALG_EPSILON      MICROPY_FLOAT_CONST(1.2e-7)
@@ -25,8 +23,6 @@
 
 bool linalg_invert_matrix(mp_float_t *, size_t );
 size_t linalg_jacobi_rotations(mp_float_t *, mp_float_t *, size_t );
-ndarray_obj_t *solve_lower_triangular(ndarray_obj_t *A, ndarray_obj_t *b);
-ndarray_obj_t *solve_upper_triangular(ndarray_obj_t *A, ndarray_obj_t *b);
 
 #endif /* _TOOLS_TOOLS_ */
 

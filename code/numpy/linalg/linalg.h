@@ -22,6 +22,5 @@ MP_DECLARE_CONST_FUN_OBJ_1(linalg_cholesky_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_det_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_eig_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(linalg_inv_obj);
-MP_DECLARE_CONST_FUN_OBJ_3(linalg_solve_triangular_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(linalg_norm_obj);
 #endif
