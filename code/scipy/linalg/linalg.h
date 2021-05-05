@@ -6,6 +6,8 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2021 Vikas Udupa
+ * 
 */
 
 #ifndef _SCIPY_LINALG_

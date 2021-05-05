@@ -1,13 +1,9 @@
 import math
 
 try:
-    from ulab import scipy
+    from ulab import scipy, numpy as np
 except ImportError:
     import scipy
-
-try:
-    from ulab import numpy as np
-except ImportError:
     import numpy as np
 
 A = np.array([[3, 0, 2, 6], [2, 1, 0, 1], [1, 0, 1, 4], [1, 2, 1, 8]])
