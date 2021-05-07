@@ -1,3 +1,9 @@
+Wed, 5 May 2021
+
+version 2.7.0
+
+    added linalg module in scipy with solve_triangular function
+
 Mon, 26 Apr 2021
 
 version 2.6.2

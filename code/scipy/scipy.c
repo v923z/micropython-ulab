@@ -19,6 +19,7 @@
 #include "optimize/optimize.h"
 #include "signal/signal.h"
 #include "special/special.h"
+#include "linalg/linalg.h"
 
 #if ULAB_HAS_SCIPY
 
@@ -27,6 +28,9 @@
 
 static const mp_rom_map_elem_t ulab_scipy_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_scipy) },
+    #if ULAB_SCIPY_HAS_LINALG_MODULE
+        { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_scipy_linalg_module) },
+    #endif
     #if ULAB_SCIPY_HAS_OPTIMIZE_MODULE
         { MP_ROM_QSTR(MP_QSTR_optimize), MP_ROM_PTR(&ulab_scipy_optimize_module) },
     #endif
