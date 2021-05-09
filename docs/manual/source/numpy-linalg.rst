@@ -1,6 +1,6 @@
 
-Linalg
-======
+numpy.linalg
+============
 
 Functions in the ``linalg`` module can be called by prepending them by
 ``numpy.linalg.``. The module defines the following seven functions:

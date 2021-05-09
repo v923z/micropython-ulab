@@ -1,6 +1,6 @@
 
-Special functions
-=================
+scipy.special
+=============
 
 ``scipy``\ ’s ``special`` module defines several functions that behave
 as do the standard mathematical functions of the ``numpy``, i.e., they

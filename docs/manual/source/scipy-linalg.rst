@@ -1,6 +1,6 @@
 
-linalg
-======
+scipy.linalg
+============
 
 ``scipy``\ ’s ``linalg`` module contains a single function,
 ``solve_triangular``, which can be called by prepending it by
