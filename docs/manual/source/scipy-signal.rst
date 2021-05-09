@@ -1,6 +1,6 @@
 
-Signal
-======
+scipy.signal
+============
 
 Functions in the ``signal`` module can be called by prepending them by
 ``scipy.signal.``. The module defines the following two functions:

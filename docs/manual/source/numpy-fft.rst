@@ -1,6 +1,6 @@
 
-Fourier transforms
-==================
+numpy.fft
+=========
 
 Functions related to Fourier transforms can be called by prepending them
 with ``numpy.fft.``. The module defines the following two functions:

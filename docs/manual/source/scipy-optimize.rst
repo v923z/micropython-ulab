@@ -1,6 +1,6 @@
 
-Optimize
-========
+scipy.optimize
+==============
 
 Functions in the ``optimize`` module can be called by prepending them by
 ``scipy.optimize.``. The module defines the following three functions:
