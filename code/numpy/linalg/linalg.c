@@ -387,8 +387,8 @@ static mp_obj_t linalg_qr(mp_obj_t M) {
     size_t m = source->shape[ULAB_MAX_DIMS - 2]; // rows
     size_t n = source->shape[ULAB_MAX_DIMS - 1]; // columns
 
-    ndarray_obj_t *Q = ndarray_new_dense_ndarray(2, source->shape, NDARRAY_FLOAT);
-    ndarray_obj_t *R = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, n, n), NDARRAY_FLOAT);
+    ndarray_obj_t *Q = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, m, m), NDARRAY_FLOAT);
+    ndarray_obj_t *R = ndarray_new_dense_ndarray(2, source->shape, NDARRAY_FLOAT);
 
     mp_float_t *qarray = (mp_float_t *)Q->array;
     mp_float_t *rarray = (mp_float_t *)R->array;
@@ -409,50 +409,51 @@ static mp_obj_t linalg_qr(mp_obj_t M) {
 
     // start with the unit matrix
     for(size_t i = 0; i < m; i++) {
-        qarray[i * (n + 1)] = 1.0;
+        qarray[i * (m + 1)] = 1.0;
     }
 
-    for(size_t j = 0; j < n; j++) {
-        for(size_t i = m - 1; i > j; i--) {
+    for(size_t j = 0; j < n; j++) { // columns
+        for(size_t i = m - 1; i > j; i--) { // rows
             mp_float_t c, s;
-            // Givens matrix:
-            // ( (c  s),
-            //   (-s c) )
-            if(rarray[i * n + j] == 0.0) {
-                c = (rarray[(i - 1) * n + j] >= 0.0) ? 1.0 : -1.0;
+            // Givens matrix: note that numpy uses a strange form of the rotation
+            // [[c  s],
+            //  [s -c]]
+            if(MICROPY_FLOAT_C_FUN(fabs)(rarray[i * n + j]) < LINALG_EPSILON) { // r[i, j]
+                c = (rarray[(i - 1) * n + j] >= 0.0) ? 1.0 : -1.0; // r[i-1, j]
                 s = 0.0;
-            } else if(rarray[(i - 1) * n + j] == 0.0) {
+            } else if(MICROPY_FLOAT_C_FUN(fabs)(rarray[(i - 1) * n + j]) < LINALG_EPSILON) { // r[i-1, j]
                 c = 0.0;
-                s = (rarray[i * n + j] >= 0.0) ? -1.0 : 1.0;
+                s = (rarray[i * n + j] >= 0.0) ? -1.0 : 1.0; // r[i, j]
             } else {
                 mp_float_t t, u;
-                if(MICROPY_FLOAT_C_FUN(fabs)(rarray[(i - 1) * n + j]) > MICROPY_FLOAT_C_FUN(fabs)(rarray[i * n + j])) {
-                    t = rarray[i * n + j] / rarray[(i - 1) * n + j];
+                if(MICROPY_FLOAT_C_FUN(fabs)(rarray[(i - 1) * n + j]) > MICROPY_FLOAT_C_FUN(fabs)(rarray[i * n + j])) { // r[i-1, j], r[i, j]
+                    t = rarray[i * n + j] / rarray[(i - 1) * n + j]; // r[i, j]/r[i-1, j]
                     u = MICROPY_FLOAT_C_FUN(sqrt)(1 + t * t);
-                    c = 1.0 / u;
+                    c = -1.0 / u;
                     s = c * t;
                 } else {
-                    t = rarray[(i - 1) * n + j] / rarray[i * n + j];
+                    t = rarray[(i - 1) * n + j] / rarray[i * n + j]; // r[i-1, j]/r[i, j]
                     u = MICROPY_FLOAT_C_FUN(sqrt)(1 + t * t);
-                    s = 1.0 / u;
+                    s = -1.0 / u;
                     c = s * t;
                 }
             }
-            mp_float_t r1 = 0.0, r2 = 0.0;
+
+            mp_float_t r1, r2;
             // update R: multiply with the rotation matrix from the left
             for(size_t k = 0; k < n; k++) {
-                r1 = rarray[(i - 1) * n + k];
-                r2 = rarray[i * n + k];
-                rarray[(i - 1) * n + k] = c * r1 + s * r2;
-                rarray[i * n + k] = - s * r1 + c * r2;
+                r1 = rarray[(i - 1) * n + k]; // r[i-1, k]
+                r2 = rarray[i * n + k]; // r[i, k]
+                rarray[(i - 1) * n + k] = c * r1 + s * r2; // r[i-1, k]
+                rarray[i * n + k] = s * r1 - c * r2; // r[i, k]
             }
 
             // update Q: multiply with the transpose of the rotation matrix from the right
-            for(size_t k = 0; k < n; k++) {
-                r1 = qarray[k * n + (i - 1)];
-                r2 = qarray[k * n + i];
-                qarray[k * n + (i - 1)] = c * r1 - s * r2;
-                qarray[k * n + i] = s * r1 + c * r2;
+            for(size_t k = 0; k < m; k++) {
+                r1 = qarray[(i - 1) * m + k];
+                r2 = qarray[i * m + k];
+                qarray[(i - 1) * m + k] = c * r1 + s * r2;
+                qarray[i * m + k] = s * r1 - c * r2;
             }
         }
     }
