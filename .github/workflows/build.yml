@@ -7,6 +7,8 @@ on:
     - 'code/**'
     - 'tests/**'
     - '.github/workflows/**'
+    - 'build*.sh'
+    - 'requirements*.txt'
   release:
     types: [published]
   check_suite:

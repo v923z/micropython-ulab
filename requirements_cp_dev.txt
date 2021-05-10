@@ -5,9 +5,10 @@ black
 # For docs
 Sphinx<4
 sphinx-rtd-theme
-recommonmark
+myst-parser
 sphinx-autoapi
 sphinxcontrib-svg2pdfconverter
+readthedocs-sphinx-search
 
 # for check-stubs
 mypy

@@ -41,9 +41,7 @@ HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
 rm -rf circuitpython/extmod/ulab; ln -s "$HERE" circuitpython/extmod/ulab
 make -C circuitpython/mpy-cross -j$NPROC
 sed -e '/MICROPY_PY_UHASHLIB/s/1/0/' < circuitpython/ports/unix/mpconfigport.h > circuitpython/ports/unix/mpconfigport_ulab.h
-# Work around circuitpython#3990
-make -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_ulab.h>" -Wno-tautological-constant-out-of-range-compare' build/genhdr/qstrdefs.generated.h
-make -k -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_ulab.h>" -Wno-tautological-constant-out-of-range-compare'
+make -k -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_ulab.h>" -Wno-tautological-constant-out-of-range-compare -Wno-unknown-pragmas'
 
 for dir in "circuitpy" "common"
 do
