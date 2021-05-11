@@ -136,3 +136,8 @@ from_int16_buffer, from_uint16_buffer
 These two functions are identical to ``utils.from_int32_buffer``, and
 ``utils.from_uint32_buffer``, with the exception that they convert
 16-bit integers to floating point ``ndarray``\ s.
+
+.. code::
+
+    # code to be run in CPython
+    
