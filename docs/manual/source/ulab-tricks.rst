@@ -213,10 +213,12 @@ up-scaled the linear array:
     
     b = np.zeros((15, 15), dtype=np.uint8)
     
-    b[::2] = a
-    b[::2] += a
-    b[1::2] = a[:-1]
-    b[1::2] += a[1:]
+    b[1::2,::2] = a[:-1,:]
+    b[1::2,::2] += a[1:, :]
+    b[1::2,::2] //= 2
+    b[::,1::2] = a[::,:-1:2]
+    b[::,1::2] += a[::,2::2]
+    b[::,1::2] //= 2
 Up-scaling by larger numbers can be done in a similar fashion, you
 simply have more assignments.
 
