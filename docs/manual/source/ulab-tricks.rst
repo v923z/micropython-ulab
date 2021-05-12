@@ -68,7 +68,7 @@ times as much RAM, with absolutely no gain. Do not rely on the default
 value of the constructor’s keyword argument, and choose one that fits!
 
 Beware the axis!
-================
+----------------
 
 Whenever ``ulab`` iterates over multi-dimensional arrays, the outermost
 loop is the first axis, then the second axis, and so on. E.g., when the
