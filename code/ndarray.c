@@ -689,6 +689,7 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     // we could, perhaps, leave this step out, and initialise the array only, when needed
     memset(array, 0, len);
     ndarray->array = array;
+    ndarray->origin = array;
     return ndarray;
 }
 
@@ -781,6 +782,7 @@ ndarray_obj_t *ndarray_new_view(ndarray_obj_t *source, uint8_t ndim, size_t *sha
     uint8_t *pointer = (uint8_t *)source->array;
     pointer += offset;
     ndarray->array = pointer;
+    ndarray->origin = source->origin;
     return ndarray;
 }
 

@@ -1,3 +1,9 @@
+Thu, 13 May 2021
+
+version 2.7.1
+
+    fix garbage collection problem
+
 Wed, 5 May 2021
 
 version 2.7.0
