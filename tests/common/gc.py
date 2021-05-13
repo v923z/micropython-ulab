@@ -1,7 +1,7 @@
-from ulab import numpy as np
+import ulab
 import gc
 
-data = np.ones(1000)[6:-6]
+data = ulab.ones(1000)[6:-6]
 print(sum(data))
 print(data)
 
