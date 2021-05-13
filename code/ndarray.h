@@ -88,6 +88,7 @@ typedef struct _ndarray_obj_t {
     size_t shape[ULAB_MAX_DIMS];
     int32_t strides[ULAB_MAX_DIMS];
     void *array;
+    void *origin;
 } ndarray_obj_t;
 
 #if ULAB_HAS_DTYPE_OBJECT
