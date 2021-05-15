@@ -180,7 +180,7 @@ Beginning with version 1.15, `micropython` switched to `cmake` on the ESP32 port
 
 In case you encounter difficulties during the build process, you can consult the (general instructions for the ESP32)[https://github.com/micropython/micropython/tree/master/ports/esp32#micropython-port-to-the-esp32].
 
-Frist, clone the `ulab`, the `micropython`, as well as the `espressif` repositories:
+First, clone the `ulab`, the `micropython`, as well as the `espressif` repositories:
 
 ```bash
 export BUILD_DIR=$(pwd)
@@ -193,6 +193,7 @@ cd $BUILD_DIR/micropython/
 git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
 
 ```
+Also later releases of `esp-idf` are possible (e.g. `v4.2.1`).
 
 Then install the `ESP-IDF` tools:
 
@@ -218,7 +219,7 @@ USER_C_MODULES = $(BUILD_DIR)/ulab/code/micropython.cmake
 
 include Makefile
 ```
-You specify with the `BOARD` variable, what you want to compile for, a generic board, or `TINYPICO`, etc. Still in `$BUILD_DIR/micropython/ports/esp32`, you can now run `make`.
+You specify with the `BOARD` variable, what you want to compile for, a generic board, or `TINYPICO` (for `micropython` version >1.1.5, use `UM_TINYPICO`), etc. Still in `$BUILD_DIR/micropython/ports/esp32`, you can now run `make`.
 
 #### Compiling with make
 
