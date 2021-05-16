@@ -1,3 +1,9 @@
+Sun, 16 May 2021
+
+version 2.8.0
+
+    added cho_solve function in scipy.linalg module
+
 Thu, 13 May 2021
 
 version 2.7.1

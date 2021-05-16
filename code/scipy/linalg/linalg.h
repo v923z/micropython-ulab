@@ -16,5 +16,6 @@
 extern mp_obj_module_t ulab_scipy_linalg_module;
 
 MP_DECLARE_CONST_FUN_OBJ_KW(linalg_solve_triangular_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(linalg_cho_solve_obj);
 
 #endif /* _SCIPY_LINALG_ */
