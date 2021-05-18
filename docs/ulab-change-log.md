@@ -1,3 +1,9 @@
+Tue, 18 May 2021
+
+version 2.8.1
+
+    fix array initialisation/print with empty iterables
+
 Sun, 16 May 2021
 
 version 2.8.0
