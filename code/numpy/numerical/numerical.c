@@ -69,6 +69,13 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
     if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
         uint8_t *array = (uint8_t *)ndarray->array;
+        if(ndarray->len == 0) { // return immediately with empty arrays
+        if(optype == NUMERICAL_ALL) {
+                return mp_const_true;
+            } else {
+                return mp_const_false;
+            }
+        }
         // always get a float, so that we don't have to resolve the dtype later
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
         ndarray_obj_t *results = NULL;
