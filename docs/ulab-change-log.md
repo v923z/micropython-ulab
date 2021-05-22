@@ -1,3 +1,9 @@
+Sat, 22 May 2021
+
+version 2.8.2
+
+    fix all/any/median for empty arrays
+
 Tue, 18 May 2021
 
 version 2.8.1
