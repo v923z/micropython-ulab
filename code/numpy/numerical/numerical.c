@@ -988,7 +988,12 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         mp_raise_TypeError(translate("median argument must be an ndarray"));
     }
 
-    ndarray_obj_t *ndarray = numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    if(ndarray->len == 0) {
+        return mp_obj_new_float(MICROPY_FLOAT_CONST(NAN));
+    }
+
+    ndarray = numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
 
     if((args[1].u_obj == mp_const_none) || (ndarray->ndim == 1)) {
         // at this point, the array holding the sorted values should be flat
