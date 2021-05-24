@@ -386,7 +386,7 @@ With this setup, we can now build the firmware. Back in the `micropython` reposi
 
 ```bash
 cd ports/rp2
-make USER_C_MODULE=/path/to/ulab/code/micropython.cmake
+make USER_C_MODULES=/path/to/ulab/code/micropython.cmake
 ```
 
 If `micropython` and `ulab` were in the same folder on the computer, you can set `USER_C_MODULES=../../../ulab/code/micropython.cmake`. The compiled firmware will be placed in `micropython/ports/rp2/build`.
