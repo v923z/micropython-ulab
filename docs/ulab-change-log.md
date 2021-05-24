@@ -1,3 +1,9 @@
+Mon, 24 May 2021
+
+version 2.8.3
+
+    fix nan return value
+
 Sat, 22 May 2021
 
 version 2.8.2

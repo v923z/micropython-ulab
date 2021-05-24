@@ -990,7 +990,7 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
     if(ndarray->len == 0) {
-        return mp_obj_new_float(MICROPY_FLOAT_CONST(MICROPY_FLOAT_C_FUN(sqrt)(-1.0)));
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(nan)(""));
     }
 
     ndarray = numerical_sort_helper(args[0].u_obj, args[1].u_obj, 0);
