@@ -1,3 +1,9 @@
+Mon, 31 May 2021
+
+version 2.8.4
+
+    initialise arange values via macro
+
 Mon, 24 May 2021
 
 version 2.8.3
