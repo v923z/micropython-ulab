@@ -1,3 +1,9 @@
+Tue, 1 Jun 2021
+
+version 2.8.4
+
+    fix upcasting rules for ndarray + scalar
+
 Mon, 24 May 2021
 
 version 2.8.3

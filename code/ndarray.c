@@ -1469,7 +1469,7 @@ mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) { // return value(s)
         return ndarray_get_slice(self, index, NULL);
     } else { // assignment to slices; the value must be an ndarray, or a scalar
-        ndarray_obj_t *values = ndarray_from_mp_obj(value);
+        ndarray_obj_t *values = ndarray_from_mp_obj(value, 0);
         return ndarray_get_slice(self, index, values);
     }
     return mp_const_none;
@@ -1686,38 +1686,50 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_tobytes_obj, ndarray_tobytes);
 #endif
 
 // Binary operations
-ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj) {
+ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
     // creates an ndarray from a micropython int or float
     // if the input is an ndarray, it is returned
+    // if other_type is 0, return the smallest type that can accommodate the object
     ndarray_obj_t *ndarray;
+
     if(mp_obj_is_int(obj)) {
         int32_t ivalue = mp_obj_get_int(obj);
-        if((ivalue >= 0) && (ivalue < 256)) {
-            ndarray = ndarray_new_linear_array(1, NDARRAY_UINT8);
-            uint8_t *array = (uint8_t *)ndarray->array;
-            array[0] = (uint8_t)ivalue;
-        } else if((ivalue > 255) && (ivalue < 65535)) {
-            ndarray = ndarray_new_linear_array(1, NDARRAY_UINT16);
-            uint16_t *array = (uint16_t *)ndarray->array;
-            array[0] = (uint16_t)ivalue;
-        } else if((ivalue < 0) && (ivalue > -128)) {
-            ndarray = ndarray_new_linear_array(1, NDARRAY_INT8);
-            int8_t *array = (int8_t *)ndarray->array;
-            array[0] = (int8_t)ivalue;
-        } else if((ivalue < -127) && (ivalue > -32767)) {
-            ndarray = ndarray_new_linear_array(1, NDARRAY_INT16);
-            int16_t *array = (int16_t *)ndarray->array;
-            array[0] = (int16_t)ivalue;
-        } else { // the integer value clearly does not fit the ulab integer types, so move on to float
+        if((ivalue < -32767) || (ivalue > 32767)) {
+            // the integer value clearly does not fit the ulab integer types, so move on to float
             ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
             mp_float_t *array = (mp_float_t *)ndarray->array;
             array[0] = (mp_float_t)ivalue;
+        } else {
+            uint8_t dtype;
+            if(ivalue < 0) {
+                if(ivalue > -128) {
+                    dtype = NDARRAY_INT8;
+                } else {
+                    dtype = NDARRAY_INT16;
+                }
+            } else { // ivalue >= 0
+                if((other_type == NDARRAY_INT8) || (other_type == NDARRAY_INT16)) {
+                    if(ivalue < 128) {
+                        dtype = NDARRAY_INT8;
+                    } else {
+                        dtype = NDARRAY_INT16;
+                    }
+                } else { // other_type = 0 is also included here
+                    if(ivalue < 256) {
+                        dtype = NDARRAY_UINT8;
+                    } else {
+                        dtype = NDARRAY_UINT16;
+                    }
+                }
+            }
+            ndarray = ndarray_new_linear_array(1, dtype);
+		    uint8_t width = mp_binary_get_size('@', dtype, NULL);
+		    memcpy(ndarray->array, &ivalue, width);
         }
     } else if(mp_obj_is_float(obj)) {
-        mp_float_t fvalue = mp_obj_get_float(obj);
         ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
-        array[0] = (mp_float_t)fvalue;
+        array[0] = mp_obj_get_float(obj);
     } else if(mp_obj_is_type(obj, &ulab_ndarray_type)){
         return obj;
     } else {
@@ -1735,11 +1747,11 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     if((op == MP_BINARY_OP_REVERSE_ADD) || (op == MP_BINARY_OP_REVERSE_MULTIPLY) ||
         (op == MP_BINARY_OP_REVERSE_POWER) || (op == MP_BINARY_OP_REVERSE_SUBTRACT) ||
         (op == MP_BINARY_OP_REVERSE_TRUE_DIVIDE)) {
-        lhs = ndarray_from_mp_obj(robj);
-        rhs = ndarray_from_mp_obj(lobj);
+        lhs = ndarray_from_mp_obj(robj, 0);
+        rhs = ndarray_from_mp_obj(lobj, lhs->dtype);
     } else {
-        lhs = ndarray_from_mp_obj(lobj);
-        rhs = ndarray_from_mp_obj(robj);
+        lhs = ndarray_from_mp_obj(lobj, 0);
+        rhs = ndarray_from_mp_obj(robj, lhs->dtype);
     }
     if(op == MP_BINARY_OP_REVERSE_ADD) {
         op = MP_BINARY_OP_ADD;

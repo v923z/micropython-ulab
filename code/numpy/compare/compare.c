@@ -23,8 +23,8 @@
 #include "compare.h"
 
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
-    ndarray_obj_t *lhs = ndarray_from_mp_obj(x1);
-    ndarray_obj_t *rhs = ndarray_from_mp_obj(x2);
+    ndarray_obj_t *lhs = ndarray_from_mp_obj(x1, 0);
+    ndarray_obj_t *rhs = ndarray_from_mp_obj(x2, 0);
     uint8_t ndim = 0;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
@@ -309,9 +309,9 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
 
 mp_obj_t compare_where(mp_obj_t _condition, mp_obj_t _x, mp_obj_t _y) {
     // this implementation will work with ndarrays, and scalars only
-    ndarray_obj_t *c = ndarray_from_mp_obj(_condition);
-    ndarray_obj_t *x = ndarray_from_mp_obj(_x);
-    ndarray_obj_t *y = ndarray_from_mp_obj(_y);
+    ndarray_obj_t *c = ndarray_from_mp_obj(_condition, 0);
+    ndarray_obj_t *x = ndarray_from_mp_obj(_x, 0);
+    ndarray_obj_t *y = ndarray_from_mp_obj(_y, 0);
 
     int32_t *cstrides = m_new(int32_t, ULAB_MAX_DIMS);
     int32_t *xstrides = m_new(int32_t, ULAB_MAX_DIMS);

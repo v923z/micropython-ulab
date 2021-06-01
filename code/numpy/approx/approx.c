@@ -58,9 +58,9 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // TODO: numpy allows generic iterables
-    ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj);
-    ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj); // xp must hold an increasing sequence of independent values
-    ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj);
+    ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj, 0);
+    ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj, 0); // xp must hold an increasing sequence of independent values
+    ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj, 0);
     if((xp->ndim != 1) || (fp->ndim != 1) || (xp->len < 2) || (fp->len < 2) || (xp->len != fp->len)) {
         mp_raise_ValueError(translate("interp is defined for 1D arrays of equal length"));
     }
@@ -157,7 +157,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj);
+    ndarray_obj_t *y = ndarray_from_mp_obj(args[0].u_obj, 0);
     ndarray_obj_t *x;
     mp_float_t mean = MICROPY_FLOAT_CONST(0.0);
     if(y->len < 2) {
@@ -174,7 +174,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     mp_float_t y1, y2, m;
 
     if(args[1].u_obj != mp_const_none) {
-        x = ndarray_from_mp_obj(args[1].u_obj); // x must hold an increasing sequence of independent values
+        x = ndarray_from_mp_obj(args[1].u_obj, 0); // x must hold an increasing sequence of independent values
         if((x->ndim != 1) || (y->len != x->len)) {
             mp_raise_ValueError(translate("trapz is defined for 1D arrays of equal length"));
         }

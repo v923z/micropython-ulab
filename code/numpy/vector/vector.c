@@ -43,11 +43,11 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         uint8_t *sarray = (uint8_t *)source->array;
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
-        
+
         #if ULAB_VECTORISE_USES_FUN_POINTER
-        
+
             mp_float_t (*func)(void *) = ndarray_get_float_function(source->dtype);
-            
+
             #if ULAB_MAX_DIMS > 3
             size_t i = 0;
             do {
@@ -98,7 +98,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
             ITERATE_VECTOR(mp_float_t, array, source, sarray);
         }
         #endif /* ULAB_VECTORISE_USES_FUN_POINTER */
-        
+
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(mp_obj_is_type(o_in, &mp_type_tuple) || mp_obj_is_type(o_in, &mp_type_list) ||
         mp_obj_is_type(o_in, &mp_type_range)) { // i.e., the input is a generic iterable
@@ -247,8 +247,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 //|
 
 mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
-    ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x);
-    ndarray_obj_t *ndarray_y = ndarray_from_mp_obj(y);
+    ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x, 0);
+    ndarray_obj_t *ndarray_y = ndarray_from_mp_obj(y, 0);
 
     uint8_t ndim = 0;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
