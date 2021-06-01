@@ -192,7 +192,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(ndarray_info_obj);
 mp_int_t ndarray_get_buffer(mp_obj_t , mp_buffer_info_t *, mp_uint_t );
 //void ndarray_attributes(mp_obj_t , qstr , mp_obj_t *);
 
-ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t );
+ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
 
 
 #define BOOLEAN_ASSIGNMENT_LOOP(type_left, type_right, ndarray, iarray, istride, varray, vstride)\
