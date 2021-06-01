@@ -74,20 +74,15 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
             *array++ = value == MICROPY_FLOAT_CONST(0.0) ? 0 : 1;
         }
     } else if(dtype == NDARRAY_UINT8) {
-        uint8_t *array = (uint8_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) *array++ = (uint8_t)value;
+        ARANGE_LOOP(uint8_t, ndarray, len, step);
     } else if(dtype == NDARRAY_INT8) {
-        int8_t *array = (int8_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) *array++ = (int8_t)value;
+        ARANGE_LOOP(int8_t, ndarray, len, step);
     } else if(dtype == NDARRAY_UINT16) {
-        uint16_t *array = (uint16_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) *array++ = (uint16_t)value;
+        ARANGE_LOOP(uint16_t, ndarray, len, step);
     } else if(dtype == NDARRAY_INT16) {
-        int16_t *array = (int16_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) *array++ = (int16_t)value;
+        ARANGE_LOOP(int16_t, ndarray, len, step);
     } else {
-        mp_float_t *array = (mp_float_t *)ndarray->array;
-        for(size_t i=0; i < len; i++, value += step) *array++ = value;
+        ARANGE_LOOP(mp_float_t, ndarray, len, step);
     }
     return ndarray;
 }
