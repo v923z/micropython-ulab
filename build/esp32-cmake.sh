@@ -9,7 +9,7 @@ cd $BUILD_DIR/micropython/
 
 git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
 
-```bash
+bash
 cd esp-idf
 ./install.sh
 . ./export.sh
