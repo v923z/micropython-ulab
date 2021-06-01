@@ -1,8 +1,14 @@
 Tue, 1 Jun 2021
 
-version 2.8.4
+version 2.8.5
 
     fix upcasting rules for ndarray + scalar
+
+Mon, 31 May 2021
+
+version 2.8.4
+
+    initialise arange values via macro
 
 Mon, 24 May 2021
 
