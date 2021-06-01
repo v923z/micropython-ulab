@@ -1723,8 +1723,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
                 }
             }
             ndarray = ndarray_new_linear_array(1, dtype);
-		    uint8_t width = mp_binary_get_size('@', dtype, NULL);
-		    memcpy(ndarray->array, &ivalue, width);
+            mp_binary_set_val_array(dtype, ndarray->array, 0, obj);
         }
     } else if(mp_obj_is_float(obj)) {
         ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
