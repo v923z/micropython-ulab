@@ -1743,7 +1743,8 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
     } else if(mp_obj_is_type(obj, &ulab_ndarray_type)){
         return obj;
     } else {
-        mp_raise_TypeError(translate("wrong operand type"));
+        // assume that the input is an iterable (raises an exception, if it is not the case)
+        ndarray = ndarray_from_iterable(obj, NDARRAY_FLOAT);
     }
     return ndarray;
 }
