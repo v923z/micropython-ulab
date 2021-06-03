@@ -38,10 +38,11 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
     if(mp_obj_is_float(o_in) || mp_obj_is_int(o_in)) {
         return mp_obj_new_float(f(mp_obj_get_float(o_in)));
     }
+    ndarray_obj_t *ndarray = NULL;
     if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
         uint8_t *sarray = (uint8_t *)source->array;
-        ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
+        ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
 
         #if ULAB_VECTORISE_USES_FUN_POINTER
@@ -98,24 +99,15 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
             ITERATE_VECTOR(mp_float_t, array, source, sarray);
         }
         #endif /* ULAB_VECTORISE_USES_FUN_POINTER */
-
-        return MP_OBJ_FROM_PTR(ndarray);
-    } else if(mp_obj_is_type(o_in, &mp_type_tuple) || mp_obj_is_type(o_in, &mp_type_list) ||
-        mp_obj_is_type(o_in, &mp_type_range)) { // i.e., the input is a generic iterable
-            mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
-            ndarray_obj_t *out = ndarray_new_linear_array(o->len, NDARRAY_FLOAT);
-            mp_float_t *array = (mp_float_t *)out->array;
-            mp_obj_iter_buf_t iter_buf;
-            mp_obj_t item, iterable = mp_getiter(o_in, &iter_buf);
-            size_t i=0;
-            while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-                mp_float_t x = mp_obj_get_float(item);
-                *array++ = f(x);
-                i++;
-            }
-        return MP_OBJ_FROM_PTR(out);
+    } else {
+        ndarray = ndarray_from_mp_obj(o_in, 0);
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        for(size_t i = 0; i < ndarray->len; i++) {
+            *array = f(*array);
+            array++;
+        }
     }
-    return mp_const_none;
+    return MP_OBJ_FROM_PTR(ndarray);
 }
 
 #if ULAB_NUMPY_HAS_ACOS
