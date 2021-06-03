@@ -10,6 +10,7 @@ prepending them by ``scipy.linalg.``.
 2. `scipy.linalg.solve_triangular <#solve_triangular>`__
 
 cho_solve
+---------
 
 ``scipy``:
 https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.cho_solve.html
