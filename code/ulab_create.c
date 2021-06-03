@@ -20,7 +20,7 @@
 #include "ulab.h"
 #include "ulab_create.h"
 
-#if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL
+#if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL | ULAB_NUMPY_HAS_EMPTY
 static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t value) {
     if(!mp_obj_is_int(oshape) && !mp_obj_is_type(oshape, &mp_type_tuple) && !mp_obj_is_type(oshape, &mp_type_list)) {
         mp_raise_TypeError(translate("input argument must be an integer, a tuple, or a list"));
