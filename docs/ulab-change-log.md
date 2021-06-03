@@ -1,5 +1,11 @@
 Thu, 3 Jun 2021
 
+version 2.9.0
+
+    add empty as alias for zeros
+
+Thu, 3 Jun 2021
+
 version 2.8.8
 
     allow functions in approx to take iterables as argument

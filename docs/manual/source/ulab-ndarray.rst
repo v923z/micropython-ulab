@@ -252,15 +252,17 @@ Array initialisation functions
 
 There are nine functions that can be used for initialising an array.
 
-1. `numpy.arange <#arange>`__
-2. `numpy.concatenate <#concatenate>`__
-3. `numpy.eye <#eye>`__
-4. `numpy.frombuffer <#frombuffer>`__
-5. `numpy.full <#full>`__
-6. `numpy.linspace <#linspace>`__
-7. `numpy.logspace <#logspace>`__
-8. `numpy.ones <#ones>`__
-9. `numpy.zeros <#zeros>`__
+1.  `numpy.arange <#arange>`__
+2.  `numpy.concatenate <#concatenate>`__
+3.  `numpy.diag <#diag>`__
+4.  `numpy.empty <#empty>`__
+5.  `numpy.eye <#eye>`__
+6.  `numpy.frombuffer <#frombuffer>`__
+7.  `numpy.full <#full>`__
+8.  `numpy.linspace <#linspace>`__
+9.  `numpy.logspace <#logspace>`__
+10. `numpy.ones <#ones>`__
+11. `numpy.zeros <#zeros>`__
 
 arange
 ~~~~~~
@@ -372,6 +374,74 @@ concatenation works:
     
     
 
+
+diag
+----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.diag.html
+
+Extract a diagonal, or construct a diagonal array.
+
+The function takes two arguments, an ``ndarray``, and a shift. If the
+first argument is a two-dimensional array, the function returns a
+one-dimensional array containing the diagonal entries. The diagonal can
+be shifted by an amount given in the second argument.
+
+If the first argument is a one-dimensional array, the function returns a
+two-dimensional tensor with its diagonal elements given by the first
+argument.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3, 4])
+    print(np.diag(a))
+
+.. parsed-literal::
+
+    array([[1.0, 0.0, 0.0, 0.0],
+           [0.0, 2.0, 0.0, 0.0],
+           [0.0, 0.0, 3.0, 0.0],
+           [0.0, 0.0, 0.0, 4.0]], dtype=float64)
+    
+    
+
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(16)).reshape((4, 4))
+    print('a: ', a)
+    print()
+    print('diagonal of a: ', np.diag(a))
+
+.. parsed-literal::
+
+    a:  array([[0.0, 1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0, 7.0],
+           [8.0, 9.0, 10.0, 11.0],
+           [12.0, 13.0, 14.0, 15.0]], dtype=float64)
+    
+    diagonal of a:  array([0.0, 5.0, 10.0, 15.0], dtype=float64)
+    
+    
+
+
+empty
+-----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.empty.html
+
+``empty`` is simply an alias for ``zeros``, i.e., as opposed to
+``numpy``, the entries of the tensor will be initialised to zero.
 
 eye
 ~~~

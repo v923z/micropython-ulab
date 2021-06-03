@@ -278,6 +278,10 @@
 #define ULAB_NUMPY_HAS_DIAG             (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_EMPTY
+#define ULAB_NUMPY_HAS_EMPTY            (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_EYE
 #define ULAB_NUMPY_HAS_EYE              (1)
 #endif

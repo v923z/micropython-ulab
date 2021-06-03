@@ -129,6 +129,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_DIAG
         { MP_ROM_QSTR(MP_QSTR_diag), (mp_obj_t)&create_diag_obj },
     #endif
+    #if ULAB_NUMPY_HAS_EMPTY
+        { MP_ROM_QSTR(MP_QSTR_empty), (mp_obj_t)&create_zeros_obj },
+    #endif
     #if ULAB_MAX_DIMS > 1
         #if ULAB_NUMPY_HAS_EYE
             { MP_ROM_QSTR(MP_QSTR_eye), (mp_obj_t)&create_eye_obj },
