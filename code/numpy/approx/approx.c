@@ -57,12 +57,11 @@ STATIC mp_obj_t approx_interp(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // TODO: numpy allows generic iterables
     ndarray_obj_t *x = ndarray_from_mp_obj(args[0].u_obj, 0);
     ndarray_obj_t *xp = ndarray_from_mp_obj(args[1].u_obj, 0); // xp must hold an increasing sequence of independent values
     ndarray_obj_t *fp = ndarray_from_mp_obj(args[2].u_obj, 0);
     if((xp->ndim != 1) || (fp->ndim != 1) || (xp->len < 2) || (fp->len < 2) || (xp->len != fp->len)) {
-        mp_raise_ValueError(translate("interp is defined for 1D arrays of equal length"));
+        mp_raise_ValueError(translate("interp is defined for 1D iterables of equal length"));
     }
 
     ndarray_obj_t *y = ndarray_new_linear_array(x->len, NDARRAY_FLOAT);
@@ -164,7 +163,7 @@ STATIC mp_obj_t approx_trapz(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         return mp_obj_new_float(mean);
     }
     if((y->ndim != 1)) {
-        mp_raise_ValueError(translate("trapz is defined for 1D arrays"));
+        mp_raise_ValueError(translate("trapz is defined for 1D iterables"));
     }
 
     mp_float_t (*funcy)(void *) = ndarray_get_float_function(y->dtype);
