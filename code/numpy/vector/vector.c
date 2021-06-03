@@ -101,7 +101,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
         #endif /* ULAB_VECTORISE_USES_FUN_POINTER */
     } else {
         ndarray = ndarray_from_mp_obj(o_in, 0);
-        mp_float_t *array = ndarray->array;
+        mp_float_t *array = (mp_float_t *)ndarray->array;
         for(size_t i = 0; i < ndarray->len; i++) {
             *array = f(*array);
             array++;
