@@ -6,24 +6,28 @@ dimensions, and is fast. The library is a software-only standard `micropython` u
 i.e., it has no hardware dependencies, and can be compiled for any platform.
 The `float` implementation of `micropython` (`float`, or `double`) is automatically detected.
 
-1. [Supported functions](#supported-functions)
-1. [Customising the firmware](#customising-the-firmware)
-1. [Usage](#usage)
-1. [Finding help](#finding-help)
-1. [Benchmarks](#benchmarks)
-1. [Firmware](#firmware)
+1. [Supported functions and methods](#supported-functions-and-methods)
+    1. [ndarray methods](#ndarray-methods)
+    2. [numpy and scipy functions](#numpy-and-scipy-functions)
+    3. [ulab utilities](#ulab-utilities)
+    4. [user module](#user-module)
+3. [Customising the firmware](#customising-the-firmware)
+4. [Usage](#usage)
+5. [Finding help](#finding-help)
+6. [Benchmarks](#benchmarks)
+7. [Firmware](#firmware)
     1. [UNIX](#unix-port)
     1. [STM-based boards](#stm-based-boards)
     1. [ESP32-based boards](#esp32-based-boards)
     1. [RP2-based boards](#rp2-based-boards)
     1. [Compiling for CircuitPython](#compiling-for-circuitpython)
-3. [Issues, contributing, and testing](#issues-contributing-and-testing)
+8. [Issues, contributing, and testing](#issues-contributing-and-testing)
     1. [Testing](#testing)
 
-# Supported functions
+# Supported functions and methods
 
 
-## ndarray
+## ndarray methods
 
 `ulab` implements `numpy`'s `ndarray` with the `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `/`, `*`, `**`,
 `+=`, `-=`, `*=`, `/=`, `**=` binary operators, and the `len`, `~`, `-`, `+`, `abs` unary operators that
@@ -34,6 +38,17 @@ iterables via the `array` constructor, or by means of the `arange`, `concatenate
 `ndarray`s can be iterated on, and have a number of their own methods, such as `flatten`, `itemsize`, `reshape`,
 `shape`, `size`, `strides`, `tobytes`, and `transpose`.
 
+## `numpy` and `scipy` functions
+
+In addition, `ulab` includes [universal functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-universal.html), a [number of `numpy` functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-functions.html), and many functions from the [`numpy.fft`](https://micropython-ulab.readthedocs.io/en/latest/numpy-fft.html), [`numpy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/numpy-linalg.html), [`scipy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/scipy-linalg.html), [`scipy.optimize`](https://micropython-ulab.readthedocs.io/en/latest/scipy-optimize.html), [`scipy.signal`](https://micropython-ulab.readthedocs.io/en/latest/scipy-signal.html), and [`scipy.special`](https://micropython-ulab.readthedocs.io/en/latest/scipy-special.html) modules.
+
+## `ulab` utilities
+
+The [`utils`](https://micropython-ulab.readthedocs.io/en/latest/ulab-utils.html) module contains functions for interfacing with peripheral devices supporting the buffer protocol. 
+
+## `user` module
+
+User-defined functions can easily be added via the `user` module, without having to change anything in the code modules. 
 
 # Customising the firmware
 
