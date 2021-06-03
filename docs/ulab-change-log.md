@@ -1,3 +1,9 @@
+Wed, 2 Jun 2021
+
+version 2.8.6
+
+    factor out array creation from iterables, so that generic iterables can be passed to numerical functions
+
 Tue, 1 Jun 2021
 
 version 2.8.5

@@ -907,6 +907,93 @@ ndarray_obj_t *ndarray_new_linear_array(size_t len, uint8_t dtype) {
     return ndarray_new_dense_ndarray(1, shape, dtype);
 }
 
+ndarray_obj_t *ndarray_from_iterable(mp_obj_t obj, uint8_t dtype) {
+    // returns an ndarray from an iterable micropython object
+    // if the input is an ndarray, returns the input...
+    if(mp_obj_is_type(obj, &ulab_ndarray_type)) {
+        return MP_OBJ_TO_PTR(obj);
+    }
+    // ... otherwise, takes the values from the iterable, and creates the corresponding ndarray
+
+    // First, we have to figure out, whether the elements of the iterable are iterables themself
+    uint8_t ndim = 0;
+    size_t shape[ULAB_MAX_DIMS];
+    mp_obj_iter_buf_t iter_buf[ULAB_MAX_DIMS];
+    mp_obj_t iterable[ULAB_MAX_DIMS];
+    // inspect only the very first element in each dimension; this is fast,
+    // but not completely safe, e.g., length compatibility is not checked
+    mp_obj_t item = obj;
+
+    while(1) {
+        if(mp_obj_len_maybe(item) == MP_OBJ_NULL) {
+            break;
+        }
+        if(ndim == ULAB_MAX_DIMS) {
+            mp_raise_ValueError(translate("too many dimensions"));
+        }
+        shape[ndim] = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(item));
+        if(shape[ndim] == 0) {
+            ndim++;
+            break;
+        }
+        iterable[ndim] = mp_getiter(item, &iter_buf[ndim]);
+        item = mp_iternext(iterable[ndim]);
+        ndim++;
+    }
+    for(uint8_t i = 0; i < ndim; i++) {
+        // align all values to the right
+        shape[ULAB_MAX_DIMS - i - 1] = shape[ndim - 1 - i];
+    }
+
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(ndim, shape, dtype);
+    item = obj;
+    for(uint8_t i = 0; i < ndim - 1; i++) {
+        // if ndim > 1, descend into the hierarchy
+        iterable[ULAB_MAX_DIMS - ndim + i] = mp_getiter(item, &iter_buf[ULAB_MAX_DIMS - ndim + i]);
+        item = mp_iternext(iterable[ULAB_MAX_DIMS - ndim + i]);
+    }
+
+    size_t idx = 0;
+    // TODO: this could surely be done in a more elegant way...
+    #if ULAB_MAX_DIMS > 3
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            do {
+            #endif
+                iterable[ULAB_MAX_DIMS - 1] = mp_getiter(item, &iter_buf[ULAB_MAX_DIMS - 1]);
+                ndarray_assign_elements(ndarray, iterable[ULAB_MAX_DIMS - 1], ndarray->dtype, &idx);
+            #if ULAB_MAX_DIMS > 1
+                item = ndim > 1 ? mp_iternext(iterable[ULAB_MAX_DIMS - 2]) : MP_OBJ_STOP_ITERATION;
+            } while(item != MP_OBJ_STOP_ITERATION);
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            item = ndim > 2 ? mp_iternext(iterable[ULAB_MAX_DIMS - 3]) : MP_OBJ_STOP_ITERATION;
+            if(item != MP_OBJ_STOP_ITERATION) {
+                iterable[ULAB_MAX_DIMS - 2] = mp_getiter(item, &iter_buf[ULAB_MAX_DIMS - 2]);
+                item = mp_iternext(iterable[ULAB_MAX_DIMS - 2]);
+            } else {
+                iterable[ULAB_MAX_DIMS - 2] = MP_OBJ_STOP_ITERATION;
+            }
+        } while(iterable[ULAB_MAX_DIMS - 2] != MP_OBJ_STOP_ITERATION);
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        item = ndim > 3 ? mp_iternext(iterable[ULAB_MAX_DIMS - 4]) : MP_OBJ_STOP_ITERATION;
+        if(item != MP_OBJ_STOP_ITERATION) {
+            iterable[ULAB_MAX_DIMS - 3] = mp_getiter(item, &iter_buf[ULAB_MAX_DIMS - 3]);
+            item = mp_iternext(iterable[ULAB_MAX_DIMS - 3]);
+        } else {
+            iterable[ULAB_MAX_DIMS - 3] = MP_OBJ_STOP_ITERATION;
+        }
+    } while(iterable[ULAB_MAX_DIMS - 3] != MP_OBJ_STOP_ITERATION);
+    #endif
+
+    return ndarray;
+}
+
 STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
@@ -956,7 +1043,6 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
                     size_t l = 0;
                     do {
                         mp_obj_t item;
-                        // floats must be treated separately, because they can't directly be converted to integer types
                         if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
                             // floats must be treated separately, because they can't directly be converted to integer types
                             mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
@@ -988,85 +1074,10 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
         } while(i < source->shape[ULAB_MAX_DIMS - 4]);
         #endif
         return MP_OBJ_FROM_PTR(target);
+    } else {
+        // assume that the input is an iterable
+        return MP_OBJ_FROM_PTR(ndarray_from_iterable(args[0], dtype));
     }
-
-    // We have to figure out, whether the elements of the iterable are iterables themself
-    uint8_t ndim = 0;
-    size_t shape[ULAB_MAX_DIMS];
-    mp_obj_iter_buf_t iter_buf[ULAB_MAX_DIMS];
-    mp_obj_t iterable[ULAB_MAX_DIMS];
-    // inspect only the very first element in each dimension; this is fast,
-    // but not completely safe, e.g., length compatibility is not checked
-    mp_obj_t item = args[0];
-
-    while(1) {
-        if(mp_obj_len_maybe(item) == MP_OBJ_NULL) {
-            break;
-        }
-        if(ndim == ULAB_MAX_DIMS) {
-            mp_raise_ValueError(translate("too many dimensions"));
-        }
-        shape[ndim] = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(item));
-        if(shape[ndim] == 0) {
-            ndim++;
-            break;
-        }
-        iterable[ndim] = mp_getiter(item, &iter_buf[ndim]);
-        item = mp_iternext(iterable[ndim]);
-        ndim++;
-    }
-    for(uint8_t i=0; i < ndim; i++) {
-        // align all values to the right
-        shape[ULAB_MAX_DIMS - i - 1] = shape[ndim - 1 - i];
-    }
-
-    ndarray_obj_t *self = ndarray_new_dense_ndarray(ndim, shape, dtype);
-    item = args[0];
-    for(uint8_t i=0; i < ndim - 1; i++) {
-        // if ndim > 1, descend into the hierarchy
-        iterable[ULAB_MAX_DIMS - ndim + i] = mp_getiter(item, &iter_buf[ULAB_MAX_DIMS - ndim + i]);
-        item = mp_iternext(iterable[ULAB_MAX_DIMS - ndim + i]);
-    }
-
-    size_t idx = 0;
-    // TODO: this could surely be done in a more elegant way...
-    #if ULAB_MAX_DIMS > 3
-    do {
-    #endif
-        #if ULAB_MAX_DIMS > 2
-        do {
-        #endif
-            #if ULAB_MAX_DIMS > 1
-            do {
-            #endif
-                iterable[ULAB_MAX_DIMS - 1] = mp_getiter(item, &iter_buf[ULAB_MAX_DIMS - 1]);
-                ndarray_assign_elements(self, iterable[ULAB_MAX_DIMS - 1], self->dtype, &idx);
-            #if ULAB_MAX_DIMS > 1
-                item = ndim > 1 ? mp_iternext(iterable[ULAB_MAX_DIMS - 2]) : MP_OBJ_STOP_ITERATION;
-            } while(item != MP_OBJ_STOP_ITERATION);
-            #endif
-        #if ULAB_MAX_DIMS > 2
-            item = ndim > 2 ? mp_iternext(iterable[ULAB_MAX_DIMS - 3]) : MP_OBJ_STOP_ITERATION;
-            if(item != MP_OBJ_STOP_ITERATION) {
-                iterable[ULAB_MAX_DIMS - 2] = mp_getiter(item, &iter_buf[ULAB_MAX_DIMS - 2]);
-                item = mp_iternext(iterable[ULAB_MAX_DIMS - 2]);
-            } else {
-                iterable[ULAB_MAX_DIMS - 2] = MP_OBJ_STOP_ITERATION;
-            }
-        } while(iterable[ULAB_MAX_DIMS - 2] != MP_OBJ_STOP_ITERATION);
-        #endif
-    #if ULAB_MAX_DIMS > 3
-        item = ndim > 3 ? mp_iternext(iterable[ULAB_MAX_DIMS - 4]) : MP_OBJ_STOP_ITERATION;
-        if(item != MP_OBJ_STOP_ITERATION) {
-            iterable[ULAB_MAX_DIMS - 3] = mp_getiter(item, &iter_buf[ULAB_MAX_DIMS - 3]);
-            item = mp_iternext(iterable[ULAB_MAX_DIMS - 3]);
-        } else {
-            iterable[ULAB_MAX_DIMS - 3] = MP_OBJ_STOP_ITERATION;
-        }
-    } while(iterable[ULAB_MAX_DIMS - 3] != MP_OBJ_STOP_ITERATION);
-    #endif
-
-    return MP_OBJ_FROM_PTR(self);
 }
 
 mp_obj_t ndarray_array_constructor(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -1732,7 +1743,8 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
     } else if(mp_obj_is_type(obj, &ulab_ndarray_type)){
         return obj;
     } else {
-        mp_raise_TypeError(translate("wrong operand type"));
+        // assume that the input is an iterable (raises an exception, if it is not the case)
+        ndarray = ndarray_from_iterable(obj, NDARRAY_FLOAT);
     }
     return ndarray;
 }
