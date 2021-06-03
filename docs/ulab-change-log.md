@@ -1,3 +1,9 @@
+Thu, 3 Jun 2021
+
+version 2.8.7
+
+    simplify vectorised function code
+
 Wed, 2 Jun 2021
 
 version 2.8.6
