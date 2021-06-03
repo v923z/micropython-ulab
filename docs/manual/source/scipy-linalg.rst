@@ -2,11 +2,46 @@
 scipy.linalg
 ============
 
-``scipy``\ ’s ``linalg`` module contains a single function,
-``solve_triangular``, which can be called by prepending it by
-``scipy.linalg.``.
+``scipy``\ ’s ``linalg`` module contains two functions,
+``solve_triangular``, and ``cho_solve``. The functions can be called by
+prepending them by ``scipy.linalg.``.
 
-1. `scipy.linalg.solve_triangular <#solve_triangular>`__
+1. `scipy.linalg.solve_cho <#cho_solve>`__
+2. `scipy.linalg.solve_triangular <#solve_triangular>`__
+
+cho_solve
+
+``scipy``:
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.cho_solve.html
+
+Solve the linear equations
+
+:raw-latex:`\begin{equation}
+\mathbf{A}\cdot\mathbf{x} = \mathbf{b}
+\end{equation}`
+
+given the Cholesky factorization of :math:`\mathbf{A}`. As opposed to
+``scipy``, the function simply takes the Cholesky-factorised matrix,
+:math:`\mathbf{A}`, and :math:`\mathbf{b}` as inputs.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    from ulab import scipy as spy
+    
+    A = np.array([[3, 0, 0, 0], [2, 1, 0, 0], [1, 0, 1, 0], [1, 2, 1, 8]])
+    b = np.array([4, 2, 4, 2])
+    
+    print(spy.linalg.cho_solve(A, b))
+
+.. parsed-literal::
+
+    array([-0.01388888888888906, -0.6458333333333331, 2.677083333333333, -0.01041666666666667], dtype=float64)
+    
+    
+
 
 solve_triangular
 ----------------
@@ -113,8 +148,3 @@ matrix, but the dot product of :math:`\mathbf{a}`, and
     
     
 
-
-.. code::
-
-    # code to be run in CPython
-    
