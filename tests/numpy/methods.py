@@ -1,9 +1,7 @@
 try:
     from ulab import numpy as np
-    use_ulab = True
 except ImportError:
     import numpy as np
-    use_ulab = False
 
 a = np.array([1, 2, 3, 4], dtype=np.int8)
 b = a.copy()
