@@ -21,7 +21,7 @@
 #include "ulab.h"
 #include "ndarray.h"
 
-#ifdef CIRCUITPY
+#if CIRCUITPY
 typedef struct _mp_obj_property_t {
     mp_obj_base_t base;
     mp_obj_t proxy[3]; // getter, setter, deleter

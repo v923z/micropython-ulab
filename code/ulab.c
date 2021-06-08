@@ -66,6 +66,23 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #if NDARRAY_HAS_SORT
         { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&numerical_sort_inplace_obj) },
     #endif
+    #ifdef CIRCUITPY
+        #if NDARRAY_HAS_DTYPE
+            { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
+        #endif
+        #if NDARRAY_HAS_ITEMSIZE
+            { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&ndarray_itemsize_obj) },
+        #endif
+        #if NDARRAY_HAS_SHAPE
+            { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
+        #endif
+        #if NDARRAY_HAS_SIZE
+            { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&ndarray_size_obj) },
+        #endif
+        #if NDARRAY_HAS_STRIDES
+            { MP_ROM_QSTR(MP_QSTR_strides), MP_ROM_PTR(&ndarray_strides_obj) },
+        #endif
+    #endif /* CIRCUITPY */
 };
 
 STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);
