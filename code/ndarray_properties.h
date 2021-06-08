@@ -21,7 +21,7 @@
 #include "ulab.h"
 #include "ndarray.h"
 
-#if CIRCUITPY
+#ifdef CIRCUITPY
 typedef struct _mp_obj_property_t {
     mp_obj_base_t base;
     mp_obj_t proxy[3]; // getter, setter, deleter
@@ -79,6 +79,8 @@ STATIC const mp_obj_property_t ndarray_strides_obj = {
 
 #else
 
+void ndarray_properties_attr(mp_obj_t , qstr , mp_obj_t *);
+
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_dtype_obj, ndarray_dtype);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_itemsize_obj, ndarray_itemsize);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_shape_obj, ndarray_shape);
@@ -86,9 +88,5 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_size_obj, ndarray_size);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_strides_obj, ndarray_strides);
 
 #endif /* CIRCUITPY */
-
-#if !CIRCUITPY
-void ndarray_properties_attr(mp_obj_t , qstr , mp_obj_t *);
-#endif
 
 #endif

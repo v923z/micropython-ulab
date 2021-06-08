@@ -20,10 +20,29 @@
 #include "ulab.h"
 #include "ndarray.h"
 
-#if !CIRCUITPY
+#ifndef CIRCUITPY
 
 // a somewhat hackish implementation of property getters/setters;
 // this functions is hooked into the attr member of ndarray
+
+STATIC void call_local_method(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
+    const mp_obj_type_t *type = mp_obj_get_type(obj);
+    while (type->locals_dict != NULL) {
+        assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
+        mp_map_t *locals_map = &type->locals_dict->map;
+        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+        if (elem != NULL) {
+            mp_convert_member_lookup(obj, type, elem->value, dest);
+            break;
+        }
+        if (type->parent == NULL) {
+            break;
+        }
+        type = type->parent;
+    }
+}
+
+
 void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         switch(attr) {
@@ -37,7 +56,7 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 dest[0] = ndarray_itemsize(self_in);
                 break;
             #endif
-            #if NDARRAY_HAS_ITEMSIZE
+            #if NDARRAY_HAS_SHAPE
             case MP_QSTR_shape:
                 dest[0] = ndarray_shape(self_in);
                 break;
@@ -53,18 +72,11 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 break;
             #endif
             default:
-                return;
+                call_local_method(self_in, attr, dest);
+                break;
         }
     } else {
         return;
-        // if (dest[1]) {
-        //     switch(attr) {
-        //         default:
-        //             return;
-        //     }
-
-        //     dest[0] = MP_OBJ_NULL;
-        // }
     }
 }
 

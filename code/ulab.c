@@ -43,7 +43,6 @@ STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
-    // these are the methods and properties of an ndarray
     #if ULAB_MAX_DIMS > 1
         #if NDARRAY_HAS_RESHAPE
             { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },
@@ -73,9 +72,9 @@ STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_t
 
 const mp_obj_type_t ulab_ndarray_type = {
     { &mp_type_type },
-#if defined(MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) && defined(MP_TYPE_FLAG_EQ_HAS_NEQ_TEST)
+    #if defined(MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) && defined(MP_TYPE_FLAG_EQ_HAS_NEQ_TEST)
     .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST,
-#endif
+    #endif
     .name = MP_QSTR_ndarray,
     .print = ndarray_print,
     .make_new = ndarray_make_new,
