@@ -9,6 +9,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/scipy/special/special.c
 SRC_USERMOD += $(USERMODULES_DIR)/ndarray_operators.c
 SRC_USERMOD += $(USERMODULES_DIR)/ulab_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/ndarray.c
+SRC_USERMOD += $(USERMODULES_DIR)/ndarray_properties.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/approx/approx.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/compare/compare.c
 SRC_USERMOD += $(USERMODULES_DIR)/ulab_create.c
