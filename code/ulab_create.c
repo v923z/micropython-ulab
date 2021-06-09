@@ -55,7 +55,7 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
             }
         }
         for(size_t i=0; i < ndarray->len; i++) {
-            mp_binary_set_val_array(dtype, ndarray->array, i, value);
+            ndarray_set_value(dtype, ndarray->array, i, value);
         }
     }
     // if zeros calls the function, we don't have to do anything
@@ -388,13 +388,13 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     size_t i = 0;
     if((args[2].u_int >= 0)) {
         while(k < m) {
-            mp_binary_set_val_array(dtype, ndarray->array, i*m+k, one);
+            ndarray_set_value(dtype, ndarray->array, i*m+k, one);
             k++;
             i++;
         }
     } else {
         while(k < n) {
-            mp_binary_set_val_array(dtype, ndarray->array, k*m+i, one);
+            ndarray_set_value(dtype, ndarray->array, k*m+i, one);
             k++;
             i++;
         }

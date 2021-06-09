@@ -550,7 +550,7 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
         for(size_t i=0; i < source->len; i++) {
             avalue[0] = mp_binary_get_val_array(source->dtype, source->array, i);
             fvalue = self->type->call(self->fun, 1, 0, avalue);
-            mp_binary_set_val_array(self->otypes, ndarray->array, i, fvalue);
+            ndarray_set_value(self->otypes, ndarray->array, i, fvalue);
         }
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(mp_obj_is_type(args[0], &mp_type_tuple) || mp_obj_is_type(args[0], &mp_type_list) ||
@@ -562,14 +562,14 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
         size_t i=0;
         while ((avalue[0] = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             fvalue = self->type->call(self->fun, 1, 0, avalue);
-            mp_binary_set_val_array(self->otypes, ndarray->array, i, fvalue);
+            ndarray_set_value(self->otypes, ndarray->array, i, fvalue);
             i++;
         }
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(mp_obj_is_int(args[0]) || mp_obj_is_float(args[0])) {
         ndarray_obj_t *ndarray = ndarray_new_linear_array(1, self->otypes);
         fvalue = self->type->call(self->fun, 1, 0, args);
-        mp_binary_set_val_array(self->otypes, ndarray->array, 0, fvalue);
+        ndarray_set_value(self->otypes, ndarray->array, 0, fvalue);
         return MP_OBJ_FROM_PTR(ndarray);
     } else {
         mp_raise_ValueError(translate("wrong input type"));
