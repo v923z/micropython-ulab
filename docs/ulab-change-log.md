@@ -1,6 +1,6 @@
-Tue, 8 Jun 2021
+Wed, 9 Jun 2021
 
-version 2.10.0
+version 3.0.0
 
     implement property getter/setter for micropython
 
