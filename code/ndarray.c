@@ -238,74 +238,21 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 #ifdef CIRCUITPY
 void ndarray_set_value(char typecode, void *p, size_t index, mp_obj_t val_in) {
     switch (typecode) {
-        #if MICROPY_PY_BUILTINS_FLOAT
-        case 'f':
-            ((float *)p)[index] = mp_obj_get_float_to_f(val_in);
+        case NDARRAY_INT8:
+            ((signed char *)p)[index] = mp_obj_get_int(val_in);
             break;
-        case 'd':
-            ((double *)p)[index] = mp_obj_get_float_to_d(val_in);
+        case NDARRAY_UINT8:
+            ((unsigned char *)p)[index] = mp_obj_get_int(val_in);
             break;
-        #endif
-        // Extension to CPython: array of objects
-        case 'O':
-            ((mp_obj_t *)p)[index] = val_in;
+        case NDARRAY_INT16:
+            ((short *)p)[index] = mp_obj_get_int(val_in);
             break;
-        default:
-            #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (mp_obj_is_type(val_in, &mp_type_int)) {
-                size_t size = mp_binary_get_size('@', typecode, NULL);
-                mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
-                    size, (uint8_t *)p + index * size);
-                return;
-            }
-            #endif
-            switch (typecode) {
-                case 'b':
-                    ((signed char *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                case BYTEARRAY_TYPECODE:
-                case 'B':
-                    ((unsigned char *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                case 'h':
-                    ((short *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                case 'H':
-                    ((unsigned short *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                case 'i':
-                    ((int *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                case 'I':
-                    ((unsigned int *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                case 'l':
-                    ((long *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                case 'L':
-                    ((unsigned long *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-                case 'q':
-                    ((long long *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                case 'Q':
-                    ((unsigned long long *)p)[index] = mp_obj_get_int(val_in);
-                    break;
-                #endif
-                #if MICROPY_PY_BUILTINS_FLOAT
-                case 'f':
-                    ((float *)p)[index] = (float)mp_obj_get_int(val_in);
-                    break;
-                case 'd':
-                    ((double *)p)[index] = (double)mp_obj_get_int(val_in);
-                    break;
-                #endif
-                // Extension to CPython: array of pointers
-                case 'P':
-                    ((void **)p)[index] = (void *)(uintptr_t)mp_obj_get_int(val_in);
-                    break;
-            }
+        case NDARRAY_UINT16:
+            ((unsigned short *)p)[index] = mp_obj_get_int(val_in);
+            break;
+        case NDARRAY_FLOAT:
+            ((mp_float_t *)p)[index] = mp_obj_get_float(val_in);
+            break;
     }
 }
 #endif
