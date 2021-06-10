@@ -20,6 +20,7 @@
 #include "py/binary.h"
 #include "py/obj.h"
 #include "py/objtuple.h"
+#include "py/objint.h"
 
 #include "ulab_tools.h"
 #include "ndarray.h"
@@ -232,6 +233,29 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //| ) -> ulab.ndarray:
 //|     """alternate constructor function for `ulab.ndarray`. Mirrors numpy.array"""
 //|     ...
+
+
+#ifdef CIRCUITPY
+void ndarray_set_value(char typecode, void *p, size_t index, mp_obj_t val_in) {
+    switch (typecode) {
+        case NDARRAY_INT8:
+            ((signed char *)p)[index] = mp_obj_get_int(val_in);
+            break;
+        case NDARRAY_UINT8:
+            ((unsigned char *)p)[index] = mp_obj_get_int(val_in);
+            break;
+        case NDARRAY_INT16:
+            ((short *)p)[index] = mp_obj_get_int(val_in);
+            break;
+        case NDARRAY_UINT16:
+            ((unsigned short *)p)[index] = mp_obj_get_int(val_in);
+            break;
+        case NDARRAY_FLOAT:
+            ((mp_float_t *)p)[index] = mp_obj_get_float(val_in);
+            break;
+    }
+}
+#endif
 
 #if defined(MICROPY_VERSION_MAJOR) && MICROPY_VERSION_MAJOR == 1 && MICROPY_VERSION_MINOR == 11
 
@@ -653,7 +677,7 @@ void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t 
         }
     } else {
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            mp_binary_set_val_array(dtype, ndarray->array, (*idx)++, item);
+            ndarray_set_value(dtype, ndarray->array, (*idx)++, item);
         }
     }
 }
@@ -1050,7 +1074,7 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
                         } else {
                             item = mp_binary_get_val_array(source->dtype, sarray, 0);
                         }
-                        mp_binary_set_val_array(dtype, tarray, 0, item);
+                        ndarray_set_value(dtype, tarray, 0, item);
                         tarray += target->itemsize;
                         sarray += source->strides[ULAB_MAX_DIMS - 1];
                         l++;
@@ -1734,7 +1758,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
                 }
             }
             ndarray = ndarray_new_linear_array(1, dtype);
-            mp_binary_set_val_array(dtype, ndarray->array, 0, obj);
+            ndarray_set_value(dtype, ndarray->array, 0, obj);
         }
     } else if(mp_obj_is_float(obj)) {
         ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);

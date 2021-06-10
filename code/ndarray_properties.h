@@ -1,13 +1,13 @@
 
 /*
- * This file is part of the micropython-ulab project, 
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *               2020 Zoltán Vörös   
+ *               2020 Zoltán Vörös
 */
 
 #ifndef _NDARRAY_PROPERTIES_
@@ -79,6 +79,8 @@ STATIC const mp_obj_property_t ndarray_strides_obj = {
 
 #else
 
+void ndarray_properties_attr(mp_obj_t , qstr , mp_obj_t *);
+
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_dtype_obj, ndarray_dtype);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_itemsize_obj, ndarray_itemsize);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_shape_obj, ndarray_shape);
@@ -86,4 +88,5 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_size_obj, ndarray_size);
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_strides_obj, ndarray_strides);
 
 #endif /* CIRCUITPY */
+
 #endif

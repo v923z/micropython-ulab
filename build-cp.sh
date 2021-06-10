@@ -43,7 +43,7 @@ make -C circuitpython/mpy-cross -j$NPROC
 sed -e '/MICROPY_PY_UHASHLIB/s/1/0/' < circuitpython/ports/unix/mpconfigport.h > circuitpython/ports/unix/mpconfigport_ulab.h
 make -k -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_ulab.h>" -Wno-tautological-constant-out-of-range-compare -Wno-unknown-pragmas'
 
-for dir in "circuitpy" "common"
+for dir in "numpy" "scipy" "utils"
 do
 	if ! env MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython ./run-tests -d tests/"$dir"; then
 		for exp in *.exp; do

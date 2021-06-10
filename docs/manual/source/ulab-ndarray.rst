@@ -951,14 +951,12 @@ entries of the source array are *copied* into the target array.
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.dtype.htm
 
-The ``.dtype`` property returns the ``dtype`` of an array. This can then
-be used for initialising another array with the matching type. ``ulab``
+The ``.dtype`` property is the ``dtype`` of an array. This can then be
+used for initialising another array with the matching type. ``ulab``
 implements two versions of ``dtype``; one that is ``numpy``-like, i.e.,
 one, which returns a ``dtype`` object, and one that is significantly
-cheaper in terms of flash space, but does not define a the ``dtype``
-object, and returns a single character (number) instead.
-
-**WARNING**: in ``circuitpython``:
+cheaper in terms of flash space, but does not define a ``dtype`` object,
+and holds a single character (number) instead.
 
 .. code::
         
@@ -970,30 +968,6 @@ object, and returns a single character (number) instead.
     b = np.array([5, 6, 7], dtype=a.dtype)
     print('a: ', a)
     print('dtype of a: ', a.dtype)
-    print('\nb: ', b)
-
-.. parsed-literal::
-
-    a:  array([1, 2, 3, 4], dtype=int8)
-    dtype of a:  dtype('int8')
-    
-    b:  array([5, 6, 7], dtype=int8)
-    
-    
-
-
-**WARNING:** in ``micropython``:
-
-.. code::
-        
-    # code to be run in micropython
-    
-    from ulab import numpy as np
-    
-    a = np.array([1, 2, 3, 4], dtype=np.int8)
-    b = np.array([5, 6, 7], dtype=a.dtype())
-    print('a: ', a)
-    print('dtype of a: ', a.dtype())
     print('\nb: ', b)
 
 .. parsed-literal::
@@ -1022,9 +996,9 @@ then the output of the previous snippet will be
     from ulab import numpy as np
     
     a = np.array([1, 2, 3, 4], dtype=np.int8)
-    b = np.array([5, 6, 7], dtype=a.dtype())
+    b = np.array([5, 6, 7], dtype=a.dtype)
     print('a: ', a)
-    print('dtype of a: ', a.dtype())
+    print('dtype of a: ', a.dtype)
     print('\nb: ', b)
 
 .. parsed-literal::
@@ -1086,10 +1060,8 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.htm
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.itemsize.html
 
-The ``.itemsize`` method (property) returns an integer with the size of
-elements in the array.
-
-**WARNING:** In ``circuitpython``:
+The ``.itemsize`` property is an integer with the size of elements in
+the array.
 
 .. code::
         
@@ -1110,36 +1082,6 @@ elements in the array.
     a:
      array([1, 2, 3], dtype=int8)
     itemsize of a: 1
-    
-    b:
-     array([[1.0, 2.0],
-           [3.0, 4.0]], dtype=float64)
-    itemsize of b: 8
-    
-    
-
-
-**WARNING:** In ``micropython``:
-
-.. code::
-        
-    # code to be run in micropython
-    
-    from ulab import numpy as np
-    
-    a = np.array([1, 2, 3], dtype=np.int8)
-    print("a:\n", a)
-    print("itemsize of a:", a.itemsize)
-    
-    b= np.array([[1, 2], [3, 4]], dtype=np.float)
-    print("\nb:\n", b)
-    print("itemsize of b:", b.itemsize())
-
-.. parsed-literal::
-
-    a:
-     array([1, 2, 3], dtype=int8)
-    itemsize of a: <bound_method 7fdc008692c0 array([1, 2, 3], dtype=int8).<function>>
     
     b:
      array([[1.0, 2.0],
@@ -1191,11 +1133,8 @@ consistent with the old, a ``ValueError`` exception will be raised.
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.shape.html
 
-The ``.shape`` method (property) returns a tuple with the length of the
-array in along each dimension.
-
-**WARNING:** In ``circuitpython``, you can call the method as a
-property, i.e.,
+The ``.shape`` property is a tuple whose elements are the length of the
+array along each axis.
 
 .. code::
         
@@ -1225,48 +1164,14 @@ property, i.e.,
     
 
 
-**WARNING:** On the other hand, since properties are not implemented in
-``micropython``, there you would call the method as a function, i.e.,
-
-.. code::
-        
-    # code to be run in micropython
-    
-    from ulab import numpy as np
-    
-    a = np.array([1, 2, 3, 4], dtype=np.int8)
-    print("a:\n", a)
-    print("shape of a:", a.shape())
-    
-    b= np.array([[1, 2], [3, 4]], dtype=np.int8)
-    print("\nb:\n", b)
-    print("shape of b:", b.shape())
-
-.. parsed-literal::
-
-    a:
-     array([1, 2, 3, 4], dtype=int8)
-    shape of a: (4,)
-    
-    b:
-     array([[1, 2],
-           [3, 4]], dtype=int8)
-    shape of b: (2, 2)
-    
-    
-
-
 .size
 ~~~~~
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.size.html
 
-The ``.size`` method (property) returns an integer with the number of
-elements in the array.
-
-**WARNING:** In ``circuitpython``, the ``numpy`` nomenclature applies,
-i.e.,
+The ``.size`` property is an integer specifying the number of elements
+in the array.
 
 .. code::
         
@@ -1291,36 +1196,6 @@ i.e.,
     b:
      array([[1, 2],
     	 [3, 4]], dtype=int8)
-    size of b: 4
-    
-    
-
-
-**WARNING:** In ``micropython``, ``size`` is a method, i.e.,
-
-.. code::
-        
-    # code to be run in micropython
-    
-    from ulab import numpy as np
-    
-    a = np.array([1, 2, 3], dtype=np.int8)
-    print("a:\n", a)
-    print("size of a:", a.size())
-    
-    b= np.array([[1, 2], [3, 4]], dtype=np.int8)
-    print("\nb:\n", b)
-    print("size of b:", b.size())
-
-.. parsed-literal::
-
-    a:
-     array([1, 2, 3], dtype=int8)
-    size of a: 3
-    
-    b:
-     array([[1, 2],
-           [3, 4]], dtype=int8)
     size of b: 4
     
     

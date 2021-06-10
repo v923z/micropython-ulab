@@ -34,7 +34,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 2.9.0
+#define ULAB_VERSION 3.0.0
 #define xstr(s) str(s)
 #define str(s) #s
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
@@ -43,7 +43,6 @@ STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
-    // these are the methods and properties of an ndarray
     #if ULAB_MAX_DIMS > 1
         #if NDARRAY_HAS_RESHAPE
             { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },
@@ -58,23 +57,8 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #if NDARRAY_HAS_COPY
         { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&ndarray_copy_obj) },
     #endif
-    #if NDARRAY_HAS_DTYPE
-        { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
-    #endif
     #if NDARRAY_HAS_FLATTEN
         { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ndarray_flatten_obj) },
-    #endif
-    #if NDARRAY_HAS_ITEMSIZE
-        { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&ndarray_itemsize_obj) },
-    #endif
-    #if NDARRAY_HAS_SHAPE
-        { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
-    #endif
-    #if NDARRAY_HAS_SIZE
-        { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&ndarray_size_obj) },
-    #endif
-    #if NDARRAY_HAS_STRIDES
-        { MP_ROM_QSTR(MP_QSTR_strides), MP_ROM_PTR(&ndarray_strides_obj) },
     #endif
     #if NDARRAY_HAS_TOBYTES
         { MP_ROM_QSTR(MP_QSTR_tobytes), MP_ROM_PTR(&ndarray_tobytes_obj) },
@@ -82,15 +66,32 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #if NDARRAY_HAS_SORT
         { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&numerical_sort_inplace_obj) },
     #endif
+    #ifdef CIRCUITPY
+        #if NDARRAY_HAS_DTYPE
+            { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
+        #endif
+        #if NDARRAY_HAS_ITEMSIZE
+            { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&ndarray_itemsize_obj) },
+        #endif
+        #if NDARRAY_HAS_SHAPE
+            { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
+        #endif
+        #if NDARRAY_HAS_SIZE
+            { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&ndarray_size_obj) },
+        #endif
+        #if NDARRAY_HAS_STRIDES
+            { MP_ROM_QSTR(MP_QSTR_strides), MP_ROM_PTR(&ndarray_strides_obj) },
+        #endif
+    #endif /* CIRCUITPY */
 };
 
 STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);
 
 const mp_obj_type_t ulab_ndarray_type = {
     { &mp_type_type },
-#if defined(MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) && defined(MP_TYPE_FLAG_EQ_HAS_NEQ_TEST)
+    #if defined(MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) && defined(MP_TYPE_FLAG_EQ_HAS_NEQ_TEST)
     .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST,
-#endif
+    #endif
     .name = MP_QSTR_ndarray,
     .print = ndarray_print,
     .make_new = ndarray_make_new,
@@ -105,6 +106,9 @@ const mp_obj_type_t ulab_ndarray_type = {
     #endif
     #if NDARRAY_HAS_BINARY_OPS
     .binary_op = ndarray_binary_op,
+    #endif
+    #ifndef CIRCUITPY
+    .attr = ndarray_properties_attr,
     #endif
     .buffer_p = { .get_buffer = ndarray_get_buffer, },
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
