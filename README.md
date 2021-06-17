@@ -40,7 +40,7 @@ iterables via the `array` constructor, or by means of the `arange`, `concatenate
 
 ## `numpy` and `scipy` functions
 
-In addition, `ulab` includes [universal functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-universal.html), a [number of `numpy` functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-functions.html), and many functions from the [`numpy.fft`](https://micropython-ulab.readthedocs.io/en/latest/numpy-fft.html), [`numpy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/numpy-linalg.html), [`scipy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/scipy-linalg.html), [`scipy.optimize`](https://micropython-ulab.readthedocs.io/en/latest/scipy-optimize.html), [`scipy.signal`](https://micropython-ulab.readthedocs.io/en/latest/scipy-signal.html), and [`scipy.special`](https://micropython-ulab.readthedocs.io/en/latest/scipy-special.html) modules.
+In addition, `ulab` includes [universal functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-universal.html), [many `numpy` functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-functions.html), and functions from the [`numpy.fft`](https://micropython-ulab.readthedocs.io/en/latest/numpy-fft.html), [`numpy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/numpy-linalg.html), [`scipy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/scipy-linalg.html), [`scipy.optimize`](https://micropython-ulab.readthedocs.io/en/latest/scipy-optimize.html), [`scipy.signal`](https://micropython-ulab.readthedocs.io/en/latest/scipy-signal.html), and [`scipy.special`](https://micropython-ulab.readthedocs.io/en/latest/scipy-special.html) modules. A complete list of available routines can be found under [micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest).
 
 ## `ulab` utilities
 
@@ -48,24 +48,15 @@ The [`utils`](https://micropython-ulab.readthedocs.io/en/latest/ulab-utils.html)
 
 ## `user` module
 
-User-defined functions can easily be added via the `user` module, without having to change anything in the code modules. 
+User-defined functions operating on numerical data can easily be added via the `user` module. This allows for transparent extensions, without having to change anything in the core. Hints as to how to work with `ndarray`s at the C level can be found in the [programming manual](https://micropython-ulab.readthedocs.io/en/latest/ulab-programming.html).
 
 # Customising the firmware
-
-In addition to the `ndarray` operators and methods, `ulab` defines a great number of functions that can
-take `ndarray`s or `micropython` iterables as their arguments. Most of the functions have been ported from
-`numpy`, but several are re-implementations of `scipy` features. In addition, the `utils` module adds functions that
-interface `ndarray`s with peripheral devices. For a complete list, see
-[micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest)!
 
 If flash space is a concern, unnecessary functions can be excluded from the compiled firmware with
 pre-processor switches. In addition, `ulab` also has options for trading execution speed for firmware size.
 A thorough discussion on how the firmware can be customised can be found in the
 [corresponding section](https://micropython-ulab.readthedocs.io/en/latest/ulab-intro.html#customising-the-firmware)
 of the user manual.
-
-It is also possible to extend the library with arbitrary user-defined functions operating on numerical arrays, and add them to the namespace, as explained in the   [programming manual](https://micropython-ulab.readthedocs.io/en/latest/ulab-programming.html).
-
 
 # Usage
 
