@@ -869,8 +869,9 @@ array, while the methods return a new array-like object.
 6.  `.reshape <#.reshape>`__
 7.  `.shape <#.shape>`__
 8.  `.size <#.size>`__
-9.  `.transpose <.#transpose>`__
-10. `.sort <#.sort>`__
+9.  `.T <#.transpose>`__
+10. `.transpose <#.transpose>`__
+11. `.sort <#.sort>`__
 
 .byteswap
 ~~~~~~~~~
@@ -1201,6 +1202,11 @@ in the array.
     
 
 
+.T
+
+The ``.T`` property of the ``ndarray`` is equivalent to
+`.transpose <#.transpose>`__.
+
 .tobytes
 ~~~~~~~~
 
@@ -1264,10 +1270,10 @@ dimensions is larger than 1.
     
     a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]], dtype=np.uint8)
     print('a:\n', a)
-    print('shape of a:', a.shape())
+    print('shape of a:', a.shape)
     a.transpose()
     print('\ntranspose of a:\n', a)
-    print('shape of a:', a.shape())
+    print('shape of a:', a.shape)
 
 .. parsed-literal::
 
@@ -1283,6 +1289,34 @@ dimensions is larger than 1.
     	 [2, 5, 8, 11],
     	 [3, 6, 9, 12]], dtype=uint8)
     shape of a: (3, 4)
+    
+    
+
+
+The transpose of the array can also be gotten through the ``T``
+property:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
+    print('a:\n', a)
+    print('\ntranspose of a:\n', a.T)
+
+.. parsed-literal::
+
+    a:
+     array([[1, 2, 3],
+           [4, 5, 6],
+           [7, 8, 9]], dtype=uint8)
+    
+    transpose of a:
+     array([[1, 4, 7],
+           [2, 5, 8],
+           [3, 6, 9]], dtype=uint8)
     
     
 
@@ -1365,10 +1399,10 @@ length of the first axis.
     
     print("a:\t", a)
     print("length of a: ", len(a))
-    print("shape of a: ", a.shape())
+    print("shape of a: ", a.shape)
     print("\nb:\t", b)
     print("length of b: ", len(b))
-    print("shape of b: ", b.shape())
+    print("shape of b: ", b.shape)
 
 .. parsed-literal::
 
