@@ -71,6 +71,11 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 dest[0] = ndarray_strides(self_in);
                 break;
             #endif
+            #if NDARRAY_HAS_TRANSPOSE
+            case MP_QSTR_T:
+                dest[0] = ndarray_transpose(self_in);
+                break;
+            #endif
             default:
                 call_local_method(self_in, attr, dest);
                 break;

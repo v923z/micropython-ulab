@@ -1,3 +1,9 @@
+Thu, 17 Jun 2021
+
+version 3.0.1
+
+    add the .T ndarray property
+
 Wed, 9 Jun 2021
 
 version 3.0.0
