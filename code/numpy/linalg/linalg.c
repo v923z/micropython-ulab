@@ -450,10 +450,10 @@ static mp_obj_t linalg_qr(mp_obj_t M) {
 
             // update Q: multiply with the transpose of the rotation matrix from the right
             for(size_t k = 0; k < m; k++) {
-                r1 = qarray[(i - 1) * m + k];
-                r2 = qarray[i * m + k];
-                qarray[(i - 1) * m + k] = c * r1 + s * r2;
-                qarray[i * m + k] = s * r1 - c * r2;
+                r1 = qarray[k * m + (i - 1)];
+                r2 = qarray[k * m + i];
+                qarray[k * m + (i - 1)] = c * r1 + s * r2;
+                qarray[k * m + i] = s * r1 - c * r2;
             }
         }
     }
