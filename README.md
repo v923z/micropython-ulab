@@ -35,8 +35,8 @@ operate element-wise. Type-aware `ndarray`s can be initialised from any `micropy
 iterables via the `array` constructor, or by means of the `arange`, `concatenate`, `diag`, `eye`,
 `frombuffer`, `full`, `linspace`, `logspace`, `ones`, or `zeros`  functions.
 
-`ndarray`s can be iterated on, and have a number of their own methods, such as `flatten`, `itemsize`, `reshape`,
-`shape`, `size`, `strides`, `tobytes`, and `transpose`.
+`ndarray`s can be sliced, and iterated on, and have a number of their own methods, and properties, such as `flatten()`, `itemsize`, `reshape()`,
+`shape`, `size`, `strides`, `tobytes()`, and `transpose()` and `T`.
 
 ## `numpy` and `scipy` functions
 
