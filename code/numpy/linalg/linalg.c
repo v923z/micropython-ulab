@@ -280,7 +280,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 
 static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} } ,
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} },
         { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
     };
 
@@ -375,11 +375,20 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_norm_obj, 1, linalg_norm);
 //|     ...
 //|
 
-static mp_obj_t linalg_qr(mp_obj_t M) {
-    if(!mp_obj_is_type(M, &ulab_ndarray_type)) {
+static mp_obj_t linalg_qr(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_mode, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_QSTR(MP_QSTR_complete) } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("operation is defined for ndarrays only"));
     }
-    ndarray_obj_t *source = MP_OBJ_TO_PTR(M);
+    ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
     if(source->ndim != 2) {
         mp_raise_ValueError(translate("operation is defined for 2D arrays only"));
     }
@@ -459,12 +468,35 @@ static mp_obj_t linalg_qr(mp_obj_t M) {
     }
 
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
-    tuple->items[0] = MP_OBJ_FROM_PTR(Q);
-    tuple->items[1] = MP_OBJ_FROM_PTR(R);
+    GET_STR_DATA_LEN(args[1].u_obj, mode, len);
+    if(memcmp(mode, "complete", 8) == 0) {
+        tuple->items[0] = MP_OBJ_FROM_PTR(Q);
+        tuple->items[1] = MP_OBJ_FROM_PTR(R);
+    } else if(memcmp(mode, "reduced", 7) == 0) {
+        size_t k = MAX(m, n) - MIN(m, n);
+        ndarray_obj_t *q = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, m, m - k), NDARRAY_FLOAT);
+        ndarray_obj_t *r = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, m - k, n), NDARRAY_FLOAT);
+        mp_float_t *qa = (mp_float_t *)q->array;
+        mp_float_t *ra = (mp_float_t *)r->array;
+        for(size_t i = 0; i < m; i++) {
+            memcpy(qa, qarray, (m - k) * q->itemsize);
+            qa += (m - k);
+            qarray += m;
+        }
+        for(size_t i = 0; i < m - k; i++) {
+            memcpy(ra, rarray, n * r->itemsize);
+            ra += n;
+            rarray += n;
+        }
+        tuple->items[0] = MP_OBJ_FROM_PTR(q);
+        tuple->items[1] = MP_OBJ_FROM_PTR(r);
+    } else {
+        mp_raise_ValueError(translate("mode must be complete, or reduced"));
+    }
     return tuple;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(linalg_qr_obj, linalg_qr);
+MP_DEFINE_CONST_FUN_OBJ_KW(linalg_qr_obj, 1, linalg_qr);
 #endif
 
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
