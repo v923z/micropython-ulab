@@ -2072,7 +2072,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
 
 #if ULAB_MAX_DIMS > 1
 #if NDARRAY_HAS_RESHAPE
-mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
+mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
     ndarray_obj_t *source = MP_OBJ_TO_PTR(oin);
     if(!mp_obj_is_type(_shape, &mp_type_tuple)) {
         mp_raise_TypeError(translate("shape must be a tuple"));
@@ -2094,14 +2094,28 @@ mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
     }
     ndarray_obj_t *ndarray;
     if(ndarray_is_dense(source)) {
-        // TODO: check if this is what numpy does
         int32_t *new_strides = strides_from_shape(new_shape, source->dtype);
-        ndarray = ndarray_new_view(source, shape->len, new_shape, new_strides, 0);
+        if(inplace) {
+            for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
+                source->shape[i] = new_shape[i];
+                source->strides[i] = new_strides[i];
+            }
+            return MP_OBJ_FROM_PTR(oin);
+        } else {
+            ndarray = ndarray_new_view(source, shape->len, new_shape, new_strides, 0);
+        }
     } else {
+        if(inplace) {
+            mp_raise_ValueError(translate("cannot assign new shape"));
+        }
         ndarray = ndarray_new_ndarray_from_tuple(shape, source->dtype);
         ndarray_copy_array(source, ndarray);
     }
     return MP_OBJ_FROM_PTR(ndarray);
+}
+
+mp_obj_t ndarray_reshape(mp_obj_t oin, mp_obj_t _shape) {
+    return ndarray_reshape_core(oin, _shape, 0);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
