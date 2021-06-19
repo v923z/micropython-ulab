@@ -1,3 +1,9 @@
+Sat, 19 Jun 2021
+
+version 3.1.0
+
+    ndarray.shape can now be assigned to
+
 Thu, 17 Jun 2021
 
 version 3.0.1

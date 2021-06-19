@@ -81,7 +81,19 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 break;
         }
     } else {
-        return;
+        if(dest[1]) {
+            switch(attr) {
+                #if NDARRAY_HAS_RESHAPE
+                case MP_QSTR_shape:
+                    ndarray_reshape_core(self_in, dest[1], 1);
+                    break;
+                #endif
+                default:
+                    return;
+                    break;
+            }
+            dest[0] = MP_OBJ_NULL;
+        }
     }
 }
 

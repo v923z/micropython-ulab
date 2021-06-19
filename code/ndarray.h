@@ -173,6 +173,7 @@ mp_obj_t ndarray_shape(mp_obj_t );
 mp_obj_t ndarray_strides(mp_obj_t );
 
 #if NDARRAY_HAS_RESHAPE
+mp_obj_t ndarray_reshape_core(mp_obj_t , mp_obj_t , bool );
 mp_obj_t ndarray_reshape(mp_obj_t , mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_2(ndarray_reshape_obj);
 #endif
