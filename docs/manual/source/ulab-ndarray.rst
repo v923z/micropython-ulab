@@ -1128,6 +1128,11 @@ consistent with the old, a ``ValueError`` exception will be raised.
     
 
 
+.. code::
+
+    # code to be run in CPython
+    
+    Note that `ndarray.reshape()` can also be called by assigning to `ndarray.shape`.
 .shape
 ~~~~~~
 
@@ -1149,7 +1154,7 @@ array along each axis.
     
     b= np.array([[1, 2], [3, 4]], dtype=np.int8)
     print("\nb:\n", b)
-    print("shape of b:", b.shape
+    print("shape of b:", b.shape)
 
 .. parsed-literal::
 
@@ -1161,6 +1166,34 @@ array along each axis.
      array([[1, 2],
            [3, 4]], dtype=int8)
     shape of b: (2, 2)
+    
+    
+
+
+By assigning a tuple to the ``.shape`` property, the array can be
+``reshape``\ d:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    print('a:\n', a)
+    
+    a.shape = (3, 3)
+    print('\na:\n', a)
+
+.. parsed-literal::
+
+    a:
+     array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0], dtype=float64)
+    
+    a:
+     array([[1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0],
+           [7.0, 8.0, 9.0]], dtype=float64)
     
     
 
