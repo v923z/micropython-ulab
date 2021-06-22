@@ -26,8 +26,6 @@
 
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
-#include "numpy/fft/fft.h"
-#include "numpy/linalg/linalg.h"
 // TODO: we should get rid of this; array.sort depends on it
 #include "numpy/numerical/numerical.h"
 
