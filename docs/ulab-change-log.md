@@ -1,3 +1,9 @@
+Tue, 22 Jun 2021
+
+version 3.1.1
+
+    fix float comparison in scipy/linalg.c
+
 Sat, 19 Jun 2021
 
 version 3.1.0
