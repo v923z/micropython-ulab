@@ -49,6 +49,13 @@ typedef struct _mp_obj_slice_t {
 #define MP_ERROR_TEXT(x) x
 #endif
 
+#if !defined(MP_TYPE_FLAG_FULL)
+#define MP_TYPE_CALL call
+#define mp_type_call(t) t->call
+#define MP_TYPE_FLAG_FULL (0)
+#define EXTENDED_FIELDS(...) __VA_ARGS__
+#endif
+
 #if !CIRCUITPY
 #define translate(x) MP_ERROR_TEXT(x)
 #define ndarray_set_value(a, b, c, d) mp_binary_set_val_array(a, b, c, d)
