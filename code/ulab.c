@@ -89,7 +89,7 @@ STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_t
 
 const mp_obj_type_t ulab_ndarray_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL
+    .flags = MP_TYPE_FLAG_EXTENDED
     #if defined(MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) && defined(MP_TYPE_FLAG_EQ_HAS_NEQ_TEST)
         | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST,
     #endif

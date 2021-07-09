@@ -579,7 +579,7 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
 
 const mp_obj_type_t vectorise_function_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_FULL,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_,
     EXTENDED_FIELDS(
     .call = vectorise_vectorized_function_call,
