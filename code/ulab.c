@@ -97,7 +97,7 @@ const mp_obj_type_t ulab_ndarray_type = {
     .print = ndarray_print,
     .make_new = ndarray_make_new,
     .locals_dict = (mp_obj_dict_t*)&ulab_ndarray_locals_dict,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
     #if NDARRAY_IS_SLICEABLE
     .subscr = ndarray_subscr,
     #endif

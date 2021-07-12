@@ -581,7 +581,7 @@ const mp_obj_type_t vectorise_function_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_,
-    EXTENDED_FIELDS(
+    MP_TYPE_EXTENDED_FIELDS(
     .call = vectorise_vectorized_function_call,
     )
 };
