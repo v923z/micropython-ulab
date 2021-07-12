@@ -51,7 +51,7 @@ typedef struct _mp_obj_slice_t {
 
 #if !defined(MP_TYPE_FLAG_EXTENDED)
 #define MP_TYPE_CALL call
-#define mp_type_call(t) t->call
+#define mp_type_get_call_slot(t) t->call
 #define MP_TYPE_FLAG_EXTENDED (0)
 #define MP_TYPE_EXTENDED_FIELDS(...) __VA_ARGS__
 #endif

@@ -608,7 +608,7 @@ static mp_obj_t vectorise_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     const mp_obj_type_t *type = mp_obj_get_type(args[0].u_obj);
-    if(mp_type_call(type) == NULL) {
+    if(mp_type_get_call_slot(type) == NULL) {
         mp_raise_TypeError(translate("first argument must be a callable"));
     }
     mp_obj_t _otypes = args[1].u_obj;
