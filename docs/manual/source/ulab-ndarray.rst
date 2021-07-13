@@ -864,14 +864,15 @@ array, while the methods return a new array-like object.
 1.  `.byteswap <#.byteswap>`__
 2.  `.copy <#.copy>`__
 3.  `.dtype <#.dtype>`__
-4.  `.flatten <#.flatten>`__
-5.  `.itemsize <#.itemsize>`__
-6.  `.reshape <#.reshape>`__
-7.  `.shape <#.shape>`__
-8.  `.size <#.size>`__
-9.  `.T <#.transpose>`__
-10. `.transpose <#.transpose>`__
-11. `.sort <#.sort>`__
+4.  `.flat <#.flat>`__
+5.  `.flatten <#.flatten>`__
+6.  `.itemsize <#.itemsize>`__
+7.  `.reshape <#.reshape>`__
+8.  `.shape <#.shape>`__
+9.  `.size <#.size>`__
+10. `.T <#.transpose>`__
+11. `.transpose <#.transpose>`__
+12. `.sort <#.sort>`__
 
 .byteswap
 ~~~~~~~~~
@@ -1015,6 +1016,61 @@ then the output of the previous snippet will be
 Here 98 is nothing but the ASCII value of the character ``b``, which is
 the type code for signed 8-bit integers. The object definition adds
 around 600 bytes to the firmware.
+
+.flat
+~~~~~
+
+numpy:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flat.htm
+
+``.flat`` returns the array’s flat iterator. For one-dimensional objects
+the flat iterator is equivalent to the standart iterator, while for
+higher dimensional tensors, it amounts to first flattening the array,
+and then iterating over it. Note, however, that the flat iterator does
+not consume RAM beyond what is required for holding the position of the
+iterator itself, while flattening produces a new copy.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.int8)
+    for _a in a:
+        print(_a)
+    
+    a = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.int8)
+    print('a:\n', a)
+    
+    for _a in a:
+        print(_a)
+    
+    for _a in a.flat:
+        print(_a)
+
+.. parsed-literal::
+
+    1
+    2
+    3
+    4
+    a:
+     array([[1, 2, 3, 4],
+           [5, 6, 7, 8]], dtype=int8)
+    array([1, 2, 3, 4], dtype=int8)
+    array([5, 6, 7, 8], dtype=int8)
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+    8
+    
+    
+
 
 .flatten
 ~~~~~~~~
