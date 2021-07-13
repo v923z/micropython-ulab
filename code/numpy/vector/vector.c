@@ -549,7 +549,7 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, self->otypes);
         for(size_t i=0; i < source->len; i++) {
             avalue[0] = mp_binary_get_val_array(source->dtype, source->array, i);
-            fvalue = self->type->call(self->fun, 1, 0, avalue);
+            fvalue = self->type->MP_TYPE_CALL(self->fun, 1, 0, avalue);
             ndarray_set_value(self->otypes, ndarray->array, i, fvalue);
         }
         return MP_OBJ_FROM_PTR(ndarray);
@@ -561,14 +561,14 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
         mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
         size_t i=0;
         while ((avalue[0] = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            fvalue = self->type->call(self->fun, 1, 0, avalue);
+            fvalue = self->type->MP_TYPE_CALL(self->fun, 1, 0, avalue);
             ndarray_set_value(self->otypes, ndarray->array, i, fvalue);
             i++;
         }
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(mp_obj_is_int(args[0]) || mp_obj_is_float(args[0])) {
         ndarray_obj_t *ndarray = ndarray_new_linear_array(1, self->otypes);
-        fvalue = self->type->call(self->fun, 1, 0, args);
+        fvalue = self->type->MP_TYPE_CALL(self->fun, 1, 0, args);
         ndarray_set_value(self->otypes, ndarray->array, 0, fvalue);
         return MP_OBJ_FROM_PTR(ndarray);
     } else {
@@ -579,8 +579,11 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
 
 const mp_obj_type_t vectorise_function_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_,
+    MP_TYPE_EXTENDED_FIELDS(
     .call = vectorise_vectorized_function_call,
+    )
 };
 
 //| def vectorize(
@@ -605,7 +608,7 @@ static mp_obj_t vectorise_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     const mp_obj_type_t *type = mp_obj_get_type(args[0].u_obj);
-    if(type->call == NULL) {
+    if(mp_type_get_call_slot(type) == NULL) {
         mp_raise_TypeError(translate("first argument must be a callable"));
     }
     mp_obj_t _otypes = args[1].u_obj;
