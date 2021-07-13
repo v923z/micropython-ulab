@@ -52,7 +52,7 @@ mp_obj_t ndarray_flatiter_next(mp_obj_t self_in) {
 }
 
 mp_obj_t ndarray_new_flatiterator(mp_obj_t flatiter_in, mp_obj_iter_buf_t *iter_buf) {
-    assert(sizeof(ndarray_flatiter_obj_t) <= sizeof(mp_obj_iter_buf_t));
+    assert(sizeof(ndarray_flatiter_t) <= sizeof(mp_obj_iter_buf_t));
     ndarray_flatiter_t *iter = (ndarray_flatiter_t *)iter_buf;
     ndarray_flatiter_t *flatiter = MP_OBJ_TO_PTR(flatiter_in);
     iter->base.type = &mp_type_polymorph_iter;
