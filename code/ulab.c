@@ -23,6 +23,7 @@
 #include "ulab_create.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
+#include "numpy/ndarray/ndarray_iter.h"
 
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
@@ -32,7 +33,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 3.1.1
+#define ULAB_VERSION 3.2.0
 #define xstr(s) str(s)
 #define str(s) #s
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
@@ -121,6 +122,14 @@ const mp_obj_type_t ulab_dtype_type = {
     .name = MP_QSTR_dtype,
     .print = ndarray_dtype_print,
     .make_new = ndarray_dtype_make_new,
+};
+#endif
+
+#if NDARRAY_HAS_FLATITER
+const mp_obj_type_t ndarray_flatiter_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_flatiter,
+    .getiter = ndarray_get_flatiterator,
 };
 #endif
 

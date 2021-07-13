@@ -110,8 +110,11 @@ mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *, size_t , size_t , const m
 #endif /* CIRCUITPY */
 #endif /* ULAB_HAS_DTYPE_OBJECT */
 
+extern const mp_obj_type_t ndarray_flatiter_type;
+
 mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t , mp_obj_iter_buf_t *);
 
+mp_obj_t ndarray_get_item(ndarray_obj_t *, void *);
 mp_float_t ndarray_get_float_value(void *, uint8_t );
 mp_float_t ndarray_get_float_index(void *, uint8_t , size_t );
 bool ndarray_object_is_array_like(mp_obj_t );

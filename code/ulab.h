@@ -260,6 +260,12 @@
 #define ULAB_NUMPY_HAS_NDINFO           (1)
 #endif
 
+// if this constant is set to 1, the interpreter can iterate
+// over the flat array without copying any data
+#ifndef NDARRAY_HAS_FLATITER
+#define NDARRAY_HAS_FLATITER            (1)
+#endif
+
 // frombuffer adds 600 bytes to the firmware
 #ifndef ULAB_NUMPY_HAS_FROMBUFFER
 #define ULAB_NUMPY_HAS_FROMBUFFER       (1)
