@@ -69,6 +69,9 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
         #if NDARRAY_HAS_DTYPE
             { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
         #endif
+        #if NDARRAY_HAS_FLATITER
+            { MP_ROM_QSTR(MP_QSTR_flat), MP_ROM_PTR(&ndarray_flat_obj) },
+        #endif
         #if NDARRAY_HAS_ITEMSIZE
             { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&ndarray_itemsize_obj) },
         #endif
