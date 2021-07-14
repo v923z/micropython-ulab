@@ -23,6 +23,7 @@
 #include "ulab_create.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
+#include "numpy/ndarray/ndarray_iter.h"
 
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
@@ -32,7 +33,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 3.1.1
+#define ULAB_VERSION 3.2.0
 #define xstr(s) str(s)
 #define str(s) #s
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
@@ -67,6 +68,9 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #ifdef CIRCUITPY
         #if NDARRAY_HAS_DTYPE
             { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
+        #endif
+        #if NDARRAY_HAS_FLATITER
+            { MP_ROM_QSTR(MP_QSTR_flat), MP_ROM_PTR(&ndarray_flat_obj) },
         #endif
         #if NDARRAY_HAS_ITEMSIZE
             { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&ndarray_itemsize_obj) },
@@ -121,6 +125,16 @@ const mp_obj_type_t ulab_dtype_type = {
     .name = MP_QSTR_dtype,
     .print = ndarray_dtype_print,
     .make_new = ndarray_dtype_make_new,
+};
+#endif
+
+#if NDARRAY_HAS_FLATITER
+const mp_obj_type_t ndarray_flatiter_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_flatiter,
+    MP_TYPE_EXTENDED_FIELDS(
+    .getiter = ndarray_get_flatiterator,
+    )
 };
 #endif
 

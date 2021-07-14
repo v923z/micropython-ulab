@@ -1555,12 +1555,12 @@ mp_obj_t ndarray_iternext(mp_obj_t self_in) {
 
 mp_obj_t ndarray_new_ndarray_iterator(mp_obj_t ndarray, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_ndarray_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_ndarray_it_t *o = (mp_obj_ndarray_it_t*)iter_buf;
-    o->base.type = &mp_type_polymorph_iter;
-    o->iternext = ndarray_iternext;
-    o->ndarray = ndarray;
-    o->cur = 0;
-    return MP_OBJ_FROM_PTR(o);
+    mp_obj_ndarray_it_t *iter = (mp_obj_ndarray_it_t *)iter_buf;
+    iter->base.type = &mp_type_polymorph_iter;
+    iter->iternext = ndarray_iternext;
+    iter->ndarray = ndarray;
+    iter->cur = 0;
+    return MP_OBJ_FROM_PTR(iter);
 }
 #endif /* NDARRAY_IS_ITERABLE */
 

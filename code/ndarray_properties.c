@@ -19,6 +19,7 @@
 
 #include "ulab.h"
 #include "ndarray.h"
+#include "numpy/ndarray/ndarray_iter.h"
 
 #ifndef CIRCUITPY
 
@@ -49,6 +50,11 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             #if NDARRAY_HAS_DTYPE
             case MP_QSTR_dtype:
                 dest[0] = ndarray_dtype(self_in);
+                break;
+            #endif
+            #if NDARRAY_HAS_FLATITER
+            case MP_QSTR_flat:
+                dest[0] = ndarray_flatiter_make_new(self_in);
                 break;
             #endif
             #if NDARRAY_HAS_ITEMSIZE
