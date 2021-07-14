@@ -132,7 +132,9 @@ const mp_obj_type_t ulab_dtype_type = {
 const mp_obj_type_t ndarray_flatiter_type = {
     { &mp_type_type },
     .name = MP_QSTR_flatiter,
+    MP_TYPE_EXTENDED_FIELDS(
     .getiter = ndarray_get_flatiterator,
+    )
 };
 #endif
 
