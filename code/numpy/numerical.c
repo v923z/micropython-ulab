@@ -20,8 +20,8 @@
 #include "py/builtin.h"
 #include "py/misc.h"
 
-#include "../../ulab.h"
-#include "../../ulab_tools.h"
+#include "../ulab.h"
+#include "../ulab_tools.h"
 #include "numerical.h"
 
 enum NUMERICAL_FUNCTION_TYPE {

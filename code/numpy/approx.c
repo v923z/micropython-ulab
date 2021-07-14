@@ -17,8 +17,8 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../../ulab.h"
-#include "../../ulab_tools.h"
+#include "../ulab.h"
+#include "../ulab_tools.h"
 #include "approx.h"
 
 //| """Numerical approximation methods"""

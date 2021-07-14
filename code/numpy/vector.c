@@ -20,8 +20,8 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
-#include "../../ulab.h"
-#include "../../ulab_tools.h"
+#include "../ulab.h"
+#include "../ulab_tools.h"
 #include "vector.h"
 
 //| """Element-by-element functions
