@@ -1,3 +1,15 @@
+Fri, 16 Jun  2021
+
+version 3.2.1
+
+    fix compile error on SAMD devices
+
+Wed, 14 Jun 2021
+
+version 3.2.0
+
+    add flat iterator
+
 Tue, 22 Jun 2021
 
 version 3.1.1

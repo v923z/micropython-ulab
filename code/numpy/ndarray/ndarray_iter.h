@@ -18,9 +18,8 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
-#include "ulab.h"
-#include "ndarray.h"
-
+#include "../../ulab.h"
+#include "../../ndarray.h"
 
 // TODO: take simply mp_obj_ndarray_it_t from ndarray.c
 typedef struct _mp_obj_ndarray_flatiter_t {
