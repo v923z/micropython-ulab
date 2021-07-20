@@ -99,7 +99,7 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_cholesky_obj, linalg_cholesky);
 
-//| def det(m: ulab.numpy.ndarray) -> float:
+//| def det(m: ulab.numpy.ndarray) -> _float:
 //|     """
 //|     :param: m, a square matrix
 //|     :return float: The determinant of the matrix
@@ -270,7 +270,7 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 #endif
 
-//| def norm(x: ulab.numpy.ndarray) -> float:
+//| def norm(x: ulab.numpy.ndarray) -> _float:
 //|    """
 //|    :param ~ulab.numpy.ndarray x: a vector or a matrix
 //|

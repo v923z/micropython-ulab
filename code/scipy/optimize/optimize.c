@@ -35,13 +35,13 @@ static mp_float_t optimize_python_call(const mp_obj_type_t *type, mp_obj_t fun, 
 
 #if ULAB_SCIPY_OPTIMIZE_HAS_BISECT
 //| def bisect(
-//|     fun: Callable[[float], float],
-//|     a: float,
-//|     b: float,
+//|     fun: Callable[[_float], _float],
+//|     a: _float,
+//|     b: _float,
 //|     *,
-//|     xtol: float = 2.4e-7,
+//|     xtol: _float = 2.4e-7,
 //|     maxiter: int = 100
-//| ) -> float:
+//| ) -> _float:
 //|     """
 //|     :param callable f: The function to bisect
 //|     :param float a: The left side of the interval
@@ -106,12 +106,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(optimize_bisect_obj, 3, optimize_bisect);
 #if ULAB_SCIPY_OPTIMIZE_HAS_FMIN
 //| def fmin(
 //|     fun: Callable[[float], float],
-//|     x0: float,
+//|     x0: _float,
 //|     *,
-//|     xatol: float = 2.4e-7,
-//|     fatol: float = 2.4e-7,
+//|     xatol: _float = 2.4e-7,
+//|     fatol: _float = 2.4e-7,
 //|     maxiter: int = 200
-//| ) -> float:
+//| ) -> _float:
 //|     """
 //|     :param callable f: The function to bisect
 //|     :param float x0: The initial x value
@@ -329,12 +329,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(optimize_curve_fit_obj, 2, optimize_curve_fit);
 #if ULAB_SCIPY_OPTIMIZE_HAS_NEWTON
 //| def newton(
 //|     fun: Callable[[float], float],
-//|     x0: float,
+//|     x0: _float,
 //|     *,
-//|     xtol: float = 2.4e-7,
-//|     rtol: float = 0.0,
+//|     xtol: _float = 2.4e-7,
+//|     rtol: _float = 0.0,
 //|     maxiter: int = 50
-//| ) -> float:
+//| ) -> _float:
 //|     """
 //|     :param callable f: The function to bisect
 //|     :param float x0: The initial x value

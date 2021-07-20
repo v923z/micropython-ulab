@@ -34,6 +34,25 @@
 
 //| class ndarray: ...
 
+//| def get_printoptions() -> Dict[str, int]:
+//|     """Get printing options"""
+//|     ...
+//|
+//| def set_printoptions(threshold: Optional[int] = None, edgeitems: Optional[int] = None) -> None:
+//|     """Set printing options"""
+//|     ...
+//|
+//| def ndinfo(array: ulab.numpy.ndarray) -> None:
+//|     ...
+//|
+//| def array(
+//|     values: Union[ndarray, Iterable[Union[_float, _bool, Iterable[Any]]]],
+//|     *,
+//|     dtype: _DType = ulab.numpy.float
+//| ) -> ulab.numpy.ndarray:
+//|     """alternate constructor function for `ulab.numpy.ndarray`. Mirrors numpy.array"""
+//|     ...
+
 // math constants
 #if ULAB_NUMPY_HAS_E
 #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
