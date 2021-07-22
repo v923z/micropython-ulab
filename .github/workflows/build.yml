@@ -21,6 +21,7 @@ jobs:
             os:
                 - ubuntu-16.04
                 - macos-10.14
+            dims: [2, 3, 4]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Dump GitHub context
@@ -46,7 +47,7 @@ jobs:
         path: micropython
 
     - name: Run build.sh
-      run: ./build.sh
+      run: ./build.sh ${{ matrix.dims }}
 
   circuitpython:
     strategy:
@@ -54,6 +55,7 @@ jobs:
             os:
                 - ubuntu-20.04
                 - macos-10.14
+            dims: [2, 3, 4]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Dump GitHub context
@@ -85,4 +87,4 @@ jobs:
         python3 -mpip install -r requirements_cp_dev.txt
 
     - name: Run build-cp.sh
-      run: ./build-cp.sh
+      run: ./build-cp.sh ${{ matrix.dims }}
