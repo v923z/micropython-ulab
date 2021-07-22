@@ -12,8 +12,8 @@
 #ifndef _NUMERICAL_
 #define _NUMERICAL_
 
-#include "../../ulab.h"
-#include "../../ndarray.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 // TODO: implement cumsum
 

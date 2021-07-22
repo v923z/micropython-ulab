@@ -28,7 +28,7 @@
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
 // TODO: we should get rid of this; array.sort depends on it
-#include "numpy/numerical/numerical.h"
+#include "numpy/numerical.h"
 
 #include "user/user.h"
 #include "utils/utils.h"
