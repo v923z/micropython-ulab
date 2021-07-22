@@ -444,7 +444,7 @@
 #endif
 
 #if ULAB_MAX_DIMS == 4
-#define RUN_SUM(type, array, results, rarray, shape, strides, index) do {\
+#define RUN_SUM(type, array, results, rarray, ss) do {\
     size_t j = 0;\
     do {\
         size_t k = 0;\

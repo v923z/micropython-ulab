@@ -181,7 +181,7 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
             array -= _shape_strides.strides[ULAB_MAX_DIMS - 2] * _shape_strides.shape[ULAB_MAX_DIMS - 2];
             array += _shape_strides.strides[ULAB_MAX_DIMS - 3];
             i++;
-        } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 3])
+        } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 3]);
         #endif
         return results;
     } else if(mp_obj_is_int(oin) || mp_obj_is_float(oin)) {
