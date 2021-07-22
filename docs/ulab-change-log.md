@@ -1,3 +1,9 @@
+Thu, 22 Jul 2021
+
+version 3.3.1
+
+    fix sum for 4D arrays
+
 Tue, 22 Jun 2021
 
 version 3.1.1
