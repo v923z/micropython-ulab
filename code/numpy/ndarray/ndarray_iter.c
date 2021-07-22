@@ -18,8 +18,6 @@
 #include "py/runtime.h"
 
 #include "ndarray_iter.h"
-#include "../../ulab.h"
-#include "../../ndarray.h"
 
 #ifdef NDARRAY_HAS_FLATITER
 mp_obj_t ndarray_flatiter_make_new(mp_obj_t self_in) {

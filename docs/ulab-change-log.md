@@ -1,5 +1,11 @@
 Thu, 22 Jul 2021
 
+version 3.3.2
+
+    fix compilation error on SAMD devices
+
+Thu, 22 Jul 2021
+
 version 3.3.1
 
     fix sum for 4D arrays
