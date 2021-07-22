@@ -39,13 +39,15 @@ NPROC=$(python -c 'import multiprocessing; print(multiprocessing.cpu_count())')
 HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
 [ -e circuitpython/py/py.mk ] || (git clone --no-recurse-submodules --depth 100 --branch main https://github.com/adafruit/circuitpython && cd circuitpython && git submodule update --init lib/uzlib tools)
 rm -rf circuitpython/extmod/ulab; ln -s "$HERE" circuitpython/extmod/ulab
+dims=${1-2}
 make -C circuitpython/mpy-cross -j$NPROC
 sed -e '/MICROPY_PY_UHASHLIB/s/1/0/' < circuitpython/ports/unix/mpconfigport.h > circuitpython/ports/unix/mpconfigport_ulab.h
-make -k -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_ulab.h>" -Wno-tautological-constant-out-of-range-compare -Wno-unknown-pragmas'
+make -k -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMP_CONFIGFILE=\"<mpconfigport_ulab.h>\" -Wno-tautological-constant-out-of-range-compare -Wno-unknown-pragmas -DULAB_MAX_DIMS=$dims" BUILD=build-$dims PROG=micropython-$dims
 
-for dir in "numpy" "scipy" "utils"
+
+for dir in "numpy" "scipy" "utils" $(printf "%dd " $(seq 1 ${dims}))
 do
-	if ! env MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython ./run-tests -d tests/"$dir"; then
+	if ! env MICROPY_MICROPYTHON=circuitpython/ports/unix/micropython-$dims ./run-tests -d tests/"$dir"; then
 		for exp in *.exp; do
 			testbase=$(basename $exp .exp);
 			echo -e "\nFAILURE $testbase";
@@ -55,5 +57,8 @@ do
 	fi
 done
 
-(cd circuitpython && sphinx-build -E -W -b html . _build/html)
-(cd circuitpython && make check-stubs)
+# Docs don't depend on the dimensionality, so only do it once
+if [ "$dims" -eq 2 ]; then
+    (cd circuitpython && sphinx-build -E -W -b html . _build/html)
+    (cd circuitpython && make check-stubs)
+fi
