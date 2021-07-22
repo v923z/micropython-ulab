@@ -17,9 +17,9 @@
 #include "py/runtime.h"
 #include "py/misc.h"
 
-#include "../../ulab.h"
-#include "../../ndarray_operators.h"
-#include "../../ulab_tools.h"
+#include "../ulab.h"
+#include "../ndarray_operators.h"
+#include "../ulab_tools.h"
 #include "compare.h"
 
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {

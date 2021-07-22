@@ -28,12 +28,12 @@
 #include "numpy/numpy.h"
 #include "scipy/scipy.h"
 // TODO: we should get rid of this; array.sort depends on it
-#include "numpy/numerical/numerical.h"
+#include "numpy/numerical.h"
 
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 3.2.1
+#define ULAB_VERSION 3.3.2
 #define xstr(s) str(s)
 #define str(s) #s
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)

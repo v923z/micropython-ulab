@@ -1,15 +1,27 @@
-Fri, 16 Jun  2021
+Thu, 22 Jul 2021
 
-version 3.2.1
+version 3.3.2
 
-    fix compile error on SAMD devices
+    fix compilation error on SAMD devices
 
-Wed, 14 Jun 2021
+Thu, 22 Jul 2021
+
+version 3.3.1
+
+    fix sum for 4D arrays
+
+Thu, 22 Jul 2021
+
+version 3.3.0
+
+    add QR decomposition
+
+Tue, 13 Jul 2021
 
 version 3.2.0
 
-    add flat iterator
-
+    add flatiter/flat to ndarray methods
+    
 Tue, 22 Jun 2021
 
 version 3.1.1
