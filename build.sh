@@ -39,18 +39,19 @@ set -e
 HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
 [ -e micropython/py/py.mk ] || git clone --no-recurse-submodules https://github.com/micropython/micropython
 [ -e micropython/lib/axtls/README ] || (cd micropython && git submodule update --init lib/axtls )
+dims=${1-2}
 make -C micropython/mpy-cross -j${NPROC}
 make -C micropython/ports/unix -j${NPROC} axtls
-make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0
+make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DULAB_MAX_DIMS=$dims BUILD=build-$dims PROG=micropython-$dims
 
-
-for dir in "numpy" "scipy" "utils"
+for dir in "numpy" "scipy" "utils" $(printf "%dd " $(seq 1 ${dims}))
 do
-	if ! env MICROPY_MICROPYTHON=micropython/ports/unix/micropython ./run-tests -d tests/"$dir"; then
+	if ! env MICROPY_MICROPYTHON=micropython/ports/unix/micropython-$dims ./run-tests -d tests/"$dir"; then
 		for exp in *.exp; do
 			testbase=$(basename $exp .exp);
 			echo -e "\nFAILURE $testbase";
 			diff -u $testbase.exp $testbase.out;
 		done
+                exit 1
 	fi
 done
