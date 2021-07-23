@@ -24,6 +24,7 @@
 
 //| """Frequency-domain functions"""
 //|
+//| import ulab.numpy
 
 
 //| def fft(r: ulab.numpy.ndarray, c: Optional[ulab.numpy.ndarray] = None) -> Tuple[ulab.numpy.ndarray, ulab.numpy.ndarray]:
