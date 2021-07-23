@@ -21,6 +21,8 @@
 #include "../../numpy/fft/fft_tools.h"
 
 #if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
+//| import ulab.numpy
+//|
 //| def spectrogram(r: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
 //|     """
 //|     :param ulab.numpy.ndarray r: A 1-dimension array of values whose size is a power of 2
