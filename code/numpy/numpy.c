@@ -146,7 +146,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR_concatenate), (mp_obj_t)&create_concatenate_obj },
     #endif
     #if ULAB_NUMPY_HAS_DIAG
-        { MP_ROM_QSTR(MP_QSTR_diag), (mp_obj_t)&create_diag_obj },
+        #if ULAB_MAX_DIMS > 1
+            { MP_ROM_QSTR(MP_QSTR_diag), (mp_obj_t)&create_diag_obj },
+        #endif
     #endif
     #if ULAB_NUMPY_HAS_EMPTY
         { MP_ROM_QSTR(MP_QSTR_empty), (mp_obj_t)&create_zeros_obj },
@@ -229,10 +231,14 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
         { MP_OBJ_NEW_QSTR(MP_QSTR_diff), (mp_obj_t)&numerical_diff_obj },
     #endif
     #if ULAB_NUMPY_HAS_DOT
-        { MP_OBJ_NEW_QSTR(MP_QSTR_dot), (mp_obj_t)&transform_dot_obj },
+        #if ULAB_MAX_DIMS > 1
+            { MP_OBJ_NEW_QSTR(MP_QSTR_dot), (mp_obj_t)&transform_dot_obj },
+        #endif
     #endif
     #if ULAB_NUMPY_HAS_TRACE
-    { MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&stats_trace_obj },
+        #if ULAB_MAX_DIMS > 1
+            { MP_ROM_QSTR(MP_QSTR_trace), (mp_obj_t)&stats_trace_obj },
+        #endif
     #endif
     #if ULAB_NUMPY_HAS_FLIP
         { MP_OBJ_NEW_QSTR(MP_QSTR_flip), (mp_obj_t)&numerical_flip_obj },

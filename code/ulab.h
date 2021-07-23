@@ -47,7 +47,9 @@
 // By setting this constant to 1, iteration over array dimensions will be implemented
 // as a function (ndarray_rewind_array), instead of writing out the loops in macros
 // This reduces firmware size at the expense of speed
+#ifndef ULAB_HAS_FUNCTION_ITERATOR
 #define ULAB_HAS_FUNCTION_ITERATOR          (0)
+#endif
 
 // If NDARRAY_IS_ITERABLE is 1, the ndarray object defines its own iterator function
 // This option saves approx. 250 bytes of flash space
