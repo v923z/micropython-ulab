@@ -21,7 +21,7 @@ jobs:
             os:
                 - ubuntu-16.04
                 - macos-10.14
-            dims: [2, 3, 4]
+            dims: [1, 2, 3, 4]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Dump GitHub context
@@ -55,7 +55,7 @@ jobs:
             os:
                 - ubuntu-20.04
                 - macos-10.14
-            dims: [2, 3, 4]
+            dims: [1, 2, 3, 4]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Dump GitHub context
