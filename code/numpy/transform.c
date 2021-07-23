@@ -20,7 +20,7 @@
 #include "../ulab_tools.h"
 #include "transform.h"
 
-
+#if ULAB_MAX_DIMS > 1
 #if ULAB_NUMPY_HAS_DOT
 //| def dot(m1: ulab.numpy.ndarray, m2: ulab.numpy.ndarray) -> Union[ulab.numpy.ndarray, _float]:
 //|    """
@@ -86,4 +86,5 @@ mp_obj_t transform_dot(mp_obj_t _m1, mp_obj_t _m2) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(transform_dot_obj, transform_dot);
+#endif
 #endif
