@@ -579,6 +579,7 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     int8_t ax = 0;
     if(axis == mp_const_none) {
         // flatten the array
+        #if ULAB_MAX_DIMS > 1
         for(uint8_t i=0; i < ULAB_MAX_DIMS - 1; i++) {
             ndarray->shape[i] = 0;
             ndarray->strides[i] = 0;
@@ -586,6 +587,7 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
         ndarray->shape[ULAB_MAX_DIMS - 1] = ndarray->len;
         ndarray->strides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
         ndarray->ndim = 1;
+        #endif
     } else {
         ax = mp_obj_get_int(axis);
         if(ax < 0) ax += ndarray->ndim;

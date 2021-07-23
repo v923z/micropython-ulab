@@ -252,6 +252,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(create_concatenate_obj, 1, create_concatenate);
 #endif
 
+#if ULAB_MAX_DIMS > 1
 #if ULAB_NUMPY_HAS_DIAG
 mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -314,7 +315,6 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 MP_DEFINE_CONST_FUN_OBJ_KW(create_diag_obj, 1, create_diag);
 #endif /* ULAB_NUMPY_HAS_DIAG */
 
-#if ULAB_MAX_DIMS > 1
 #if ULAB_NUMPY_HAS_EYE
 mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {

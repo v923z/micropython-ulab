@@ -201,7 +201,7 @@
 } while(0)
 
 #define RUN_MEAN_STD(type, array, rarray, ss, div, isStd) do {\
-    RUN_MEAN_STD1(type, (array), (results), (rarray), (ss), (div), (isStd));\
+    RUN_MEAN_STD1(type, (array), (rarray), (ss), (div), (isStd));\
 } while(0)
 
 #define RUN_ARGMIN(ndarray, type, array, results, rarray, shape, strides, index, op) do {\

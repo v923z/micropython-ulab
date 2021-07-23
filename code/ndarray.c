@@ -396,11 +396,13 @@ static void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, 
     mp_print_str(print, "]");
 }
 
+#if ULAB_MAX_DIMS > 1
 static void ndarray_print_bracket(const mp_print_t *print, const size_t condition, const size_t shape, const char *string) {
     if(condition < shape) {
         mp_print_str(print, string);
     }
 }
+#endif
 
 void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -411,9 +413,13 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         mp_print_str(print, "[]");
         if(self->ndim > 1) {
             mp_print_str(print, ", shape=(");
+            #if ULAB_MAX_DIMS > 1
             for(uint8_t ndim = self->ndim; ndim > 1; ndim--) {
                 mp_printf(MP_PYTHON_PRINTER, "%d,", self->shape[ULAB_MAX_DIMS - ndim]);
             }
+            #else
+            mp_printf(MP_PYTHON_PRINTER, "%d,", self->shape[0]);
+            #endif
             mp_printf(MP_PYTHON_PRINTER, "%d)", self->shape[ULAB_MAX_DIMS - 1]);
         }
     } else {

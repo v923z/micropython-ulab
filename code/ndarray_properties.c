@@ -89,10 +89,12 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         if(dest[1]) {
             switch(attr) {
+                #if ULAB_MAX_DIMS > 1
                 #if NDARRAY_HAS_RESHAPE
                 case MP_QSTR_shape:
                     ndarray_reshape_core(self_in, dest[1], 1);
                     break;
+                #endif
                 #endif
                 default:
                     return;
