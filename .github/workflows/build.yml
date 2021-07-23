@@ -20,7 +20,7 @@ jobs:
         matrix:
             os:
                 - ubuntu-16.04
-                - macos-10.14
+                - macOS-latest
             dims: [1, 2, 3, 4]
     runs-on: ${{ matrix.os }}
     steps:
@@ -54,7 +54,7 @@ jobs:
         matrix:
             os:
                 - ubuntu-20.04
-                - macos-10.14
+                - macOS-latest
             dims: [1, 2, 3, 4]
     runs-on: ${{ matrix.os }}
     steps:
