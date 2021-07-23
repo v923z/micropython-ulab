@@ -45,10 +45,6 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //| possible.  Numpy's documentation can be found at
 //| https://docs.scipy.org/doc/numpy/index.html"""
 //|
-//| from .numpy import ndarray as _ndarray
-//|
-//| ndarray = Union[_ndarray]
-//| """A temporary alias for the type `ulab.numpy.ndarray` needed during a transitional period. Do not use."""
 
 #ifdef CIRCUITPY
 void ndarray_set_value(char typecode, void *p, size_t index, mp_obj_t val_in) {
