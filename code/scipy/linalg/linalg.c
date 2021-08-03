@@ -25,6 +25,7 @@
 #if ULAB_SCIPY_HAS_LINALG_MODULE
 //|
 //| import ulab.scipy
+//| import ulab.numpy
 //|
 //| """Linear algebra functions"""
 //|
