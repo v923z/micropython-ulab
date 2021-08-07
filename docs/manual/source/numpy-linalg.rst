@@ -7,11 +7,10 @@ Functions in the ``linalg`` module can be called by prepending them by
 
 1. `numpy.linalg.cholesky <#cholesky>`__
 2. `numpy.linalg.det <#det>`__
-3. `numpy.linalg.dot <#dot>`__
-4. `numpy.linalg.eig <#eig>`__
-5. `numpy.linalg.inv <#inv>`__
-6. `numpy.linalg.norm <#norm>`__
-7. `numpy.linalg.trace <#trace>`__
+3. `numpy.linalg.eig <#eig>`__
+4. `numpy.linalg.inv <#inv>`__
+5. `numpy.linalg.norm <#norm>`__
+6. `numpy.linalg.qr <#qr>`__
 
 cholesky
 --------
@@ -315,6 +314,73 @@ The function takes a vector or matrix without options, and returns its
 
     norm of a: 7.416198487095663
     norm of b: 16.88194301613414
+    
+    
+
+
+qr
+--
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.linalg.qr.html
+
+The function computes the QR decomposition of a matrix ``m`` of
+dimensions ``(M, N)``, i.e., it returns two such matrices, ``q``\ ’, and
+``r``, that ``m = qr``, where ``q`` is orthonormal, and ``r`` is upper
+triangular. In addition to the input matrix, which is the first
+positional argument, the function accepts the ``mode`` keyword argument
+with a default value of ``reduced``. If ``mode`` is ``reduced``, ``q``,
+and ``r`` are returned in the reduced representation. Otherwise, the
+outputs will have dimensions ``(M, M)``, and ``(M, N)``, respectively.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    A = np.arange(6).reshape((3, 2))
+    print('A: \n', A)
+    
+    print('complete decomposition')
+    q, r = np.linalg.qr(A, mode='complete')
+    print('q: \n', q)
+    print()
+    print('r: \n', r)
+    
+    print('\n\nreduced decomposition')
+    q, r = np.linalg.qr(A, mode='reduced')
+    print('q: \n', q)
+    print()
+    print('r: \n', r)
+
+.. parsed-literal::
+
+    A: 
+     array([[0, 1],
+           [2, 3],
+           [4, 5]], dtype=int16)
+    complete decomposition
+    q: 
+     array([[0.0, -0.9128709291752768, 0.408248290463863],
+           [-0.447213595499958, -0.3651483716701107, -0.8164965809277261],
+           [-0.8944271909999159, 0.1825741858350553, 0.408248290463863]], dtype=float64)
+    
+    r: 
+     array([[-4.47213595499958, -5.813776741499454],
+           [0.0, -1.095445115010332],
+           [0.0, 0.0]], dtype=float64)
+    
+    
+    reduced decomposition
+    q: 
+     array([[0.0, -0.9128709291752768],
+           [-0.447213595499958, -0.3651483716701107],
+           [-0.8944271909999159, 0.1825741858350553]], dtype=float64)
+    
+    r: 
+     array([[-4.47213595499958, -5.813776741499454],
+           [0.0, -1.095445115010332]], dtype=float64)
     
     
 

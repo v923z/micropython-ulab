@@ -1,3 +1,9 @@
+Sat, 07 Aug 2021
+
+version 3.3.4
+
+    change default keyword value in linalg.qr
+
 Fri, 23 Jul 2021
 
 version 3.3.3

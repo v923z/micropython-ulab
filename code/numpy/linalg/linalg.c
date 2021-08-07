@@ -371,14 +371,15 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_norm_obj, 1, linalg_norm);
 //|     :param m: a matrix
 //|     :return tuple (Q, R):
 //|
-//|     Computes the QR decomposition of a matrix"""
+//|     Factor the matrix a as QR, where Q is orthonormal and R is upper-triangular.
+//|     """
 //|     ...
 //|
 
 static mp_obj_t linalg_qr(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_mode, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_QSTR(MP_QSTR_complete) } },
+        { MP_QSTR_mode, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_QSTR(MP_QSTR_reduced) } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
