@@ -927,18 +927,6 @@ mp_obj_t ndarray_array_constructor(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(ndarray_array_constructor_obj, 1, ndarray_array_constructor);
 
-#ifdef CIRCUITPY
-mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    (void) type;
-    mp_arg_check_num(n_args, kw_args, 1, 2, true);
-    size_t n_kw = 0;
-    if (kw_args != 0) {
-        n_kw = kw_args->used;
-    }
-    mp_map_init_fixed_table(kw_args, n_kw, args + n_args);
-    return ndarray_make_new_core(type, n_args, n_kw, args, kw_args);
-}
-#else
 mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void) type;
     mp_arg_check_num(n_args, n_kw, 1, 2, true);
@@ -946,7 +934,6 @@ mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     return ndarray_make_new_core(type, n_args, n_kw, args, &kw_args);
 }
-#endif
 
 // broadcasting is used at a number of places, always include
 bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {

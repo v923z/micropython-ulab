@@ -103,11 +103,7 @@ typedef struct _dtype_obj_t {
 
 void ndarray_dtype_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
 
-#ifdef CIRCUITPY
-mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
-#else
 mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_t *);
-#endif /* CIRCUITPY */
 #endif /* ULAB_HAS_DTYPE_OBJECT */
 
 extern const mp_obj_type_t ndarray_flatiter_type;
@@ -145,11 +141,7 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *);
 void ndarray_copy_array(ndarray_obj_t *, ndarray_obj_t *);
 
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_array_constructor_obj);
-#ifdef CIRCUITPY
-mp_obj_t ndarray_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
-#else
 mp_obj_t ndarray_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_t *);
-#endif
 mp_obj_t ndarray_subscr(mp_obj_t , mp_obj_t , mp_obj_t );
 mp_obj_t ndarray_getiter(mp_obj_t , mp_obj_iter_buf_t *);
 bool ndarray_can_broadcast(ndarray_obj_t *, ndarray_obj_t *, uint8_t *, size_t *, int32_t *, int32_t *);
