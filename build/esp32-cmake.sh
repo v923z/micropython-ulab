@@ -2,26 +2,34 @@
 
 export BUILD_DIR=$(pwd)
 
-git clone https://github.com/v923z/micropython-ulab.git ulab
-git clone https://github.com/micropython/micropython.git
+echo "--- CLONING ULAB ---"
+git clone --depth 1 https://github.com/v923z/micropython-ulab.git ulab
 
+echo "--- CLONING MICROPYTHON ---"
+git clone --depth 1 https://github.com/micropython/micropython.git
+
+echo "--- CLONING ESP-IDF ---"
 cd $BUILD_DIR/micropython/
+git clone --depth 1 -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
 
-git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
-
-cd esp-idf
+echo "--- INSTALL ESP-IDF ---"
+cd $BUILD_DIR/micropython/esp-idf
 ./install.sh
 . ./export.sh
 
+echo "--- MPY-CROSS ---"
 cd $BUILD_DIR/micropython/mpy-cross
 make
+
+echo "--- ESP32 SUBMODULES ---"
 cd $BUILD_DIR/micropython/ports/esp32
 make submodules
 
+echo "--- PATCH MAKEFILE ---"
+cp $BUILD_DIR/micropython/ports/esp32/MakeFile $BUILD_DIR/micropython/ports/esp32/MakeFileOld
+echo "BOARD = GENERIC" > $BUILD_DIR/micropython/ports/esp32/MakeFile
+echo "USER_C_MODULES = \$(BUILD_DIR)/ulab/code/micropython.cmake" >> $BUILD_DIR/micropython/ports/esp32/MakeFile
+cat $BUILD_DIR/micropython/ports/esp32/MakeFileOld >> $BUILD_DIR/micropython/ports/esp32/MakeFile
 
-echo "BOARD = GENERIC" > $BUILD_DIR/micropython/ports/esp32/makefile
-echo "USER_C_MODULES = \$(BUILD_DIR)/ulab/code/micropython.cmake" >> $BUILD_DIR/micropython/ports/esp32/makefile
-
-cd $BUILD_DIR/micropython/ports/esp32
-
+echo "--- MAKE ---"
 make
