@@ -26,10 +26,10 @@ cd $BUILD_DIR/micropython/ports/esp32
 make submodules
 
 echo "--- PATCH MAKEFILE ---"
-cp $BUILD_DIR/micropython/ports/esp32/MakeFile $BUILD_DIR/micropython/ports/esp32/MakeFileOld
-echo "BOARD = GENERIC" > $BUILD_DIR/micropython/ports/esp32/MakeFile
-echo "USER_C_MODULES = \$(BUILD_DIR)/ulab/code/micropython.cmake" >> $BUILD_DIR/micropython/ports/esp32/MakeFile
-cat $BUILD_DIR/micropython/ports/esp32/MakeFileOld >> $BUILD_DIR/micropython/ports/esp32/MakeFile
+cp $BUILD_DIR/micropython/ports/esp32/Makefile $BUILD_DIR/micropython/ports/esp32/MakefileOld
+echo "BOARD = GENERIC" > $BUILD_DIR/micropython/ports/esp32/Makefile
+echo "USER_C_MODULES = \$(BUILD_DIR)/ulab/code/micropython.cmake" >> $BUILD_DIR/micropython/ports/esp32/Makefile
+cat $BUILD_DIR/micropython/ports/esp32/MakefileOld >> $BUILD_DIR/micropython/ports/esp32/Makefile
 
 echo "--- MAKE ---"
 make
