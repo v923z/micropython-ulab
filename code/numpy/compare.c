@@ -89,7 +89,7 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
         } else if(rhs->dtype == NDARRAY_INT16) {
             RUN_COMPARE_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
         } else if(rhs->dtype == NDARRAY_FLOAT) {
-            RUN_COMPARE_LOOP(NDARRAY_FLOAT, mp_float_t, uint8_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+            RUN_COMPARE_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
         }
     } else if(lhs->dtype == NDARRAY_INT16) {
         if(rhs->dtype == NDARRAY_UINT8) {
@@ -101,7 +101,7 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
         } else if(rhs->dtype == NDARRAY_INT16) {
             RUN_COMPARE_LOOP(NDARRAY_INT16, int16_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
         } else if(rhs->dtype == NDARRAY_FLOAT) {
-            RUN_COMPARE_LOOP(NDARRAY_FLOAT, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
+            RUN_COMPARE_LOOP(NDARRAY_FLOAT, mp_float_t, int16_t, mp_float_t, larray, lstrides, rarray, rstrides, ndim, shape, op);
         }
     } else if(lhs->dtype == NDARRAY_FLOAT) {
         if(rhs->dtype == NDARRAY_UINT8) {
