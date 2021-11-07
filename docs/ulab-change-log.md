@@ -1,3 +1,9 @@
+Sun, 07 Nov 2021
+
+version 3.3.5
+
+    fix cast in numpy/compare.c:compare_function()
+
 Sat, 07 Aug 2021
 
 version 3.3.4
