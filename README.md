@@ -1,5 +1,7 @@
 # ulab
 
+[![Documentation Status](https://readthedocs.org/projects/micropython-ulab-robert/badge/?version=latest)](https://micropython-ulab-robert.readthedocs.io/en/latest/?badge=latest)
+
 `ulab` is a `numpy`-like array manipulation library for [micropython](http://micropython.org/) and [CircuitPython](https://circuitpython.org/).
 The module is written in C, defines compact containers for numerical data of one to four
 dimensions, and is fast. The library is a software-only standard `micropython` user module,
