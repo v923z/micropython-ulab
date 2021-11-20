@@ -1479,12 +1479,13 @@ mp_obj_t ndarray_itemsize(mp_obj_t self_in) {
 #if NDARRAY_HAS_SHAPE
 mp_obj_t ndarray_shape(mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t *items = m_new(mp_obj_t, self->ndim);
-    for(uint8_t i=0; i < self->ndim; i++) {
-        items[self->ndim - i - 1] = mp_obj_new_int(self->shape[ULAB_MAX_DIMS - i - 1]);
+    uint8_t nitems = MAX(1, self->ndim);
+    mp_obj_t *items = m_new(mp_obj_t, nitems);
+    for(uint8_t i = 0; i < nitems; i++) {
+        items[nitems - i - 1] = mp_obj_new_int(self->shape[ULAB_MAX_DIMS - i - 1]);
     }
-    mp_obj_t tuple = mp_obj_new_tuple(self->ndim, items);
-    m_del(mp_obj_t, items, self->ndim);
+    mp_obj_t tuple = mp_obj_new_tuple(nitems, items);
+    m_del(mp_obj_t, items, nitems);
     return tuple;
 }
 #endif
