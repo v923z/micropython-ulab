@@ -151,11 +151,11 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     }
     #if ULAB_SUPPORTS_COMPLEX
     ndarray_obj_t *input;
-    if(MP_OBJ_IS_TYPE(o_p, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(o_p, &ulab_ndarray_type)) {
         input = MP_OBJ_TO_PTR(o_p);
         COMPLEX_DTYPE_NOT_IMPLEMENTED(input->dtype)
     }
-    if(MP_OBJ_IS_TYPE(o_x, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(o_x, &ulab_ndarray_type)) {
         input = MP_OBJ_TO_PTR(o_x);
         COMPLEX_DTYPE_NOT_IMPLEMENTED(input->dtype)
     }
