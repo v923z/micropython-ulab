@@ -70,7 +70,11 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_TypeError(translate("sosfilt requires iterable arguments"));
     }
     #if ULAB_SUPPORTS_COMPLEX
+<<<<<<< HEAD
     if(mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type)) {
+=======
+    if(MP_OBJ_IS_TYPE(args[1].u_obj, &ulab_ndarray_type)) {
+>>>>>>> 92b3513 (ulab can now be compiled with complex support)
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[1].u_obj);
         COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     }

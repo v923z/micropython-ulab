@@ -1888,7 +1888,11 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             if(ndarray->boolean) {
                 for(size_t i=0; i < ndarray->len; i++, array++) *array = *array ^ 0x01;
             } else {
-                uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
+                 #if ULAB_SUPPORTS_COMPLEX
+                    uint8_t itemsize = mp_binary_get_complex_size(self->dtype);
+                #else
+                    uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
+                #endif
                 for(size_t i=0; i < ndarray->len*itemsize; i++, array++) *array ^= 0xFF;
             }
             return MP_OBJ_FROM_PTR(ndarray);
