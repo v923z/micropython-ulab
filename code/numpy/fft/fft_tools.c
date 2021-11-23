@@ -13,6 +13,7 @@
 
 #include "../../ndarray.h"
 #include "../../ulab_tools.h"
+#include "../carray/carray_tools.h"
 #include "fft_tools.h"
 
 #ifndef MP_PI
@@ -95,6 +96,7 @@ mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_i
     ndarray_obj_t *re = MP_OBJ_TO_PTR(arg_re);
     #if ULAB_MAX_DIMS > 1
     if(re->ndim != 1) {
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(re->dtype)
         mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));
     }
     #endif
@@ -122,6 +124,7 @@ mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_i
         ndarray_obj_t *im = MP_OBJ_TO_PTR(arg_im);
         #if ULAB_MAX_DIMS > 1
         if(im->ndim != 1) {
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(im->dtype)
             mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));
         }
         #endif
