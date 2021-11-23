@@ -22,6 +22,7 @@
 
 #include "../ulab.h"
 #include "../ulab_tools.h"
+#include "./carray/carray_tools.h"
 #include "numerical.h"
 
 enum NUMERICAL_FUNCTION_TYPE {
@@ -97,6 +98,7 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
     bool anytype = optype == NUMERICAL_ALL ? 1 : 0;
     if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
         uint8_t *array = (uint8_t *)ndarray->array;
         if(ndarray->len == 0) { // return immediately with empty arrays
         if(optype == NUMERICAL_ALL) {
@@ -237,6 +239,7 @@ static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, si
 }
 
 static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype, size_t ddof) {
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     uint8_t *array = (uint8_t *)ndarray->array;
     shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
 
@@ -558,9 +561,11 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_MAX:
             case NUMERICAL_ARGMIN:
             case NUMERICAL_ARGMAX:
+                COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
                 return numerical_argmin_argmax_ndarray(ndarray, axis, optype);
             case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
+                COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
                 return numerical_sum_mean_std_ndarray(ndarray, axis, optype, 0);
             default:
                 mp_raise_NotImplementedError(translate("operation is not implemented on ndarrays"));
@@ -583,6 +588,7 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
     } else {
         ndarray = ndarray_copy_view(MP_OBJ_TO_PTR(oin));
     }
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
 
     int8_t ax = 0;
     if(axis == mp_const_none) {
@@ -685,6 +691,7 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     }
 
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     if(args[1].u_obj == mp_const_none) {
         // bail out, though dense arrays could still be sorted
         mp_raise_NotImplementedError(translate("argsort is not implemented for flattened arrays"));
@@ -788,6 +795,8 @@ static mp_obj_t numerical_cross(mp_obj_t _a, mp_obj_t _b) {
     }
     ndarray_obj_t *a = MP_OBJ_TO_PTR(_a);
     ndarray_obj_t *b = MP_OBJ_TO_PTR(_b);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(a->dtype)
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(b->dtype)
     if((a->ndim != 1) || (b->ndim != 1) || (a->len != b->len) || (a->len != 3)) {
         mp_raise_ValueError(translate("cross is defined for 1D arrays of length 3"));
     }
@@ -876,6 +885,7 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     int8_t ax = args[2].u_int;
     if(ax < 0) ax += ndarray->ndim;
 
@@ -959,7 +969,7 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
     if(args[1].u_obj == mp_const_none) { // flip the flattened array
         results = ndarray_new_linear_array(ndarray->len, ndarray->dtype);
-        ndarray_copy_array(ndarray, results);
+        ndarray_copy_array(ndarray, results, 0);
         uint8_t *rarray = (uint8_t *)results->array;
         rarray += (results->len - 1) * results->itemsize;
         results->array = rarray;

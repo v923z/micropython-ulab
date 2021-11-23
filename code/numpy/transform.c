@@ -18,6 +18,7 @@
 
 #include "../ulab.h"
 #include "../ulab_tools.h"
+#include "carray/carray_tools.h"
 #include "transform.h"
 
 #if ULAB_MAX_DIMS > 1
@@ -39,6 +40,9 @@ mp_obj_t transform_dot(mp_obj_t _m1, mp_obj_t _m2) {
     }
     ndarray_obj_t *m1 = MP_OBJ_TO_PTR(_m1);
     ndarray_obj_t *m2 = MP_OBJ_TO_PTR(_m2);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(m1->dtype)
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(m2->dtype)
+
     uint8_t *array1 = (uint8_t *)m1->array;
     uint8_t *array2 = (uint8_t *)m2->array;
 

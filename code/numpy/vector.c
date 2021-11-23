@@ -22,6 +22,7 @@
 
 #include "../ulab.h"
 #include "../ulab_tools.h"
+#include "carray/carray_tools.h"
 #include "vector.h"
 
 //| """Element-by-element functions
@@ -39,6 +40,7 @@ static mp_obj_t vectorise_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float
     ndarray_obj_t *ndarray = NULL;
     if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(source->dtype)
         uint8_t *sarray = (uint8_t *)source->array;
         ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
@@ -169,6 +171,7 @@ mp_obj_t vectorise_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     int8_t n = args[1].u_int;
     mp_float_t mul = MICROPY_FLOAT_C_FUN(pow)(10.0, n);
     ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(source->dtype)
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
     mp_float_t *narray = (mp_float_t *)ndarray->array;
     uint8_t *sarray = (uint8_t *)source->array;
@@ -238,7 +241,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_atan_obj, vectorise_atan);
 
 mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
     ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x, 0);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray_x->dtype)
+
     ndarray_obj_t *ndarray_y = ndarray_from_mp_obj(y, 0);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray_y->dtype)
 
     uint8_t ndim = 0;
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
@@ -544,6 +550,7 @@ static mp_obj_t vectorise_vectorized_function_call(mp_obj_t self_in, size_t n_ar
     mp_obj_t fvalue;
     if(mp_obj_is_type(args[0], &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0]);
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(source->dtype)
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, self->otypes);
         for(size_t i=0; i < source->len; i++) {
             avalue[0] = mp_binary_get_val_array(source->dtype, source->array, i);
