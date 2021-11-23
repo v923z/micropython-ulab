@@ -29,7 +29,7 @@ mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(translate("input data must be an iterable"));
     }
     #if ULAB_SUPPORTS_COMPLEX
-    if(MP_OBJ_IS_TYPE(args[0], &ulab_ndarray_type)) {
+    if(mp_obj_is_type(args[0], &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0]);
         COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     }
