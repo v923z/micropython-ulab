@@ -24,7 +24,7 @@
 #if ULAB_SUPPORTS_COMPLEX
 
 STATIC mp_obj_t carray_real(mp_obj_t _source) {
-    if(MP_OBJ_IS_TYPE(_source, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(_source, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(_source);
         if(source->dtype != NDARRAY_COMPLEX) {
             ndarray_obj_t *target = ndarray_new_dense_ndarray(source->ndim, source->shape, source->dtype);
@@ -44,7 +44,7 @@ STATIC mp_obj_t carray_real(mp_obj_t _source) {
 MP_DEFINE_CONST_FUN_OBJ_1(carray_real_obj, carray_real);
 
 STATIC mp_obj_t carray_imag(mp_obj_t _source) {
-    if(MP_OBJ_IS_TYPE(_source, &ulab_ndarray_type)) {
+    if(mp_obj_is_type(_source, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(_source);
         if(source->dtype != NDARRAY_COMPLEX) { // if not complex, then the imaginary part is zero
             ndarray_obj_t *target = ndarray_new_dense_ndarray(source->ndim, source->shape, source->dtype);
