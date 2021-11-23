@@ -21,6 +21,7 @@
 
 #include "../ulab.h"
 #include "../scipy/signal/signal.h"
+#include "carray/carray_tools.h"
 #include "filter.h"
 
 #if ULAB_NUMPY_HAS_CONVOLVE
@@ -40,6 +41,8 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 
     ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
     ndarray_obj_t *c = MP_OBJ_TO_PTR(args[1].u_obj);
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(a->dtype)
+    COMPLEX_DTYPE_NOT_IMPLEMENTED(c->dtype)
     // deal with linear arrays only
     #if ULAB_MAX_DIMS > 1
     if((a->ndim != 1) || (c->ndim != 1)) {

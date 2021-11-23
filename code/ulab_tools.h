@@ -34,4 +34,6 @@ void *ndarray_set_float_function(uint8_t );
 
 shape_strides tools_reduce_axes(ndarray_obj_t *, mp_obj_t );
 ndarray_obj_t *tools_object_is_square(mp_obj_t );
+
+uint8_t mp_binary_get_complex_size(uint8_t );
 #endif
