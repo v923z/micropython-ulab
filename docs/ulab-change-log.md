@@ -1,3 +1,9 @@
+Sat, 20 Nov 2021
+
+version 3.3.6
+
+    fix .shape for arrays of zero length (#454)
+
 Sun, 07 Nov 2021
 
 version 3.3.5
