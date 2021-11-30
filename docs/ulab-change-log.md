@@ -1,3 +1,9 @@
+Tue, 30 Nov 2021
+
+version 3.3.7
+
+    fix sum() for integer/Boolean types
+
 Sat, 20 Nov 2021
 
 version 3.3.6

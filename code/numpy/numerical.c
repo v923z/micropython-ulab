@@ -293,7 +293,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             if(ndarray->dtype == NDARRAY_FLOAT) {
                 return mp_obj_new_float(M * ndarray->len);
             } else {
-                return mp_obj_new_int((int32_t)(M * ndarray->len));
+                return mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(round)(M * ndarray->len));
             }
         } else if(optype == NUMERICAL_MEAN) {
             return mp_obj_new_float(M);
