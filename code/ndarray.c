@@ -503,21 +503,28 @@ void ndarray_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
         ndarray_print_bracket(print, 0, self->shape[ULAB_MAX_DIMS-4], "]");
         #endif
     }
+    mp_print_str(print, ", dtype=");
     if(self->boolean) {
-        mp_print_str(print, ", dtype=bool)");
+        mp_print_str(print, "bool)");
     } else if(self->dtype == NDARRAY_UINT8) {
-        mp_print_str(print, ", dtype=uint8)");
+        mp_print_str(print, "uint8)");
     } else if(self->dtype == NDARRAY_INT8) {
-        mp_print_str(print, ", dtype=int8)");
+        mp_print_str(print, "int8)");
     } else if(self->dtype == NDARRAY_UINT16) {
-        mp_print_str(print, ", dtype=uint16)");
+        mp_print_str(print, "uint16)");
     } else if(self->dtype == NDARRAY_INT16) {
-        mp_print_str(print, ", dtype=int16)");
-    } else {
+        mp_print_str(print, "int16)");
+    }
+    #if ULAB_SUPPORTS_COMPLEX
+    else if(self->dtype == NDARRAY_COMPLEX) {
+        mp_print_str(print, "complex)");
+    }
+    #endif /* ULAB_SUPPORTS_COMPLEX */
+    else {
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-        mp_print_str(print, ", dtype=float32)");
+        mp_print_str(print, "float32)");
         #else
-        mp_print_str(print, ", dtype=float64)");
+        mp_print_str(print, "float64)");
         #endif
     }
 }

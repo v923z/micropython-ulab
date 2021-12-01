@@ -401,7 +401,68 @@ MP_DEFINE_CONST_FUN_OBJ_1(vectorise_erfc_obj, vectorise_erfc);
 //|    ...
 //|
 
-MATH_FUN_1(exp, exp);
+static mp_obj_t vectorise_exp(mp_obj_t o_in) {
+    #if ULAB_SUPPORTS_COMPLEX
+    if(mp_obj_is_type(o_in, &mp_type_complex)) {
+        mp_float_t real, imag;
+        mp_obj_get_complex(o_in, &real, &imag);
+        mp_float_t exp_real = MICROPY_FLOAT_C_FUN(exp)(real);
+        return mp_obj_new_complex(exp_real * MICROPY_FLOAT_C_FUN(cos)(imag), exp_real * MICROPY_FLOAT_C_FUN(sin)(imag));
+    } else if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
+        ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
+        if(source->dtype == NDARRAY_COMPLEX) {
+            uint8_t *sarray = (uint8_t *)source->array;
+            ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_COMPLEX);
+            mp_float_t *array = (mp_float_t *)ndarray->array;
+            uint8_t itemsize = sizeof(mp_float_t);
+
+            #if ULAB_MAX_DIMS > 3
+            size_t i = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 2
+                size_t j = 0;
+                do {
+                #endif
+                    #if ULAB_MAX_DIMS > 1
+                    size_t k = 0;
+                    do {
+                    #endif
+                        size_t l = 0;
+                        do {
+                            mp_float_t real = *(mp_float_t *)sarray;
+                            mp_float_t imag = *(mp_float_t *)(sarray + itemsize);
+                            mp_float_t exp_real = MICROPY_FLOAT_C_FUN(exp)(real);
+                            *array++ = exp_real * MICROPY_FLOAT_C_FUN(cos)(imag);
+                            *array++ = exp_real * MICROPY_FLOAT_C_FUN(sin)(imag);
+                            sarray += source->strides[ULAB_MAX_DIMS - 1];
+                            l++;
+                        } while(l < source->shape[ULAB_MAX_DIMS - 1]);
+                    #if ULAB_MAX_DIMS > 1
+                        sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
+                        sarray += source->strides[ULAB_MAX_DIMS - 2];
+                        k++;
+                    } while(k < source->shape[ULAB_MAX_DIMS - 2]);
+                    #endif /* ULAB_MAX_DIMS > 1 */
+                #if ULAB_MAX_DIMS > 2
+                    sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
+                    sarray += source->strides[ULAB_MAX_DIMS - 3];
+                    j++;
+                } while(j < source->shape[ULAB_MAX_DIMS - 3]);
+                #endif /* ULAB_MAX_DIMS > 2 */
+            #if ULAB_MAX_DIMS > 3
+                sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
+                sarray += source->strides[ULAB_MAX_DIMS - 4];
+                i++;
+            } while(i < source->shape[ULAB_MAX_DIMS - 4]);
+            #endif /* ULAB_MAX_DIMS > 3 */
+            return MP_OBJ_FROM_PTR(ndarray);
+        }
+    }
+    #endif
+    return vectorise_generic_vector(o_in, MICROPY_FLOAT_C_FUN(exp));
+}
+
 MP_DEFINE_CONST_FUN_OBJ_1(vectorise_exp_obj, vectorise_exp);
 #endif
 
