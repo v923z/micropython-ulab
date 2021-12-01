@@ -25,6 +25,7 @@
 #include "ulab_tools.h"
 #include "ndarray.h"
 #include "ndarray_operators.h"
+#include "numpy/carray/carray.h"
 
 mp_uint_t ndarray_print_threshold = NDARRAY_PRINT_THRESHOLD;
 mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
@@ -1841,30 +1842,44 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
         #if NDARRAY_HAS_UNARY_OP_ABS
         case MP_UNARY_OP_ABS:
-            ndarray = ndarray_copy_view(self);
-            // if Boolean, NDARRAY_UINT8, or NDARRAY_UINT16, there is nothing to do
-            if(self->dtype == NDARRAY_INT8) {
-                int8_t *array = (int8_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) {
-                    if(*array < 0) *array = -(*array);
-                }
-            } else if(self->dtype == NDARRAY_INT16) {
-                int16_t *array = (int16_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) {
-                    if(*array < 0) *array = -(*array);
-                }
+            #if ULAB_SUPPORTS_COMPLEX
+            if(self->dtype == NDARRAY_COMPLEX) {
+                int32_t *strides = strides_from_shape(self->shape, NDARRAY_FLOAT);
+                ndarray_obj_t *target = ndarray_new_ndarray(self->ndim, self->shape, strides, NDARRAY_FLOAT);
+                ndarray = carray_abs(self, target);
             } else {
-                mp_float_t *array = (mp_float_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) {
-                    if(*array < 0) *array = -(*array);
+            #endif
+                ndarray = ndarray_copy_view(self);
+                // if Boolean, NDARRAY_UINT8, or NDARRAY_UINT16, there is nothing to do
+                if(self->dtype == NDARRAY_INT8) {
+                    int8_t *array = (int8_t *)ndarray->array;
+                    for(size_t i=0; i < self->len; i++, array++) {
+                        if(*array < 0) *array = -(*array);
+                    }
+                } else if(self->dtype == NDARRAY_INT16) {
+                    int16_t *array = (int16_t *)ndarray->array;
+                    for(size_t i=0; i < self->len; i++, array++) {
+                        if(*array < 0) *array = -(*array);
+                    }
+                } else {
+                    mp_float_t *array = (mp_float_t *)ndarray->array;
+                    for(size_t i=0; i < self->len; i++, array++) {
+                        if(*array < 0) *array = -(*array);
+                    }
                 }
+            #if ULAB_SUPPORTS_COMPLEX
             }
+            #endif
             return MP_OBJ_FROM_PTR(ndarray);
             break;
         #endif
         #if NDARRAY_HAS_UNARY_OP_INVERT
         case MP_UNARY_OP_INVERT:
+            #if ULAB_SUPPORTS_COMPLEX
+            if(self->dtype == NDARRAY_FLOAT || self->dtype == NDARRAY_COMPLEX) {
+            #else
             if(self->dtype == NDARRAY_FLOAT) {
+            #endif
                 mp_raise_ValueError(translate("operation is not supported for given type"));
             }
             // we can invert the content byte by byte, no need to distinguish between different dtypes
@@ -1873,11 +1888,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             if(ndarray->boolean) {
                 for(size_t i=0; i < ndarray->len; i++, array++) *array = *array ^ 0x01;
             } else {
-                 #if ULAB_SUPPORTS_COMPLEX
-                    uint8_t itemsize = mp_binary_get_complex_size(self->dtype);
-                #else
-                    uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
-                #endif
+                uint8_t itemsize = mp_binary_get_size('@', self->dtype, NULL);
                 for(size_t i=0; i < ndarray->len*itemsize; i++, array++) *array ^= 0xFF;
             }
             return MP_OBJ_FROM_PTR(ndarray);
@@ -1905,7 +1916,13 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
             } else {
                 mp_float_t *array = (mp_float_t *)ndarray->array;
-                for(size_t i=0; i < self->len; i++, array++) *array = -(*array);
+                size_t len = self->len;
+                #if ULAB_SUPPORTS_COMPLEX
+                if(self->dtype == NDARRAY_COMPLEX) {
+                    len *= 2;
+                }
+                #endif
+                for(size_t i=0; i < len; i++, array++) *array = -(*array);
             }
             return MP_OBJ_FROM_PTR(ndarray);
             break;

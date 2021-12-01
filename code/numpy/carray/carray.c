@@ -62,4 +62,51 @@ STATIC mp_obj_t carray_imag(mp_obj_t _source) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(carray_imag_obj, carray_imag);
 
+mp_obj_t carray_abs(ndarray_obj_t *source, ndarray_obj_t *target) {
+    // calculates the absolute value of a complex array and returns a dense array
+    uint8_t *sarray = (uint8_t *)source->array;
+    mp_float_t *tarray = (mp_float_t *)target->array;
+    uint8_t itemsize = mp_binary_get_size('@', NDARRAY_FLOAT, NULL);
+
+    #if ULAB_MAX_DIMS > 3
+    size_t i = 0;
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        size_t j = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            size_t k = 0;
+            do {
+            #endif
+                size_t l = 0;
+                do {
+                    mp_float_t rvalue = *(mp_float_t *)sarray;
+                    mp_float_t ivalue = *(mp_float_t *)(sarray + itemsize);
+                    *tarray++ = MICROPY_FLOAT_C_FUN(sqrt)(rvalue * rvalue + ivalue * ivalue);
+                    sarray += source->strides[ULAB_MAX_DIMS - 1];
+                    l++;
+                } while(l < source->shape[ULAB_MAX_DIMS - 1]);
+            #if ULAB_MAX_DIMS > 1
+                sarray -= source->strides[ULAB_MAX_DIMS - 1] * source->shape[ULAB_MAX_DIMS-1];
+                sarray += source->strides[ULAB_MAX_DIMS - 2];
+                k++;
+            } while(k < source->shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            sarray -= source->strides[ULAB_MAX_DIMS - 2] * source->shape[ULAB_MAX_DIMS-2];
+            sarray += source->strides[ULAB_MAX_DIMS - 3];
+            j++;
+        } while(j < source->shape[ULAB_MAX_DIMS - 3]);
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        sarray -= source->strides[ULAB_MAX_DIMS - 3] * source->shape[ULAB_MAX_DIMS-3];
+        sarray += source->strides[ULAB_MAX_DIMS - 4];
+        i++;
+    } while(i < source->shape[ULAB_MAX_DIMS - 4]);
+    #endif
+    return MP_OBJ_FROM_PTR(target);
+}
+
 #endif
