@@ -250,7 +250,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             return mp_obj_new_float(MICROPY_FLOAT_CONST(0.0));
         }
         mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
-        mp_float_t M =MICROPY_FLOAT_CONST(0.0);
+        mp_float_t M = MICROPY_FLOAT_CONST(0.0);
         mp_float_t m = MICROPY_FLOAT_CONST(0.0);
         mp_float_t S = MICROPY_FLOAT_CONST(0.0);
         mp_float_t s = MICROPY_FLOAT_CONST(0.0);
