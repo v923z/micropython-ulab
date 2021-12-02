@@ -372,6 +372,14 @@ MP_DEFINE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj, ndarray_get_printoptions
 mp_obj_t ndarray_get_item(ndarray_obj_t *ndarray, void *array) {
     // returns a proper micropython object from an array
     if(!ndarray->boolean) {
+        #if ULAB_SUPPORTS_COMPLEX
+        if(ndarray->dtype == NDARRAY_COMPLEX) {
+            mp_float_t *c = (mp_float_t *)array;
+            mp_float_t real = *c++;
+            mp_float_t imag = *c;
+            return mp_obj_new_complex(real, imag);
+        }
+        #endif
         return mp_binary_get_val_array(ndarray->dtype, array, 0);
     } else {
         if(*(uint8_t *)array) {
@@ -945,6 +953,11 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
         ndarray_obj_t *target = ndarray_new_dense_ndarray(source->ndim, source->shape, dtype);
         uint8_t *sarray = (uint8_t *)source->array;
         uint8_t *tarray = (uint8_t *)target->array;
+
+        #if ULAB_SUPPORTS_COMPLEX
+        uint8_t complex_size = 2 * sizeof(mp_float_t);
+        #endif
+
         #if ULAB_MAX_DIMS > 3
         size_t i = 0;
         do {
@@ -960,14 +973,26 @@ STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, 
                     size_t l = 0;
                     do {
                         mp_obj_t item;
-                        if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
-                            // floats must be treated separately, because they can't directly be converted to integer types
-                            mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
-                            item = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(floor)(f));
+                        #if ULAB_SUPPORTS_COMPLEX
+                        if(source->dtype == NDARRAY_COMPLEX) {
+                            if(dtype != NDARRAY_COMPLEX) {
+                                mp_raise_TypeError(translate("cannot convert complex type"));
+                            } else {
+                                memcpy(tarray, sarray, complex_size);
+                            }
                         } else {
-                            item = mp_binary_get_val_array(source->dtype, sarray, 0);
+                        #endif
+                            if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
+                                // floats must be treated separately, because they can't directly be converted to integer types
+                                mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
+                                item = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(floor)(f));
+                            } else {
+                                item = mp_binary_get_val_array(source->dtype, sarray, 0);
+                            }
+                            ndarray_set_value(dtype, tarray, 0, item);
+                        #if ULAB_SUPPORTS_COMPLEX
                         }
-                        ndarray_set_value(dtype, tarray, 0, item);
+                        #endif
                         tarray += target->itemsize;
                         sarray += source->strides[ULAB_MAX_DIMS - 1];
                         l++;
