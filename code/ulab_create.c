@@ -529,14 +529,8 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     mp_buffer_info_t bufinfo;
     if(mp_get_buffer(args[0].u_obj, &bufinfo, MP_BUFFER_READ)) {
-        size_t sz = 1;
-        if(dtype != NDARRAY_BOOL) { // mp_binary_get_size doesn't work with Booleans
-            #if ULAB_SUPPORTS_COMPLEX
-                sz = mp_binary_get_complex_size(dtype);
-            #else
-                sz = mp_binary_get_size('@', dtype, NULL);
-            #endif
-        }
+        size_t sz = ulab_binary_get_size(dtype);
+
         if(bufinfo.len < offset) {
             mp_raise_ValueError(translate("offset must be non-negative and no greater than buffer length"));
         }

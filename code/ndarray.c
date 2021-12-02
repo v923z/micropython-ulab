@@ -172,11 +172,7 @@ void ndarray_rewind_array(uint8_t ndim, uint8_t *array, size_t *shape, int32_t *
 static int32_t *strides_from_shape(size_t *shape, uint8_t dtype) {
     // returns a strides array that corresponds to a dense array with the prescribed shape
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    #if ULAB_SUPPORTS_COMPLEX
-        strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_complex_size(dtype);
-    #else
-        strides[ULAB_MAX_DIMS-1] = (int32_t)mp_binary_get_size('@', dtype, NULL);
-    #endif
+    strides[ULAB_MAX_DIMS-1] = (int32_t)ulab_binary_get_size(dtype);
     for(uint8_t i=ULAB_MAX_DIMS; i > 1; i--) {
         strides[i-2] = strides[i-1] * shape[i-1];
     }
@@ -544,7 +540,6 @@ void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t 
         uint8_t *array = (uint8_t *)ndarray->array;
         array += *idx;
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            // TODO: this might be wrong here: we have to check for the trueness of item
             if(mp_obj_is_true(item)) {
                 *array = 1;
             }
@@ -553,7 +548,7 @@ void ndarray_assign_elements(ndarray_obj_t *ndarray, mp_obj_t iterable, uint8_t 
         }
     } else {
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-   #if ULAB_SUPPORTS_COMPLEX
+            #if ULAB_SUPPORTS_COMPLEX
                 mp_float_t real;
                 mp_float_t imag;
                 if(dtype == NDARRAY_COMPLEX) {
@@ -589,11 +584,7 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     ndarray->boolean = dtype == NDARRAY_BOOL ? NDARRAY_BOOLEAN : NDARRAY_NUMERIC;
     ndarray->ndim = ndim;
     ndarray->len = ndim == 0 ? 0 : 1;
-    #if ULAB_SUPPORTS_COMPLEX
-        ndarray->itemsize = mp_binary_get_complex_size(dtype);
-    #else
-        ndarray->itemsize = mp_binary_get_size('@', ndarray->dtype, NULL);
-    #endif
+    ndarray->itemsize = ulab_binary_get_size(dtype);
     int32_t *_strides;
     if(strides == NULL) {
         _strides = strides_from_shape(shape, ndarray->dtype);
@@ -621,11 +612,7 @@ ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dt
     // creates a dense array, i.e., one, where the strides are derived directly from the shapes
     // the function should work in the general n-dimensional case
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    #if ULAB_SUPPORTS_COMPLEX
-        strides[ULAB_MAX_DIMS-1] = dtype == NDARRAY_BOOL ? 1 : (int32_t)mp_binary_get_complex_size(dtype);
-    #else
-        strides[ULAB_MAX_DIMS-1] = dtype == NDARRAY_BOOL ? 1 : (int32_t)mp_binary_get_size('@', dtype, NULL);
-    #endif
+    strides[ULAB_MAX_DIMS-1] = (int32_t)ulab_binary_get_size(dtype);
     for(size_t i=ULAB_MAX_DIMS; i > 1; i--) {
         strides[i-2] = strides[i-1] * MAX(1, shape[i-1]);
     }
