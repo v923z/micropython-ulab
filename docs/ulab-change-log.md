@@ -1,3 +1,9 @@
+Fri, 3 Dec 2021
+
+version 3.3.8
+
+    fix any/all function
+
 Tue, 30 Nov 2021
 
 version 3.3.7

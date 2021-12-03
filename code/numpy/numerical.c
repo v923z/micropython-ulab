@@ -183,6 +183,14 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
             i++;
         } while(i < _shape_strides.shape[ULAB_MAX_DIMS - 3]);
         #endif
+        if(axis == mp_const_none) {
+            // the innermost loop fell through, so return the result here
+            if(!anytype) {
+                return mp_const_false;
+            } else {
+                return mp_const_true;
+            }
+        }
         return results;
     } else if(mp_obj_is_int(oin) || mp_obj_is_float(oin)) {
         return mp_obj_is_true(oin) ? mp_const_true : mp_const_false;
