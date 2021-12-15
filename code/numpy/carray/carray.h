@@ -22,7 +22,7 @@ void carray_binary_add(ndarray_obj_t *, mp_float_t *, uint8_t *, uint8_t *, int3
 #define BINARY_LOOP_COMPLEX(results, resarray, type_right, larray, lstrides, rarray, rstrides, OPERATOR)\
     size_t l = 0;\
     do {\
-        *(resarray) = *((mp_float_t *)(larray)++ OPERATOR *((type_right *)(rarray)++;\
+        *(resarray) = *((mp_float_t *)(larray)) OPERATOR *((type_right *)(rarray));\
         (resarray) += 2;\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 1];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
