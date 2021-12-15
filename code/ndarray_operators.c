@@ -332,7 +332,7 @@ mp_obj_t ndarray_binary_multiply(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
                     rarray -= rstrides[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];
                     rarray += rstrides[ULAB_MAX_DIMS - 3];
                     j++;
-                } while(j < results)->shape[ULAB_MAX_DIMS - 3]);
+                } while(j < results->shape[ULAB_MAX_DIMS - 3]);
                 #endif /* ULAB_MAX_DIMS > 2 */
             #if ULAB_MAX_DIMS > 3
                 larray -= lstrides[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];
