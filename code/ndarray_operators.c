@@ -185,8 +185,11 @@ mp_obj_t ndarray_binary_add(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 
         larray = lo;
         rarray = ro;
+
+        // real part
         carray_binary_add(results, resarray, larray, rarray, left_strides, right_strides, rdtype == NDARRAY_COMPLEX ? NDARRAY_FLOAT : rdtype);
 
+        // imaginary part
         if((lhs->dtype == NDARRAY_COMPLEX) && (rhs->dtype == NDARRAY_COMPLEX)) {
             larray = lo + sizeof(mp_float_t);
             rarray = ro + sizeof(mp_float_t);
@@ -274,6 +277,103 @@ mp_obj_t ndarray_binary_add(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 #if NDARRAY_HAS_BINARY_OP_MULTIPLY
 mp_obj_t ndarray_binary_multiply(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
                                             uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
+
+    #if ULAB_SUPPORTS_COMPLEX
+    if((lhs->dtype == NDARRAY_COMPLEX) || (rhs->dtype == NDARRAY_COMPLEX))  {
+        ndarray_obj_t *results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_COMPLEX);
+        mp_float_t *resarray = (mp_float_t *)results->array;
+
+        int32_t *left_strides = lstrides;
+        int32_t *right_strides = rstrides;
+
+        if((lhs->dtype == NDARRAY_COMPLEX) && (rhs->dtype == NDARRAY_COMPLEX)) {
+            mp_float_t *larray = (mp_float_t *)lhs->array;
+            mp_float_t *rarray = (mp_float_t *)rhs->array;
+            uint8_t sz = sizeof(mp_float_t);
+            // re-scale the strides, so that we can work with floats
+            for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
+                left_strides[i] /= sz;
+                right_strides[i] /= sz;
+            }
+
+            #if ULAB_MAX_DIMS > 3
+            size_t i = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 2
+                size_t j = 0;
+                do {
+                #endif
+                    #if ULAB_MAX_DIMS > 1
+                    size_t k = 0;
+                    do {
+                    #endif
+                        size_t l = 0;
+                        do {
+                            // real part
+                            *resarray++ = larray[0] * rarray[0] - larray[1] * rarray[1];
+                            // imaginary part
+                            *resarray++ = larray[0] * rarray[1] + larray[1] * rarray[0];
+                            larray += lstrides[ULAB_MAX_DIMS - 1];
+                            rarray += rstrides[ULAB_MAX_DIMS - 1];
+                            l++;
+                        } while(l < results->shape[ULAB_MAX_DIMS - 1]);
+                    #if ULAB_MAX_DIMS > 1
+                        larray -= lstrides[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];
+                        larray += lstrides[ULAB_MAX_DIMS - 2];
+                        rarray -= rstrides[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];
+                        rarray += rstrides[ULAB_MAX_DIMS - 2];
+                        k++;
+                    } while(k < results->shape[ULAB_MAX_DIMS - 2]);
+                    #endif /* ULAB_MAX_DIMS > 1 */
+                #if ULAB_MAX_DIMS > 2
+                    larray -= lstrides[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];
+                    larray += lstrides[ULAB_MAX_DIMS - 3];
+                    rarray -= rstrides[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];
+                    rarray += rstrides[ULAB_MAX_DIMS - 3];
+                    j++;
+                } while(j < results)->shape[ULAB_MAX_DIMS - 3]);
+                #endif /* ULAB_MAX_DIMS > 2 */
+            #if ULAB_MAX_DIMS > 3
+                larray -= lstrides[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];
+                larray += lstrides[ULAB_MAX_DIMS - 4];
+                rarray -= rstrides[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];
+                rarray += rstrides[ULAB_MAX_DIMS - 4];
+                i++;
+            } while(i < results->shape[ULAB_MAX_DIMS - 4]);
+            #endif /* ULAB_MAX_DIMS > 3 */
+        } else {
+            uint8_t *larray = (uint8_t *)lhs->array;
+            uint8_t *rarray = (uint8_t *)rhs->array;
+            uint8_t *lo = larray, *ro = rarray;
+            int32_t *left_strides = lstrides;
+            int32_t *right_strides = rstrides;
+            uint8_t rdtype = rhs->dtype;
+
+            // align the complex array to the left
+            if(rhs->dtype == NDARRAY_COMPLEX) {
+                lo = (uint8_t *)rhs->array;
+                ro = (uint8_t *)lhs->array;
+                rdtype = lhs->dtype;
+                left_strides = rstrides;
+                right_strides = lstrides;
+            }
+
+            larray = lo;
+            rarray = ro;
+            // real part
+            carray_binary_multiply(results, resarray, larray, rarray, left_strides, right_strides, rdtype);
+
+            larray = lo + sizeof(mp_float_t);
+            rarray = ro;
+            resarray = (mp_float_t *)results->array;
+            resarray++;
+            // imaginary part
+            carray_binary_multiply(results, resarray, larray, rarray, left_strides, right_strides, rdtype);
+        }
+        return MP_OBJ_FROM_PTR(results);
+    }
+    #endif
 
     ndarray_obj_t *results = NULL;
     uint8_t *larray = (uint8_t *)lhs->array;

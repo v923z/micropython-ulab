@@ -126,4 +126,20 @@ void carray_binary_add(ndarray_obj_t *results, mp_float_t *resarray, uint8_t *la
     }
 }
 
+void carray_binary_multiply(ndarray_obj_t *results, mp_float_t *resarray, uint8_t *larray, uint8_t *rarray,
+                            int32_t *lstrides, int32_t *rstrides, uint8_t rdtype) {
+
+    if(rdtype == NDARRAY_UINT8) {
+        BINARY_LOOP_COMPLEX(results, resarray, uint8_t, larray, lstrides, rarray, rstrides, *);
+    } else if(rdtype == NDARRAY_INT8) {
+        BINARY_LOOP_COMPLEX(results, resarray, int8_t, larray, lstrides, rarray, rstrides, *);
+    } else if(rdtype == NDARRAY_UINT16) {
+        BINARY_LOOP_COMPLEX(results, resarray, uint16_t, larray, lstrides, rarray, rstrides, *);
+    } else if(rdtype == NDARRAY_INT16) {
+        BINARY_LOOP_COMPLEX(results, resarray, int16_t, larray, lstrides, rarray, rstrides, *);
+    } else if(rdtype == NDARRAY_FLOAT) {
+        BINARY_LOOP_COMPLEX(results, resarray, mp_float_t, larray, lstrides, rarray, rstrides, *);
+    }
+}
+
 #endif
