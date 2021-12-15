@@ -17,6 +17,7 @@
 #include "ndarray_operators.h"
 #include "ulab.h"
 #include "ulab_tools.h"
+#include "numpy/carray/carray.h"
 
 /*
     This file contains the actual implementations of the various
@@ -160,6 +161,42 @@ mp_obj_t ndarray_binary_equality(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 #if NDARRAY_HAS_BINARY_OP_ADD
 mp_obj_t ndarray_binary_add(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
                                         uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
+
+    #if ULAB_SUPPORTS_COMPLEX
+    if((lhs->dtype == NDARRAY_COMPLEX) || (rhs->dtype == NDARRAY_COMPLEX))  {
+        ndarray_obj_t *results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_COMPLEX);
+        mp_float_t *resarray = (mp_float_t *)results->array;
+
+        uint8_t *larray = (uint8_t *)lhs->array;
+        uint8_t *rarray = (uint8_t *)rhs->array;
+        uint8_t *lo = larray, *ro = rarray;
+        int32_t *left_strides = lstrides;
+        int32_t *right_strides = rstrides;
+        uint8_t rdtype = rhs->dtype;
+
+        // align the complex array to the left
+        if(rhs->dtype == NDARRAY_COMPLEX) {
+            lo = (uint8_t *)rhs->array;
+            ro = (uint8_t *)lhs->array;
+            rdtype = lhs->dtype;
+            left_strides = rstrides;
+            right_strides = lstrides;
+        }
+
+        larray = lo;
+        rarray = ro;
+        carray_binary_add(results, resarray, larray, rarray, left_strides, right_strides, rdtype == NDARRAY_COMPLEX ? NDARRAY_FLOAT : rdtype);
+
+        if((lhs->dtype == NDARRAY_COMPLEX) && (rhs->dtype == NDARRAY_COMPLEX)) {
+            larray = lo + sizeof(mp_float_t);
+            rarray = ro + sizeof(mp_float_t);
+            resarray = (mp_float_t *)results->array;
+            resarray++;
+            carray_binary_add(results, resarray, larray, rarray, left_strides, right_strides, NDARRAY_FLOAT);
+        }
+        return MP_OBJ_FROM_PTR(results);
+    }
+    #endif
 
     ndarray_obj_t *results = NULL;
     uint8_t *larray = (uint8_t *)lhs->array;
