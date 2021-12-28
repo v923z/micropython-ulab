@@ -33,10 +33,15 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 3.3.8
+#define ULAB_VERSION 4.0.0
 #define xstr(s) str(s)
 #define str(s) #s
+
+#if ULAB_SUPPORTS_COMPLEX
+#define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D-c)
+#else
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
+#endif
 
 STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
