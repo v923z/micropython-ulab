@@ -368,7 +368,6 @@ mp_obj_t carray_binary_multiply(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     return MP_OBJ_FROM_PTR(results);
 }
 
-
 mp_obj_t carray_binary_subtract(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
                             uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
 
@@ -471,4 +470,116 @@ mp_obj_t carray_binary_subtract(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 
     return MP_OBJ_FROM_PTR(results);
 }
+
+static void carray_binary_left_divide_(ndarray_obj_t *results, mp_float_t *resarray, uint8_t *larray, uint8_t *rarray,
+                            int32_t *lstrides, int32_t *rstrides, uint8_t rdtype) {
+
+    if(rdtype == NDARRAY_UINT8) {
+        BINARY_LOOP_COMPLEX(results, resarray, uint8_t, larray, lstrides, rarray, rstrides, /);
+    } else if(rdtype == NDARRAY_INT8) {
+        BINARY_LOOP_COMPLEX(results, resarray, int8_t, larray, lstrides, rarray, rstrides, /);
+    } else if(rdtype == NDARRAY_UINT16) {
+        BINARY_LOOP_COMPLEX(results, resarray, uint16_t, larray, lstrides, rarray, rstrides, /);
+    } else if(rdtype == NDARRAY_INT16) {
+        BINARY_LOOP_COMPLEX(results, resarray, int16_t, larray, lstrides, rarray, rstrides, /);
+    } else if(rdtype == NDARRAY_FLOAT) {
+        BINARY_LOOP_COMPLEX(results, resarray, mp_float_t, larray, lstrides, rarray, rstrides, /);
+    }
+}
+
+mp_obj_t carray_binary_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
+                            uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
+
+    ndarray_obj_t *results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_COMPLEX);
+    mp_float_t *resarray = (mp_float_t *)results->array;
+
+    if((lhs->dtype == NDARRAY_COMPLEX) && (rhs->dtype == NDARRAY_COMPLEX)) {
+        mp_float_t *larray = (mp_float_t *)lhs->array;
+        mp_float_t *rarray = (mp_float_t *)rhs->array;
+
+        ulab_rescale_float_strides(lstrides);
+        ulab_rescale_float_strides(rstrides);
+
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        // (a + bi) / (c + di) =
+                        // (ac + bd) / (c^2 + d^2) + i (bc - ad) / (c^2 + d^2)
+                        // denominator
+                        mp_float_t denom = rarray[0] * rarray[0] + rarray[1] * rarray[1];
+
+                        // real part
+                        *resarray++ = (larray[0] * rarray[0] + larray[1] * rarray[1]) / denom;
+                        // imaginary part
+                        *resarray++ = (larray[1] * rarray[0] - larray[0] * rarray[1]) / denom;
+                        larray += lstrides[ULAB_MAX_DIMS - 1];
+                        rarray += rstrides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l < results->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    larray -= lstrides[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];
+                    larray += lstrides[ULAB_MAX_DIMS - 2];
+                    rarray -= rstrides[ULAB_MAX_DIMS - 1] * results->shape[ULAB_MAX_DIMS-1];
+                    rarray += rstrides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k < results->shape[ULAB_MAX_DIMS - 2]);
+                #endif /* ULAB_MAX_DIMS > 1 */
+            #if ULAB_MAX_DIMS > 2
+                larray -= lstrides[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];
+                larray += lstrides[ULAB_MAX_DIMS - 3];
+                rarray -= rstrides[ULAB_MAX_DIMS - 2] * results->shape[ULAB_MAX_DIMS-2];
+                rarray += rstrides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j < results->shape[ULAB_MAX_DIMS - 3]);
+            #endif /* ULAB_MAX_DIMS > 2 */
+        #if ULAB_MAX_DIMS > 3
+            larray -= lstrides[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];
+            larray += lstrides[ULAB_MAX_DIMS - 4];
+            rarray -= rstrides[ULAB_MAX_DIMS - 3] * results->shape[ULAB_MAX_DIMS-3];
+            rarray += rstrides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i < results->shape[ULAB_MAX_DIMS - 4]);
+        #endif /* ULAB_MAX_DIMS > 3 */
+    } else {
+        uint8_t *larray = (uint8_t *)lhs->array;
+        uint8_t *rarray = (uint8_t *)rhs->array;
+        if(lhs->dtype == NDARRAY_COMPLEX) {
+            // real part
+            carray_binary_left_divide_(results, resarray, larray, rarray, lstrides, rstrides, rhs->dtype);
+            // imaginary part
+            resarray = (mp_float_t *)results->array;
+            resarray++;
+            larray = (uint8_t *)lhs->array;
+            larray += sizeof(mp_float_t);
+            rarray = (uint8_t *)rhs->array;
+            carray_binary_left_divide_(results, resarray, larray, rarray, lstrides, rstrides, rhs->dtype);
+        } else {
+            if(lhs->dtype == NDARRAY_UINT8) {
+                BINARY_LOOP_COMPLEX_RIGHT_DIVIDE(results, resarray, uint8_t, larray, lstrides, rarray, rstrides);
+            } else if(lhs->dtype == NDARRAY_INT8) {
+                BINARY_LOOP_COMPLEX_RIGHT_DIVIDE(results, resarray, int8_t, larray, lstrides, rarray, rstrides);
+            } else if(lhs->dtype == NDARRAY_UINT16) {
+                BINARY_LOOP_COMPLEX_RIGHT_DIVIDE(results, resarray, uint16_t, larray, lstrides, rarray, rstrides);
+            } else if(lhs->dtype == NDARRAY_INT16) {
+                BINARY_LOOP_COMPLEX_RIGHT_DIVIDE(results, resarray, int16_t, larray, lstrides, rarray, rstrides);
+            } else if(lhs->dtype == NDARRAY_FLOAT) {
+                BINARY_LOOP_COMPLEX_RIGHT_DIVIDE(results, resarray, mp_float_t, larray, lstrides, rarray, rstrides);
+            }
+        }
+    }
+
+    return MP_OBJ_FROM_PTR(results);
+}
+
 #endif
