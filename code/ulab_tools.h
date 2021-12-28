@@ -36,4 +36,9 @@ shape_strides tools_reduce_axes(ndarray_obj_t *, mp_obj_t );
 ndarray_obj_t *tools_object_is_square(mp_obj_t );
 
 uint8_t ulab_binary_get_size(uint8_t );
+
+#if ULAB_SUPPORTS_COMPLEX
+void ulab_rescale_float_strides(int32_t *);
+#endif
+
 #endif

@@ -240,3 +240,13 @@ uint8_t ulab_binary_get_size(uint8_t dtype) {
     #endif
     return dtype == NDARRAY_BOOL ? 1 : mp_binary_get_size('@', dtype, NULL);
 }
+
+#if ULAB_SUPPORTS_COMPLEX
+void ulab_rescale_float_strides(int32_t *strides) {
+    // re-scale the strides, so that we can work with floats, when iterating
+    uint8_t sz = sizeof(mp_float_t);
+    for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
+        strides[i] /= sz;
+    }
+}
+#endif
