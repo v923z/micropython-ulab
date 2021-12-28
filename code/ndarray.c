@@ -1747,7 +1747,15 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
         array[0] = mp_obj_get_float(obj);
     } else if(mp_obj_is_type(obj, &ulab_ndarray_type)){
         return obj;
-    } else {
+    }
+    #if ULAB_SUPPORTS_COMPLEX
+    else if (mp_obj_is_type(obj, &mp_type_complex)) {
+        ndarray = ndarray_new_linear_array(1, NDARRAY_COMPLEX);
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        mp_obj_get_complex(obj, &array[0], &array[1]);
+    }
+    #endif
+    else {
         // assume that the input is an iterable (raises an exception, if it is not the case)
         ndarray = ndarray_from_iterable(obj, NDARRAY_FLOAT);
     }
