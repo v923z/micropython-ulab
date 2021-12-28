@@ -49,11 +49,8 @@ enum NUMERICAL_FUNCTION_TYPE {
 //| _DType = int
 //| """`ulab.numpy.int8`, `ulab.numpy.uint8`, `ulab.numpy.int16`, `ulab.numpy.uint16`, `ulab.numpy.float` or `ulab.numpy.bool`"""
 //|
-//| _float = float
-//| """Type alias of the bulitin float"""
-//|
-//| _bool = bool
-//| """Type alias of the bulitin bool"""
+//| from builtins import float as _float
+//| from builtins import bool as _bool
 //|
 //| int8: _DType
 //| """Type code for signed integers in the range -128 .. 127 inclusive, like the 'b' typecode of `array.array`"""
