@@ -599,8 +599,10 @@ mp_obj_t vector_sqrt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     if(mp_obj_is_type(o_in, &mp_type_complex)) {
         mp_float_t real, imag;
         mp_obj_get_complex(o_in, &real, &imag);
-        mp_float_t exp_real = MICROPY_FLOAT_C_FUN(exp)(real);
-        return mp_obj_new_complex(exp_real * MICROPY_FLOAT_C_FUN(cos)(imag), exp_real * MICROPY_FLOAT_C_FUN(sin)(imag));
+        mp_float_t sqrt_abs = MICROPY_FLOAT_C_FUN(sqrt)(real * real + imag * imag);
+        sqrt_abs = MICROPY_FLOAT_C_FUN(sqrt)(sqrt_abs);
+        mp_float_t theta = MICROPY_FLOAT_CONST(0.5) * MICROPY_FLOAT_C_FUN(atan2)(imag, real);
+        return mp_obj_new_complex(sqrt_abs * MICROPY_FLOAT_C_FUN(cos)(theta), sqrt_abs * MICROPY_FLOAT_C_FUN(sin)(theta));
     } else if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
         if((source->dtype == NDARRAY_COMPLEX) && (dtype == NDARRAY_FLOAT)) {
