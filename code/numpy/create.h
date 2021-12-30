@@ -12,8 +12,8 @@
 #ifndef _CREATE_
 #define _CREATE_
 
-#include "ulab.h"
-#include "ndarray.h"
+#include "../ulab.h"
+#include "../ndarray.h"
 
 #if ULAB_NUMPY_HAS_ARANGE
 mp_obj_t create_arange(size_t , const mp_obj_t *, mp_map_t *);

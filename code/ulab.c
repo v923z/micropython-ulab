@@ -20,9 +20,9 @@
 #include "py/objarray.h"
 
 #include "ulab.h"
-#include "ulab_create.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
+#include "numpy/create.h"
 #include "numpy/ndarray/ndarray_iter.h"
 
 #include "numpy/numpy.h"
