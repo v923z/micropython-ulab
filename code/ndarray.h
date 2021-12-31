@@ -63,6 +63,8 @@ typedef struct _mp_obj_slice_t {
 void ndarray_set_value(char , void *, size_t , mp_obj_t );
 #endif
 
+void ndarray_set_complex_value(void *, size_t , mp_obj_t );
+
 #define NDARRAY_NUMERIC   0
 #define NDARRAY_BOOLEAN   1
 

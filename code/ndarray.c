@@ -47,6 +47,19 @@ mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
 //| https://docs.scipy.org/doc/numpy/index.html"""
 //|
 
+void ndarray_set_complex_value(void *p, size_t index, mp_obj_t value) {
+    mp_float_t real, imag;
+    if(mp_obj_is_type(value, &mp_type_complex)) {
+        mp_obj_get_complex(value, &real, &imag);
+        ((mp_float_t *)p)[2 * index] = real;
+        ((mp_float_t *)p)[2 * index + 1] = imag;
+    } else {
+        real = mp_obj_get_float(value);
+        ((mp_float_t *)p)[2 * index] = real;
+        ((mp_float_t *)p)[2 * index + 1] = MICROPY_FLOAT_CONST(0.0);
+    }
+}
+
 #ifdef CIRCUITPY
 void ndarray_set_value(char typecode, void *p, size_t index, mp_obj_t val_in) {
     switch (typecode) {
@@ -65,6 +78,11 @@ void ndarray_set_value(char typecode, void *p, size_t index, mp_obj_t val_in) {
         case NDARRAY_FLOAT:
             ((mp_float_t *)p)[index] = mp_obj_get_float(val_in);
             break;
+        #if ULAB_SUPPORTS_COMPLEX
+        case NDARRAY_COMPLEX:
+            ndarray_set_complex_value(p, index, val_in);
+            break;
+        #endif
     }
 }
 #endif

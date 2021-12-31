@@ -56,7 +56,15 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
             }
         }
         for(size_t i=0; i < ndarray->len; i++) {
+            #if ULAB_SUPPORTS_COMPLEX
+            if(dtype == NDARRAY_COMPLEX) {
+                ndarray_set_complex_value(ndarray->array, i, value);
+            } else {
+                ndarray_set_value(dtype, ndarray->array, i, value);
+            }
+            #else
             ndarray_set_value(dtype, ndarray->array, i, value);
+            #endif
         }
     }
     // if zeros calls the function, we don't have to do anything
