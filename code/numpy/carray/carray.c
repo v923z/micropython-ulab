@@ -64,6 +64,40 @@ STATIC mp_obj_t carray_imag(mp_obj_t _source) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(carray_imag_obj, carray_imag);
 
+#if ULAB_NUMPY_HAS_CONJUGATE
+mp_obj_t carray_conjugate(mp_obj_t _source) {
+    if(mp_obj_is_type(_source, &ulab_ndarray_type)) {
+        ndarray_obj_t *source = MP_OBJ_TO_PTR(_source);
+        ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, source->dtype);
+        ndarray_copy_array(source, ndarray, 0);
+        if(source->dtype == NDARRAY_COMPLEX) {
+            mp_float_t *array = (mp_float_t *)ndarray->array;
+            array++;
+            for(size_t i = 0; i < ndarray->len; i++) {
+                *array *= MICROPY_FLOAT_CONST(-1.0);
+                array += 2;
+            }
+        }
+        return MP_OBJ_FROM_PTR(ndarray);
+    } else {
+        if(mp_obj_is_type(_source, &mp_type_complex)) {
+            mp_float_t real, imag;
+            mp_obj_get_complex(_source, &real, &imag);
+            imag = imag * MICROPY_FLOAT_CONST(-1.0);
+            return mp_obj_new_complex(real, imag);
+        } else if(mp_obj_is_int(_source) || mp_obj_is_float(_source)) {
+            return _source;
+        } else {
+            mp_raise_TypeError(translate("input must be an ndarray, or a scalar"));
+        }
+    }
+    // this should never happen
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(carray_conjugate_obj, carray_conjugate);
+#endif
+
 mp_obj_t carray_abs(ndarray_obj_t *source, ndarray_obj_t *target) {
     // calculates the absolute value of a complex array and returns a dense array
     uint8_t *sarray = (uint8_t *)source->array;

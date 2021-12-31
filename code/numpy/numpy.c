@@ -146,6 +146,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_ARANGE
         { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
     #endif
+    #if ULAB_NUMPY_HAS_CONJUGATE
+        { MP_ROM_QSTR(MP_QSTR_conjugate), (mp_obj_t)&carray_conjugate_obj },
+    #endif
     #if ULAB_NUMPY_HAS_CONCATENATE
         { MP_ROM_QSTR(MP_QSTR_concatenate), (mp_obj_t)&create_concatenate_obj },
     #endif

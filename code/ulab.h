@@ -422,6 +422,11 @@
 #define ULAB_NUMPY_HAS_ARGSORT          (1)
 #endif
 
+// conjugate is defined only, if ULAB_SUPPORTS_COMPLEX is set to 1
+#ifndef ULAB_NUMPY_HAS_CONJUGATE
+#define ULAB_NUMPY_HAS_CONJUGATE        (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_CONVOLVE
 #define ULAB_NUMPY_HAS_CONVOLVE         (1)
 #endif
