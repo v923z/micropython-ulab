@@ -389,6 +389,15 @@
 #define ULAB_NUMPY_HAS_FFT_MODULE       (1)
 #endif
 
+// by setting this constant to 1, the FFT routine will behave in a
+// numpy-compatible way, i.e., it will output a complex array
+// this setting has no effect, if ULAB_SUPPORTS_COMPLEX is 0
+// Note that in this case, the input also must be numpythonic,
+// i.e., the real an imaginary parts cannot be passed as two arguments
+#ifndef ULAB_FFT_IS_NUMPY_COMPATIBLE
+#define ULAB_FFT_IS_NUMPY_COMPATIBLE    (0)
+#endif
+
 #ifndef ULAB_FFT_HAS_FFT
 #define ULAB_FFT_HAS_FFT                (1)
 #endif

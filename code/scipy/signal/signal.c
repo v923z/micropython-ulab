@@ -34,14 +34,23 @@
 //|
 
 mp_obj_t signal_spectrogram(size_t n_args, const mp_obj_t *args) {
+    #if ULAB_SUPPORTS_COMPLEX & ULAB_FFT_IS_NUMPY_COMPATIBLE
+        return fft_fft_ifft_spectrogram(args[0], FFT_SPECTROGRAM);
+    #else
     if(n_args == 2) {
         return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_SPECTROGRAM);
     } else {
         return fft_fft_ifft_spectrogram(n_args, args[0], mp_const_none, FFT_SPECTROGRAM);
     }
+    #endif
 }
 
+#if ULAB_SUPPORTS_COMPLEX & ULAB_FFT_IS_NUMPY_COMPATIBLE
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_spectrogram_obj, 1, 1, signal_spectrogram);
+#else
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_spectrogram_obj, 1, 2, signal_spectrogram);
+#endif
+
 #endif /* ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM */
 
 #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
