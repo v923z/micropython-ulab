@@ -1730,6 +1730,32 @@ mp_obj_t ndarray_tobytes(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_tobytes_obj, ndarray_tobytes);
 #endif
 
+#if NDARRAY_HAS_TOLIST
+static mp_obj_t ndarray_recursive_list(ndarray_obj_t *self, uint8_t *array, uint8_t dim) {
+    int32_t stride = self->strides[ULAB_MAX_DIMS - dim];
+    size_t len = self->shape[ULAB_MAX_DIMS - dim];
+
+    mp_obj_list_t *list = MP_OBJ_TO_PTR(mp_obj_new_list(len, NULL));
+    for(size_t i = 0; i < len; i++) {
+        if(dim == 1) {
+            list->items[i] = ndarray_get_item(self, array);
+        } else {
+            list->items[i] = ndarray_recursive_list(self, array, dim-1);
+        }
+        array += stride;
+    }
+    return MP_OBJ_FROM_PTR(list);
+}
+
+mp_obj_t ndarray_tolist(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint8_t *array = (uint8_t *)self->array;
+    return ndarray_recursive_list(self, array, self->ndim);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_tolist_obj, ndarray_tolist);
+#endif
+
 // Binary operations
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
     // creates an ndarray from a micropython int or float

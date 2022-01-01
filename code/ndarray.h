@@ -191,6 +191,11 @@ mp_obj_t ndarray_tobytes(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tobytes_obj);
 #endif
 
+#if NDARRAY_HAS_TOBYTES
+mp_obj_t ndarray_tolist(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tolist_obj);
+#endif
+
 #if NDARRAY_HAS_TRANSPOSE
 mp_obj_t ndarray_transpose(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);

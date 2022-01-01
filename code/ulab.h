@@ -232,6 +232,10 @@
 #define NDARRAY_HAS_TOBYTES             (1)
 #endif
 
+#ifndef NDARRAY_HAS_TOLIST
+#define NDARRAY_HAS_TOLIST              (1)
+#endif
+
 #ifndef NDARRAY_HAS_TRANSPOSE
 #define NDARRAY_HAS_TRANSPOSE           (1)
 #endif
