@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Zoltán Vörös
+ * Copyright (c) 2021-2022 Zoltán Vörös
 */
 
 #ifndef _CARRAY_

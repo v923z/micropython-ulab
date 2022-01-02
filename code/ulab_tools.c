@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020-2021 Zoltán Vörös
+ * Copyright (c) 2020-2022 Zoltán Vörös
  */
 
 
@@ -216,6 +216,14 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
     return _shape_strides;
 }
 
+int8_t tools_get_axis(mp_obj_t axis, uint8_t ndim) {
+    int8_t ax = mp_obj_get_int(axis);
+    if(ax < 0) ax += ndim;
+    if((ax < 0) || (ax > ndim - 1)) {
+        mp_raise_ValueError(translate("axis is out of bounds"));
+    }
+    return ax;
+}
 
 #if ULAB_MAX_DIMS > 1
 ndarray_obj_t *tools_object_is_square(mp_obj_t obj) {

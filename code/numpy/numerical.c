@@ -475,11 +475,7 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
             }
         }
     } else {
-        int8_t ax = mp_obj_get_int(axis);
-        if(ax < 0) ax += ndarray->ndim;
-        if((ax < 0) || (ax > ndarray->ndim - 1)) {
-            mp_raise_ValueError(translate("axis is out of bounds"));
-        }
+        int8_t ax = tools_get_axis(axis, ndarray->ndim);
 
         uint8_t *array = (uint8_t *)ndarray->array;
         size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
@@ -600,11 +596,7 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
         ndarray->ndim = 1;
         #endif
     } else {
-        ax = mp_obj_get_int(axis);
-        if(ax < 0) ax += ndarray->ndim;
-        if((ax < 0) || (ax > ndarray->ndim - 1)) {
-            mp_raise_ValueError(translate("index out of range"));
-        }
+        ax = tools_get_axis(axis, ndarray->ndim);
     }
 
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
@@ -700,11 +692,8 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             mp_raise_ValueError(translate("axis too long"));
         }
     }
-    int8_t ax = mp_obj_get_int(args[1].u_obj);
-    if(ax < 0) ax += ndarray->ndim;
-    if((ax < 0) || (ax > ndarray->ndim - 1)) {
-        mp_raise_ValueError(translate("index out of range"));
-    }
+    int8_t ax = tools_get_axis(args[1].u_obj, ndarray->ndim);
+
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
@@ -972,11 +961,8 @@ mp_obj_t numerical_flip(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         results->array = rarray;
         results->strides[ULAB_MAX_DIMS - 1] = -results->strides[ULAB_MAX_DIMS - 1];
     } else if(mp_obj_is_int(args[1].u_obj)){
-        int8_t ax = mp_obj_get_int(args[1].u_obj);
-        if(ax < 0) ax += ndarray->ndim;
-        if((ax < 0) || (ax > ndarray->ndim - 1)) {
-            mp_raise_ValueError(translate("index out of range"));
-        }
+        int8_t ax = tools_get_axis(args[1].u_obj, ndarray->ndim);
+
         ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
         int32_t offset = (ndarray->shape[ax] - 1) * ndarray->strides[ax];
         results = ndarray_new_view(ndarray, ndarray->ndim, ndarray->shape, ndarray->strides, offset);
@@ -1054,10 +1040,8 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         }
         return mp_obj_new_float(median);
     } else {
-        int8_t ax = mp_obj_get_int(args[1].u_obj);
-        if(ax < 0) ax += ndarray->ndim;
-        // here we can save the exception, because if the axis is out of range,
-        // then numerical_sort_helper has already taken care of the issue
+        int8_t ax = tools_get_axis(args[1].u_obj, ndarray->ndim);
+
         size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
         memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
         int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
@@ -1210,11 +1194,8 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
         #endif
     } else if(mp_obj_is_int(args[2].u_obj)){
-        int8_t ax = mp_obj_get_int(args[2].u_obj);
-        if(ax < 0) ax += ndarray->ndim;
-        if((ax < 0) || (ax > ndarray->ndim - 1)) {
-            mp_raise_ValueError(translate("index out of range"));
-        }
+        int8_t ax = tools_get_axis(args[2].u_obj, ndarray->ndim);
+
         size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
         memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
         int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);

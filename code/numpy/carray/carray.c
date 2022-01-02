@@ -98,6 +98,71 @@ mp_obj_t carray_conjugate(mp_obj_t _source) {
 MP_DEFINE_CONST_FUN_OBJ_1(carray_conjugate_obj, carray_conjugate);
 #endif
 
+#if ULAB_NUMPY_HAS_SORT_COMPLEX
+//| def sort_complex(a: ArrayLike) -> ulab.numpy.ndarray: ...
+static void carray_sort_complex_(mp_float_t *array, size_t len) {
+    // helper function to sort by every second element of a complex array
+    // array is assumed to be floating vector containing the real and imaginary parts at
+    // alternating positions as
+    // array[0] = real[0]
+    // array[1] = imag[0]
+    // array[2] = real[1]
+    // array[3] = imag[1]
+    //
+    // if array is supposed to be sorted by the imaginary parts,
+
+    mp_float_t tmp;
+    size_t c, q = len, p, r = len >> 1;
+    for (;;) {
+        if (r > 0) {
+            tmp = array[2 * (--r)];
+        } else {
+            q--;
+            if(q == 0) {
+                break;
+            }
+            tmp = array[2 * q];
+            array[2 * q] = array[0];
+        }
+        p = r;
+        c = r + r + 1;
+        while (c < q) {
+            if((c + 1 < q)  &&  (array[2 * (c+1)]) > array[2 * c])) {
+                c++;
+            }
+            if(array[2 * c] > tmp) {
+                array[2 * p] = array[2 * c];
+                p = c;
+                c = p + p + 1;
+            } else {
+                break;
+            }
+        }
+        array[2 * p] = tmp;
+    }
+})
+}
+
+mp_obj_t carray_sort_complex(mp_obj_t _source) {
+    if(!mp_obj_is_type(_source, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("input must be a 1D ndarray"));
+    }
+    ndarray_obj_t *source = MP_OBJ_TO_PTR(_source);
+    if(source->ndim != 1) {
+        mp_raise_TypeError(translate("input must be a 1D ndarray"));
+    }
+
+    if(source->dtype != NDARRAY_COMPLEX) {
+        return carray_sort_complex_(_source, mp_const_none, 0);
+    } else {
+
+    }
+
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(carray_sort_complex_obj, carray_sort_complex);
+#endif
+
 mp_obj_t carray_abs(ndarray_obj_t *source, ndarray_obj_t *target) {
     // calculates the absolute value of a complex array and returns a dense array
     uint8_t *sarray = (uint8_t *)source->array;

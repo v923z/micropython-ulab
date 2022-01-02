@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2021 Zoltán Vörös
+ * Copyright (c) 2019-2022 Zoltán Vörös
 */
 
 #ifndef __ULAB__
@@ -424,6 +424,10 @@
 
 #ifndef ULAB_NUMPY_HAS_ARGSORT
 #define ULAB_NUMPY_HAS_ARGSORT          (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_COMPRESS
+#define ULAB_NUMPY_HAS_COMPRESS         (1)
 #endif
 
 // conjugate is defined only, if ULAB_SUPPORTS_COMPLEX is set to 1

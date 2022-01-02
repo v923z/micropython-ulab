@@ -8,7 +8,7 @@
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *               2020 Scott Shawcroft for Adafruit Industries
- *               2020-2021 Zoltán Vörös
+ *               2020-2022 Zoltán Vörös
  *               2020 Taku Fukada
 */
 
@@ -145,6 +145,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #endif
     #if ULAB_NUMPY_HAS_ARANGE
         { MP_ROM_QSTR(MP_QSTR_arange), (mp_obj_t)&create_arange_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_COMPRESS
+        { MP_ROM_QSTR(MP_QSTR_compress), (mp_obj_t)&transform_compress_obj },
     #endif
     #if ULAB_NUMPY_HAS_CONJUGATE
         { MP_ROM_QSTR(MP_QSTR_conjugate), (mp_obj_t)&carray_conjugate_obj },

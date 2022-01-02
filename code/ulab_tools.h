@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020-2021 Zoltán Vörös
+ * Copyright (c) 2020-2022 Zoltán Vörös
 */
 
 #ifndef _TOOLS_
@@ -33,6 +33,7 @@ uint8_t ndarray_upcast_dtype(uint8_t , uint8_t );
 void *ndarray_set_float_function(uint8_t );
 
 shape_strides tools_reduce_axes(ndarray_obj_t *, mp_obj_t );
+int8_t tools_get_axis(mp_obj_t , uint8_t );
 ndarray_obj_t *tools_object_is_square(mp_obj_t );
 
 uint8_t ulab_binary_get_size(uint8_t );
