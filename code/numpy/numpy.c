@@ -358,8 +358,12 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vector_vectorize_obj },
     #endif
     #if ULAB_SUPPORTS_COMPLEX
+        #if ULAB_NUMPY_HAS_REAL
         { MP_OBJ_NEW_QSTR(MP_QSTR_real), (mp_obj_t)&carray_real_obj },
+        #endif
+        #if ULAB_NUMPY_HAS_IMAG
         { MP_OBJ_NEW_QSTR(MP_QSTR_imag), (mp_obj_t)&carray_imag_obj },
+        #endif
         #if ULAB_NUMPY_HAS_CONJUGATE
             { MP_ROM_QSTR(MP_QSTR_conjugate), (mp_obj_t)&carray_conjugate_obj },
         #endif

@@ -431,11 +431,6 @@
 #define ULAB_NUMPY_HAS_COMPRESS         (1)
 #endif
 
-// conjugate is defined only, if ULAB_SUPPORTS_COMPLEX is set to 1
-#ifndef ULAB_NUMPY_HAS_CONJUGATE
-#define ULAB_NUMPY_HAS_CONJUGATE        (1)
-#endif
-
 #ifndef ULAB_NUMPY_HAS_CONVOLVE
 #define ULAB_NUMPY_HAS_CONVOLVE         (1)
 #endif
@@ -486,11 +481,6 @@
 
 #ifndef ULAB_NUMPY_HAS_SORT
 #define ULAB_NUMPY_HAS_SORT             (1)
-#endif
-
-// This function can be included only, when ULAB_SUPPORTS_COMPLEX is set to 1
-#ifndef ULAB_NUMPY_HAS_SORT_COMPLEX
-#define ULAB_NUMPY_HAS_SORT_COMPLEX     (1)
 #endif
 
 #ifndef ULAB_NUMPY_HAS_STD
@@ -611,6 +601,25 @@
 #define ULAB_NUMPY_HAS_VECTORIZE        (1)
 #endif
 
+// Complex functions. The implementations are compiled into
+// the firmware, only if ULAB_SUPPORTS_COMPLEX is set to 1
+#ifndef ULAB_NUMPY_HAS_CONJUGATE
+#define ULAB_NUMPY_HAS_CONJUGATE        (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_IMAG
+#define ULAB_NUMPY_HAS_IMAG             (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_REAL
+#define ULAB_NUMPY_HAS_REAL             (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_SORT_COMPLEX
+#define ULAB_NUMPY_HAS_SORT_COMPLEX     (1)
+#endif
+
+// scipy modules
 #ifndef ULAB_SCIPY_HAS_LINALG_MODULE
 #define ULAB_SCIPY_HAS_LINALG_MODULE        (1)
 #endif

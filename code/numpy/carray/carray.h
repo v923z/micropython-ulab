@@ -17,6 +17,10 @@ MP_DECLARE_CONST_FUN_OBJ_1(carray_imag_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(carray_conjugate_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(carray_sort_complex_obj);
 
+
+mp_obj_t carray_imag(mp_obj_t );
+mp_obj_t carray_real(mp_obj_t );
+
 mp_obj_t carray_abs(ndarray_obj_t *, ndarray_obj_t *);
 mp_obj_t carray_binary_add(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t *, int32_t *, int32_t *);
 mp_obj_t carray_binary_multiply(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t *, int32_t *, int32_t *);
