@@ -99,48 +99,53 @@ MP_DEFINE_CONST_FUN_OBJ_1(carray_conjugate_obj, carray_conjugate);
 #endif
 
 #if ULAB_NUMPY_HAS_SORT_COMPLEX
-//| def sort_complex(a: ArrayLike) -> ulab.numpy.ndarray: ...
 static void carray_sort_complex_(mp_float_t *array, size_t len) {
-    // helper function to sort by every second element of a complex array
-    // array is assumed to be floating vector containing the real and imaginary parts at
-    // alternating positions as
+    // array is assumed to be a floating vector containing the real and imaginary parts
+    // of a complex array at alternating positions as
     // array[0] = real[0]
     // array[1] = imag[0]
     // array[2] = real[1]
     // array[3] = imag[1]
-    //
-    // if array is supposed to be sorted by the imaginary parts,
 
-    mp_float_t tmp;
+    mp_float_t real, imag;
     size_t c, q = len, p, r = len >> 1;
     for (;;) {
         if (r > 0) {
-            tmp = array[2 * (--r)];
+            r--;
+            real = array[2 * r];
+            imag = array[2 * r + 1];
         } else {
             q--;
             if(q == 0) {
                 break;
             }
-            tmp = array[2 * q];
+            real = array[2 * q];
+            imag = array[2 * q + 1];
             array[2 * q] = array[0];
+            array[2 * q + 1] = array[1];
         }
         p = r;
         c = r + r + 1;
         while (c < q) {
-            if((c + 1 < q)  &&  (array[2 * (c+1)]) > array[2 * c])) {
-                c++;
+            if(c + 1 < q) {
+                if((array[2 * (c+1)] > array[2 * c]) ||
+                    ((array[2 * (c+1)] == array[2 * c]) && (array[2 * (c+1) + 1] > array[2 * c + 1]))) {
+                    c++;
+                }
             }
-            if(array[2 * c] > tmp) {
-                array[2 * p] = array[2 * c];
+            if((array[2 * c] > real) ||
+                ((array[2 * c] == real) && (array[2 * c + 1] == imag))) {
+                array[2 * p] = array[2 * c]; // real part
+                array[2 * p + 1] = array[2 * c + 1]; // imag part
                 p = c;
                 c = p + p + 1;
             } else {
                 break;
             }
         }
-        array[2 * p] = tmp;
+        array[2 * p] = real;
+        array[2 * p + 1] = imag;
     }
-})
 }
 
 mp_obj_t carray_sort_complex(mp_obj_t _source) {
@@ -152,12 +157,10 @@ mp_obj_t carray_sort_complex(mp_obj_t _source) {
         mp_raise_TypeError(translate("input must be a 1D ndarray"));
     }
 
-    if(source->dtype != NDARRAY_COMPLEX) {
-        return carray_sort_complex_(_source, mp_const_none, 0);
-    } else {
-
-    }
-
+    ndarray_obj_t *ndarray = ndarray_copy_view_convert_type(source, NDARRAY_COMPLEX);
+    mp_float_t *array = (mp_float_t *)ndarray->array;
+    carray_sort_complex_(array, ndarray->len);
+    return MP_OBJ_FROM_PTR(ndarray);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(carray_sort_complex_obj, carray_sort_complex);

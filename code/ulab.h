@@ -21,6 +21,7 @@
 // - whether the python syntax is numpy-like, or modular
 // - whether arrays can be sliced and iterated over
 // - which binary/unary operators are supported
+// - whether ulab can deal with complex numbers
 //
 // A considerable amount of flash space can be saved by removing (setting
 // the corresponding constants to 0) the unnecessary functions and features.
@@ -393,9 +394,9 @@
 #define ULAB_NUMPY_HAS_FFT_MODULE       (1)
 #endif
 
-// by setting this constant to 1, the FFT routine will behave in a
+// By setting this constant to 1, the FFT routine will behave in a
 // numpy-compatible way, i.e., it will output a complex array
-// this setting has no effect, if ULAB_SUPPORTS_COMPLEX is 0
+// This setting has no effect, if ULAB_SUPPORTS_COMPLEX is 0
 // Note that in this case, the input also must be numpythonic,
 // i.e., the real an imaginary parts cannot be passed as two arguments
 #ifndef ULAB_FFT_IS_NUMPY_COMPATIBLE
@@ -485,6 +486,11 @@
 
 #ifndef ULAB_NUMPY_HAS_SORT
 #define ULAB_NUMPY_HAS_SORT             (1)
+#endif
+
+// This function can be included only, when ULAB_SUPPORTS_COMPLEX is set to 1
+#ifndef ULAB_NUMPY_HAS_SORT_COMPLEX
+#define ULAB_NUMPY_HAS_SORT_COMPLEX     (1)
 #endif
 
 #ifndef ULAB_NUMPY_HAS_STD

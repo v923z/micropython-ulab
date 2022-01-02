@@ -149,9 +149,6 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_COMPRESS
         { MP_ROM_QSTR(MP_QSTR_compress), (mp_obj_t)&transform_compress_obj },
     #endif
-    #if ULAB_NUMPY_HAS_CONJUGATE
-        { MP_ROM_QSTR(MP_QSTR_conjugate), (mp_obj_t)&carray_conjugate_obj },
-    #endif
     #if ULAB_NUMPY_HAS_CONCATENATE
         { MP_ROM_QSTR(MP_QSTR_concatenate), (mp_obj_t)&create_concatenate_obj },
     #endif
@@ -361,8 +358,14 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_vectorize), (mp_obj_t)&vector_vectorize_obj },
     #endif
     #if ULAB_SUPPORTS_COMPLEX
-    { MP_OBJ_NEW_QSTR(MP_QSTR_real), (mp_obj_t)&carray_real_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_imag), (mp_obj_t)&carray_imag_obj },
+        { MP_OBJ_NEW_QSTR(MP_QSTR_real), (mp_obj_t)&carray_real_obj },
+        { MP_OBJ_NEW_QSTR(MP_QSTR_imag), (mp_obj_t)&carray_imag_obj },
+        #if ULAB_NUMPY_HAS_CONJUGATE
+            { MP_ROM_QSTR(MP_QSTR_conjugate), (mp_obj_t)&carray_conjugate_obj },
+        #endif
+        #if ULAB_NUMPY_HAS_SORT_COMPLEX
+            { MP_ROM_QSTR(MP_QSTR_sort_complex), (mp_obj_t)&carray_sort_complex_obj },
+        #endif
     #endif
 };
 
