@@ -95,7 +95,6 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
     bool anytype = optype == NUMERICAL_ALL ? 1 : 0;
     if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
-        COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
         uint8_t *array = (uint8_t *)ndarray->array;
         if(ndarray->len == 0) { // return immediately with empty arrays
         if(optype == NUMERICAL_ALL) {
@@ -132,33 +131,71 @@ static mp_obj_t numerical_all_any(mp_obj_t oin, mp_obj_t axis, uint8_t optype) {
                     size_t l = 0;
                     if(axis == mp_const_none) {
                         do {
-                            mp_float_t value = func(array);
-                            if((value != MICROPY_FLOAT_CONST(0.0)) & !anytype) {
-                                // optype = NUMERICAL_ANY
-                                return mp_const_true;
-                            } else if((value == MICROPY_FLOAT_CONST(0.0)) & anytype) {
-                                // optype == NUMERICAL_ALL
-                                return mp_const_false;
+                            #if ULAB_SUPPORTS_COMPLEX
+                            if(ndarray->dtype == NDARRAY_COMPLEX) {
+                                mp_float_t real = *((mp_float_t *)array);
+                                mp_float_t imag = *((mp_float_t *)(array + sizeof(mp_float_t)));
+                                if(((real != MICROPY_FLOAT_CONST(0.0)) | (imag != MICROPY_FLOAT_CONST(0.0))) & !anytype) {
+                                    // optype = NUMERICAL_ANY
+                                    return mp_const_true;
+                                } else if(((real == MICROPY_FLOAT_CONST(0.0)) & (imag == MICROPY_FLOAT_CONST(0.0))) & anytype) {
+                                    // optype == NUMERICAL_ALL
+                                    return mp_const_false;
+                                }
+                            } else {
+                            #endif
+                                mp_float_t value = func(array);
+                                if((value != MICROPY_FLOAT_CONST(0.0)) & !anytype) {
+                                    // optype = NUMERICAL_ANY
+                                    return mp_const_true;
+                                } else if((value == MICROPY_FLOAT_CONST(0.0)) & anytype) {
+                                    // optype == NUMERICAL_ALL
+                                    return mp_const_false;
+                                }
+                            #if ULAB_SUPPORTS_COMPLEX
                             }
+                            #endif
                             array += _shape_strides.strides[0];
                             l++;
                         } while(l < _shape_strides.shape[0]);
                     } else { // a scalar axis keyword was supplied
                         do {
-                            mp_float_t value = func(array);
-                            if((value != MICROPY_FLOAT_CONST(0.0)) & !anytype) {
-                                // optype == NUMERICAL_ANY
-                                *rarray = 1;
-                                // since we are breaking out of the loop, move the pointer forward
-                                array += _shape_strides.strides[0] * (_shape_strides.shape[0] - l);
-                                break;
-                            } else if((value == MICROPY_FLOAT_CONST(0.0)) & anytype) {
-                                // optype == NUMERICAL_ALL
-                                *rarray = 0;
-                                // since we are breaking out of the loop, move the pointer forward
-                                array += _shape_strides.strides[0] * (_shape_strides.shape[0] - l);
-                                break;
+                            #if ULAB_SUPPORTS_COMPLEX
+                            if(ndarray->dtype == NDARRAY_COMPLEX) {
+                                mp_float_t real = *((mp_float_t *)array);
+                                mp_float_t imag = *((mp_float_t *)(array + sizeof(mp_float_t)));
+                                if(((real != MICROPY_FLOAT_CONST(0.0)) | (imag != MICROPY_FLOAT_CONST(0.0))) & !anytype) {
+                                    // optype = NUMERICAL_ANY
+                                    *rarray = 1;
+                                    // since we are breaking out of the loop, move the pointer forward
+                                    array += _shape_strides.strides[0] * (_shape_strides.shape[0] - l);
+                                    break;
+                                } else if(((real == MICROPY_FLOAT_CONST(0.0)) & (imag == MICROPY_FLOAT_CONST(0.0))) & anytype) {
+                                    // optype == NUMERICAL_ALL
+                                    *rarray = 0;
+                                    // since we are breaking out of the loop, move the pointer forward
+                                    array += _shape_strides.strides[0] * (_shape_strides.shape[0] - l);
+                                    break;
+                                }
+                            } else {
+                            #endif
+                                mp_float_t value = func(array);
+                                if((value != MICROPY_FLOAT_CONST(0.0)) & !anytype) {
+                                    // optype == NUMERICAL_ANY
+                                    *rarray = 1;
+                                    // since we are breaking out of the loop, move the pointer forward
+                                    array += _shape_strides.strides[0] * (_shape_strides.shape[0] - l);
+                                    break;
+                                } else if((value == MICROPY_FLOAT_CONST(0.0)) & anytype) {
+                                    // optype == NUMERICAL_ALL
+                                    *rarray = 0;
+                                    // since we are breaking out of the loop, move the pointer forward
+                                    array += _shape_strides.strides[0] * (_shape_strides.shape[0] - l);
+                                    break;
+                                }
+                            #if ULAB_SUPPORTS_COMPLEX
                             }
+                            #endif
                             array += _shape_strides.strides[0];
                             l++;
                         } while(l < _shape_strides.shape[0]);
