@@ -67,12 +67,13 @@ mp_obj_t create_frombuffer(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_frombuffer_obj);
 #endif
 
-#define ARANGE_LOOP(type_, ndarray, len, step) \
+#define ARANGE_LOOP(type_, ndarray, len, step, stop) \
 ({\
     type_ *array = (type_ *)(ndarray)->array;\
-    for (size_t i = 0; i < (len); i++, (value) += (step)) {\
-        *array++ = (type_)value;\
+    for (size_t i = 0; i < (len) - 1; i++, (value) += (step)) {\
+        *array++ = (type_)(value);\
     }\
+    *array = (type_)(stop);\
 })
 
 #endif

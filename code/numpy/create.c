@@ -73,7 +73,7 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
 #endif
 
 #if ULAB_NUMPY_HAS_ARANGE | ULAB_NUMPY_HAS_LINSPACE
-static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t dtype) {
+static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, mp_float_t stop, size_t len, uint8_t dtype) {
     mp_float_t value = start;
 
     ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
@@ -83,15 +83,15 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
             *array++ = value == MICROPY_FLOAT_CONST(0.0) ? 0 : 1;
         }
     } else if(dtype == NDARRAY_UINT8) {
-        ARANGE_LOOP(uint8_t, ndarray, len, step);
+        ARANGE_LOOP(uint8_t, ndarray, len, step, stop);
     } else if(dtype == NDARRAY_INT8) {
-        ARANGE_LOOP(int8_t, ndarray, len, step);
+        ARANGE_LOOP(int8_t, ndarray, len, step, stop);
     } else if(dtype == NDARRAY_UINT16) {
-        ARANGE_LOOP(uint16_t, ndarray, len, step);
+        ARANGE_LOOP(uint16_t, ndarray, len, step, stop);
     } else if(dtype == NDARRAY_INT16) {
-        ARANGE_LOOP(int16_t, ndarray, len, step);
+        ARANGE_LOOP(int16_t, ndarray, len, step, stop);
     } else {
-        ARANGE_LOOP(mp_float_t, ndarray, len, step);
+        ARANGE_LOOP(mp_float_t, ndarray, len, step, stop);
     }
     return ndarray;
 }
@@ -129,14 +129,14 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     uint8_t dtype = NDARRAY_FLOAT;
     mp_float_t start, stop, step;
     if(n_args == 1) {
-        start = 0.0;
+        start = MICROPY_FLOAT_CONST(0.0);
         stop = mp_obj_get_float(args[0].u_obj);
-        step = 1.0;
+        step = MICROPY_FLOAT_CONST(1.0);
         if(mp_obj_is_int(args[0].u_obj)) dtype = NDARRAY_INT16;
     } else if(n_args == 2) {
         start = mp_obj_get_float(args[0].u_obj);
         stop = mp_obj_get_float(args[1].u_obj);
-        step = 1.0;
+        step = MICROPY_FLOAT_CONST(1.0);
         if(mp_obj_is_int(args[0].u_obj) && mp_obj_is_int(args[1].u_obj)) dtype = NDARRAY_INT16;
     } else if(n_args == 3) {
         start = mp_obj_get_float(args[0].u_obj);
@@ -156,8 +156,9 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     if((stop - start)/step < 0) {
         ndarray = ndarray_new_linear_array(0, dtype);
     } else {
-        size_t len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
-        ndarray = create_linspace_arange(start, step, len, dtype);
+        size_t len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start) / step));
+        stop = start + (len - 1) * step;
+        ndarray = create_linspace_arange(start, step, stop, len, dtype);
     }
     return MP_OBJ_FROM_PTR(ndarray);
 }
@@ -511,18 +512,71 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         mp_raise_ValueError(translate("number of points must be at least 2"));
     }
     size_t len = (size_t)args[2].u_int;
-    mp_float_t start, step;
-    start = mp_obj_get_float(args[0].u_obj);
-    uint8_t typecode = args[5].u_int;
-    if(args[3].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-start)/(len-1);
-    else step = (mp_obj_get_float(args[1].u_obj)-start)/len;
-    ndarray_obj_t *ndarray = create_linspace_arange(start, step, len, typecode);
+    mp_float_t start, step, stop;
+
+    ndarray_obj_t *ndarray = NULL;
+
+    #if ULAB_SUPPORTS_COMPLEX
+    mp_float_t step_real, step_imag;
+    bool complex_out = false;
+
+    if(mp_obj_is_type(args[0].u_obj, &mp_type_complex) || mp_obj_is_type(args[1].u_obj, &mp_type_complex)) {
+        complex_out = true;
+        ndarray = ndarray_new_linear_array(len, NDARRAY_COMPLEX);
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        mp_float_t start_real, start_imag;
+        mp_float_t stop_real, stop_imag;
+
+        mp_obj_get_complex(args[0].u_obj, &start_real, &start_imag);
+        mp_obj_get_complex(args[1].u_obj, &stop_real, &stop_imag);
+        if(args[3].u_obj == mp_const_true) {
+            step_real = (stop_real - start_real) / (len - 1);
+            step_imag = (stop_imag - start_imag) / (len - 1);
+        } else {
+            step_real = (stop_real - start_real) / len;
+            step_imag = (stop_imag - start_imag) / len;
+        }
+
+        for(size_t i = 0; i < len; i++) {
+            *array++ = start_real;
+            *array++ = start_imag;
+            start_real += step_real;
+            start_imag += step_imag;
+        }
+    } else {
+    #endif
+        start = mp_obj_get_float(args[0].u_obj);
+        stop = mp_obj_get_float(args[1].u_obj);
+
+        uint8_t typecode = args[5].u_int;
+
+        if(args[3].u_obj == mp_const_true) {
+            step = (stop - start) / (len - 1);
+        } else {
+            step = (stop - start) / len;
+            stop = start + step * (len - 1);
+        }
+
+        ndarray = create_linspace_arange(start, step, stop, len, typecode);
+    #if ULAB_SUPPORTS_COMPLEX
+    }
+    #endif
+
     if(args[4].u_obj == mp_const_false) {
         return MP_OBJ_FROM_PTR(ndarray);
     } else {
         mp_obj_t tuple[2];
         tuple[0] = ndarray;
+        #if ULAB_SUPPORTS_COMPLEX
+        if(complex_out) {
+            tuple[1] = mp_obj_new_complex(step_real, step_imag);
+        } else {
+            tuple[1] = mp_obj_new_float(step);
+        }
+        #else /* ULAB_SUPPORTS_COMPLEX */
         tuple[1] = mp_obj_new_float(step);
+        #endif
+
         return mp_obj_new_tuple(2, tuple);
     }
 }

@@ -3,10 +3,12 @@
 [![Documentation Status](https://readthedocs.org/projects/micropython-ulab-robert/badge/?version=latest)](https://micropython-ulab-robert.readthedocs.io/en/latest/?badge=latest)
 
 `ulab` is a `numpy`-like array manipulation library for [micropython](http://micropython.org/) and [CircuitPython](https://circuitpython.org/).
-The module is written in C, defines compact containers for numerical data of one to four
+The module is written in C, defines compact containers (`ndarray`s) for numerical data of one to four
 dimensions, and is fast. The library is a software-only standard `micropython` user module,
-i.e., it has no hardware dependencies, and can be compiled for any platform.
-The `float` implementation of `micropython` (`float`, or `double`) is automatically detected.
+i.e., it has no hardware dependencies, and can be compiled for any platform. 8-, and 16-bit signed
+and unsigned integer `dtypes`, as well as `float`, and, optionally, ` complex` are supported.
+The `float` implementation of `micropython` (32-bit `float`, or 64-bit `double`) is automatically
+detected and handled.
 
 1. [Supported functions and methods](#supported-functions-and-methods)
     1. [ndarray methods](#ndarray-methods)
@@ -38,7 +40,8 @@ iterables via the `array` constructor, or by means of the `arange`, `concatenate
 `frombuffer`, `full`, `linspace`, `logspace`, `ones`, or `zeros`  functions.
 
 `ndarray`s can be sliced, and iterated on, and have a number of their own methods, and properties, such as `flatten()`, `itemsize`, `reshape()`,
-`shape`, `size`, `strides`, `tobytes()`, and `transpose()` and `T`.
+`shape`, `size`, `strides`, `tobytes()`, `tolist()`, and `transpose()` and `T`. If the firmware is compiled with `complex` support,
+the `imag`, and `real` properties are automatically included.
 
 ## `numpy` and `scipy` functions
 
@@ -46,7 +49,9 @@ In addition, `ulab` includes [universal functions](https://micropython-ulab.read
 
 ## `ulab` utilities
 
-The [`utils`](https://micropython-ulab.readthedocs.io/en/latest/ulab-utils.html) module contains functions for interfacing with peripheral devices supporting the buffer protocol. 
+The [`utils`](https://micropython-ulab.readthedocs.io/en/latest/ulab-utils.html) module contains functions for
+interfacing with peripheral devices supporting the buffer protocol. These functions do not have an obvious
+`numpy` equivalent, but share a similar programming interface, and allow direct data input to and output from
 
 ## `user` module
 
