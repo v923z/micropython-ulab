@@ -12,34 +12,35 @@ the firmware was compiled with complex support.
 4.  `numpy.argmin <#argmin>`__
 5.  `numpy.argsort <#argsort>`__
 6.  `numpy.clip <#clip>`__
-7.  `numpy.conjugate\* <#conjugate>`__
-8.  `numpy.convolve\* <#convolve>`__
-9.  `numpy.diff <#diff>`__
-10. `numpy.dot <#dot>`__
-11. `numpy.equal <#equal>`__
-12. `numpy.flip\* <#flip>`__
-13. `numpy.imag\* <#imag>`__
-14. `numpy.interp <#interp>`__
-15. `numpy.isfinite <#isfinite>`__
-16. `numpy.isinf <#isinf>`__
-17. `numpy.max <#max>`__
-18. `numpy.maximum <#maximum>`__
-19. `numpy.mean <#mean>`__
-20. `numpy.median <#median>`__
-21. `numpy.min <#min>`__
-22. `numpy.minimum <#minimum>`__
-23. `numpy.not_equal <#equal>`__
-24. `numpy.polyfit <#polyfit>`__
-25. `numpy.polyval <#polyval>`__
-26. `numpy.real\* <#real>`__
-27. `numpy.roll <#roll>`__
-28. `numpy.sort <#sort>`__
-29. `numpy.sort_complex\* <#sort_complex>`__
-30. `numpy.std <#std>`__
-31. `numpy.sum <#sum>`__
-32. `numpy.trace <#trace>`__
-33. `numpy.trapz <#trapz>`__
-34. `numpy.where <#where>`__
+7.  `numpy.compress\* <#compress>`__
+8.  `numpy.conjugate\* <#conjugate>`__
+9.  `numpy.convolve\* <#convolve>`__
+10. `numpy.diff <#diff>`__
+11. `numpy.dot <#dot>`__
+12. `numpy.equal <#equal>`__
+13. `numpy.flip\* <#flip>`__
+14. `numpy.imag\* <#imag>`__
+15. `numpy.interp <#interp>`__
+16. `numpy.isfinite <#isfinite>`__
+17. `numpy.isinf <#isinf>`__
+18. `numpy.max <#max>`__
+19. `numpy.maximum <#maximum>`__
+20. `numpy.mean <#mean>`__
+21. `numpy.median <#median>`__
+22. `numpy.min <#min>`__
+23. `numpy.minimum <#minimum>`__
+24. `numpy.not_equal <#equal>`__
+25. `numpy.polyfit <#polyfit>`__
+26. `numpy.polyval <#polyval>`__
+27. `numpy.real\* <#real>`__
+28. `numpy.roll <#roll>`__
+29. `numpy.sort <#sort>`__
+30. `numpy.sort_complex\* <#sort_complex>`__
+31. `numpy.std <#std>`__
+32. `numpy.sum <#sum>`__
+33. `numpy.trace <#trace>`__
+34. `numpy.trapz <#trapz>`__
+35. `numpy.where <#where>`__
 
 all
 ---
@@ -302,6 +303,41 @@ the output is upcast as in `Binary operators <#Binary-operators>`__.
     a:		 array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
     b:		 array([3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0], dtype=float64)
     clipped:	 array([3.0, 3.0, 3.0, 3.0, 4.0, 5.0, 6.0, 7.0, 7.0], dtype=float64)
+    
+    
+
+
+compress
+--------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.compress.html
+
+The function returns selected slices of an array along given axis. If
+the axis keyword is ``None``, the flattened array is used.
+
+If the firmware was compiled with complex support, the function can
+accept complex arguments.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(6)).reshape((2, 3))
+    
+    print('a:\n', a)
+    print('\ncompress(a):\n', np.compress([0, 1], a, axis=0))
+
+.. parsed-literal::
+
+    a:
+     array([[0.0, 1.0, 2.0],
+           [3.0, 4.0, 5.0]], dtype=float64)
+    
+    compress(a):
+     array([[3.0, 4.0, 5.0]], dtype=float64)
     
     
 

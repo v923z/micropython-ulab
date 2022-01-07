@@ -90,6 +90,8 @@ Documentation can be found on [readthedocs](https://readthedocs.org/) under
 as well as at [circuitpython-ulab](https://circuitpython.readthedocs.io/en/latest/shared-bindings/ulab/__init__.html).
 A number of practical examples are listed in Jeff Epler's excellent
 [circuitpython-ulab](https://learn.adafruit.com/ulab-crunch-numbers-fast-with-circuitpython/overview) overview.
+The [tricks](https://micropython-ulab.readthedocs.io/en/latest/ulab-tricks.html) chapter of the user manual discusses
+methods by which RAM and speed can be leveraged in particular numerical problems.
 
 # Benchmarks
 
