@@ -77,7 +77,9 @@ In addition to the Fourier transform and its inverse, ``ulab`` also
 sports a function called ``spectrogram``, which returns the absolute
 value of the Fourier transform. This could be used to find the dominant
 spectral component in a time series. The arguments are treated in the
-same way as in ``fft``, and ``ifft``.
+same way as in ``fft``, and ``ifft``. This means that, if the firmware
+was compiled with complex support, the input can also be a complex
+array.
 
 .. code::
         

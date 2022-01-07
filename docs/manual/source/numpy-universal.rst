@@ -6,19 +6,25 @@ Standard mathematical functions can be calculated on any scalar,
 scalar-valued iterable (ranges, lists, tuples containing numbers), and
 on ``ndarray``\ s without having to change the call signature. In all
 cases the functions return a new ``ndarray`` of typecode ``float``
-(since these functions usually generate float values, anyway). The
-functions execute faster with ``ndarray`` arguments than with iterables,
-because the values of the input vector can be extracted faster.
+(since these functions usually generate float values, anyway). The only
+exceptions to this rule are the ``exp``, and ``sqrt`` functions, which,
+if ``ULAB_SUPPORTS_COMPLEX`` is set to 1 in
+`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__,
+can return complex arrays, depending on the argument. All functions
+execute faster with ``ndarray`` arguments than with iterables, because
+the values of the input vector can be extracted faster.
 
-At present, the following functions are supported:
+At present, the following functions are supported (starred functions can
+operate on, or can return complex arrays):
 
 ``acos``, ``acosh``, ``arctan2``, ``around``, ``asin``, ``asinh``,
 ``atan``, ``arctan2``, ``atanh``, ``ceil``, ``cos``, ``degrees``,
-``exp``, ``expm1``, ``floor``, ``log``, ``log10``, ``log2``,
-``radians``, ``sin``, ``sinh``, ``sqrt``, ``tan``, ``tanh``.
+``exp*``, ``expm1``, ``floor``, ``log``, ``log10``, ``log2``,
+``radians``, ``sin``, ``sinh``, ``sqrt*``, ``tan``, ``tanh``.
 
 These functions are applied element-wise to the arguments, thus, e.g.,
-the exponential of a matrix cannot be calculated in this way.
+the exponential of a matrix cannot be calculated in this way, only the
+exponential of the matrix entries.
 
 .. code::
         
@@ -195,6 +201,71 @@ returns an ndarray of type ``mp_float_t``.
     decimals = 1	 array([1.0, 2.2, 33.3, 444.4], dtype=float64)
     
     decimals = -1	 array([0.0, 0.0, 30.0, 440.0], dtype=float64)
+    
+    
+
+
+exp
+---
+
+If ``ULAB_SUPPORTS_COMPLEX`` is set to 1 in
+`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__,
+the exponential function can also take complex arrays as its argument,
+in which case the return value is also complex.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3])
+    print('a:\t\t', a)
+    print('exp(a):\t\t', np.exp(a))
+    print()
+    
+    b = np.array([1+1j, 2+2j, 3+3j], dtype=np.complex)
+    print('b:\t\t', b)
+    print('exp(b):\t\t', np.exp(b))
+
+.. parsed-literal::
+
+    a:		 array([1.0, 2.0, 3.0], dtype=float64)
+    exp(a):		 array([2.718281828459045, 7.38905609893065, 20.08553692318767], dtype=float64)
+    
+    b:		 array([1.0+1.0j, 2.0+2.0j, 3.0+3.0j], dtype=complex)
+    exp(b):		 array([1.468693939915885+2.287355287178842j, -3.074932320639359+6.71884969742825j, -19.88453084414699+2.834471132487004j], dtype=complex)
+    
+    
+
+
+sqrt
+----
+
+If ``ULAB_SUPPORTS_COMPLEX`` is set to 1 in
+`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__,
+the exponential function can also take complex arrays as its argument,
+in which case the return value is also complex. If the input is real,
+but the results might be complex, the user is supposed to specify the
+output ``dtype`` in the function call. Otherwise, the square roots of
+negative numbers will result in ``NaN``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, -1])
+    print('a:\t\t', a)
+    print('sqrt(a):\t\t', np.sqrt(a))
+    print('sqrt(a):\t\t', np.sqrt(a, dtype=np.complex))
+
+.. parsed-literal::
+
+    a:		 array([1.0, -1.0], dtype=float64)
+    sqrt(a):		 array([1.0, nan], dtype=float64)
+    sqrt(a):		 array([1.0+0.0j, 0.0+1.0j], dtype=complex)
     
     
 

@@ -51,7 +51,8 @@ In addition, `ulab` includes [universal functions](https://micropython-ulab.read
 
 The [`utils`](https://micropython-ulab.readthedocs.io/en/latest/ulab-utils.html) module contains functions for
 interfacing with peripheral devices supporting the buffer protocol. These functions do not have an obvious
-`numpy` equivalent, but share a similar programming interface, and allow direct data input to and output from
+`numpy` equivalent, but share a similar programming interface, and allow direct data input-output between
+numerical arrays and hardware components.
 
 ## `user` module
 

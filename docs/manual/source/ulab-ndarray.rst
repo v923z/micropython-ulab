@@ -117,7 +117,9 @@ types can be mixed in the initialisation function.
 If the ``dtype`` keyword with the possible
 ``uint8/int8/uint16/int16/float`` values is supplied, the new
 ``ndarray`` will have that type, otherwise, it assumes ``float`` as
-default.
+default. In addition, if ``ULAB_SUPPORTS_COMPLEX`` is set to 1 in
+`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__,
+the ``dtype`` can also take on the value of ``complex``.
 
 .. code::
         
@@ -251,18 +253,20 @@ Array initialisation functions
 ------------------------------
 
 There are nine functions that can be used for initialising an array.
+Starred functions accept ``complex`` as the value of the ``dtype``, if
+the firmware was compiled with complex support.
 
 1.  `numpy.arange <#arange>`__
 2.  `numpy.concatenate <#concatenate>`__
-3.  `numpy.diag <#diag>`__
-4.  `numpy.empty <#empty>`__
-5.  `numpy.eye <#eye>`__
+3.  `numpy.diag\* <#diag>`__
+4.  `numpy.empty\* <#empty>`__
+5.  `numpy.eye\* <#eye>`__
 6.  `numpy.frombuffer <#frombuffer>`__
-7.  `numpy.full <#full>`__
-8.  `numpy.linspace <#linspace>`__
+7.  `numpy.full\* <#full>`__
+8.  `numpy.linspace\* <#linspace>`__
 9.  `numpy.logspace <#logspace>`__
-10. `numpy.ones <#ones>`__
-11. `numpy.zeros <#zeros>`__
+10. `numpy.ones\* <#ones>`__
+11. `numpy.zeros\* <#zeros>`__
 
 arange
 ~~~~~~
@@ -392,6 +396,9 @@ If the first argument is a one-dimensional array, the function returns a
 two-dimensional tensor with its diagonal elements given by the first
 argument.
 
+The ``diag`` function can accept a complex array, if the firmware was
+compiled with complex support.
+
 .. code::
         
     # code to be run in micropython
@@ -443,6 +450,9 @@ https://numpy.org/doc/stable/reference/generated/numpy.empty.html
 ``empty`` is simply an alias for ``zeros``, i.e., as opposed to
 ``numpy``, the entries of the tensor will be initialised to zero.
 
+The ``empty`` function can accept complex as the value of the dtype, if
+the firmware was compiled with complex support.
+
 eye
 ~~~
 
@@ -460,6 +470,9 @@ where ``N`` (``M``) specify the dimensions of the matrix (if only ``N``
 is supplied, then we get a square matrix, otherwise one with ``M`` rows,
 and ``N`` columns), and ``k`` is the shift of the ones (the main
 diagonal corresponds to ``k=0``). Here are a couple of examples.
+
+The ``eye`` function can accept ``complex`` as the value of the
+``dtype``, if the firmware was compiled with complex support.
 
 With a single argument
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -579,6 +592,9 @@ all equal to the second positional argument. The first argument is a
 tuple describing the shape of the tensor. The ``dtype`` keyword argument
 with a default value of ``float`` can also be supplied.
 
+The ``full`` function can accept a complex scalar, or ``complex`` as the
+value of ``dtype``, if the firmware was compiled with complex support.
+
 .. code::
         
     # code to be run in micropython
@@ -620,6 +636,11 @@ be supplied to force type conversion of the output. The default is
 ``float``. Note that, when ``dtype`` is of integer type, the sequence is
 not necessarily evenly spaced. This is not an error, rather a
 consequence of rounding. (This is also the ``numpy`` behaviour.)
+
+The ``linspace`` function can accept ``complex`` as the value of the
+``dtype``, if the firmware was compiled with complex support. The output
+``dtype`` is automatically complex, if either of the endpoints is a
+complex scalar.
 
 .. code::
         
@@ -720,6 +741,9 @@ calling one of the ``ones``, or ``zeros`` functions. ``ones`` and
    zeros(shape, dtype=float)
 
 where shape is either an integer, or a tuple specifying the shape.
+
+The ``ones/zeros`` functions can accept complex as the value of the
+dtype, if the firmware was compiled with complex support.
 
 .. code::
         
@@ -859,20 +883,26 @@ Methods and properties of ndarrays
 Arrays have several *properties* that can queried, and some methods that
 can be called. With the exception of the flatten and transpose
 operators, properties return an object that describe some feature of the
-array, while the methods return a new array-like object.
+array, while the methods return a new array-like object. The ``imag``,
+and ``real`` properties are included in the firmware only, when it was
+compiled with complex support.
 
 1.  `.byteswap <#.byteswap>`__
 2.  `.copy <#.copy>`__
 3.  `.dtype <#.dtype>`__
 4.  `.flat <#.flat>`__
 5.  `.flatten <#.flatten>`__
-6.  `.itemsize <#.itemsize>`__
-7.  `.reshape <#.reshape>`__
-8.  `.shape <#.shape>`__
-9.  `.size <#.size>`__
-10. `.T <#.transpose>`__
-11. `.transpose <#.transpose>`__
-12. `.sort <#.sort>`__
+6.  `.imag\* <#.imag>`__
+7.  `.itemsize <#.itemsize>`__
+8.  `.real\* <#.real>`__
+9.  `.reshape <#.reshape>`__
+10. `.shape <#.shape>`__
+11. `.size <#.size>`__
+12. `.T <#.transpose>`__
+13. `.tobytes <#.tobytes>`__
+14. `.tolist <#.tolist>`__
+15. `.transpose <#.transpose>`__
+16. `.sort <#.sort>`__
 
 .byteswap
 ~~~~~~~~~
@@ -1111,6 +1141,43 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.htm
     
 
 
+.imag
+~~~~~
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.ndarray.imag.html
+
+The ``.imag`` property is defined only, if the firmware was compiled
+with complex support, and returns a copy with the imaginary part of an
+array. If the array is real, then the output is straight zeros with the
+``dtype`` of the input. If the input is complex, the output ``dtype`` is
+always ``float``, irrespective of the values.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3], dtype=np.uint16)
+    print("a:\t", a)
+    print("a.imag:\t", a.imag)
+    
+    b = np.array([1, 2+1j, 3-1j], dtype=np.complex)
+    print("\nb:\t", b)
+    print("b.imag:\t", b.imag)
+
+.. parsed-literal::
+
+    a:	 array([1, 2, 3], dtype=uint16)
+    a.imag:	 array([0, 0, 0], dtype=uint16)
+    
+    b:	 array([1.0+0.0j, 2.0+1.0j, 3.0-1.0j], dtype=complex)
+    b.imag:	 array([0.0, 1.0, -1.0], dtype=float64)
+    
+    
+
+
 .itemsize
 ~~~~~~~~~
 
@@ -1128,11 +1195,11 @@ the array.
     
     a = np.array([1, 2, 3], dtype=np.int8)
     print("a:\n", a)
-    print("itemsize of a:", a.itemsize
+    print("itemsize of a:", a.itemsize)
     
     b= np.array([[1, 2], [3, 4]], dtype=np.float)
     print("\nb:\n", b)
-    print("itemsize of b:", b.itemsize
+    print("itemsize of b:", b.itemsize)
 
 .. parsed-literal::
 
@@ -1144,6 +1211,40 @@ the array.
      array([[1.0, 2.0],
            [3.0, 4.0]], dtype=float64)
     itemsize of b: 8
+    
+    
+
+
+.real
+~~~~~
+
+numpy:
+https://numpy.org/doc/stable/reference/generated/numpy.ndarray.real.html
+
+The ``.real`` property is defined only, if the firmware was compiled
+with complex support, and returns a copy with the real part of an array.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3], dtype=np.uint16)
+    print("a:\t", a)
+    print("a.real:\t", a.real)
+    
+    b = np.array([1, 2+1j, 3-1j], dtype=np.complex)
+    print("\nb:\t", b)
+    print("b.real:\t", b.real)
+
+.. parsed-literal::
+
+    a:	 array([1, 2, 3], dtype=uint16)
+    a.real:	 array([1, 2, 3], dtype=uint16)
+    
+    b:	 array([1.0+0.0j, 2.0+1.0j, 3.0-1.0j], dtype=complex)
+    b.real:	 array([1.0, 2.0, 3.0], dtype=float64)
     
     
 
@@ -1338,6 +1439,44 @@ not dense (i.e., it has already been sliced).
     ====================
     b:  bytearray(b'\r\x01\x02\x03\x04\x05\x06\x07')
     a:  array([13, 1, 2, 3, 4, 5, 6, 7], dtype=uint8)
+    
+    
+
+
+.tolist
+~~~~~~~
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.ndarray.tolist.html
+
+The ``.tolist`` method can be used for converting the numerical array
+into a (nested) ``python`` lists.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(4), dtype=np.uint8)
+    print('a: ', a)
+    b = a.tolist()
+    print('b: ', b)
+    
+    c = a.reshape((2, 2))
+    print('='*20)
+    print('c: ', c)
+    d = c.tolist()
+    print('d: ', d)
+
+.. parsed-literal::
+
+    a:  array([0, 1, 2, 3], dtype=uint8)
+    b:  [0, 1, 2, 3]
+    ====================
+    c:  array([[0, 1],
+           [2, 3]], dtype=uint8)
+    d:  [[0, 1], [2, 3]]
     
     
 
