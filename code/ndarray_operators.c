@@ -41,6 +41,12 @@
 mp_obj_t ndarray_binary_equality(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
                                             uint8_t ndim, size_t *shape,  int32_t *lstrides, int32_t *rstrides, mp_binary_op_t op) {
 
+    #if ULAB_SUPPORTS_COMPLEX
+    if((lhs->dtype == NDARRAY_COMPLEX) || (rhs->dtype == NDARRAY_COMPLEX))  {
+        return carray_binary_equal_not_equal(lhs, rhs, ndim, shape, lstrides, rstrides, op);
+    }
+    #endif
+
     ndarray_obj_t *results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT8);
     results->boolean = 1;
     uint8_t *array = (uint8_t *)results->array;

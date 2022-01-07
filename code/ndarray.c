@@ -26,6 +26,7 @@
 #include "ndarray.h"
 #include "ndarray_operators.h"
 #include "numpy/carray/carray.h"
+#include "numpy/carray/carray_tools.h"
 
 mp_uint_t ndarray_print_threshold = NDARRAY_PRINT_THRESHOLD;
 mp_uint_t ndarray_print_edgeitems = NDARRAY_PRINT_EDGEITEMS;
@@ -1901,7 +1902,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             case MP_BINARY_OP_EQUAL:
             case MP_BINARY_OP_NOT_EQUAL:
                 nd = ndarray_new_linear_array(0, NDARRAY_UINT8);
-                nd->boolean = true;
+                nd->boolean = 1;
                 return MP_OBJ_FROM_PTR(nd);
 
             default:
@@ -1914,26 +1915,31 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
         // first the in-place operators
         #if NDARRAY_HAS_INPLACE_ADD
         case MP_BINARY_OP_INPLACE_ADD:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_inplace_ams(lhs, rhs, rstrides, op);
             break;
         #endif
         #if NDARRAY_HAS_INPLACE_MULTIPLY
         case MP_BINARY_OP_INPLACE_MULTIPLY:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_inplace_ams(lhs, rhs, rstrides, op);
             break;
         #endif
         #if NDARRAY_HAS_INPLACE_POWER
         case MP_BINARY_OP_INPLACE_POWER:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_inplace_power(lhs, rhs, rstrides);
             break;
         #endif
         #if NDARRAY_HAS_INPLACE_SUBTRACT
         case MP_BINARY_OP_INPLACE_SUBTRACT:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_inplace_ams(lhs, rhs, rstrides, op);
             break;
         #endif
         #if NDARRAY_HAS_INPLACE_TRUE_DIVIDE
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_inplace_divide(lhs, rhs, rstrides);
             break;
         #endif
@@ -1941,12 +1947,14 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
 
         #if NDARRAY_HAS_BINARY_OP_LESS
         case MP_BINARY_OP_LESS:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             // here we simply swap the operands
             return ndarray_binary_more(rhs, lhs, ndim, shape, rstrides, lstrides, MP_BINARY_OP_MORE);
             break;
         #endif
         #if NDARRAY_HAS_BINARY_OP_LESS_EQUAL
         case MP_BINARY_OP_LESS_EQUAL:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             // here we simply swap the operands
             return ndarray_binary_more(rhs, lhs, ndim, shape, rstrides, lstrides, MP_BINARY_OP_MORE_EQUAL);
             break;
@@ -1973,11 +1981,13 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
         #endif
         #if NDARRAY_HAS_BINARY_OP_MORE
         case MP_BINARY_OP_MORE:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_binary_more(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_MORE);
             break;
         #endif
         #if NDARRAY_HAS_BINARY_OP_MORE_EQUAL
         case MP_BINARY_OP_MORE_EQUAL:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_binary_more(lhs, rhs, ndim, shape, lstrides, rstrides, MP_BINARY_OP_MORE_EQUAL);
             break;
         #endif
@@ -1993,6 +2003,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
         #endif
         #if NDARRAY_HAS_BINARY_OP_POWER
         case MP_BINARY_OP_POWER:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_binary_power(lhs, rhs, ndim, shape, lstrides, rstrides);
             break;
         #endif

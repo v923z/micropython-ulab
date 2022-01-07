@@ -1,0 +1,21 @@
+array([True, True, True, True, True], dtype=bool)
+array([False, False, False, False, False], dtype=bool)
+
+array([True, False, False, False, False], dtype=bool)
+array([False, True, True, True, True], dtype=bool)
+
+array([True, True, True, True, True], dtype=bool)
+array([False, False, False, False, False], dtype=bool)
+
+array([True, True, True, True, True], dtype=bool)
+array([False, False, False, False, False], dtype=bool)
+
+array([True, True, True, True, True], dtype=bool)
+array([False, False, False, False, False], dtype=bool)
+
+array([True, True, True, True, True], dtype=bool)
+array([False, False, False, False, False], dtype=bool)
+
+array([True, True, True, True, True], dtype=bool)
+array([False, False, False, False, False], dtype=bool)
+
