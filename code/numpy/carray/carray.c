@@ -25,6 +25,15 @@
 
 #if ULAB_SUPPORTS_COMPLEX
 
+//| import ulab.numpy
+
+//| def real(val):
+//|     """
+//|     Return the real part of the complex argument, which can be
+//|     either an ndarray, or a scalar."""
+//|     ...
+//|
+
 mp_obj_t carray_real(mp_obj_t _source) {
     if(mp_obj_is_type(_source, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(_source);
@@ -44,6 +53,13 @@ mp_obj_t carray_real(mp_obj_t _source) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(carray_real_obj, carray_real);
+
+//| def imag(val):
+//|     """
+//|     Return the imaginary part of the complex argument, which can be
+//|     either an ndarray, or a scalar."""
+//|     ...
+//|
 
 mp_obj_t carray_imag(mp_obj_t _source) {
     if(mp_obj_is_type(_source, &ulab_ndarray_type)) {
@@ -65,6 +81,13 @@ mp_obj_t carray_imag(mp_obj_t _source) {
 MP_DEFINE_CONST_FUN_OBJ_1(carray_imag_obj, carray_imag);
 
 #if ULAB_NUMPY_HAS_CONJUGATE
+
+//| def conjugate(val):
+//|     """
+//|     Return the conjugate of the complex argument, which can be
+//|     either an ndarray, or a scalar."""
+//|     ...
+//|
 mp_obj_t carray_conjugate(mp_obj_t _source) {
     if(mp_obj_is_type(_source, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(_source);
@@ -99,6 +122,16 @@ MP_DEFINE_CONST_FUN_OBJ_1(carray_conjugate_obj, carray_conjugate);
 #endif
 
 #if ULAB_NUMPY_HAS_SORT_COMPLEX
+//| def sort_complex(a: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
+//|     """
+//|     .. param: a
+//|       a one-dimensional ndarray
+//|
+//|     Sort a complex array using the real part first, then the imaginary part.
+//|     Always returns a sorted complex array, even if the input was real."""
+//|     ...
+//|
+
 static void carray_sort_complex_(mp_float_t *array, size_t len) {
     // array is assumed to be a floating vector containing the real and imaginary parts
     // of a complex array at alternating positions as
@@ -134,7 +167,7 @@ static void carray_sort_complex_(mp_float_t *array, size_t len) {
                 }
             }
             if((array[2 * c] > real) ||
-                ((array[2 * c] == real) && (array[2 * c + 1] == imag))) {
+                ((array[2 * c] == real) && (array[2 * c + 1] > imag))) {
                 array[2 * p] = array[2 * c]; // real part
                 array[2 * p + 1] = array[2 * c + 1]; // imag part
                 p = c;
@@ -165,6 +198,15 @@ mp_obj_t carray_sort_complex(mp_obj_t _source) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(carray_sort_complex_obj, carray_sort_complex);
 #endif
+
+//| def abs(a: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
+//|     """
+//|     .. param: a
+//|       a one-dimensional ndarray
+//|
+//|     Return the absolute value of complex ndarray."""
+//|     ...
+//|
 
 mp_obj_t carray_abs(ndarray_obj_t *source, ndarray_obj_t *target) {
     // calculates the absolute value of a complex array and returns a dense array
@@ -257,22 +299,6 @@ static void carray_copy_part(uint8_t *tarray, uint8_t *sarray, size_t *shape, in
     #endif /* ULAB_MAX_DIMS > 3 */
 }
 
-static void carray_binary_add_(ndarray_obj_t *results, mp_float_t *resarray, mp_float_t *larray, uint8_t *rarray,
-                            int32_t *lstrides, int32_t *rstrides, uint8_t rdtype) {
-
-    if(rdtype == NDARRAY_UINT8) {
-        BINARY_LOOP_COMPLEX(results, resarray, uint8_t, larray, lstrides, rarray, rstrides, +);
-    } else if(rdtype == NDARRAY_INT8) {
-        BINARY_LOOP_COMPLEX(results, resarray, int8_t, larray, lstrides, rarray, rstrides, +);
-    } else if(rdtype == NDARRAY_UINT16) {
-        BINARY_LOOP_COMPLEX(results, resarray, uint16_t, larray, lstrides, rarray, rstrides, +);
-    } else if(rdtype == NDARRAY_INT16) {
-        BINARY_LOOP_COMPLEX(results, resarray, int16_t, larray, lstrides, rarray, rstrides, +);
-    } else if(rdtype == NDARRAY_FLOAT) {
-        BINARY_LOOP_COMPLEX(results, resarray, mp_float_t, larray, lstrides, rarray, rstrides, +);
-    }
-}
-
 mp_obj_t carray_binary_add(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
                             uint8_t ndim, size_t *shape, int32_t *lstrides, int32_t *rstrides) {
 
@@ -333,19 +359,34 @@ mp_obj_t carray_binary_add(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
         } while(i < results->shape[ULAB_MAX_DIMS - 4]);
         #endif /* ULAB_MAX_DIMS > 3 */
     } else { // only one of the operands is complex
-        mp_float_t *larray;
-        uint8_t *rarray;
+        uint8_t *larray = (uint8_t *)lhs->array;
+        uint8_t *rarray = (uint8_t *)rhs->array;
 
         // align the complex array to the left
-        if(lhs->dtype == NDARRAY_COMPLEX) {
-            larray = (mp_float_t *)lhs->array;
-            rarray = (uint8_t *)rhs->array;
-            carray_binary_add_(results, resarray, larray, rarray, lstrides, rstrides, rhs->dtype);
-        } else {
-            larray = (mp_float_t *)rhs->array;
+        uint8_t rdtype = rhs->dtype;
+        int32_t *lstrides_ = lstrides;
+        int32_t *rstrides_ = rstrides;
+
+        if(rhs->dtype == NDARRAY_COMPLEX) {
+            larray = (uint8_t *)rhs->array;
             rarray = (uint8_t *)lhs->array;
-            carray_binary_add_(results, resarray, larray, rarray, rstrides, lstrides, lhs->dtype);
+            lstrides_ = rstrides;
+            rstrides_ = lstrides;
+            rdtype = lhs->dtype;
         }
+
+        if(rdtype == NDARRAY_UINT8) {
+            BINARY_LOOP_COMPLEX(results, resarray, uint8_t, larray, lstrides_, rarray, rstrides_, +);
+        } else if(rdtype == NDARRAY_INT8) {
+            BINARY_LOOP_COMPLEX(results, resarray, int8_t, larray, lstrides_, rarray, rstrides_, +);
+        } else if(rdtype == NDARRAY_UINT16) {
+            BINARY_LOOP_COMPLEX(results, resarray, uint16_t, larray, lstrides_, rarray, rstrides_, +);
+        } else if(rdtype == NDARRAY_INT16) {
+            BINARY_LOOP_COMPLEX(results, resarray, int16_t, larray, lstrides_, rarray, rstrides_, +);
+        } else if(rdtype == NDARRAY_FLOAT) {
+            BINARY_LOOP_COMPLEX(results, resarray, mp_float_t, larray, lstrides_, rarray, rstrides_, +);
+        }
+
         // simply copy the imaginary part
         uint8_t *tarray = (uint8_t *)results->array;
         tarray += sizeof(mp_float_t);

@@ -41,9 +41,9 @@ mp_obj_t carray_binary_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t
     size_t k = 0;\
     do {\
         BINARY_LOOP_COMPLEX1((results), (resarray), type_right, (larray), (lstrides), (rarray), (rstrides), OPERATOR);\
-        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
-        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
@@ -52,9 +52,9 @@ mp_obj_t carray_binary_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t
     size_t j = 0;\
     do {\
         BINARY_LOOP_COMPLEX2((results), (resarray), type_right, (larray), (lstrides), (rarray), (rstrides), OPERATOR);\
-        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
-        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
@@ -63,9 +63,9 @@ mp_obj_t carray_binary_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t
     size_t i = 0;\
     do {\
         BINARY_LOOP_COMPLEX3((results), (resarray), type_right, (larray), (lstrides), (rarray), (rstrides), OPERATOR);\
-        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
-        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         i++;\
     } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
@@ -95,9 +95,9 @@ mp_obj_t carray_binary_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t
     size_t j = 0;\
     do {\
         BINARY_LOOP_COMPLEX_REVERSED_SUBTRACT2((results), (resarray), type_left, (larray), (lstrides), (rarray), (rstrides));\
-        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
-        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
@@ -106,9 +106,9 @@ mp_obj_t carray_binary_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t
     size_t i = 0;\
     do {\
         BINARY_LOOP_COMPLEX_REVERSED_SUBTRACT3((results), (resarray), type_left, (larray), (lstrides), (rarray), (rstrides));\
-        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
-        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         i++;\
     } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
@@ -131,9 +131,9 @@ mp_obj_t carray_binary_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t
     size_t k = 0;\
     do {\
         BINARY_LOOP_COMPLEX_RIGHT_DIVIDE1((results), (resarray), type_left, (larray), (lstrides), (rarray), (rstrides));\
-        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
-        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
@@ -142,9 +142,9 @@ mp_obj_t carray_binary_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t
     size_t j = 0;\
     do {\
         BINARY_LOOP_COMPLEX_RIGHT_DIVIDE2((results), (resarray), type_left, (larray), (lstrides), (rarray), (rstrides));\
-        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
-        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
@@ -153,9 +153,9 @@ mp_obj_t carray_binary_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t
     size_t i = 0;\
     do {\
         BINARY_LOOP_COMPLEX_RIGHT_DIVIDE3((results), (resarray), type_left, (larray), (lstrides), (rarray), (rstrides));\
-        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
         (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
-        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         i++;\
     } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
