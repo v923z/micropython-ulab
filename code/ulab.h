@@ -18,7 +18,6 @@
 //
 // - how many dimensions ulab can handle
 // - which functions are included in the compiled firmware
-// - whether the python syntax is numpy-like, or modular
 // - whether arrays can be sliced and iterated over
 // - which binary/unary operators are supported
 // - whether ulab can deal with complex numbers
