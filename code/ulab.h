@@ -478,6 +478,10 @@
 #define ULAB_NUMPY_HAS_ROLL             (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_SAVE
+#define ULAB_NUMPY_HAS_SAVE             (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_SORT
 #define ULAB_NUMPY_HAS_SORT             (1)
 #endif

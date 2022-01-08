@@ -1,0 +1,16 @@
+/*
+ * This file is part of the micropython-ulab project,
+ *
+ * https://github.com/v923z/micropython-ulab
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2022 Zoltán Vörös
+*/
+
+#ifndef _ULAB_IO_
+#define _ULAB_IO_
+
+MP_DECLARE_CONST_FUN_OBJ_2(io_save_obj);
+
+#endif
