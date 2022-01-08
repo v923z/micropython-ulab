@@ -1,3 +1,9 @@
+Sat, 8 Jan 2022
+
+version 4.0.0
+
+    add complex support, .tolist() method, .imag, .real array properties, compress, conjugate, imag, real, sort_complex functions
+
 Fri, 3 Dec 2021
 
 version 3.3.8
