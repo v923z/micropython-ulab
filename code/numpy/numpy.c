@@ -23,6 +23,7 @@
 #include "create.h"
 #include "fft/fft.h"
 #include "filter.h"
+#include "io/io.h"
 #include "linalg/linalg.h"
 #include "numerical.h"
 #include "stats.h"
@@ -270,6 +271,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #endif
     #if ULAB_NUMPY_HAS_ROLL
         { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
+    #endif
+    #if ULAB_NUMPY_HAS_SAVE
+        { MP_OBJ_NEW_QSTR(MP_QSTR_save), (mp_obj_t)&io_save_obj },
     #endif
     #if ULAB_NUMPY_HAS_SIZE
         { MP_OBJ_NEW_QSTR(MP_QSTR_size), (mp_obj_t)&transform_size_obj },
