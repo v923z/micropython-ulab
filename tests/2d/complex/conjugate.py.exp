@@ -1,0 +1,7 @@
+array([0, 1, 2, 3, 4], dtype=uint8)
+array([0, 1, 2, 3, 4], dtype=int8)
+array([0, 1, 2, 3, 4], dtype=uint16)
+array([0, 1, 2, 3, 4], dtype=int16)
+array([0.0, 1.0, 2.0, 3.0, 4.0], dtype=float64)
+array([0.0+-0.0j, 1.0+-0.0j, 2.0+-0.0j, 3.0+-0.0j, 4.0+-0.0j], dtype=complex)
+array([1.0+-0.0j, 2.0-2.0j, 3.0+3.0j, 0.0-4.0j], dtype=complex)

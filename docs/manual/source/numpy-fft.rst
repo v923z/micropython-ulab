@@ -74,6 +74,35 @@ parts of the transform separately.
     
 
 
+ulab with complex support
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the ``ULAB_SUPPORTS_COMPLEX``, and ``ULAB_FFT_IS_NUMPY_COMPATIBLE``
+pre-processor constants are set to 1 in
+`ulab.h <https://github.com/v923z/micropython-ulab/blob/master/code/ulab.h>`__
+as
+
+.. code:: c
+
+   // Adds support for complex ndarrays
+   #ifndef ULAB_SUPPORTS_COMPLEX
+   #define ULAB_SUPPORTS_COMPLEX               (1)
+   #endif
+
+.. code:: c
+
+   #ifndef ULAB_FFT_IS_NUMPY_COMPATIBLE
+   #define ULAB_FFT_IS_NUMPY_COMPATIBLE    (1)
+   #endif
+
+then the FFT routine will behave in a ``numpy``-compatible way: the
+single input array can either be real, in which case the imaginary part
+is assumed to be zero, or complex. The output is also complex.
+
+While ``numpy``-compatibility might be a desired feature, it has one
+side effect, namely, the FFT routine consumes approx. 50% more RAM. The
+reason for this lies in the implementation details.
+
 ifft
 ----
 
@@ -114,6 +143,13 @@ the inverse of the transform is equal to the original array.
 Note that unlike in ``numpy``, the length of the array on which the
 Fourier transform is carried out must be a power of 2. If this is not
 the case, the function raises a ``ValueError`` exception.
+
+ulab with complex support
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``fft.ifft`` function can also be made ``numpy``-compatible by
+setting the ``ULAB_SUPPORTS_COMPLEX``, and
+``ULAB_FFT_IS_NUMPY_COMPATIBLE`` pre-processor constants to 1.
 
 Computation and storage costs
 -----------------------------

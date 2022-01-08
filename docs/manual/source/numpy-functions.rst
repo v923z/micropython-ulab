@@ -3,38 +3,44 @@ Numpy functions
 ===============
 
 This section of the manual discusses those functions that were adapted
-from ``numpy``.
+from ``numpy``. Starred functions accept complex arrays as arguments, if
+the firmware was compiled with complex support.
 
-1.  `numpy.all <#all>`__
-2.  `numpy.any <#any>`__
+1.  `numpy.all\* <#all>`__
+2.  `numpy.any\* <#any>`__
 3.  `numpy.argmax <#argmax>`__
 4.  `numpy.argmin <#argmin>`__
 5.  `numpy.argsort <#argsort>`__
 6.  `numpy.clip <#clip>`__
-7.  `numpy.convolve <#convolve>`__
-8.  `numpy.diff <#diff>`__
-9.  `numpy.dot <#dot>`__
-10. `numpy.equal <#equal>`__
-11. `numpy.flip <#flip>`__
-12. `numpy.interp <#interp>`__
-13. `numpy.isfinite <#isfinite>`__
-14. `numpy.isinf <#isinf>`__
-15. `numpy.max <#max>`__
-16. `numpy.maximum <#maximum>`__
-17. `numpy.mean <#mean>`__
-18. `numpy.median <#median>`__
-19. `numpy.min <#min>`__
-20. `numpy.minimum <#minimum>`__
-21. `numpy.not_equal <#equal>`__
-22. `numpy.polyfit <#polyfit>`__
-23. `numpy.polyval <#polyval>`__
-24. `numpy.roll <#roll>`__
-25. `numpy.sort <#sort>`__
-26. `numpy.std <#std>`__
-27. `numpy.sum <#sum>`__
-28. `numpy.trace <#trace>`__
-29. `numpy.trapz <#trapz>`__
-30. `numpy.where <#where>`__
+7.  `numpy.compress\* <#compress>`__
+8.  `numpy.conjugate\* <#conjugate>`__
+9.  `numpy.convolve\* <#convolve>`__
+10. `numpy.diff <#diff>`__
+11. `numpy.dot <#dot>`__
+12. `numpy.equal <#equal>`__
+13. `numpy.flip\* <#flip>`__
+14. `numpy.imag\* <#imag>`__
+15. `numpy.interp <#interp>`__
+16. `numpy.isfinite <#isfinite>`__
+17. `numpy.isinf <#isinf>`__
+18. `numpy.max <#max>`__
+19. `numpy.maximum <#maximum>`__
+20. `numpy.mean <#mean>`__
+21. `numpy.median <#median>`__
+22. `numpy.min <#min>`__
+23. `numpy.minimum <#minimum>`__
+24. `numpy.not_equal <#equal>`__
+25. `numpy.polyfit <#polyfit>`__
+26. `numpy.polyval <#polyval>`__
+27. `numpy.real\* <#real>`__
+28. `numpy.roll <#roll>`__
+29. `numpy.sort <#sort>`__
+30. `numpy.sort_complex\* <#sort_complex>`__
+31. `numpy.std <#std>`__
+32. `numpy.sum <#sum>`__
+33. `numpy.trace <#trace>`__
+34. `numpy.trapz <#trapz>`__
+35. `numpy.where <#where>`__
 
 all
 ---
@@ -50,6 +56,9 @@ argument is ``None``, the flattened array is inspected.
 Elements of an array evaluate to ``True``, if they are not equal to
 zero, or the Boolean ``False``. The return value if a Boolean
 ``ndarray``.
+
+If the firmware was compiled with complex support, the function can
+accept complex arrays.
 
 .. code::
         
@@ -104,6 +113,9 @@ argument is ``None``, the flattened array is inspected.
 Elements of an array evaluate to ``True``, if they are not equal to
 zero, or the Boolean ``False``. The return value if a Boolean
 ``ndarray``.
+
+If the firmware was compiled with complex support, the function can
+accept complex arrays.
 
 .. code::
         
@@ -295,6 +307,78 @@ the output is upcast as in `Binary operators <#Binary-operators>`__.
     
 
 
+compress
+--------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.compress.html
+
+The function returns selected slices of an array along given axis. If
+the axis keyword is ``None``, the flattened array is used.
+
+If the firmware was compiled with complex support, the function can
+accept complex arguments.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(6)).reshape((2, 3))
+    
+    print('a:\n', a)
+    print('\ncompress(a):\n', np.compress([0, 1], a, axis=0))
+
+.. parsed-literal::
+
+    a:
+     array([[0.0, 1.0, 2.0],
+           [3.0, 4.0, 5.0]], dtype=float64)
+    
+    compress(a):
+     array([[3.0, 4.0, 5.0]], dtype=float64)
+    
+    
+
+
+conjugate
+---------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.conjugate.html
+
+If the firmware was compiled with complex support, the function
+calculates the complex conjugate of the input array. If the input array
+is of real ``dtype``, then the output is simply a copy, preserving the
+``dtype``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3, 4], dtype=np.uint8)
+    b = np.array([1+1j, 2-2j, 3+3j, 4-4j], dtype=np.complex)
+    
+    print('a:\t\t', a)
+    print('conjugate(a):\t', np.conjugate(a))
+    print()
+    print('b:\t\t', b)
+    print('conjugate(b):\t', np.conjugate(b))
+
+.. parsed-literal::
+
+    a:		 array([1, 2, 3, 4], dtype=uint8)
+    conjugate(a):	 array([1, 2, 3, 4], dtype=uint8)
+    
+    b:		 array([1.0+1.0j, 2.0-2.0j, 3.0+3.0j, 4.0-4.0j], dtype=complex)
+    conjugate(b):	 array([1.0-1.0j, 2.0+2.0j, 3.0-3.0j, 4.0+4.0j], dtype=complex)
+    
+    
+
+
 convolve
 --------
 
@@ -306,6 +390,9 @@ Returns the discrete, linear convolution of two one-dimensional arrays.
 Only the ``full`` mode is supported, and the ``mode`` named parameter is
 not accepted. Note that all other modes can be had by slicing a ``full``
 result.
+
+If the firmware was compiled with complex support, the function can
+accept complex arrays.
 
 .. code::
         
@@ -544,6 +631,9 @@ along the given axis. If the keyword argument is ``None``, the matrix’
 entries are flipped along all axes. ``flip`` returns a new copy of the
 array.
 
+If the firmware was compiled with complex support, the function can
+accept complex arrays.
+
 .. code::
         
     # code to be run in micropython
@@ -576,6 +666,41 @@ array.
     
     a flipped horizontally+vertically
      array([9, 8, 7, 6, 5, 4, 3, 2, 1], dtype=uint8)
+    
+    
+
+
+imag
+----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.imag.html
+
+The ``imag`` function returns the imaginary part of an array, or scalar.
+It cannot accept a generic iterable as its argument. The function is
+defined only, if the firmware was compiled with complex support.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3], dtype=np.uint16)
+    print("a:\t\t", a)
+    print("imag(a):\t", np.imag(a))
+    
+    b = np.array([1, 2+1j, 3-1j], dtype=np.complex)
+    print("\nb:\t\t", b)
+    print("imag(b):\t", np.imag(b))
+
+.. parsed-literal::
+
+    a:		 array([1, 2, 3], dtype=uint16)
+    imag(a):	 array([0, 0, 0], dtype=uint16)
+    
+    b:		 array([1.0+0.0j, 2.0+1.0j, 3.0-1.0j], dtype=complex)
+    imag(b):	 array([0.0, 1.0, -1.0], dtype=float64)
     
     
 
@@ -1059,6 +1184,41 @@ iterables returning scalars.
     
 
 
+real
+----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.real.html
+
+The ``real`` function returns the real part of an array, or scalar. It
+cannot accept a generic iterable as its argument. The function is
+defined only, if the firmware was compiled with complex support.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([1, 2, 3], dtype=np.uint16)
+    print("a:\t\t", a)
+    print("real(a):\t", np.real(a))
+    
+    b = np.array([1, 2+1j, 3-1j], dtype=np.complex)
+    print("\nb:\t\t", b)
+    print("real(b):\t", np.real(b))
+
+.. parsed-literal::
+
+    a:		 array([1, 2, 3], dtype=uint16)
+    real(a):	 array([1, 2, 3], dtype=uint16)
+    
+    b:		 array([1.0+0.0j, 2.0+1.0j, 3.0-1.0j], dtype=complex)
+    real(b):	 array([1.0, 2.0, 3.0], dtype=float64)
+    
+    
+
+
 roll
 ----
 
@@ -1237,18 +1397,53 @@ spaced numbers between 0, and two pi, and sort them:
         
     # code to be run in micropython
     
-    import ulab as np
-    from ulab import vector
-    from ulab import numerical
+    from ulab import numpy as np
     
     @timeit
     def sort_time(array):
-        return numerical.sort(array)
+        return nup.sort(array)
     
-    b = vector.sin(np.linspace(0, 6.28, num=1000))
+    b = np.sin(np.linspace(0, 6.28, num=1000))
     print('b: ', b)
     sort_time(b)
     print('\nb sorted:\n', b)
+sort_complex
+------------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.sort_complex.html
+
+If the firmware was compiled with complex support, the functions sorts
+the input array first according to its real part, and then the imaginary
+part. The input must be a one-dimensional array. The output is always of
+``dtype`` complex, even if the input was real integer.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array([5, 4, 3, 2, 1], dtype=np.int16)
+    print('a:\t\t\t', a)
+    print('sort_complex(a):\t', np.sort_complex(a))
+    print()
+    
+    b = np.array([5, 4+3j, 4-2j, 0, 1j], dtype=np.complex)
+    print('b:\t\t\t', b)
+    print('sort_complex(b):\t', np.sort_complex(b))
+
+.. parsed-literal::
+
+    a:			 array([5, 4, 3, 2, 1], dtype=int16)
+    sort_complex(a):	 array([1.0+0.0j, 2.0+0.0j, 3.0+0.0j, 4.0+0.0j, 5.0+0.0j], dtype=complex)
+    
+    b:			 array([5.0+0.0j, 4.0+3.0j, 4.0-2.0j, 0.0+0.0j, 0.0+1.0j], dtype=complex)
+    sort_complex(b):	 array([0.0+0.0j, 0.0+1.0j, 4.0-2.0j, 4.0+3.0j, 5.0+0.0j], dtype=complex)
+    
+    
+
+
 std
 ---
 

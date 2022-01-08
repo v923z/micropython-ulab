@@ -1,0 +1,42 @@
+
+array:
+ array([0, 1, 2, 3], dtype=uint8)
+
+square root:
+ array([0.0, 1.0, 1.414213562373095, 1.732050807568877], dtype=float64)
+
+array:
+ array([0, 1, 2, 3], dtype=int8)
+
+square root:
+ array([0.0, 1.0, 1.414213562373095, 1.732050807568877], dtype=float64)
+
+array:
+ array([0, 1, 2, 3], dtype=uint16)
+
+square root:
+ array([0.0, 1.0, 1.414213562373095, 1.732050807568877], dtype=float64)
+
+array:
+ array([0, 1, 2, 3], dtype=int16)
+
+square root:
+ array([0.0, 1.0, 1.414213562373095, 1.732050807568877], dtype=float64)
+
+array:
+ array([0.0, 1.0, 2.0, 3.0], dtype=float64)
+
+square root:
+ array([0.0, 1.0, 1.414213562373095, 1.732050807568877], dtype=float64)
+
+array:
+ array([0.0+0.0j, 1.0+0.0j, 2.0+0.0j, 3.0+0.0j], dtype=complex)
+
+square root:
+ array([0.0+0.0j, 1.0+0.0j, 1.414213562373095+0.0j, 1.732050807568877+0.0j], dtype=complex)
+
+array:
+ array([0.0+0.0j, 0.0+1.0j, 2.0+2.0j, 3.0-3.0j], dtype=complex)
+
+square root:
+ array([0.0+0.0j, 0.7071067811865476+0.7071067811865475j, 1.553773974030037+0.6435942529055827j, 1.902976705995016-0.7882387605032136j], dtype=complex)

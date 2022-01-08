@@ -20,9 +20,9 @@
 #include "py/objarray.h"
 
 #include "ulab.h"
-#include "ulab_create.h"
 #include "ndarray.h"
 #include "ndarray_properties.h"
+#include "numpy/create.h"
 #include "numpy/ndarray/ndarray_iter.h"
 
 #include "numpy/numpy.h"
@@ -33,10 +33,15 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 3.3.8
+#define ULAB_VERSION 4.0.0
 #define xstr(s) str(s)
 #define str(s) #s
+
+#if ULAB_SUPPORTS_COMPLEX
+#define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D-c)
+#else
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
+#endif
 
 STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
@@ -61,6 +66,9 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #endif
     #if NDARRAY_HAS_TOBYTES
         { MP_ROM_QSTR(MP_QSTR_tobytes), MP_ROM_PTR(&ndarray_tobytes_obj) },
+    #endif
+    #if NDARRAY_HAS_TOLIST
+        { MP_ROM_QSTR(MP_QSTR_tolist), MP_ROM_PTR(&ndarray_tolist_obj) },
     #endif
     #if NDARRAY_HAS_SORT
         { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&numerical_sort_inplace_obj) },

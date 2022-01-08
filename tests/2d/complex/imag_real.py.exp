@@ -1,0 +1,146 @@
+
+array:
+ array([0, 1, 2, 3], dtype=uint8)
+
+real part:
+ array([0, 1, 2, 3], dtype=uint8)
+
+imaginary part:
+ array([0, 0, 0, 0], dtype=uint8)
+
+array:
+ array([[0, 1],
+       [2, 3]], dtype=uint8)
+
+real part:
+ array([[0, 1],
+       [2, 3]], dtype=uint8)
+
+imaginary part:
+ array([[0, 0],
+       [0, 0]], dtype=uint8) 
+
+
+array:
+ array([0, 1, 2, 3], dtype=int8)
+
+real part:
+ array([0, 1, 2, 3], dtype=int8)
+
+imaginary part:
+ array([0, 0, 0, 0], dtype=int8)
+
+array:
+ array([[0, 1],
+       [2, 3]], dtype=int8)
+
+real part:
+ array([[0, 1],
+       [2, 3]], dtype=int8)
+
+imaginary part:
+ array([[0, 0],
+       [0, 0]], dtype=int8) 
+
+
+array:
+ array([0, 1, 2, 3], dtype=uint16)
+
+real part:
+ array([0, 1, 2, 3], dtype=uint16)
+
+imaginary part:
+ array([0, 0, 0, 0], dtype=uint16)
+
+array:
+ array([[0, 1],
+       [2, 3]], dtype=uint16)
+
+real part:
+ array([[0, 1],
+       [2, 3]], dtype=uint16)
+
+imaginary part:
+ array([[0, 0],
+       [0, 0]], dtype=uint16) 
+
+
+array:
+ array([0, 1, 2, 3], dtype=int16)
+
+real part:
+ array([0, 1, 2, 3], dtype=int16)
+
+imaginary part:
+ array([0, 0, 0, 0], dtype=int16)
+
+array:
+ array([[0, 1],
+       [2, 3]], dtype=int16)
+
+real part:
+ array([[0, 1],
+       [2, 3]], dtype=int16)
+
+imaginary part:
+ array([[0, 0],
+       [0, 0]], dtype=int16) 
+
+
+array:
+ array([0.0, 1.0, 2.0, 3.0], dtype=float64)
+
+real part:
+ array([0.0, 1.0, 2.0, 3.0], dtype=float64)
+
+imaginary part:
+ array([0.0, 0.0, 0.0, 0.0], dtype=float64)
+
+array:
+ array([[0.0, 1.0],
+       [2.0, 3.0]], dtype=float64)
+
+real part:
+ array([[0.0, 1.0],
+       [2.0, 3.0]], dtype=float64)
+
+imaginary part:
+ array([[0.0, 0.0],
+       [0.0, 0.0]], dtype=float64) 
+
+
+array:
+ array([0.0+0.0j, 1.0+0.0j, 2.0+0.0j, 3.0+0.0j], dtype=complex)
+
+real part:
+ array([0.0, 1.0, 2.0, 3.0], dtype=float64)
+
+imaginary part:
+ array([0.0, 0.0, 0.0, 0.0], dtype=float64)
+
+array:
+ array([[0.0+0.0j, 1.0+0.0j],
+       [2.0+0.0j, 3.0+0.0j]], dtype=complex)
+
+real part:
+ array([[0.0, 1.0],
+       [2.0, 3.0]], dtype=float64)
+
+imaginary part:
+ array([[0.0, 0.0],
+       [0.0, 0.0]], dtype=float64) 
+
+
+real part:
+ array([0.0, 0.0, 2.0, 3.0], dtype=float64)
+
+imaginary part:
+ array([0.0, 1.0, 2.0, -3.0], dtype=float64)
+
+real part:
+ array([[0.0, 0.0, 2.0, 3.0],
+       [0.0, 0.0, 2.0, 3.0]], dtype=float64)
+
+imaginary part:
+ array([[0.0, 1.0, 2.0, -3.0],
+       [0.0, 1.0, 2.0, -3.0]], dtype=float64)

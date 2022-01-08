@@ -93,14 +93,15 @@ The main points of ``ulab`` are
 -  fast Fourier transforms
 -  filtering of data (convolution and second-order filters)
 -  function minimisation, fitting, and numerical approximation routines
+-  interfacing between numerical data and peripheral hardware devices
 
 ``ulab`` implements close to a hundred functions and array methods. At
-the time of writing this manual (for version 2.1.0), the library adds
+the time of writing this manual (for version 4.0.0), the library adds
 approximately 120 kB of extra compiled code to the ``micropython``
-(pyboard.v.11) firmware. However, if you are tight with flash space, you
-can easily shave tens of kB off the firmware. In fact, if only a small
-sub-set of functions are needed, you can get away with less than 10 kB
-of flash space. See the section on `customising
+(pyboard.v.1.17) firmware. However, if you are tight with flash space,
+you can easily shave tens of kB off the firmware. In fact, if only a
+small sub-set of functions are needed, you can get away with less than
+10 kB of flash space. See the section on `customising
 ulab <#Customising-the-firmware>`__.
 
 Resources and legal matters
@@ -136,13 +137,13 @@ Differences between micropython-ulab and circuitpython-ulab
 -----------------------------------------------------------
 
 ``ulab`` has originally been developed for ``micropython``, but has
-since been integrated into a number of its flavours. Most of these
-flavours are simply forks of ``micropython`` itself, with some
-additional functionality. One of the notable exceptions is
-``circuitpython``, which has slightly diverged at the core level, and
-this has some minor consequences. Some of these concern the C
-implementation details only, which all have been sorted out with the
-generous and enthusiastic support of Jeff Epler from `Adafruit
+since been integrated into a number of its flavours. Most of these are
+simply forks of ``micropython`` itself, with some additional
+functionality. One of the notable exceptions is ``circuitpython``, which
+has slightly diverged at the core level, and this has some minor
+consequences. Some of these concern the C implementation details only,
+which all have been sorted out with the generous and enthusiastic
+support of Jeff Epler from `Adafruit
 Industries <http://www.adafruit.com>`__.
 
 There are, however, a couple of instances, where the two environments
@@ -175,6 +176,17 @@ fine-tuned. The first couple of lines of the file look like this
    //
    // A considerable amount of flash space can be saved by removing (setting
    // the corresponding constants to 0) the unnecessary functions and features.
+
+   // Values defined here can be overridden by your own config file as
+   // make -DULAB_CONFIG_FILE="my_ulab_config.h"
+   #if defined(ULAB_CONFIG_FILE)
+   #include ULAB_CONFIG_FILE
+   #endif
+
+   // Adds support for complex ndarrays
+   #ifndef ULAB_SUPPORTS_COMPLEX
+   #define ULAB_SUPPORTS_COMPLEX               (1)
+   #endif
 
    // Determines, whether scipy is defined in ulab. The sub-modules and functions
    // of scipy have to be defined separately
@@ -240,9 +252,9 @@ everything else, you get away with less than 5 kB extra.
 Compatibility with numpy
 ------------------------
 
-The functions implemented in ``ulab`` are organised in three sub-modules
-at the C level, namely, ``numpy``, ``scipy``, and ``user``. This
-modularity is elevated to ``python``, meaning that in order to use
+The functions implemented in ``ulab`` are organised in four sub-modules
+at the C level, namely, ``numpy``, ``scipy``, ``utils``, and ``user``.
+This modularity is elevated to ``python``, meaning that in order to use
 functions that are part of ``numpy``, you have to import ``numpy`` as
 
 .. code:: python
@@ -459,6 +471,29 @@ from the version string in the following way:
     version string:  2.1.0-2D
     version dimensions:  2D
     numerical value of dimensions:  2
+    
+    
+
+
+ulab with complex arrays
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the firmware supports complex arrays, ``-c`` is appended to the
+version string as can be seen below.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    import ulab
+    
+    version = ulab.__version__
+    
+    print('version string: ', version)
+
+.. parsed-literal::
+
+    version string:  4.0.0-2D-c
     
     
 

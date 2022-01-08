@@ -17,8 +17,9 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "ulab.h"
-#include "ulab_create.h"
+#include "../ulab.h"
+#include "create.h"
+#include "../ulab_tools.h"
 
 #if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL | ULAB_NUMPY_HAS_EMPTY
 static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t value) {
@@ -55,7 +56,15 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
             }
         }
         for(size_t i=0; i < ndarray->len; i++) {
+            #if ULAB_SUPPORTS_COMPLEX
+            if(dtype == NDARRAY_COMPLEX) {
+                ndarray_set_complex_value(ndarray->array, i, value);
+            } else {
+                ndarray_set_value(dtype, ndarray->array, i, value);
+            }
+            #else
             ndarray_set_value(dtype, ndarray->array, i, value);
+            #endif
         }
     }
     // if zeros calls the function, we don't have to do anything
@@ -64,7 +73,7 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
 #endif
 
 #if ULAB_NUMPY_HAS_ARANGE | ULAB_NUMPY_HAS_LINSPACE
-static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, size_t len, uint8_t dtype) {
+static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, mp_float_t stop, size_t len, uint8_t dtype) {
     mp_float_t value = start;
 
     ndarray_obj_t *ndarray = ndarray_new_linear_array(len, dtype);
@@ -74,21 +83,39 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
             *array++ = value == MICROPY_FLOAT_CONST(0.0) ? 0 : 1;
         }
     } else if(dtype == NDARRAY_UINT8) {
-        ARANGE_LOOP(uint8_t, ndarray, len, step);
+        ARANGE_LOOP(uint8_t, ndarray, len, step, stop);
     } else if(dtype == NDARRAY_INT8) {
-        ARANGE_LOOP(int8_t, ndarray, len, step);
+        ARANGE_LOOP(int8_t, ndarray, len, step, stop);
     } else if(dtype == NDARRAY_UINT16) {
-        ARANGE_LOOP(uint16_t, ndarray, len, step);
+        ARANGE_LOOP(uint16_t, ndarray, len, step, stop);
     } else if(dtype == NDARRAY_INT16) {
-        ARANGE_LOOP(int16_t, ndarray, len, step);
+        ARANGE_LOOP(int16_t, ndarray, len, step, stop);
     } else {
-        ARANGE_LOOP(mp_float_t, ndarray, len, step);
+        ARANGE_LOOP(mp_float_t, ndarray, len, step, stop);
     }
     return ndarray;
 }
 #endif
 
 #if ULAB_NUMPY_HAS_ARANGE
+//| @overload
+//| def arange(stop: _float, step: _float = 1, *, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray: ...
+//| @overload
+//| def arange(start: _float, stop: _float, step: _float = 1, *, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray:
+//|     """
+//|     .. param: start
+//|       First value in the array, optional, defaults to 0
+//|     .. param: stop
+//|       Final value in the array
+//|     .. param: step
+//|       Difference between consecutive elements, optional, defaults to 1.0
+//|     .. param: dtype
+//|       Type of values in the array
+//|
+//|     Return a new 1-D array with elements ranging from ``start`` to ``stop``, with step size ``step``."""
+//|     ...
+//|
+
 mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -102,14 +129,14 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     uint8_t dtype = NDARRAY_FLOAT;
     mp_float_t start, stop, step;
     if(n_args == 1) {
-        start = 0.0;
+        start = MICROPY_FLOAT_CONST(0.0);
         stop = mp_obj_get_float(args[0].u_obj);
-        step = 1.0;
+        step = MICROPY_FLOAT_CONST(1.0);
         if(mp_obj_is_int(args[0].u_obj)) dtype = NDARRAY_INT16;
     } else if(n_args == 2) {
         start = mp_obj_get_float(args[0].u_obj);
         stop = mp_obj_get_float(args[1].u_obj);
-        step = 1.0;
+        step = MICROPY_FLOAT_CONST(1.0);
         if(mp_obj_is_int(args[0].u_obj) && mp_obj_is_int(args[1].u_obj)) dtype = NDARRAY_INT16;
     } else if(n_args == 3) {
         start = mp_obj_get_float(args[0].u_obj);
@@ -129,8 +156,9 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     if((stop - start)/step < 0) {
         ndarray = ndarray_new_linear_array(0, dtype);
     } else {
-        size_t len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start)/step));
-        ndarray = create_linspace_arange(start, step, len, dtype);
+        size_t len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start) / step));
+        stop = start + (len - 1) * step;
+        ndarray = create_linspace_arange(start, step, stop, len, dtype);
     }
     return MP_OBJ_FROM_PTR(ndarray);
 }
@@ -139,6 +167,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 #endif
 
 #if ULAB_NUMPY_HAS_CONCATENATE
+//| def concatenate(arrays: Tuple[ulab.numpy.ndarray], *, axis: int = 0) -> ulab.numpy.ndarray:
+//|     """
+//|     .. param: arrays
+//|       tuple of ndarrays
+//|     .. param: axis
+//|       axis along which the arrays will be joined
+//|
+//|     Join a sequence of arrays along an existing axis."""
+//|     ...
+//|
+
 mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -254,6 +293,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_concatenate_obj, 1, create_concatenate);
 
 #if ULAB_MAX_DIMS > 1
 #if ULAB_NUMPY_HAS_DIAG
+//| def diag(a: ulab.numpy.ndarray, *, k: int = 0) -> ulab.numpy.ndarray:
+//|     """
+//|     .. param: a
+//|       an ndarray
+//|     .. param: k
+//|       Offset of the diagonal from the main diagonal. Can be positive or negative.
+//|
+//|     Return specified diagonals."""
+//|     ...
+//|
+
 mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -315,7 +365,28 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 MP_DEFINE_CONST_FUN_OBJ_KW(create_diag_obj, 1, create_diag);
 #endif /* ULAB_NUMPY_HAS_DIAG */
 
+#if ULAB_NUMPY_HAS_EMPTY
+// This function is bound in numpy.c to numpy.zeros(), and is simply an alias for that
+
+//| def empty(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray:
+//|    """
+//|    .. param: shape
+//|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
+//|    .. param: dtype
+//|       Type of values in the array
+//|
+//|    Return a new array of the given shape with all elements set to 0. An alias for numpy.zeros."""
+//|    ...
+//|
+#endif
+
 #if ULAB_NUMPY_HAS_EYE
+//| def eye(size: int, *, M: Optional[int] = None, k: int = 0, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray:
+//|     """Return a new square array of size, with the diagonal elements set to 1
+//|        and the other elements set to 0. If k is given, the diagonal is shifted by the specified amount."""
+//|     ...
+//|
+
 mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, { .u_int = 0 } },
@@ -362,6 +433,19 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_eye_obj, 1, create_eye);
 #endif /* ULAB_MAX_DIMS > 1 */
 
 #if ULAB_NUMPY_HAS_FULL
+//| def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[_float, _bool], *, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray:
+//|    """
+//|    .. param: shape
+//|       Shape of the array, either an integer (for a 1-D array) or a tuple of integers (for tensors of higher rank)
+//|    .. param: fill_value
+//|       scalar, the value with which the array is filled
+//|    .. param: dtype
+//|       Type of values in the array
+//|
+//|    Return a new array of the given shape with all elements set to 0."""
+//|    ...
+//|
+
 mp_obj_t create_full(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
@@ -382,6 +466,35 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_full_obj, 0, create_full);
 
 
 #if ULAB_NUMPY_HAS_LINSPACE
+//| def linspace(
+//|     start: _float,
+//|     stop: _float,
+//|     *,
+//|     dtype: _DType = ulab.numpy.float,
+//|     num: int = 50,
+//|     endpoint: _bool = True,
+//|     retstep: _bool = False
+//| ) -> ulab.numpy.ndarray:
+//|     """
+//|     .. param: start
+//|       First value in the array
+//|     .. param: stop
+//|       Final value in the array
+//|     .. param int: num
+//|       Count of values in the array.
+//|     .. param: dtype
+//|       Type of values in the array
+//|     .. param bool: endpoint
+//|       Whether the ``stop`` value is included.  Note that even when
+//|       endpoint=True, the exact ``stop`` value may not be included due to the
+//|       inaccuracy of floating point arithmetic.
+//|      .. param bool: retstep,
+//|       If True, return (`samples`, `step`), where `step` is the spacing between samples.
+//|
+//|     Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly."""
+//|     ...
+//|
+
 mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -399,18 +512,71 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         mp_raise_ValueError(translate("number of points must be at least 2"));
     }
     size_t len = (size_t)args[2].u_int;
-    mp_float_t start, step;
-    start = mp_obj_get_float(args[0].u_obj);
-    uint8_t typecode = args[5].u_int;
-    if(args[3].u_obj == mp_const_true) step = (mp_obj_get_float(args[1].u_obj)-start)/(len-1);
-    else step = (mp_obj_get_float(args[1].u_obj)-start)/len;
-    ndarray_obj_t *ndarray = create_linspace_arange(start, step, len, typecode);
+    mp_float_t start, step, stop;
+
+    ndarray_obj_t *ndarray = NULL;
+
+    #if ULAB_SUPPORTS_COMPLEX
+    mp_float_t step_real, step_imag;
+    bool complex_out = false;
+
+    if(mp_obj_is_type(args[0].u_obj, &mp_type_complex) || mp_obj_is_type(args[1].u_obj, &mp_type_complex)) {
+        complex_out = true;
+        ndarray = ndarray_new_linear_array(len, NDARRAY_COMPLEX);
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        mp_float_t start_real, start_imag;
+        mp_float_t stop_real, stop_imag;
+
+        mp_obj_get_complex(args[0].u_obj, &start_real, &start_imag);
+        mp_obj_get_complex(args[1].u_obj, &stop_real, &stop_imag);
+        if(args[3].u_obj == mp_const_true) {
+            step_real = (stop_real - start_real) / (len - 1);
+            step_imag = (stop_imag - start_imag) / (len - 1);
+        } else {
+            step_real = (stop_real - start_real) / len;
+            step_imag = (stop_imag - start_imag) / len;
+        }
+
+        for(size_t i = 0; i < len; i++) {
+            *array++ = start_real;
+            *array++ = start_imag;
+            start_real += step_real;
+            start_imag += step_imag;
+        }
+    } else {
+    #endif
+        start = mp_obj_get_float(args[0].u_obj);
+        stop = mp_obj_get_float(args[1].u_obj);
+
+        uint8_t typecode = args[5].u_int;
+
+        if(args[3].u_obj == mp_const_true) {
+            step = (stop - start) / (len - 1);
+        } else {
+            step = (stop - start) / len;
+            stop = start + step * (len - 1);
+        }
+
+        ndarray = create_linspace_arange(start, step, stop, len, typecode);
+    #if ULAB_SUPPORTS_COMPLEX
+    }
+    #endif
+
     if(args[4].u_obj == mp_const_false) {
         return MP_OBJ_FROM_PTR(ndarray);
     } else {
         mp_obj_t tuple[2];
         tuple[0] = ndarray;
+        #if ULAB_SUPPORTS_COMPLEX
+        if(complex_out) {
+            tuple[1] = mp_obj_new_complex(step_real, step_imag);
+        } else {
+            tuple[1] = mp_obj_new_float(step);
+        }
+        #else /* ULAB_SUPPORTS_COMPLEX */
         tuple[1] = mp_obj_new_float(step);
+        #endif
+
         return mp_obj_new_tuple(2, tuple);
     }
 }
@@ -419,6 +585,37 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 #endif
 
 #if ULAB_NUMPY_HAS_LOGSPACE
+//| def logspace(
+//|     start: _float,
+//|     stop: _float,
+//|     *,
+//|     dtype: _DType = ulab.numpy.float,
+//|     num: int = 50,
+//|     endpoint: _bool = True,
+//|     base: _float = 10.0
+//| ) -> ulab.numpy.ndarray:
+//|     """
+//|     .. param: start
+//|       First value in the array
+//|     .. param: stop
+//|       Final value in the array
+//|     .. param int: num
+//|       Count of values in the array. Defaults to 50.
+//|     .. param: base
+//|       The base of the log space. The step size between the elements in
+//|       ``ln(samples) / ln(base)`` (or ``log_base(samples)``) is uniform. Defaults to 10.0.
+//|     .. param: dtype
+//|       Type of values in the array
+//|     .. param bool: endpoint
+//|       Whether the ``stop`` value is included.  Note that even when
+//|       endpoint=True, the exact ``stop`` value may not be included due to the
+//|       inaccuracy of floating point arithmetic. Defaults to True.
+//|
+//|     Return a new 1-D array with ``num`` evenly spaced elements on a log scale.
+//|     The sequence starts at ``base ** start``, and ends with ``base ** stop``."""
+//|     ...
+//|
+
 const mp_obj_float_t create_float_const_ten = {{&mp_type_float}, MICROPY_FLOAT_CONST(10.0)};
 
 mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -475,6 +672,16 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_logspace_obj, 2, create_logspace);
 #endif
 
 #if ULAB_NUMPY_HAS_ONES
+//| def ones(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray:
+//|    """
+//|    .. param: shape
+//|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
+//|    .. param: dtype
+//|       Type of values in the array
+//|
+//|    Return a new array of the given shape with all elements set to 1."""
+//|    ...
+//|
 
 mp_obj_t create_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -494,6 +701,16 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 #endif
 
 #if ULAB_NUMPY_HAS_ZEROS
+//| def zeros(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray:
+//|    """
+//|    .. param: shape
+//|       Shape of the array, either an integer (for a 1-D array) or a tuple of 2 integers (for a 2-D array)
+//|    .. param: dtype
+//|       Type of values in the array
+//|
+//|    Return a new array of the given shape with all elements set to 0."""
+//|    ...
+//|
 
 mp_obj_t create_zeros(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -528,10 +745,8 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     mp_buffer_info_t bufinfo;
     if(mp_get_buffer(args[0].u_obj, &bufinfo, MP_BUFFER_READ)) {
-        size_t sz = 1;
-        if(dtype != NDARRAY_BOOL) { // mp_binary_get_size doesn't work with Booleans
-            sz = mp_binary_get_size('@', dtype, NULL);
-        }
+        size_t sz = ulab_binary_get_size(dtype);
+
         if(bufinfo.len < offset) {
             mp_raise_ValueError(translate("offset must be non-negative and no greater than buffer length"));
         }

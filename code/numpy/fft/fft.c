@@ -20,6 +20,7 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
+#include "../carray/carray_tools.h"
 #include "fft.h"
 
 //| """Frequency-domain functions"""
@@ -39,6 +40,13 @@
 //|     rather than separately returning its real and imaginary parts."""
 //|     ...
 //|
+#if ULAB_SUPPORTS_COMPLEX & ULAB_FFT_IS_NUMPY_COMPATIBLE
+static mp_obj_t fft_fft(mp_obj_t arg) {
+    return fft_fft_ifft_spectrogram(arg, FFT_FFT);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(fft_fft_obj, fft_fft);
+#else
 static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
     if(n_args == 2) {
         return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_FFT);
@@ -48,6 +56,7 @@ static mp_obj_t fft_fft(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
+#endif
 
 //| def ifft(r: ulab.numpy.ndarray, c: Optional[ulab.numpy.ndarray] = None) -> Tuple[ulab.numpy.ndarray, ulab.numpy.ndarray]:
 //|     """
@@ -59,7 +68,15 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_fft_obj, 1, 2, fft_fft);
 //|     ...
 //|
 
+#if ULAB_SUPPORTS_COMPLEX & ULAB_FFT_IS_NUMPY_COMPATIBLE
+static mp_obj_t fft_ifft(mp_obj_t arg) {
+    return fft_fft_ifft_spectrogram(arg, FFT_IFFT);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(fft_ifft_obj, fft_ifft);
+#else
 static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
+    NOT_IMPLEMENTED_FOR_COMPLEX()
     if(n_args == 2) {
         return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_IFFT);
     } else {
@@ -68,6 +85,7 @@ static mp_obj_t fft_ifft(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
+#endif
 
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },

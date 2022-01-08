@@ -1,0 +1,42 @@
+
+array:
+ array([0, 1, 2, 3], dtype=uint8)
+
+exponential:
+ array([1.0, 2.718281828459045, 7.38905609893065, 20.08553692318767], dtype=float64)
+
+array:
+ array([0, 1, 2, 3], dtype=int8)
+
+exponential:
+ array([1.0, 2.718281828459045, 7.38905609893065, 20.08553692318767], dtype=float64)
+
+array:
+ array([0, 1, 2, 3], dtype=uint16)
+
+exponential:
+ array([1.0, 2.718281828459045, 7.38905609893065, 20.08553692318767], dtype=float64)
+
+array:
+ array([0, 1, 2, 3], dtype=int16)
+
+exponential:
+ array([1.0, 2.718281828459045, 7.38905609893065, 20.08553692318767], dtype=float64)
+
+array:
+ array([0.0, 1.0, 2.0, 3.0], dtype=float64)
+
+exponential:
+ array([1.0, 2.718281828459045, 7.38905609893065, 20.08553692318767], dtype=float64)
+
+array:
+ array([0.0+0.0j, 1.0+0.0j, 2.0+0.0j, 3.0+0.0j], dtype=complex)
+
+exponential:
+ array([1.0+0.0j, 2.718281828459045+0.0j, 7.38905609893065+0.0j, 20.08553692318767+0.0j], dtype=complex)
+
+array:
+ array([0.0+0.0j, 0.0+1.0j, 2.0+2.0j, 3.0-3.0j], dtype=complex)
+
+exponential:
+ array([1.0+0.0j, 0.5403023058681398+0.8414709848078965j, -3.074932320639359+6.71884969742825j, -19.88453084414699-2.834471132487004j], dtype=complex)

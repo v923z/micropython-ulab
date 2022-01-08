@@ -63,6 +63,8 @@ typedef struct _mp_obj_slice_t {
 void ndarray_set_value(char , void *, size_t , mp_obj_t );
 #endif
 
+void ndarray_set_complex_value(void *, size_t , mp_obj_t );
+
 #define NDARRAY_NUMERIC   0
 #define NDARRAY_BOOLEAN   1
 
@@ -77,6 +79,9 @@ enum NDARRAY_TYPE {
     NDARRAY_INT8 = 'b',
     NDARRAY_UINT16 = 'H',
     NDARRAY_INT16 = 'h',
+    #if ULAB_SUPPORTS_COMPLEX
+        NDARRAY_COMPLEX = 'c',
+    #endif
     NDARRAY_FLOAT = FLOAT_TYPECODE,
 };
 
@@ -138,7 +143,8 @@ ndarray_obj_t *ndarray_new_linear_array(size_t , uint8_t );
 ndarray_obj_t *ndarray_new_view(ndarray_obj_t *, uint8_t , size_t *, int32_t *, int32_t );
 bool ndarray_is_dense(ndarray_obj_t *);
 ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *);
-void ndarray_copy_array(ndarray_obj_t *, ndarray_obj_t *);
+ndarray_obj_t *ndarray_copy_view_convert_type(ndarray_obj_t *, uint8_t );
+void ndarray_copy_array(ndarray_obj_t *, ndarray_obj_t *, uint8_t );
 
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_array_constructor_obj);
 mp_obj_t ndarray_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_t *);
@@ -185,6 +191,11 @@ mp_obj_t ndarray_tobytes(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tobytes_obj);
 #endif
 
+#if NDARRAY_HAS_TOBYTES
+mp_obj_t ndarray_tolist(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tolist_obj);
+#endif
+
 #if NDARRAY_HAS_TRANSPOSE
 mp_obj_t ndarray_transpose(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
@@ -201,15 +212,15 @@ mp_int_t ndarray_get_buffer(mp_obj_t , mp_buffer_info_t *, mp_uint_t );
 ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
 
 
-#define BOOLEAN_ASSIGNMENT_LOOP(type_left, type_right, ndarray, iarray, istride, varray, vstride)\
+#define BOOLEAN_ASSIGNMENT_LOOP(type_left, type_right, ndarray, lstrides, iarray, istride, varray, vstride)\
     type_left *array = (type_left *)(ndarray)->array;\
     for(size_t i=0; i < (ndarray)->len; i++) {\
         if(*(iarray)) {\
             *array = (type_left)(*((type_right *)(varray)));\
+            (varray) += (vstride);\
         }\
-        array += (ndarray)->strides[ULAB_MAX_DIMS - 1] / (ndarray)->itemsize;\
+        array += (lstrides);\
         (iarray) += (istride);\
-        (varray) += (vstride);\
     } while(0)
 
 #if ULAB_HAS_FUNCTION_ITERATOR
