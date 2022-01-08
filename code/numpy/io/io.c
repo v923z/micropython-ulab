@@ -23,6 +23,10 @@
 
 
 static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
+    if(!mp_obj_is_str(fname) || !mp_obj_is_type(ndarray_, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("wrong input type"));
+    }
+
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(ndarray_);
     int error;
     char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
