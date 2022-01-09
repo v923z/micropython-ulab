@@ -95,8 +95,8 @@ static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
     if(ndarray->ndim == 1) {
         offset += sprintf(buffer+offset, "%ld,", ndarray->shape[ULAB_MAX_DIMS - 1]);
     } else {
-        for(uint8_t i = 0; i < ndarray->ndim - 1; i++) {
-            offset += sprintf(buffer+offset, "%ld, ", ndarray->shape[ULAB_MAX_DIMS - i - 1]);
+        for(uint8_t i = ndarray->ndim; i > 1; i--) {
+            offset += sprintf(buffer+offset, "%ld, ", ndarray->shape[ULAB_MAX_DIMS - i]);
         }
         offset += sprintf(buffer+offset, "%ld", ndarray->shape[ULAB_MAX_DIMS - 1]);
     }
@@ -113,7 +113,6 @@ static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
 
     uint8_t *array = (uint8_t *)ndarray->array;
 
-    // TODO: if flatiter is available, we can save the loop expansion
     #if ULAB_MAX_DIMS > 3
     size_t i = 0;
     do {
@@ -156,9 +155,7 @@ static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
     } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
     #endif
 
-    if(offset != 0) {
-        fout->write(npy, buffer, offset, &error);
-    }
+    fout->write(npy, buffer, offset, &error);
 
     m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
     return mp_const_none;
