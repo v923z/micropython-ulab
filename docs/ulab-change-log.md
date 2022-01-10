@@ -1,3 +1,9 @@
+Mon, 10 Jan 2022
+
+version 4.0.1
+
+    fix complex printout for long arrays
+
 Sat, 8 Jan 2022
 
 version 4.0.0
