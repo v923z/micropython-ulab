@@ -1,0 +1,3 @@
+
+from .multiarray import asarray
+
