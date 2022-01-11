@@ -156,6 +156,7 @@ static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
     #endif
 
     fout->write(npy, buffer, offset, &error);
+    fout->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
 
     m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
     return mp_const_none;
