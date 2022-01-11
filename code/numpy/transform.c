@@ -206,7 +206,7 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
     size_t *index_array = m_new(size_t, index_len);
 
     if(mp_obj_is_int(indices)) {
-        *index_array++ = MP_OBJ_SMALL_INT_VALUE(mp_obj_get_int(indices));
+        *index_array++ = (size_t)mp_obj_get_int(indices);
     } else {
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t item, iterable = mp_getiter(indices, &iter_buf);
@@ -243,7 +243,8 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
         result = ndarray_new_linear_array(ndarray->len - index_len, ndarray->dtype);
         memset(rstrides, 0, ndarray->ndim * sizeof(int32_t));
         rstrides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
-        rshape[ULAB_MAX_DIMS - 1] = 0;
+        memset(rshape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
+        // rshape[ULAB_MAX_DIMS - 1] = 0;
     } else {
         rshape[shift_ax] = shape[shift_ax] - index_len;
 
