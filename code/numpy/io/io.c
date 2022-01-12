@@ -93,12 +93,12 @@ static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
     offset += 37;
 
     if(ndarray->ndim == 1) {
-        offset += sprintf(buffer+offset, "%ld,", ndarray->shape[ULAB_MAX_DIMS - 1]);
+        offset += sprintf(buffer+offset, "%zu,", ndarray->shape[ULAB_MAX_DIMS - 1]);
     } else {
         for(uint8_t i = ndarray->ndim; i > 1; i--) {
-            offset += sprintf(buffer+offset, "%ld, ", ndarray->shape[ULAB_MAX_DIMS - i]);
+            offset += sprintf(buffer+offset, "%zu, ", ndarray->shape[ULAB_MAX_DIMS - i]);
         }
-        offset += sprintf(buffer+offset, "%ld", ndarray->shape[ULAB_MAX_DIMS - 1]);
+        offset += sprintf(buffer+offset, "%zu", ndarray->shape[ULAB_MAX_DIMS - 1]);
     }
     memcpy(buffer+offset, "), }", 4);
     offset += 4;
