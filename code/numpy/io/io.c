@@ -21,9 +21,215 @@
 
 #define ULAB_IO_BUFFER_SIZE         128
 
+#define ULAB_IO_LITTLE_ENDIAN       0
+#define ULAB_IO_BIG_ENDIAN          1
 
-static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
-    if(!mp_obj_is_str(fname) || !mp_obj_is_type(ndarray_, &ulab_ndarray_type)) {
+#if ULAB_NUMPY_HAS_LOAD
+static void io_read_(mp_obj_t npy, const mp_stream_p_t *fin, char *buffer, char *string, uint16_t len, int *error) {
+    size_t read = fin->read(npy, buffer, len, error);
+    bool fail = false;
+    if(read == len) {
+        if(string != NULL) {
+            if(memcmp(buffer, string, len) != 0) {
+                fail = true;
+            }
+        }
+    } else {
+        fail = true;
+    }
+    if(fail) {
+        fin->ioctl(npy, MP_STREAM_CLOSE, 0, error);
+        mp_raise_ValueError(translate("corrupted file"));
+    }
+}
+
+static mp_obj_t io_load(mp_obj_t file) {
+    if(!mp_obj_is_str(file)) {
+        mp_raise_TypeError(translate("wrong input type"));
+    }
+
+    int error;
+    char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
+
+    // test for endianness
+    uint16_t x = 1;
+    int8_t native_endianness = (x >> 8) == 1 ? ULAB_IO_BIG_ENDIAN : ULAB_IO_LITTLE_ENDIAN;
+
+    mp_obj_t open_args[2] = {
+        file,
+        MP_OBJ_NEW_QSTR(MP_QSTR_rb)
+    };
+
+    mp_obj_t npy = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    const mp_stream_p_t *fin = mp_get_stream(npy);
+
+    // read header
+    // magic string
+    io_read_(npy, fin, buffer, "\x93NUMPY", 6, &error);
+    // simply discard the version number
+    io_read_(npy, fin, buffer, NULL, 2, &error);
+    // header length, represented as a little endian uint16 (0x76, 0x00)
+    io_read_(npy, fin, buffer, NULL, 2, &error);
+
+    uint16_t header_length = buffer[1];
+    header_length <<= 8;
+    header_length += buffer[0];
+
+    // beginning of the dictionary describing the array
+    io_read_(npy, fin, buffer, "{'descr': '", 11, &error);
+    uint8_t dtype;
+
+    io_read_(npy, fin, buffer, NULL, 1, &error);
+    uint8_t endianness;
+    if(*buffer == '<') {
+        endianness = ULAB_IO_LITTLE_ENDIAN;
+    } else if(*buffer == '>') {
+        endianness = ULAB_IO_BIG_ENDIAN;
+    }
+
+    io_read_(npy, fin, buffer, NULL, 2, &error);
+    if(memcmp(buffer, "u1", 2) == 0) {
+        dtype = NDARRAY_UINT8;
+    } else if(memcmp(buffer, "i1", 2) == 0) {
+        dtype = NDARRAY_INT8;
+    } else if(memcmp(buffer, "u2", 2) == 0) {
+        dtype = NDARRAY_UINT16;
+    } else if(memcmp(buffer, "i2", 2) == 0) {
+        dtype = NDARRAY_INT16;
+    }
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    else if(memcmp(buffer, "f4", 2) == 0) {
+        dtype = NDARRAY_FLOAT;
+    }
+    #else
+    else if(memcmp(buffer, "f8", 2) == 0) {
+        dtype = NDARRAY_FLOAT;
+    }
+    #endif
+    #if ULAB_SUPPORTS_COMPLEX
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    else if(memcmp(buffer, "c4", 2) == 0) {
+        dtype = NDARRAY_COMPLEX;
+    }
+    #else
+    else if(memcmp(buffer, "c8", 2) == 0) {
+        dtype = NDARRAY_COMPLEX;
+    }
+    #endif
+    #endif /* ULAB_SUPPORT_COPMLEX */
+    else {
+        mp_raise_TypeError(translate("wrong dtype"));
+    }
+
+    io_read_(npy, fin, buffer, "', 'fortran_order': False, 'shape': (", 37, &error);
+
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
+
+    uint16_t bytes_to_read = MIN(ULAB_IO_BUFFER_SIZE, header_length - 51);
+    // bytes_to_read is 128 at most. This should be enough to contain a
+    // maximum of 4 size_t numbers plus the delimiters
+    io_read_(npy, fin, buffer, NULL, bytes_to_read, &error);
+    char *needle = buffer;
+    uint8_t ndim = 0;
+
+    // find out the number of dimensions by counting the commas in the string
+    while(1) {
+        if(*needle == ',') {
+            ndim++;
+            if(needle[1] == ')') {
+                break;
+            }
+        } else if((*needle == ')') && (ndim > 0)) {
+            ndim++;
+            break;
+        }
+        needle++;
+    }
+
+    needle = buffer;
+    for(uint8_t i = 0; i < ndim; i++) {
+        size_t number = 0;
+        // trivial number parsing here
+        while(1) {
+            if((*needle == ' ') || (*needle == '\t')) {
+                needle++;
+            }
+            if((*needle > 47) && (*needle < 58)) {
+                number = number * 10 + (*needle - 48);
+            } else if((*needle == ',') || (*needle == ')')) {
+                break;
+            }
+            else {
+                mp_raise_ValueError(translate("corrupted file"));
+            }
+            needle++;
+        }
+        needle++;
+        shape[ULAB_MAX_DIMS - ndim + i] = number;
+    }
+
+    // strip the rest of the header
+    if((bytes_to_read + 51) < header_length) {
+
+        io_read_(npy, fin, buffer, NULL, 1, &error);
+    }
+
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(ndim, shape, dtype);
+    char *array = (char *)ndarray->array;
+
+    size_t read = fin->read(npy, array, ndarray->len * ndarray->itemsize, &error);
+    if(read != ndarray->len * ndarray->itemsize) {
+        mp_raise_ValueError(translate("corrupted file"));
+    }
+
+    fin->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
+    m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
+
+    // swap the bytes, if necessary
+    if((native_endianness != endianness) && (dtype != NDARRAY_UINT8) && (dtype != NDARRAY_INT8)) {
+        uint8_t sz = ndarray->itemsize;
+        char *tmpbuff = NULL;
+
+        #if ULAB_SUPPORTS_COMPLEX
+        if(dtype == NDARRAY_COMPLEX) {
+            // work with the floating point real and imaginary parts
+            sz /= 2;
+            tmpbuff = m_new(char, sz);
+            for(size_t i = 0; i < ndarray->len; i++) {
+                for(uint8_t k = 0; k < 2; k++) {
+                    tmpbuff += sz;
+                    for(uint8_t j = 0; j < sz; j++) {
+                        memcpy(--tmpbuff, array++, 1);
+                    }
+                    memcpy(array-sz, tmpbuff, sz);
+                }
+            }
+        } else {
+        #endif
+            tmpbuff = m_new(char, sz);
+            for(size_t i = 0; i < ndarray->len; i++) {
+                tmpbuff += sz;
+                for(uint8_t j = 0; j < sz; j++) {
+                    memcpy(--tmpbuff, array++, 1);
+                }
+                memcpy(array-sz, tmpbuff, sz);
+            }
+        #if ULAB_SUPPORTS_COMPLEX
+        }
+        #endif
+        m_del(char, tmpbuff, sz);
+    }
+
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(io_load_obj, io_load);
+#endif /* ULAB_NUMPY_HAS_LOAD */
+
+#if ULAB_NUMPY_HAS_SAVE
+static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
+    if(!mp_obj_is_str(file) || !mp_obj_is_type(ndarray_, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("wrong input type"));
     }
 
@@ -34,10 +240,10 @@ static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
 
     // test for endianness
     uint16_t x = 1;
-    int8_t endian = (x >> 8) == 1 ? '>' : '<';
+    int8_t native_endiannes = (x >> 8) == 1 ? '>' : '<';
 
     mp_obj_t open_args[2] = {
-        fname,
+        file,
         MP_OBJ_NEW_QSTR(MP_QSTR_wb)
     };
 
@@ -50,7 +256,7 @@ static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
     memcpy(buffer, "\x93NUMPY\x01\x00\x76\x00{'descr': '", 21);
     offset += 21;
 
-    buffer[offset] = endian;
+    buffer[offset] = native_endiannes;
     if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
         // for single-byte data, the endianness doesn't matter
         buffer[offset] = '|';
@@ -163,4 +369,4 @@ static mp_obj_t io_save(mp_obj_t fname, mp_obj_t ndarray_) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(io_save_obj, io_save);
-
+#endif /* ULAB_NUMPY_HAS_SAVE */

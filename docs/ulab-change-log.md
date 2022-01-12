@@ -1,8 +1,8 @@
-Sat, 8 Jan 2022
+Wed, 12 Jan 2022
 
-    version 4.1.0
+    version 4.2.0
 
-    implement numpy.save
+    implement numpy.save, numpy.load
 
 Fri, 3 Dec 2021
 
