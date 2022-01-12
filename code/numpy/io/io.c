@@ -21,8 +21,9 @@
 
 #define ULAB_IO_BUFFER_SIZE         128
 
-#define ULAB_IO_LITTLE_ENDIAN       0
-#define ULAB_IO_BIG_ENDIAN          1
+#define ULAB_IO_NULL_ENDIAN         0
+#define ULAB_IO_LITTLE_ENDIAN       1
+#define ULAB_IO_BIG_ENDIAN          2
 
 #if ULAB_NUMPY_HAS_LOAD
 static void io_read_(mp_obj_t npy, const mp_stream_p_t *fin, char *buffer, char *string, uint16_t len, int *error) {
@@ -80,7 +81,7 @@ static mp_obj_t io_load(mp_obj_t file) {
     uint8_t dtype;
 
     io_read_(npy, fin, buffer, NULL, 1, &error);
-    uint8_t endianness;
+    uint8_t endianness = ULAB_IO_NULL_ENDIAN;
     if(*buffer == '<') {
         endianness = ULAB_IO_LITTLE_ENDIAN;
     } else if(*buffer == '>') {
@@ -171,8 +172,7 @@ static mp_obj_t io_load(mp_obj_t file) {
 
     // strip the rest of the header
     if((bytes_to_read + 51) < header_length) {
-
-        io_read_(npy, fin, buffer, NULL, 1, &error);
+        io_read_(npy, fin, buffer, NULL, header_length - (bytes_to_read + 51), &error);
     }
 
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(ndim, shape, dtype);
