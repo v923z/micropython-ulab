@@ -462,6 +462,10 @@
 #define ULAB_NUMPY_HAS_INTERP           (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_LOAD
+#define ULAB_NUMPY_HAS_LOAD             (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_MEAN
 #define ULAB_NUMPY_HAS_MEAN             (1)
 #endif
