@@ -1,8 +1,14 @@
-Mon, 10 Jan 2022
+Wed, 12 Jan 2022
 
-version 4.0.1
+version 4.1.1
 
     fix complex printout for long arrays
+
+Wed, 12 Jan 2022
+
+version 4.1.0
+
+    add numpy.delete
 
 Sat, 8 Jan 2022
 
