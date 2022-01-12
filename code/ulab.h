@@ -438,6 +438,10 @@
 #define ULAB_NUMPY_HAS_CROSS            (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_DELETE
+#define ULAB_NUMPY_HAS_DELETE           (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_DIFF
 #define ULAB_NUMPY_HAS_DIFF             (1)
 #endif

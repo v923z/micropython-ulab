@@ -428,7 +428,7 @@ static void ndarray_print_element(const mp_print_t *print, ndarray_obj_t *ndarra
     #endif
 }
 
-static void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, uint8_t *array, size_t stride, size_t n) {
+static void ndarray_print_row(const mp_print_t *print, ndarray_obj_t *ndarray, uint8_t *array, int32_t stride, size_t n) {
     if(n == 0) {
         return;
     }
@@ -441,7 +441,7 @@ static void ndarray_print_row(const mp_print_t *print, ndarray_obj_t * ndarray, 
             ndarray_print_element(print, ndarray, array);
         }
     } else {
-        mp_obj_print_helper(print, ndarray_get_item(ndarray, array), PRINT_REPR);
+        ndarray_print_element(print, ndarray, array);
         array += stride;
         for(size_t i=1; i < ndarray_print_edgeitems; i++, array += stride) {
             mp_print_str(print, ", ");

@@ -153,6 +153,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_CONCATENATE
         { MP_ROM_QSTR(MP_QSTR_concatenate), (mp_obj_t)&create_concatenate_obj },
     #endif
+    #if ULAB_NUMPY_HAS_DELETE
+        { MP_ROM_QSTR(MP_QSTR_delete), (mp_obj_t)&transform_delete_obj },
+    #endif
     #if ULAB_NUMPY_HAS_DIAG
         #if ULAB_MAX_DIMS > 1
             { MP_ROM_QSTR(MP_QSTR_diag), (mp_obj_t)&create_diag_obj },
