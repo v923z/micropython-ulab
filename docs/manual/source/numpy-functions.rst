@@ -23,24 +23,26 @@ the firmware was compiled with complex support.
 15. `numpy.interp <#interp>`__
 16. `numpy.isfinite <#isfinite>`__
 17. `numpy.isinf <#isinf>`__
-18. `numpy.max <#max>`__
-19. `numpy.maximum <#maximum>`__
-20. `numpy.mean <#mean>`__
-21. `numpy.median <#median>`__
-22. `numpy.min <#min>`__
-23. `numpy.minimum <#minimum>`__
-24. `numpy.not_equal <#equal>`__
-25. `numpy.polyfit <#polyfit>`__
-26. `numpy.polyval <#polyval>`__
-27. `numpy.real\* <#real>`__
-28. `numpy.roll <#roll>`__
-29. `numpy.sort <#sort>`__
-30. `numpy.sort_complex\* <#sort_complex>`__
-31. `numpy.std <#std>`__
-32. `numpy.sum <#sum>`__
-33. `numpy.trace <#trace>`__
-34. `numpy.trapz <#trapz>`__
-35. `numpy.where <#where>`__
+18. `numpy.load <#load>`__
+19. `numpy.max <#max>`__
+20. `numpy.maximum <#maximum>`__
+21. `numpy.mean <#mean>`__
+22. `numpy.median <#median>`__
+23. `numpy.min <#min>`__
+24. `numpy.minimum <#minimum>`__
+25. `numpy.not_equal <#equal>`__
+26. `numpy.polyfit <#polyfit>`__
+27. `numpy.polyval <#polyval>`__
+28. `numpy.real\* <#real>`__
+29. `numpy.roll <#roll>`__
+30. `numpy.save <#save>`__
+31. `numpy.sort <#sort>`__
+32. `numpy.sort_complex\* <#sort_complex>`__
+33. `numpy.std <#std>`__
+34. `numpy.sum <#sum>`__
+35. `numpy.trace <#trace>`__
+36. `numpy.trapz <#trapz>`__
+37. `numpy.where <#where>`__
 
 all
 ---
@@ -871,6 +873,39 @@ positions, where the input is infinite. Integer types return the
     
 
 
+load
+----
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.load.html
+
+The function reads data from a file in ``numpy``\ ’s
+`platform-independent
+format <https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html#module-numpy.lib.format>`__,
+and returns the generated array. If the endianness of the data in the
+file and the microcontroller differ, the bytes are automatically
+swapped.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.load('a.npy')
+    print(a)
+
+.. parsed-literal::
+
+    array([[0.0, 1.0, 2.0, 3.0, 4.0],
+           [5.0, 6.0, 7.0, 8.0, 9.0],
+           [10.0, 11.0, 12.0, 13.0, 14.0],
+           [15.0, 16.0, 17.0, 18.0, 19.0],
+           [20.0, 21.0, 22.0, 23.0, 24.0]], dtype=float64)
+    
+    
+
+
 mean
 ----
 
@@ -1315,6 +1350,34 @@ Vertical rolls require two internal copies of single columns.
      array([[11.0, 0.0, 1.0, 2.0],
            [3.0, 4.0, 5.0, 6.0],
            [7.0, 8.0, 9.0, 10.0]], dtype=float64)
+    
+    
+
+
+save
+----
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.save.html
+
+With the help of this function, numerical array can be save in
+``numpy``\ ’s `platform-independent
+format <https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html#module-numpy.lib.format>`__.
+
+The function takes two positional arguments, the name of the output
+file, and the array.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(25)).reshape((5, 5))
+    np.save('a.npy', a)
+
+.. parsed-literal::
+
     
     
 
