@@ -206,7 +206,15 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
     size_t *index_array = m_new(size_t, index_len);
 
     if(mp_obj_is_int(indices)) {
-        *index_array++ = (size_t)mp_obj_get_int(indices);
+        ssize_t value = (ssize_t)mp_obj_get_int(indices);
+        if(value < 0) {
+            value += axis_len;
+        }
+        if((value < 0) || (value > (ssize_t)axis_len)) {
+            mp_raise_ValueError(translate("index is out of bounds"));
+        } else {
+            *index_array++ = (size_t)value;
+        }
     } else {
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t item, iterable = mp_getiter(indices, &iter_buf);
