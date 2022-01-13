@@ -1,8 +1,9 @@
 
 from .overrides import set_module
 from .multiarray import asarray
+from ulab import numpy as np
+from ... import numpy
 
-@set_module('numpy')
 def prod(arr):
     result = 1
     for x in arr:
@@ -48,3 +49,27 @@ def size(a, axis=None):
             return a.shape[axis]
         except AttributeError:
             return asarray(a).shape[axis]
+
+def nonzero(a):
+    x = a.shape
+    row = x[0]
+    if len(x) == 1:
+       column = 0
+    else:
+       column = x[1]
+
+    nonzero_row = np.array([],dtype=np.float)
+    nonzero_col = np.array([],dtype=np.float)
+
+    if column == 0:
+        for i in range(0,row):
+           if a[i] != 0:
+             nonzero_row = numpy.append(nonzero_row,i)
+        return (nonzero_row,)
+
+    for i in range(0,row):
+        for j in range(0,column):
+            if a[i,j] != 0:
+                nonzero_row = numpy.append(nonzero_row,i)
+                nonzero_col = numpy.append(nonzero_col,j)
+    return (nonzero_row,nonzero_col)

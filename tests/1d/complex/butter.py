@@ -1,10 +1,10 @@
 """Filter design."""
 import math
+
 from ulab import numpy
 from ulab import numpy as np
 from ulab import scipy as spy
 
-from ...numpy import (atleast_1d, poly, asarray, prod, size, append, nonzero, zeros_like, delete, isreal)
 
 def butter(N, Wn, btype='low', analog=False, output='ba', fs=None):
     """
@@ -301,6 +301,7 @@ def iirfilter(N, Wn, rp=None, rs=None, btype='band', analog=False,
 
     # transform to lowpass, bandpass, highpass, or bandstop
     if btype in ('lowpass', 'highpass'):
+        #if numpy.size(Wn) != 1:
         if size(Wn) != 1:
             raise ValueError('Must specify a single critical frequency Wn for lowpass or highpass filter')
 
@@ -322,9 +323,15 @@ def iirfilter(N, Wn, rp=None, rs=None, btype='band', analog=False,
             z, p, k = lp2bs_zpk(z, p, k, wo=wo, bw=bw)
     else:
         raise NotImplementedError("'%s' not implemented in iirfilter." % btype)
+
+    print(z,p,k)
+    print('\n')
     # Find discrete equivalent if necessary
     if not analog:
         z, p, k = bilinear_zpk(z, p, k, fs=fs)
+
+    print(z,p,k)
+    print('\n')
 
     # Transform to proper out type (pole-zero, state-space, numer-denom)
     if output == 'zpk':
@@ -355,6 +362,9 @@ def zpk2tf(z, p, k):
         Denominator polynomial coefficients.
 
     """
+    print('\n')
+    print('source: ',z,p,k)
+    print('\n')
     z = atleast_1d(z)
     k = atleast_1d(k)
     if len(z.shape) > 1:
@@ -392,138 +402,6 @@ def zpk2tf(z, p, k):
                 a = a.real.copy()
 
     return b, a
-
-def _to_tuple(a):
-    result = []
-    for x in a:
-       result.append([x.real, x.imag])
-    return result
-
-def _to_complex(a):
-    result = np.array([], dtype=np.complex)
-    for x in a:
-       t = np.array([complex(x[0] + x[1] * 1j)], dtype=np.complex)
-       result = np.concatenate((result, t), axis=0)
-    return result
-
-
-def lexsort(z):
-   z = _to_tuple(z)
-   return sorted(range(len(z)), key=lambda i: (z[i][0],abs(z[i][1])))
-
-def do_lexsort(z):
-  # z = z[np.lexsort((abs(z.imag), z.real))]
-   z = _to_tuple(z)
-   z = sorted(z,key=lambda x:(x[0], abs(x[1])))
-   return _to_complex(z)
-
-def _cplxreal(z, tol=None):
-    """
-    Split into complex and real parts, combining conjugate pairs.
-    The 1-D input vector `z` is split up into its complex (`zc`) and real (`zr`)
-    elements. Every complex element must be part of a complex-conjugate pair,
-    which are combined into a single number (with positive imaginary part) in
-    the output. Two complex numbers are considered a conjugate pair if their
-    real and imaginary parts differ in magnitude by less than ``tol * abs(z)``.
-    Parameters
-    ----------
-    z : array_like
-        Vector of complex numbers to be sorted and split
-    tol : float, optional
-        Relative tolerance for testing realness and conjugate equality.
-        Default is ``100 * spacing(1)`` of `z`'s data type (i.e., 2e-14 for
-        float64)
-    Returns
-    -------
-    zc : ndarray
-        Complex elements of `z`, with each pair represented by a single value
-        having positive imaginary part, sorted first by real part, and then
-        by magnitude of imaginary part. The pairs are averaged when combined
-        to reduce error.
-    zr : ndarray
-        Real elements of `z` (those having imaginary part less than
-        `tol` times their magnitude), sorted by value.
-    Raises
-    ------
-    ValueError
-        If there are any complex numbers in `z` for which a conjugate
-        cannot be found.
-    See Also
-    --------
-    _cplxpair
-    Examples
-    --------
-    >>> a = [4, 3, 1, 2-2j, 2+2j, 2-1j, 2+1j, 2-1j, 2+1j, 1+1j, 1-1j]
-    >>> zc, zr = _cplxreal(a)
-    >>> print(zc)
-    [ 1.+1.j  2.+1.j  2.+1.j  2.+2.j]
-    >>> print(zr)
-    [ 1.  3.  4.]
-    """
-
-    z = atleast_1d(z)
-    if z.size == 0:
-        return z, z
-    elif len(np.ndarray(z, dtype=np.complex).shape) != 1:
-        raise ValueError('_cplxreal only accepts 1-D input')
-
-    if tol is None:
-        # Get tolerance from dtype of input
-        tol = 100 * abs(7./3 - 4./3 - 1) #np.finfo((1.0 * z).dtype).eps
-
-    # Sort by real part, magnitude of imaginary part (speed up further sorting)
-    #z = z[np.lexsort((abs(z.imag), z.real))]
-    #z = _to_tuple(z)
-    #z = sorted(z,key=lambda x:(x[0], abs(x[1])))
-    #z = _to_complex(z)
-    z = do_lexsort(z)
-    # Split reals from conjugate pairs
-    real_indices = abs(z.imag) <= tol * abs(z)
-    zr = z[real_indices].real
-
-    if len(zr) == len(z):
-        # Input is entirely real
-        return np.array([],dtype=np.float), zr
-
-    # Split positive and negative halves of conjugates
-    inv_real_indices = np.array([not elem for elem in real_indices], dtype=np.bool)
-    z = z[inv_real_indices]
-    zp = z[z.imag > 0]
-    zn = z[z.imag < 0]
-
-    if len(zp) != len(zn):
-        raise ValueError('Array contains complex value with no matching '
-                         'conjugate.')
-
-    # Find runs of (approximately) the same real part
-    same_real = np.diff(zp.real) <= tol * abs(zp[:-1])
-    same_real = np.array(same_real * 1, dtype=np.uint8)
-    a = np.array([0], dtype=np.uint8)
-    b = np.array([0], dtype=np.uint8)
-    x = np.concatenate((a, same_real, b))
-    diffs = numpy.diff(np.array(x, dtype=np.float))
-    start = np.array((diffs > 0) * 1, dtype=np.uint16)
-    stop = np.array((diffs < 0) * 1, dtype=np.uint16)
-    run_starts = nonzero(start)[0]
-    run_stops = nonzero(stop)[0]
-
-    # Sort each run by their imaginary parts
-    for i in range(len(run_starts)):
-        start = int(run_starts[i])
-        stop = int(run_stops[i]) + 1
-        for chunk in (zp[start:stop], zn[start:stop]):
-            a = 1
-
-
-    # Check that negatives match positives
-    if any(abs(zp - np.conjugate(zn)) > tol * abs(zn)):
-        raise ValueError('Array contains complex value with no matching '
-                         'conjugate.')
-
-    # Average out numerical inaccuracy in real vs imag parts of pairs
-    zc = (zp + np.conjugate(zn)) / 2
-
-    return zc, zr
 
 def zpk2sos(z, p, k, pairing='nearest'):
     """
@@ -701,10 +579,8 @@ def zpk2sos(z, p, k, pairing='nearest'):
         return array([[k, 0., 0., 1., 0., 0.]])
 
     # ensure we have the same number of poles and zeros, and make copies
-    if len(z) != len(p):
-      p = np.concatenate((p, np.zeros(max(len(z) - len(p), 0), dtype=np.complex)))
-      z = np.concatenate((z, np.zeros(max(len(p) - len(z), 0), dtype=np.complex)))
-
+    p = np.concatenate((p, np.zeros(max(len(z) - len(p), 0))))
+    z = np.concatenate((z, np.zeros(max(len(p) - len(z), 0))))
     n_sections = (max(len(p), len(z)) + 1) // 2
     sos = np.zeros((n_sections, 6))
 
@@ -713,84 +589,78 @@ def zpk2sos(z, p, k, pairing='nearest'):
         z = np.concatenate((z, [0.]))
     assert len(p) == len(z)
 
-
     # Ensure we have complex conjugate pairs
     # (note that _cplxreal only gives us one element of each complex pair):
-    cplx, real = _cplxreal(p)
-    p = cplx
-    cplx, real = _cplxreal(z)
-    z = real
+    z = np.concatenate(_cplxreal(z))
+    p = np.concatenate(_cplxreal(p))
 
-    p_sos = np.zeros((n_sections, 2))
-    z_sos = zeros_like(p_sos)
-
+    p_sos = np.zeros((n_sections, 2), np.complex128)
+    z_sos = np.zeros_like(p_sos)
     for si in range(n_sections):
         # Select the next "worst" pole
-        p1_idx = np.argmin(abs(1 - abs(p)))
+        p1_idx = np.argmin(np.abs(1 - np.abs(p)))
         p1 = p[p1_idx]
-        p = delete(p, p1_idx)
+        p = np.delete(p, p1_idx)
+
         # Pair that pole with a zero
-        if isreal(p1) and np.sum(isreal(p)) == 0:
+
+        if np.isreal(p1) and np.isreal(p).sum() == 0:
             # Special case to set a first-order section
             z1_idx = _nearest_real_complex_idx(z, p1, 'real')
             z1 = z[z1_idx]
-            z = delete(z, z1_idx)
+            z = np.delete(z, z1_idx)
             p2 = z2 = 0
         else:
-            if not isreal(p1) and np.sum(isreal(z)) == 1:
+            if not np.isreal(p1) and np.isreal(z).sum() == 1:
                 # Special case to ensure we choose a complex zero to pair
                 # with so later (setting up a first-order section)
                 z1_idx = _nearest_real_complex_idx(z, p1, 'complex')
-                assert not isreal(z[z1_idx])
+                assert not np.isreal(z[z1_idx])
             else:
                 # Pair the pole with the closest zero (real or complex)
-                z1_idx = np.argmin(abs(p1 - z))
+                z1_idx = np.argmin(np.abs(p1 - z))
             z1 = z[z1_idx]
-            z = delete(z, z1_idx)
+            z = np.delete(z, z1_idx)
+
             # Now that we have p1 and z1, figure out what p2 and z2 need to be
-            if not isreal(p1):
-                if not isreal(z1):  # complex pole, complex zero
-                    p2 = np.conjugate(p1)
-                    z2 = np.conjugate(z1)
+            if not np.isreal(p1):
+                if not np.isreal(z1):  # complex pole, complex zero
+                    p2 = p1.conj()
+                    z2 = z1.conj()
                 else:  # complex pole, real zero
-                    p2 = np.conjugate(p1) #p1.conj()
+                    p2 = p1.conj()
                     z2_idx = _nearest_real_complex_idx(z, p1, 'real')
                     z2 = z[z2_idx]
-                    assert isreal(z2)
-                    z = delete(z, z2_idx)
+                    assert np.isreal(z2)
+                    z = np.delete(z, z2_idx)
             else:
-                if not isreal(z1):  # real pole, complex zero
-                    z2 = np.conjugate(z1)
+                if not np.isreal(z1):  # real pole, complex zero
+                    z2 = z1.conj()
                     p2_idx = _nearest_real_complex_idx(p, z1, 'real')
                     p2 = p[p2_idx]
-                    assert isreal(p2)
+                    assert np.isreal(p2)
                 else:  # real pole, real zero
                     # pick the next "worst" pole to use
                     idx = np.nonzero(np.isreal(p))[0]
                     assert len(idx) > 0
-                    p2_idx = idx[np.argmin(np.abs(abs(p[idx]) - 1))]
+                    p2_idx = idx[np.argmin(np.abs(np.abs(p[idx]) - 1))]
                     p2 = p[p2_idx]
                     # find a real zero to match the added pole
-                    assert isreal(p2)
+                    assert np.isreal(p2)
                     z2_idx = _nearest_real_complex_idx(z, p2, 'real')
                     z2 = z[z2_idx]
-                    assert isreal(z2)
-                    z = delete(z, z2_idx)
-
-                p = delete(p, p2_idx)
-
-        p_sos = np.array(p_sos, dtype=np.complex)
-        p_sos[si] = np.array([p1, p2], dtype=np.complex)
-        z_sos[si] = np.array([z1, z2], dtype=np.float)
-
+                    assert np.isreal(z2)
+                    z = np.delete(z, z2_idx)
+                p = np.delete(p, p2_idx)
+        p_sos[si] = [p1, p2]
+        z_sos[si] = [z1, z2]
     assert len(p) == len(z) == 0  # we've consumed all poles and zeros
     del p, z
 
     # Construct the system, reversing order so the "worst" are last
-    p_sos = p_sos[::-1].reshape((n_sections, 2))
-    z_sos = z_sos[::-1].reshape((n_sections, 2))
-
-    gains = np.ones(n_sections, dtype=np.float)
+    p_sos = np.reshape(p_sos[::-1], (n_sections, 2))
+    z_sos = np.reshape(z_sos[::-1], (n_sections, 2))
+    gains = np.ones(n_sections, np.array(k).dtype)
     gains[0] = k
     for si in range(n_sections):
         x = zpk2tf(z_sos[si], p_sos[si], gains[si])
@@ -847,6 +717,8 @@ def lp2bp_zpk(z, p, k, wo=1.0, bw=1.0):
     .. versionadded:: 1.1.0
 
     """
+
+
     z = atleast_1d(z)
     p = atleast_1d(p)
     wo = float(wo)
@@ -1069,7 +941,6 @@ def bilinear_zpk(z, p, k, fs):
 
     # Any zeros that were at infinity get moved to the Nyquist frequency
     a = -np.ones(degree) + 0j
-
     z_z = append(z_z, a)
 
     # Compensate for gain change
@@ -1080,16 +951,11 @@ def bilinear_zpk(z, p, k, fs):
 def _nearest_real_complex_idx(fro, to, which):
     """Get the next closest real or complex element based on distance"""
     assert which in ('real', 'complex')
-    a = np.array(abs(fro - to), dtype=np.float)
-    order = np.argsort(a, axis=0)   # Differs from numpy  TODO
-    fo = [fro[i] for i in order]
-    sorted_array_list = [fro[i] for i in order]
-    mask = isreal(np.array(sorted_array_list, dtype=np.float))
+    order = np.argsort(np.abs(fro - to))
+    mask = np.isreal(fro[order])
     if which == 'complex':
         mask = ~mask
-    mask = np.array([mask], dtype=np.uint16)
-    nzm = np.array(nonzero(mask)[0],dtype=np.int8)
-    return order[nzm[0]]
+    return order[np.nonzero(mask)[0][0]]
 
 def _relative_degree(z, p):
     """
@@ -1452,6 +1318,26 @@ def fft(x):
     odd =  fft(x[1::2])
     return [even[m] + math.e**(-2j*math.pi*m/n)*odd[m] for m in range(n//2)] + [even[m] - math.e**(-2j*math.pi*m/n)*odd[m] for m in range(n//2)]
 
+def size(data):
+    if isinstance(data, int):
+        return 1
+    if isinstance(data, list):
+        return len(data)
+
+def append(arr, values, axis=None):
+    arr = asarray(arr)
+    if axis is None:
+        if len(arr.shape) != 1:
+            arr.flatten()
+        values.flatten()
+        axis = len(arr.shape)-1
+    return np.concatenate((arr, values), axis=axis)
+
+def prod(arr):
+    result = 1
+    for x in arr:
+        result = result * x
+    return result
 
 filter_dict = {'butter': [buttap, buttord],
                'butterworth': [buttap, buttord]
@@ -1478,9 +1364,73 @@ band_dict = {'band': 'bandpass',
              'hp': 'highpass',
              }
 
+def asarray(a, dtype=None):
+    if isinstance(a,(np.ndarray)):
+        return a
+    return a
+
+def atleast_1d(*arys):
+    res = []
+    for ary in arys:
+        ary = asarray(ary)
+        if not isinstance(ary,(np.ndarray)):
+            ary = np.array([ary])
+            result = ary.reshape((1,))
+        else:
+            result = ary
+        res.append(result)
+    if len(res) == 1:
+        return res[0]
+    else:
+        return res
+
+def poly(seq_of_zeros):
+    seq_of_zeros = atleast_1d(seq_of_zeros)
+    sh = seq_of_zeros.shape
+
+    if len(sh) == 2 and sh[0] == sh[1] and sh[0] != 0:
+        seq_of_zeros = eigvals(seq_of_zeros)
+    elif len(sh) == 1:
+        dt = seq_of_zeros.dtype
+        # Let object arrays slip through, e.g. for arbitrary precision
+        if dt != object:
+            seq_of_zeros = seq_of_zeros #seq_of_zeros.astype(mintypecode(dt.char))
+    else:
+        raise ValueError("input must be 1d or non-empty square 2d array.")
+
+    if len(seq_of_zeros) == 0:
+        return 1.0
+    dt = seq_of_zeros.dtype
+    a = np.ones((1,), dtype=dt)
+
+    for k in range(len(seq_of_zeros)):
+        a = np.convolve(a, np.array([1, -seq_of_zeros[k]], dtype=dt))
+
+    if a.dtype == np.complex:
+        # if complex roots are all complex conjugates, the roots are real.
+        roots = asarray(seq_of_zeros, complex)
+        print('r',roots)
+        p = np.sort_complex(roots)
+        c = np.real(p) - np.imag(p) * 1j
+        q = np.sort_complex(c)
+        print('p',p)
+        print('q',q)
+        if np.all(p == q):
+            a = a.real.copy()
+    return a
 
 
+nyquistRate = 48000 * 2
+centerFrequency_Hz = 480.0
+lowerCutoffFrequency_Hz = centerFrequency_Hz/math.sqrt(2)
+upperCutoffFrequenc_Hz = centerFrequency_Hz*math.sqrt(2)
+wn = np.array([ lowerCutoffFrequency_Hz, upperCutoffFrequenc_Hz])/nyquistRate
 
+z = np.array([1.+0.j, 1.+0.j,  1.+0.j,  1.+0.j, -1.+0.j, -1.+0.j, -1.+0.j, -1.+0.j], dtype=np.complex)
+p = np.array( [0.99847722-0.01125341j, 0.99552224-0.01283305j, 0.99552224+0.01283305j,
+     0.99847722+0.01125341j, 0.99698268+0.02147022j, 0.99401395+0.01703982j,
+     0.99401395-0.01703982j, 0.99698268-0.02147022j], dtype=np.complex)
+k = 9.37593869465358e-10
 
-
-
+#print(zpk2tf(z,p,k))
+print('butter: ', butter(N=4, Wn=wn, btype='bandpass', analog=False, output='ba'))
