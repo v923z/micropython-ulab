@@ -15,32 +15,33 @@ the firmware was compiled with complex support.
 7.  `numpy.compress\* <#compress>`__
 8.  `numpy.conjugate\* <#conjugate>`__
 9.  `numpy.convolve\* <#convolve>`__
-10. `numpy.diff <#diff>`__
-11. `numpy.dot <#dot>`__
-12. `numpy.equal <#equal>`__
-13. `numpy.flip\* <#flip>`__
-14. `numpy.imag\* <#imag>`__
-15. `numpy.interp <#interp>`__
-16. `numpy.isfinite <#isfinite>`__
-17. `numpy.isinf <#isinf>`__
-18. `numpy.max <#max>`__
-19. `numpy.maximum <#maximum>`__
-20. `numpy.mean <#mean>`__
-21. `numpy.median <#median>`__
-22. `numpy.min <#min>`__
-23. `numpy.minimum <#minimum>`__
-24. `numpy.not_equal <#equal>`__
-25. `numpy.polyfit <#polyfit>`__
-26. `numpy.polyval <#polyval>`__
-27. `numpy.real\* <#real>`__
-28. `numpy.roll <#roll>`__
-29. `numpy.sort <#sort>`__
-30. `numpy.sort_complex\* <#sort_complex>`__
-31. `numpy.std <#std>`__
-32. `numpy.sum <#sum>`__
-33. `numpy.trace <#trace>`__
-34. `numpy.trapz <#trapz>`__
-35. `numpy.where <#where>`__
+10. `numpy.delete <#delete>`__
+11. `numpy.diff <#diff>`__
+12. `numpy.dot <#dot>`__
+13. `numpy.equal <#equal>`__
+14. `numpy.flip\* <#flip>`__
+15. `numpy.imag\* <#imag>`__
+16. `numpy.interp <#interp>`__
+17. `numpy.isfinite <#isfinite>`__
+18. `numpy.isinf <#isinf>`__
+19. `numpy.max <#max>`__
+20. `numpy.maximum <#maximum>`__
+21. `numpy.mean <#mean>`__
+22. `numpy.median <#median>`__
+23. `numpy.min <#min>`__
+24. `numpy.minimum <#minimum>`__
+25. `numpy.not_equal <#equal>`__
+26. `numpy.polyfit <#polyfit>`__
+27. `numpy.polyval <#polyval>`__
+28. `numpy.real\* <#real>`__
+29. `numpy.roll <#roll>`__
+30. `numpy.sort <#sort>`__
+31. `numpy.sort_complex\* <#sort_complex>`__
+32. `numpy.std <#std>`__
+33. `numpy.sum <#sum>`__
+34. `numpy.trace <#trace>`__
+35. `numpy.trapz <#trapz>`__
+36. `numpy.where <#where>`__
 
 all
 ---
@@ -408,6 +409,67 @@ accept complex arrays.
 .. parsed-literal::
 
     array([1.0, 12.0, 123.0, 1230.0, 2300.0, 3000.0], dtype=float64)
+    
+    
+
+
+delete
+------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.delete.html
+
+The function returns a new array with sub-arrays along an axis deleted.
+It takes two positional arguments, the array, and the indices, which
+will be removed, as well as the ``axis`` keyword argument with a default
+value of ``None``. If the ``axis`` is ``None``, the will be flattened
+first.
+
+The second positional argument can be a scalar, or any ``micropython``
+iterable. Since ``range`` can also be passed in place of the indices,
+slicing can be emulated. If the indices are negative, the elements are
+counted from the end of the axis.
+
+Note that the function creates a copy of the indices first, because it
+is not guaranteed that the indices are ordered. Keep this in mind, when
+working with large arrays.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(25), dtype=np.uint8).reshape((5,5))
+    print('a:\n', a)
+    print('\naxis = 0\n', np.delete(a, 2, axis=0))
+    print('\naxis = 1\n', np.delete(a, -2, axis=1))
+    print('\naxis = None\n', np.delete(a, [0, 1, 2, 22]))
+
+.. parsed-literal::
+
+    a:
+     array([[0, 1, 2, 3, 4],
+           [5, 6, 7, 8, 9],
+           [10, 11, 12, 13, 14],
+           [15, 16, 17, 18, 19],
+           [20, 21, 22, 23, 24]], dtype=uint8)
+    
+    axis = 0
+     array([[0, 1, 2, 3, 4],
+           [5, 6, 7, 8, 9],
+           [15, 16, 17, 18, 19],
+           [20, 21, 22, 23, 24]], dtype=uint8)
+    
+    axis = 1
+     array([[0, 1, 2, 4],
+           [5, 6, 7, 9],
+           [10, 11, 12, 14],
+           [15, 16, 17, 19],
+           [20, 21, 22, 24]], dtype=uint8)
+    
+    axis = None
+     array([3, 4, 5, ..., 21, 23, 24], dtype=uint8)
     
     
 

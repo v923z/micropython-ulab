@@ -21,9 +21,9 @@
 
 #include "../ulab.h"
 #include "../ulab_tools.h"
-#include "transform.h"
 
 MP_DECLARE_CONST_FUN_OBJ_KW(transform_compress_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(transform_delete_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(transform_dot_obj);
 
 #endif
