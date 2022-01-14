@@ -4,7 +4,7 @@ from ulab import numpy
 from ulab import numpy as np
 from ulab import scipy as spy
 
-from ...numpy import (atleast_1d, poly, asarray, prod, size, append, nonzero, zeros_like, delete, isreal)
+from ...numpy import (atleast_1d, poly, asarray, prod, size, append, nonzero, zeros_like, isreal)
 
 def butter(N, Wn, btype='low', analog=False, output='ba', fs=None):
     """
@@ -735,13 +735,13 @@ def zpk2sos(z, p, k, pairing='nearest'):
         # Select the next "worst" pole
         p1_idx = np.argmin(abs(1 - abs(p)))
         p1 = p[p1_idx]
-        p = delete(p, p1_idx)
+        p = np.delete(p, p1_idx)
         # Pair that pole with a zero
         if isreal(p1) and np.sum([isreal(p)]) == 0:
             # Special case to set a first-order section
             z1_idx = _nearest_real_complex_idx(z, p1, 'real')
             z1 = z[z1_idx]
-            z = delete(z, z1_idx)
+            z = np.delete(z, z1_idx)
             p2 = z2 = 0
         else:
             if not isreal(p1) and np.sum(isreal(z)) == 1:
@@ -753,7 +753,7 @@ def zpk2sos(z, p, k, pairing='nearest'):
                 # Pair the pole with the closest zero (real or complex)
                 z1_idx = np.argmin(abs(p1 - z))
             z1 = z[z1_idx]
-            z = delete(z, z1_idx)
+            z = np.delete(z, z1_idx)
             # Now that we have p1 and z1, figure out what p2 and z2 need to be
             if not isreal(p1):
                 if not isreal(z1):  # complex pole, complex zero
@@ -764,7 +764,7 @@ def zpk2sos(z, p, k, pairing='nearest'):
                     z2_idx = _nearest_real_complex_idx(z, p1, 'real')
                     z2 = z[z2_idx]
                     assert isreal(z2)
-                    z = delete(z, z2_idx)
+                    z = np.delete(z, z2_idx)
             else:
                 if not isreal(z1):  # real pole, complex zero
                     z2 = np.conjugate(z1)
@@ -785,9 +785,9 @@ def zpk2sos(z, p, k, pairing='nearest'):
                     z2_idx = _nearest_real_complex_idx(z, p2, 'real')
                     z2 = z[z2_idx]
                     assert isreal(z2)
-                    z = delete(z, z2_idx)
+                    z = np.delete(z, z2_idx)
 
-                p = delete(p, p2_idx)
+                p = np.delete(p, p2_idx)
 
         p_sos = np.array(p_sos, dtype=np.complex)
         p_sos[si] = np.array([p1, p2], dtype=np.complex)

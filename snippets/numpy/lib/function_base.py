@@ -12,9 +12,3 @@ def append(arr, values, axis=None):
         values = values.flatten()
         axis = len(arr.shape)-1
     return np.concatenate((arr, values), axis=axis)
-
-
-def delete(arr, obj, axis=None):
-    mask = np.ones(len(arr), dtype=np.bool)
-    mask[obj] = 0
-    return arr[mask]
