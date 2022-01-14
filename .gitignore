@@ -9,3 +9,5 @@
 /code/.atom-build.yml
 build/micropython
 build/ulab
+
+.idea
