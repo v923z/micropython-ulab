@@ -109,16 +109,17 @@ static mp_obj_t io_load(mp_obj_t file) {
     #endif
     #if ULAB_SUPPORTS_COMPLEX
     #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    else if(memcmp(buffer, "c4", 2) == 0) {
+    else if(memcmp(buffer, "c8", 2) == 0) {
         dtype = NDARRAY_COMPLEX;
     }
     #else
-    else if(memcmp(buffer, "c8", 2) == 0) {
+    else if(memcmp(buffer, "c16", 3) == 0) {
         dtype = NDARRAY_COMPLEX;
     }
     #endif
     #endif /* ULAB_SUPPORT_COPMLEX */
     else {
+        fin->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
         mp_raise_TypeError(translate("wrong dtype"));
     }
 
@@ -162,6 +163,7 @@ static mp_obj_t io_load(mp_obj_t file) {
                 break;
             }
             else {
+                fin->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
                 mp_raise_ValueError(translate("corrupted file"));
             }
             needle++;
@@ -180,6 +182,7 @@ static mp_obj_t io_load(mp_obj_t file) {
 
     size_t read = fin->read(npy, array, ndarray->len * ndarray->itemsize, &error);
     if(read != ndarray->len * ndarray->itemsize) {
+        fin->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
         mp_raise_ValueError(translate("corrupted file"));
     }
 
@@ -287,9 +290,9 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
             #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
             memcpy(buffer+offset, "c8", 2);
             #else
-            memcpy(buffer+offset, "c16", 2);
-            #endif
+            memcpy(buffer+offset, "c16", 3);
             offset++;
+            #endif
             break;
         #endif
     }
