@@ -421,7 +421,7 @@ static mp_obj_t transform_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     size_t len;
     if(axis != mp_const_none) {
         int8_t ax = tools_get_axis(axis, ndarray->ndim);
-        len = ndarray->shape[ax];
+        len = ndarray->shape[ULAB_MAX_DIMS - ndarray->ndim + ax];
     } else {
         len = ndarray->len;
     }
