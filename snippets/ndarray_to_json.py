@@ -1,3 +1,9 @@
+# This file is part of the micropython-ulab project, https://github.com/v923z/micropython-ulab
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2022 Zoltán Vörös
+
 import sys
 
 use_ulab = False
@@ -39,6 +45,19 @@ def ulab_dtype_to_descr(dtype):
     return desc
 
 def ndarray_to_json(obj, b64=False):
+    """
+    Turn an ndarray into a json string, using either base64 encoding or hexify
+    Returns a serialised dictionary with three keys:
+
+    - dtype: a valid numpy dtype string (one of |u1, |i1, <u2, <i2, <f4, <f8, <c8, <c16, >u2, >i2, >f4, >f8, >c8, >c16)
+    - __numpy__: the hexified, or base64-encoded raw data array
+    - shape: the shape of the array (a list or tuple of integers)
+
+    Usage:
+        ndarray = np.array([1, 2, 3], dtype=np.uint8)
+        ndarray_to_json(ndarray, b64=True)
+    """
+
     if not isinstance(obj, np.ndarray):
          raise TypeError('input argument must be an ndarray')
 
@@ -53,11 +72,3 @@ def ndarray_to_json(obj, b64=False):
         data = b64encode(obj.tobytes())
 
     return json.dumps({'__numpy__': data, 'dtype': dtype_desciptor, 'shape': obj.shape})
-
-
-dtypes = (np.uint8, np.int8, np.uint16, np.int16, np.float)
-
-for dtype in dtypes:
-    ndarray = np.array(range(9), dtype=dtype).reshape((3,3))
-    print(ndarray_to_json(ndarray))
-    print(ndarray_to_json(ndarray, b64=True))
