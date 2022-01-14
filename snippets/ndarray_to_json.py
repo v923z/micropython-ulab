@@ -20,9 +20,9 @@ def ulab_dtype_to_descr(dtype):
         desc = '<'
 
     if dtype == ord('B'):
-        desc = desc + 'u1'
+        desc = '|u1'
     elif dtype == ord('b'):
-        desc = desc + 'i1'
+        desc = '|i1'
     elif dtype == ord('H'):
         desc = desc + 'u2'
     elif dtype == ord('h'):
@@ -58,6 +58,6 @@ def ndarray_to_json(obj, b64=False):
 dtypes = (np.uint8, np.int8, np.uint16, np.int16, np.float)
 
 for dtype in dtypes:
-    ndarray = np.array([1, 2, 3], dtype=dtype)
+    ndarray = np.array(range(9), dtype=dtype).reshape((3,3))
     print(ndarray_to_json(ndarray))
     print(ndarray_to_json(ndarray, b64=True))
