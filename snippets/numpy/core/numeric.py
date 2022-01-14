@@ -56,3 +56,4 @@ def zeros_like(a, dtype=None, order='K', subok=True, shape=None):
 
     res = np.full(a.shape, 0, dtype=a.dtype)
     return res
+

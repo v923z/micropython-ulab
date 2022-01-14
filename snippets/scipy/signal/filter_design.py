@@ -31,12 +31,12 @@ def butter(N, Wn, btype='low', analog=False, output='ba', fs=None):
         half-cycles / sample.)
 
         For analog filters, `Wn` is an angular frequency (e.g. rad/s).
-    btype : {'lowpass', 'highpass', 'bandpass', 'bandstop'}, optional
+        btype : {'lowpass', 'highpass', 'bandpass', 'bandstop'}, optional
         The type of filter.  Default is 'lowpass'.
-    analog : bool, optional
+        analog : bool, optional
         When True, return an analog filter, otherwise a digital filter is
         returned.
-    output : {'ba', 'zpk', 'sos'}, optional
+        output : {'ba', 'zpk', 'sos'}, optional
         Type of output:  numerator/denominator ('ba'), pole-zero ('zpk'), or
         second-order sections ('sos'). Default is 'ba' for backwards
         compatibility, but 'sos' should be used for general-purpose filtering.
@@ -118,7 +118,6 @@ def butter(N, Wn, btype='low', analog=False, output='ba', fs=None):
     """
     return iirfilter(N, Wn, btype=btype, analog=analog,
                      output=output, ftype='butter', fs=fs)
-
 
 def iirfilter(N, Wn, rp=None, rs=None, btype='band', analog=False,
               ftype='butter', output='ba', fs=None):
@@ -305,9 +304,9 @@ def iirfilter(N, Wn, rp=None, rs=None, btype='band', analog=False,
             raise ValueError('Must specify a single critical frequency Wn for lowpass or highpass filter')
 
         if btype == 'lowpass':
-            z, p, k = lp2lp_zpk(z, p, k, wo=warped)
+            z, p, k = lp2lp_zpk(z, p, k, wo=warped[0])
         elif btype == 'highpass':
-            z, p, k = lp2hp_zpk(z, p, k, wo=warped)
+            z, p, k = lp2hp_zpk(z, p, k, wo=warped[0])
     elif btype in ('bandpass', 'bandstop'):
         try:
             bw = warped[1] - warped[0]
@@ -406,13 +405,11 @@ def _to_complex(a):
        result = np.concatenate((result, t), axis=0)
     return result
 
-
 def lexsort(z):
    z = _to_tuple(z)
    return sorted(range(len(z)), key=lambda i: (z[i][0],abs(z[i][1])))
 
-def do_lexsort(z):
-  # z = z[np.lexsort((abs(z.imag), z.real))]
+def _lexsort(z):
    z = _to_tuple(z)
    z = sorted(z,key=lambda x:(x[0], abs(x[1])))
    return _to_complex(z)
@@ -472,11 +469,7 @@ def _cplxreal(z, tol=None):
         tol = 100 * abs(7./3 - 4./3 - 1) #np.finfo((1.0 * z).dtype).eps
 
     # Sort by real part, magnitude of imaginary part (speed up further sorting)
-    #z = z[np.lexsort((abs(z.imag), z.real))]
-    #z = _to_tuple(z)
-    #z = sorted(z,key=lambda x:(x[0], abs(x[1])))
-    #z = _to_complex(z)
-    z = do_lexsort(z)
+    z = _lexsort(z)
     # Split reals from conjugate pairs
     real_indices = abs(z.imag) <= tol * abs(z)
     zr = z[real_indices].real
@@ -698,28 +691,42 @@ def zpk2sos(z, p, k, pairing='nearest'):
         raise ValueError('pairing must be one of %s, not %s'
                          % (valid_pairings, pairing))
     if len(z) == len(p) == 0:
-        return array([[k, 0., 0., 1., 0., 0.]])
+        return np.array([[k, 0., 0., 1., 0., 0.]])
 
     # ensure we have the same number of poles and zeros, and make copies
+
     if len(z) != len(p):
-      p = np.concatenate((p, np.zeros(max(len(z) - len(p), 0), dtype=np.complex)))
-      z = np.concatenate((z, np.zeros(max(len(p) - len(z), 0), dtype=np.complex)))
+        if max(len(z) - len(p),0) > 0:  
+            p = np.concatenate((p, np.zeros((max(len(z) - len(p), 0)),dtype=np.complex)))
+        if max(len(p) - len(z),0) > 0:   
+            z = np.concatenate((z, np.zeros((max(len(p) - len(z), 0)), dtype=np.complex)))
 
     n_sections = (max(len(p), len(z)) + 1) // 2
     sos = np.zeros((n_sections, 6))
+    
 
     if len(p) % 2 == 1 and pairing == 'nearest':
-        p = np.concatenate((p, [0.]))
-        z = np.concatenate((z, [0.]))
+        p = np.concatenate((p, np.array([0.],dtype=np.complex)))
+        z = np.concatenate((z, np.array([0.],dtype=np.complex)))
     assert len(p) == len(z)
+
+    z = np.array(z, dtype=np.complex)
 
 
     # Ensure we have complex conjugate pairs
     # (note that _cplxreal only gives us one element of each complex pair):
-    cplx, real = _cplxreal(p)
-    p = cplx
-    cplx, real = _cplxreal(z)
-    z = real
+    cplx, rel = _cplxreal(p)
+    if len(rel) > 0 and len(cplx) > 0:
+        p = np.concatenate((cplx, np.array(rel, dtype=np.complex))) 
+    else:
+        p = cplx
+   
+    
+    cplx, rel = _cplxreal(z)
+    if len(rel) > 0 and len(cplx) > 0:
+        z = np.concatenate((cplx, np.array(rel, dtype=np.complex))) 
+    else:
+        z = rel
 
     p_sos = np.zeros((n_sections, 2))
     z_sos = zeros_like(p_sos)
@@ -730,7 +737,7 @@ def zpk2sos(z, p, k, pairing='nearest'):
         p1 = p[p1_idx]
         p = delete(p, p1_idx)
         # Pair that pole with a zero
-        if isreal(p1) and np.sum(isreal(p)) == 0:
+        if isreal(p1) and np.sum([isreal(p)]) == 0:
             # Special case to set a first-order section
             z1_idx = _nearest_real_complex_idx(z, p1, 'real')
             z1 = z[z1_idx]
@@ -766,9 +773,12 @@ def zpk2sos(z, p, k, pairing='nearest'):
                     assert isreal(p2)
                 else:  # real pole, real zero
                     # pick the next "worst" pole to use
-                    idx = np.nonzero(np.isreal(p))[0]
+                    idx = nonzero(isreal(p))[0]
                     assert len(idx) > 0
-                    p2_idx = idx[np.argmin(np.abs(abs(p[idx]) - 1))]
+ 
+                    a = abs(abs(p[idx[0]]) - 1)
+                    a = np.array([a])
+                    p2_idx = idx[np.argmin(a) - 1]
                     p2 = p[p2_idx]
                     # find a real zero to match the added pole
                     assert isreal(p2)
@@ -796,7 +806,6 @@ def zpk2sos(z, p, k, pairing='nearest'):
         x = zpk2tf(z_sos[si], p_sos[si], gains[si])
         sos[si] = np.concatenate(x)
     return sos
-
 
 def lp2bp_zpk(z, p, k, wo=1.0, bw=1.0):
     r"""
@@ -855,7 +864,6 @@ def lp2bp_zpk(z, p, k, wo=1.0, bw=1.0):
     degree = _relative_degree(z, p)
 
     # Scale poles and zeros to desired bandwidth
-   # z_lp = z * bw/2
     z_lp = []
     for x in z:
         z_lp.append(x * bw/2)
@@ -869,48 +877,23 @@ def lp2bp_zpk(z, p, k, wo=1.0, bw=1.0):
 
 
     # Square root needs to produce complex result, not NaN
-   # z_lp = z_lp.astype(complex)
-   # p_lp = p_lp.astype(complex)
+
 
     # Duplicate poles and zeros and shift from baseband to +wo and -wo
-    z_bp = []
-    for x in z_lp:
-        z_bp.append(x + np.sqrt(x**2 - wo**2))
-    for x in z_lp:
-        z_bp.append(x - np.sqrt(x**2 - wo**2))
-    z_bp = np.array(z_bp, dtype=np.complex)
+    if len(z_lp) > 0:
+        z_bp = np.concatenate((z_lp + np.sqrt(z_lp*z_lp - wo*wo, dtype=np.complex),
+                            z_lp - np.sqrt(z_lp*z_lp - wo*wo, dtype=np.complex)))                 
+        z_bp = append(z_bp, np.zeros(degree),dtype=np.complex)                    
+    else:
+         z_bp = np.zeros(degree, dtype=np.complex)
 
-
-
-
-   # z_bp = np.concatenate((z_lp + np.sqrt(z_lp**2 - wo**2),
-     #                   z_lp - np.sqrt(z_lp**2 - wo**2)))
-
-    p_bp = []
-    for x in p_lp:
-        p_bp.append(x + np.sqrt(x**2 - wo**2))
-    for x in p_lp:
-        p_bp.append(x - np.sqrt(x**2 - wo**2))
-
-    p_bp = np.array(p_bp, dtype=np.complex)
-
-   # p_bp = np.concatenate((p_lp + np.sqrt(p_lp**2 - wo**2),
-    #                    p_lp - np.sqrt(p_lp**2 - wo**2)))
-
+    p_bp = np.concatenate((p_lp + np.sqrt(p_lp*p_lp - wo*wo, dtype=np.complex),
+                           p_lp - np.sqrt(p_lp*p_lp - wo*wo, dtype=np.complex)))
 
 
     # Move degree zeros to origin, leaving degree zeros at infinity for BPF
-
-
-    t = []
-    for x in z_bp:
-        t.append(x)
-
-    for x in np.zeros(degree):
-        t.append(x)
-
-    z_bp = np.array(t, dtype=np.complex)
-
+    
+   
     # Cancel out gain change from frequency scaling
     k_bp = k * bw**degree
 
@@ -965,8 +948,8 @@ def lp2bs_zpk(z, p, k, wo=1.0, bw=1.0):
     .. versionadded:: 1.1.0
 
     """
-    z = np.atleast_1d(z)
-    p = np.atleast_1d(p)
+    z = atleast_1d(z)
+    p = atleast_1d(p)
     wo = float(wo)
     bw = float(bw)
 
@@ -976,22 +959,29 @@ def lp2bs_zpk(z, p, k, wo=1.0, bw=1.0):
     z_hp = (bw/2) / z
     p_hp = (bw/2) / p
 
-    # Square root needs to produce complex result, not NaN
-    z_hp = z_hp.astype(complex)
-    p_hp = p_hp.astype(complex)
+    if z_hp == float('inf'):
+        z_hp = []
 
-    # Duplicate poles and zeros and shift from baseband to +wo and -wo
-    z_bs = concatenate((z_hp + sqrt(z_hp**2 - wo**2),
-                        z_hp - sqrt(z_hp**2 - wo**2)))
-    p_bs = concatenate((p_hp + sqrt(p_hp**2 - wo**2),
-                        p_hp - sqrt(p_hp**2 - wo**2)))
+    # Square root needs to produce complex result, not NaN
+    z_hp = np.array(z_hp, dtype=np.complex)
+    p_hp = np.array(p_hp, dtype=np.complex)
+
+    if len(z_hp) > 0:
+        # Duplicate poles and zeros and shift from baseband to +wo and -wo
+        z_bs = np.concatenate((z_hp + np.sqrt(z_hp*z_hp - wo*wo, dtype=np.complex),
+                            z_hp - np.sqrt(z_hp*z_hp - wo*wo, dtype=np.complex)))
+    else:
+        z_bs = np.array([], dtype=np.complex)               
+
+    p_bs = np.concatenate((p_hp + np.sqrt(p_hp*p_hp - wo*wo, dtype=np.complex),
+                           p_hp - np.sqrt(p_hp*p_hp - wo*wo, dtype=np.complex)))
 
     # Move any zeros that were at infinity to the center of the stopband
-    z_bs = append(z_bs, full(degree, +1j*wo))
-    z_bs = append(z_bs, full(degree, -1j*wo))
+    z_bs = append(z_bs, np.full(degree, 1j*wo, dtype=np.complex))
+    z_bs = append(z_bs, np.full(degree, -1j*wo, dtype=np.complex))
 
     # Cancel out gain change caused by inversion
-    k_bs = k * real(prod(-z) / prod(-p))
+    k_bs = k * (prod(-z) / prod(-p)).real
 
     return z_bs, p_bs, k_bs
 
@@ -1056,6 +1046,7 @@ def bilinear_zpk(z, p, k, fs):
     >>> plt.ylabel('Magnitude [dB]')
     >>> plt.grid()
     """
+    
     z = atleast_1d(z)
     p = atleast_1d(p)
 
@@ -1070,7 +1061,8 @@ def bilinear_zpk(z, p, k, fs):
     # Any zeros that were at infinity get moved to the Nyquist frequency
     a = -np.ones(degree) + 0j
 
-    z_z = append(z_z, a)
+    if len(a) > 0:
+        z_z = append(z_z, a)
 
     # Compensate for gain change
     k_z = k * (prod(fs2 - z) / prod(fs2 - p)).real
@@ -1215,8 +1207,9 @@ def lp2hp_zpk(z, p, k, wo=1.0):
     .. versionadded:: 1.1.0
 
     """
-    z = np.atleast_1d(z)
-    p = np.atleast_1d(p)
+    z = atleast_1d(z)
+    p = atleast_1d(p)
+    
     wo = float(wo)
 
     degree = _relative_degree(z, p)
@@ -1226,11 +1219,14 @@ def lp2hp_zpk(z, p, k, wo=1.0):
     z_hp = wo / z
     p_hp = wo / p
 
+    if z_hp == float('inf'):
+        z_hp = []
+
     # If lowpass had zeros at infinity, inverting moves them to origin.
-    z_hp = append(z_hp, zeros(degree))
+    z_hp = append(z_hp, np.zeros(degree))
 
     # Cancel out gain change caused by inversion
-    k_hp = k * real(prod(-z) / prod(-p))
+    k_hp = k * (prod(-z) / prod(-p)).real
 
     return z_hp, p_hp, k_hp
 
@@ -1430,14 +1426,12 @@ def buttap(N):
     k = 1
     return z, p, k
 
-
 def butter_bandpass(lowcut, highcut, fs, order=5):
     nyq = 0.5 * fs
     low = lowcut / nyq
     high = highcut / nyq
     sos = butter(order, [low, high], analog=False, btype='band', output='sos')
     return sos
-
 
 def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     sos = butter_bandpass(lowcut, highcut, fs, order=order)
@@ -1451,7 +1445,6 @@ def fft(x):
     even = fft(x[0::2])
     odd =  fft(x[1::2])
     return [even[m] + math.e**(-2j*math.pi*m/n)*odd[m] for m in range(n//2)] + [even[m] - math.e**(-2j*math.pi*m/n)*odd[m] for m in range(n//2)]
-
 
 filter_dict = {'butter': [buttap, buttord],
                'butterworth': [buttap, buttord]

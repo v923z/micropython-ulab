@@ -51,6 +51,8 @@ def size(a, axis=None):
             return asarray(a).shape[axis]
 
 def nonzero(a):
+    if not isinstance(a,(np.ndarray)):
+        a = asarray(a)
     x = a.shape
     row = x[0]
     if len(x) == 1:
@@ -65,11 +67,12 @@ def nonzero(a):
         for i in range(0,row):
            if a[i] != 0:
              nonzero_row = numpy.append(nonzero_row,i)
-        return (nonzero_row,)
+        return (np.array(nonzero_row, dtype=np.int8),)
 
     for i in range(0,row):
         for j in range(0,column):
             if a[i,j] != 0:
                 nonzero_row = numpy.append(nonzero_row,i)
                 nonzero_col = numpy.append(nonzero_col,j)
-    return (nonzero_row,nonzero_col)
+                
+    return (np.array(nonzero_row, dtype=np.int8), np.array(nonzero_col, dtype=np.int8))

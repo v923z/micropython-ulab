@@ -6,6 +6,8 @@ def asarray(a, dtype=None):
     try:
         if dtype is not None:
           a = np.array([a], dtype=dtype)
+        elif isinstance(a, list) or isinstance(a, tuple):
+          a = np.array(a)
         else:
           a = np.array([a])
         return a
