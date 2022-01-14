@@ -399,5 +399,34 @@ mp_obj_t transform_dot(mp_obj_t _m1, mp_obj_t _m2) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(transform_dot_obj, transform_dot);
-#endif
+#endif /* ULAB_NUMPY_HAS_DOT */
+#endif /* ULAB_MAX_DIMS > 1 */
+
+#if ULAB_NUMPY_HAS_SIZE
+static mp_obj_t transform_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(translate("first argument must be an ndarray"));
+    }
+
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+    mp_obj_t axis = args[1].u_obj;
+    size_t len;
+    if(axis != mp_const_none) {
+        int8_t ax = tools_get_axis(axis, ndarray->ndim);
+        len = ndarray->shape[ax];
+    } else {
+        len = ndarray->len;
+    }
+
+    return mp_obj_new_int(len);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(transform_size_obj, 1, transform_size);
 #endif

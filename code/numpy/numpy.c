@@ -268,6 +268,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_ROLL
         { MP_OBJ_NEW_QSTR(MP_QSTR_roll), (mp_obj_t)&numerical_roll_obj },
     #endif
+    #if ULAB_NUMPY_HAS_SIZE
+        { MP_OBJ_NEW_QSTR(MP_QSTR_size), (mp_obj_t)&transform_size_obj },
+    #endif
     #if ULAB_NUMPY_HAS_SORT
         { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&numerical_sort_obj },
     #endif
