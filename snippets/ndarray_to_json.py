@@ -15,9 +15,9 @@ except:
     from numpy.lib.format import dtype_to_descr
 
 def ulab_dtype_to_descr(dtype):
-    desc = '<'
+    desc = '>'
     if sys.byteorder == 'little':
-        desc = '>'
+        desc = '<'
 
     if dtype == ord('B'):
         desc = desc + 'u1'
