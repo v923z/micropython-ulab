@@ -26,8 +26,8 @@
 #define ULAB_IO_BIG_ENDIAN          2
 
 #if ULAB_NUMPY_HAS_LOAD
-static void io_read_(mp_obj_t npy, const mp_stream_p_t *fin, char *buffer, char *string, uint16_t len, int *error) {
-    size_t read = fin->read(npy, buffer, len, error);
+static void io_read_(mp_obj_t stream, const mp_stream_p_t *stream_p, char *buffer, char *string, uint16_t len, int *error) {
+    size_t read = stream_p->read(stream, buffer, len, error);
     bool fail = false;
     if(read == len) {
         if(string != NULL) {
@@ -39,8 +39,8 @@ static void io_read_(mp_obj_t npy, const mp_stream_p_t *fin, char *buffer, char 
         fail = true;
     }
     if(fail) {
-        fin->ioctl(npy, MP_STREAM_CLOSE, 0, error);
-        mp_raise_ValueError(translate("corrupted file"));
+        stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, error);
+        mp_raise_msg(&mp_type_RuntimeError, translate("corrupted file"));
     }
 }
 
@@ -61,26 +61,26 @@ static mp_obj_t io_load(mp_obj_t file) {
         MP_OBJ_NEW_QSTR(MP_QSTR_rb)
     };
 
-    mp_obj_t npy = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
-    const mp_stream_p_t *fin = mp_get_stream(npy);
+    mp_obj_t stream = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    const mp_stream_p_t *stream_p = mp_get_stream(stream);
 
     // read header
     // magic string
-    io_read_(npy, fin, buffer, "\x93NUMPY", 6, &error);
+    io_read_(stream, stream_p, buffer, "\x93NUMPY", 6, &error);
     // simply discard the version number
-    io_read_(npy, fin, buffer, NULL, 2, &error);
+    io_read_(stream, stream_p, buffer, NULL, 2, &error);
     // header length, represented as a little endian uint16 (0x76, 0x00)
-    io_read_(npy, fin, buffer, NULL, 2, &error);
+    io_read_(stream, stream_p, buffer, NULL, 2, &error);
 
     uint16_t header_length = buffer[1];
     header_length <<= 8;
     header_length += buffer[0];
 
     // beginning of the dictionary describing the array
-    io_read_(npy, fin, buffer, "{'descr': '", 11, &error);
+    io_read_(stream, stream_p, buffer, "{'descr': '", 11, &error);
     uint8_t dtype;
 
-    io_read_(npy, fin, buffer, NULL, 1, &error);
+    io_read_(stream, stream_p, buffer, NULL, 1, &error);
     uint8_t endianness = ULAB_IO_NULL_ENDIAN;
     if(*buffer == '<') {
         endianness = ULAB_IO_LITTLE_ENDIAN;
@@ -88,7 +88,7 @@ static mp_obj_t io_load(mp_obj_t file) {
         endianness = ULAB_IO_BIG_ENDIAN;
     }
 
-    io_read_(npy, fin, buffer, NULL, 2, &error);
+    io_read_(stream, stream_p, buffer, NULL, 2, &error);
     if(memcmp(buffer, "u1", 2) == 0) {
         dtype = NDARRAY_UINT8;
     } else if(memcmp(buffer, "i1", 2) == 0) {
@@ -119,11 +119,11 @@ static mp_obj_t io_load(mp_obj_t file) {
     #endif
     #endif /* ULAB_SUPPORT_COPMLEX */
     else {
-        fin->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
+        stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
         mp_raise_TypeError(translate("wrong dtype"));
     }
 
-    io_read_(npy, fin, buffer, "', 'fortran_order': False, 'shape': (", 37, &error);
+    io_read_(stream, stream_p, buffer, "', 'fortran_order': False, 'shape': (", 37, &error);
 
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
@@ -131,7 +131,7 @@ static mp_obj_t io_load(mp_obj_t file) {
     uint16_t bytes_to_read = MIN(ULAB_IO_BUFFER_SIZE, header_length - 51);
     // bytes_to_read is 128 at most. This should be enough to contain a
     // maximum of 4 size_t numbers plus the delimiters
-    io_read_(npy, fin, buffer, NULL, bytes_to_read, &error);
+    io_read_(stream, stream_p, buffer, NULL, bytes_to_read, &error);
     char *needle = buffer;
     uint8_t ndim = 0;
 
@@ -163,8 +163,8 @@ static mp_obj_t io_load(mp_obj_t file) {
                 break;
             }
             else {
-                fin->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
-                mp_raise_ValueError(translate("corrupted file"));
+                stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
+                mp_raise_msg(&mp_type_RuntimeError, translate("corrupted file"));
             }
             needle++;
         }
@@ -174,19 +174,19 @@ static mp_obj_t io_load(mp_obj_t file) {
 
     // strip the rest of the header
     if((bytes_to_read + 51) < header_length) {
-        io_read_(npy, fin, buffer, NULL, header_length - (bytes_to_read + 51), &error);
+        io_read_(stream, stream_p, buffer, NULL, header_length - (bytes_to_read + 51), &error);
     }
 
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(ndim, shape, dtype);
     char *array = (char *)ndarray->array;
 
-    size_t read = fin->read(npy, array, ndarray->len * ndarray->itemsize, &error);
+    size_t read = stream_p->read(stream, array, ndarray->len * ndarray->itemsize, &error);
     if(read != ndarray->len * ndarray->itemsize) {
-        fin->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
-        mp_raise_ValueError(translate("corrupted file"));
+        stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
+        mp_raise_msg(&mp_type_RuntimeError, translate("corrupted file"));
     }
 
-    fin->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
+    stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
     m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
 
     // swap the bytes, if necessary
@@ -250,8 +250,8 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
         MP_OBJ_NEW_QSTR(MP_QSTR_wb)
     };
 
-    mp_obj_t npy = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
-    const mp_stream_p_t *fout = mp_get_stream(npy);
+    mp_obj_t stream = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    const mp_stream_p_t *stream_p = mp_get_stream(stream);
 
     // write header;
     // magic string + header length, which is always 128 - 10 = 118, represented as a little endian uint16 (0x76, 0x00)
@@ -314,7 +314,7 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
     // pad with space till the very end
     memset(buffer+offset, 32, ULAB_IO_BUFFER_SIZE - offset - 1);
     buffer[ULAB_IO_BUFFER_SIZE - 1] = '\n';
-    fout->write(npy, buffer, ULAB_IO_BUFFER_SIZE, &error);
+    stream_p->write(stream, buffer, ULAB_IO_BUFFER_SIZE, &error);
 
     // write the array data
     uint8_t sz = ndarray->itemsize;
@@ -339,7 +339,7 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
                     memcpy(buffer+offset, array, sz);
                     offset += sz;
                     if(offset == ULAB_IO_BUFFER_SIZE) {
-                        fout->write(npy, buffer, offset, &error);
+                        stream_p->write(stream, buffer, offset, &error);
                         offset = 0;
                     }
                     array += ndarray->strides[ULAB_MAX_DIMS - 1];
@@ -364,8 +364,8 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
     } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
     #endif
 
-    fout->write(npy, buffer, offset, &error);
-    fout->ioctl(npy, MP_STREAM_CLOSE, 0, &error);
+    stream_p->write(stream, buffer, offset, &error);
+    stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
 
     m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
     return mp_const_none;
