@@ -58,7 +58,7 @@ def json_to_ndarray(json_string, b64=False):
 
     ndarray = np.frombuffer(data, dtype=dtype).reshape(tuple(obj['shape']))
 
-    if descriptor in (np.uint16, np.int16, np.float):
+    if dtype in (np.uint16, np.int16, np.float):
         if sys.byteorder != descriptor[1]:
             ndarray.byteswap()
 
