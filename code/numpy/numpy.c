@@ -234,6 +234,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_ARGSORT
         { MP_OBJ_NEW_QSTR(MP_QSTR_argsort), (mp_obj_t)&numerical_argsort_obj },
     #endif
+    #if ULAB_NUMPY_HAS_ASARRAY
+        { MP_OBJ_NEW_QSTR(MP_QSTR_asarray), (mp_obj_t)&create_asarray_obj },
+    #endif
     #if ULAB_NUMPY_HAS_CROSS
         { MP_OBJ_NEW_QSTR(MP_QSTR_cross), (mp_obj_t)&numerical_cross_obj },
     #endif
