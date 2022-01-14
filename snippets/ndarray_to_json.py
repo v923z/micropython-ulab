@@ -3,7 +3,7 @@ import sys
 use_ulab = False
 
 try:
-    from ubinascii import a2b_base64 as b64encode
+    from ubinascii import b2a_base64 as b64encode
     from ubinascii import hexlify
     import ujson as json
     from ulab import numpy as np
@@ -49,6 +49,8 @@ def ndarray_to_json(obj, b64=False):
 
     if not b64:
         data = hexlify(obj.tobytes())
+    else:
+        data = b64encode(obj.tobytes())
 
     return json.dumps({'__numpy__': data, 'dtype': dtype_desciptor, 'shape': obj.shape})
 
@@ -58,3 +60,4 @@ dtypes = (np.uint8, np.int8, np.uint16, np.int16, np.float)
 for dtype in dtypes:
     ndarray = np.array([1, 2, 3], dtype=dtype)
     print(ndarray_to_json(ndarray))
+    print(ndarray_to_json(ndarray, b64=True))
