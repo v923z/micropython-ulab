@@ -412,10 +412,18 @@ static mp_obj_t transform_size(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("first argument must be an ndarray"));
+    if(ulab_tools_mp_obj_is_scalar(args[0].u_obj)) {
+        return mp_obj_new_int(1);
     }
 
+    if(!ndarray_object_is_array_like(args[0].u_obj)) {
+        mp_raise_TypeError(translate("first argument must be an ndarray"));
+    }
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        return mp_obj_len_maybe(args[0].u_obj);
+    }
+
+    // at this point, the args[0] is most certainly an ndarray
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
     mp_obj_t axis = args[1].u_obj;
     size_t len;

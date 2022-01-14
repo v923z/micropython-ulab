@@ -258,3 +258,19 @@ void ulab_rescale_float_strides(int32_t *strides) {
     }
 }
 #endif
+
+bool ulab_tools_mp_obj_is_scalar(mp_obj_t obj) {
+    #if ULAB_SUPPORTS_COMPLEX
+    if(mp_obj_is_int(obj) || mp_obj_is_float(obj) || mp_obj_is_type(obj, &mp_type_complex)) {
+        return true;
+    } else {
+        return false;
+    }
+    #else
+    if(mp_obj_is_int(obj) || mp_obj_is_float(obj)) {
+        return true;
+    } else {
+        return false;
+    }
+    #endif
+}

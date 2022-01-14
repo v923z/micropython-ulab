@@ -197,18 +197,9 @@ mp_obj_t create_asarray(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
     #endif
 
-    #if ULAB_SUPPORTS_COMPLEX
-    if(mp_obj_is_int(args[0].u_obj) ||
-        mp_obj_is_float(args[0].u_obj) ||
-        mp_obj_is_type(args[0].u_obj, &mp_type_complex)) {
+    if(ulab_tools_mp_obj_is_scalar(args[0].u_obj)) {
         return args[0].u_obj;
-    }
-    #else
-    if(mp_obj_is_int(args[0].u_obj) || mp_obj_is_float(args[0].u_obj)) {
-        return args[0].u_obj;
-    }
-    #endif
-     else if(mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+    } else if(mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
         if((_dtype == ndarray->dtype) || (_dtype == 0)) {
             return args[0].u_obj;
