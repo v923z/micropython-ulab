@@ -1,3 +1,8 @@
+# This file is part of the micropython-ulab project, https://github.com/v923z/micropython-ulab
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2022 Phil Jepsen
 
 from .overrides import set_module
 from .multiarray import asarray

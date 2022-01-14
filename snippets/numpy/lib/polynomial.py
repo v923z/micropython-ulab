@@ -1,3 +1,8 @@
+# This file is part of the micropython-ulab project, https://github.com/v923z/micropython-ulab
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2022 Phil Jepsen
 
 from ..core import (atleast_1d, asarray)
 from ..core.overrides import set_module
