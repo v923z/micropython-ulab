@@ -197,7 +197,18 @@ mp_obj_t create_asarray(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
     #endif
 
-    if(mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+    #if ULAB_SUPPORTS_COMPLEX
+    if(mp_obj_is_int(args[0].u_obj) ||
+        mp_obj_is_float(args[0].u_obj) ||
+        mp_obj_is_type(args[0].u_obj, &mp_type_complex)) {
+        return args[0].u_obj;
+    }
+    #else
+    if(mp_obj_is_int(args[0].u_obj) || mp_obj_is_float(args[0].u_obj)) {
+        return args[0].u_obj;
+    }
+    #endif
+     else if(mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
         if((_dtype == ndarray->dtype) || (_dtype == 0)) {
             return args[0].u_obj;
@@ -205,6 +216,9 @@ mp_obj_t create_asarray(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             return MP_OBJ_FROM_PTR(ndarray_copy_view_convert_type(ndarray, _dtype));
         }
     } else if(ndarray_object_is_array_like(args[0].u_obj)) {
+        if(_dtype == 0) {
+            _dtype = NDARRAY_FLOAT;
+        }
         return MP_OBJ_FROM_PTR(ndarray_from_iterable(args[0].u_obj, _dtype));
     } else {
         mp_raise_TypeError(translate("wrong input type"));
