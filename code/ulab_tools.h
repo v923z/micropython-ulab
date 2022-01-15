@@ -42,4 +42,5 @@ uint8_t ulab_binary_get_size(uint8_t );
 void ulab_rescale_float_strides(int32_t *);
 #endif
 
+bool ulab_tools_mp_obj_is_scalar(mp_obj_t );
 #endif

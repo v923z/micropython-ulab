@@ -17,8 +17,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "../ulab.h"
 #include "create.h"
+#include "../ulab.h"
 #include "../ulab_tools.h"
 
 #if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL | ULAB_NUMPY_HAS_EMPTY
@@ -164,6 +164,60 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
+#endif
+
+
+#if ULAB_NUMPY_HAS_ASARRAY
+mp_obj_t create_asarray(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t _dtype;
+    #if ULAB_HAS_DTYPE_OBJECT
+    if(mp_obj_is_type(args[1].u_obj, &ulab_dtype_type)) {
+        dtype_obj_t *dtype = MP_OBJ_TO_PTR(args[1].u_obj);
+        _dtype = dtype->dtype;
+    } else { // this must be an integer defined as a class constant (ulab.numpy.uint8 etc.)
+        if(args[1].u_obj == mp_const_none) {
+            _dtype = 0;
+        } else {
+            _dtype = mp_obj_get_int(args[1].u_obj);
+        }
+    }
+    #else
+    if(args[1].u_obj == mp_const_none) {
+        _dtype = 0;
+    } else {
+        _dtype = mp_obj_get_int(args[1].u_obj);
+    }
+    #endif
+
+    if(ulab_tools_mp_obj_is_scalar(args[0].u_obj)) {
+        return args[0].u_obj;
+    } else if(mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
+        if((_dtype == ndarray->dtype) || (_dtype == 0)) {
+            return args[0].u_obj;
+        } else {
+            return MP_OBJ_FROM_PTR(ndarray_copy_view_convert_type(ndarray, _dtype));
+        }
+    } else if(ndarray_object_is_array_like(args[0].u_obj)) {
+        if(_dtype == 0) {
+            _dtype = NDARRAY_FLOAT;
+        }
+        return MP_OBJ_FROM_PTR(ndarray_from_iterable(args[0].u_obj, _dtype));
+    } else {
+        mp_raise_TypeError(translate("wrong input type"));
+    }
+    return mp_const_none; // this should never happen
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(create_asarray_obj, 1, create_asarray);
 #endif
 
 #if ULAB_NUMPY_HAS_CONCATENATE

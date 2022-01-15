@@ -20,6 +20,11 @@ mp_obj_t create_arange(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_arange_obj);
 #endif
 
+#if ULAB_NUMPY_HAS_ASARRAY
+mp_obj_t create_arange(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(create_asarray_obj);
+#endif
+
 #if ULAB_NUMPY_HAS_CONCATENATE
 mp_obj_t create_concatenate(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(create_concatenate_obj);
