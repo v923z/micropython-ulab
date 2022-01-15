@@ -44,13 +44,13 @@ def ulab_dtype_to_descr(dtype):
 
     return desc
 
-def ndarray_to_json(obj, b64=False):
+def ndarray_to_json(obj, b64=True):
     """
     Turn an ndarray into a json string, using either base64 encoding or hexify
     Returns a serialised dictionary with three keys:
 
     - dtype: a valid numpy dtype string (one of |u1, |i1, <u2, <i2, <f4, <f8, <c8, <c16, >u2, >i2, >f4, >f8, >c8, >c16)
-    - __numpy__: the hexified, or base64-encoded raw data array
+    - array: the hexified, or base64-encoded raw data array
     - shape: the shape of the array (a list or tuple of integers)
 
     Usage:
@@ -71,4 +71,4 @@ def ndarray_to_json(obj, b64=False):
     else:
         data = b64encode(obj.tobytes())
 
-    return json.dumps({'__numpy__': data, 'dtype': dtype_desciptor, 'shape': obj.shape})
+    return json.dumps({'array': data, 'dtype': dtype_desciptor, 'shape': obj.shape})
