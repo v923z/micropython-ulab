@@ -45,25 +45,25 @@ def ulab_descr_to_dtype(descriptor):
         raise TypeError('descriptor could not be decoded')
 
 
-def json_to_ndarray(json_string, b64=False):
+def json_to_ndarray(json_string, b64=True):
     """
     Turn a json string into an ndarray
     The string must be the representation of a dictionary with the three keys
 
     - dtype: a valid numpy dtype string (one of |u1, |i1, <u2, <i2, <f4, <f8, <c8, <c16, >u2, >i2, >f4, >f8, >c8, >c16)
-    - __numpy__: the hexified, or base64-encoded raw data array
+    - array: the hexified, or base64-encoded raw data array
     - shape: the shape of the array (a list or tuple of integers)
 
     Usage:
-        str = '{"dtype": "<f8", "__numpy__": "AAAAAAAAAAAAAAAAAADwPwAAAAAAAABAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAAAcQAAAAAAAACBA\n", "shape": [3, 3]}'
+        str = '{"dtype": "<f8", "array": "AAAAAAAAAAAAAAAAAADwPwAAAAAAAABAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAAAcQAAAAAAAACBA\n", "shape": [3, 3]}'
         json_to_ndarray(str, b64=True)
     """
     obj = json.loads(json_string)
     print(obj)
     if not isinstance(obj, dict):
          raise TypeError('input argument must be a dictionary')
-    if set(obj.keys()) != {'__numpy__', 'dtype', 'shape'}:
-        raise ValueError('input must have the keys "__numpy__", "dtype", "shape"')
+    if set(obj.keys()) != {'array', 'dtype', 'shape'}:
+        raise ValueError('input must have the keys "array", "dtype", "shape"')
 
     descriptor = obj['dtype']
     if use_ulab:
@@ -72,9 +72,9 @@ def json_to_ndarray(json_string, b64=False):
         dtype = descr_to_dtype(descriptor)
 
     if not b64:
-        data = unhexlify(obj['__numpy__'])
+        data = unhexlify(obj['array'])
     else:
-        data = b64decode(obj['__numpy__'])
+        data = b64decode(obj['array'])
 
     ndarray = np.frombuffer(data, dtype=dtype).reshape(tuple(obj['shape']))
 
