@@ -11,39 +11,41 @@ the firmware was compiled with complex support.
 3.  `numpy.argmax <#argmax>`__
 4.  `numpy.argmin <#argmin>`__
 5.  `numpy.argsort <#argsort>`__
-6.  `numpy.clip <#clip>`__
-7.  `numpy.compress\* <#compress>`__
-8.  `numpy.conjugate\* <#conjugate>`__
-9.  `numpy.convolve\* <#convolve>`__
-10. `numpy.delete <#delete>`__
-11. `numpy.diff <#diff>`__
-12. `numpy.dot <#dot>`__
-13. `numpy.equal <#equal>`__
-14. `numpy.flip\* <#flip>`__
-15. `numpy.imag\* <#imag>`__
-16. `numpy.interp <#interp>`__
-17. `numpy.isfinite <#isfinite>`__
-18. `numpy.isinf <#isinf>`__
-19. `numpy.load <#load>`__
-20. `numpy.max <#max>`__
-21. `numpy.maximum <#maximum>`__
-22. `numpy.mean <#mean>`__
-23. `numpy.median <#median>`__
-24. `numpy.min <#min>`__
-25. `numpy.minimum <#minimum>`__
-26. `numpy.not_equal <#equal>`__
-27. `numpy.polyfit <#polyfit>`__
-28. `numpy.polyval <#polyval>`__
-29. `numpy.real\* <#real>`__
-30. `numpy.roll <#roll>`__
-31. `numpy.save <#save>`__
-32. `numpy.sort <#sort>`__
-33. `numpy.sort_complex\* <#sort_complex>`__
-34. `numpy.std <#std>`__
-35. `numpy.sum <#sum>`__
-36. `numpy.trace <#trace>`__
-37. `numpy.trapz <#trapz>`__
-38. `numpy.where <#where>`__
+6.  `numpy.asarray\* <#asarray>`__
+7.  `numpy.clip <#clip>`__
+8.  `numpy.compress\* <#compress>`__
+9.  `numpy.conjugate\* <#conjugate>`__
+10. `numpy.convolve\* <#convolve>`__
+11. `numpy.delete <#delete>`__
+12. `numpy.diff <#diff>`__
+13. `numpy.dot <#dot>`__
+14. `numpy.equal <#equal>`__
+15. `numpy.flip\* <#flip>`__
+16. `numpy.imag\* <#imag>`__
+17. `numpy.interp <#interp>`__
+18. `numpy.isfinite <#isfinite>`__
+19. `numpy.isinf <#isinf>`__
+20. `numpy.load <#load>`__
+21. `numpy.max <#max>`__
+22. `numpy.maximum <#maximum>`__
+23. `numpy.mean <#mean>`__
+24. `numpy.median <#median>`__
+25. `numpy.min <#min>`__
+26. `numpy.minimum <#minimum>`__
+27. `numpy.not_equal <#equal>`__
+28. `numpy.polyfit <#polyfit>`__
+29. `numpy.polyval <#polyval>`__
+30. `numpy.real\* <#real>`__
+31. `numpy.roll <#roll>`__
+32. `numpy.save <#save>`__
+33. `numpy.size <#size>`__
+34. `numpy.sort <#sort>`__
+35. `numpy.sort_complex\* <#sort_complex>`__
+36. `numpy.std <#std>`__
+37. `numpy.sum <#sum>`__
+38. `numpy.trace <#trace>`__
+39. `numpy.trapz <#trapz>`__
+40. `numpy.where <#where>`__
 
 all
 ---
@@ -267,6 +269,53 @@ example:
     
     the original array:
      array([0, 5, 1, 3, 2, 4], dtype=uint8)
+    
+    
+
+
+asarray
+-------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.asarray.html
+
+The function takes a single positional argument, and an optional keyword
+argument, ``dtype``, with a default value of ``None``.
+
+If the positional argument is an ``ndarray``, and its ``dtypes`` is
+identical to the value of the keyword argument, or if the keyword
+argument is ``None``, then the positional argument is simply returned.
+If the original ``dtype``, and the value of the keyword argument are
+different, then a copy is returned, with appropriate ``dtype``
+conversion.
+
+If the positional argument is an iterable, then the function is simply
+an alias for ``array``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(9), dtype=np.uint8)
+    b = np.asarray(a)
+    c = np.asarray(a, dtype=np.int8)
+    print('a:{}'.format(a))
+    print('b:{}'.format(b))
+    print('a == b: {}'.format(a is b))
+    
+    print('\nc:{}'.format(c))
+    print('a == c: {}'.format(a is c))
+
+.. parsed-literal::
+
+    a:array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    b:array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    a == b: True
+    
+    c:array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=int8)
+    a == c: False
     
     
 
@@ -1430,16 +1479,40 @@ The function takes two positional arguments, the name of the output
 file, and the array.
 
 .. code::
+
+    # code to be run in CPython
+    
+    a = np.array(range(25)).reshape((5, 5))
+    np.save('a.npy', a)
+size
+----
+
+The function takes a single positional argument, and an optional keyword
+argument, ``axis``, with a default value of ``None``, and returns the
+size of an array along that axis. If ``axis`` is ``None``, the total
+length of the array (the product of the elements of its shape) is
+returned.
+
+.. code::
         
     # code to be run in micropython
     
     from ulab import numpy as np
     
-    a = np.array(range(25)).reshape((5, 5))
-    np.save('a.npy', a)
+    a = np.ones((2, 3))
+    
+    print(a)
+    print('size(a, axis=0): ', np.size(a, axis=0))
+    print('size(a, axis=1): ', np.size(a, axis=1))
+    print('size(a, axis=None): ', np.size(a, axis=None))
 
 .. parsed-literal::
 
+    array([[1.0, 1.0, 1.0],
+           [1.0, 1.0, 1.0]], dtype=float64)
+    size(a, axis=0):  2
+    size(a, axis=1):  3
+    size(a, axis=None):  6
     
     
 

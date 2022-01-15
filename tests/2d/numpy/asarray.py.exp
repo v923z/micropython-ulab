@@ -1,0 +1,155 @@
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+a is b: True
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+b:  array([[1, 1],
+       [1, 1]], dtype=int8)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+b:  array([[1, 1],
+       [1, 1]], dtype=int16)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+b:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+a is b: False
+
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int8)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int8)
+b:  array([[1, 1],
+       [1, 1]], dtype=int8)
+a is b: True
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int8)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int8)
+b:  array([[1, 1],
+       [1, 1]], dtype=int16)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int8)
+b:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+a is b: False
+
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+b:  array([[1, 1],
+       [1, 1]], dtype=int8)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+a is b: True
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+b:  array([[1, 1],
+       [1, 1]], dtype=int16)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+b:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+a is b: False
+
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int16)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int16)
+b:  array([[1, 1],
+       [1, 1]], dtype=int8)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int16)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+a is b: False
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int16)
+b:  array([[1, 1],
+       [1, 1]], dtype=int16)
+a is b: True
+
+a:  array([[1, 1],
+       [1, 1]], dtype=int16)
+b:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+a is b: False
+
+
+a:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint8)
+a is b: False
+
+a:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+b:  array([[1, 1],
+       [1, 1]], dtype=int8)
+a is b: False
+
+a:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+b:  array([[1, 1],
+       [1, 1]], dtype=uint16)
+a is b: False
+
+a:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+b:  array([[1, 1],
+       [1, 1]], dtype=int16)
+a is b: False
+
+a:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+b:  array([[1.0, 1.0],
+       [1.0, 1.0]], dtype=float64)
+a is b: True
+

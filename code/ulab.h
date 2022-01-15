@@ -426,6 +426,10 @@
 #define ULAB_NUMPY_HAS_ARGSORT          (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_ASARRAY
+#define ULAB_NUMPY_HAS_ASARRAY          (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_COMPRESS
 #define ULAB_NUMPY_HAS_COMPRESS         (1)
 #endif
@@ -488,6 +492,10 @@
 
 #ifndef ULAB_NUMPY_HAS_SAVE
 #define ULAB_NUMPY_HAS_SAVE             (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_SIZE
+#define ULAB_NUMPY_HAS_SIZE             (1)
 #endif
 
 #ifndef ULAB_NUMPY_HAS_SORT
