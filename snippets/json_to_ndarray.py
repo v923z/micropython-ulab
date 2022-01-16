@@ -59,7 +59,7 @@ def json_to_ndarray(json_string, b64=True):
         json_to_ndarray(str, b64=True)
     """
     obj = json.loads(json_string)
-    print(obj)
+
     if not isinstance(obj, dict):
          raise TypeError('input argument must be a dictionary')
     if set(obj.keys()) != {'array', 'dtype', 'shape'}:
