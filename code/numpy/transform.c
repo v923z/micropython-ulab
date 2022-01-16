@@ -9,9 +9,10 @@
  *
 */
 
+#include <unistd.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
