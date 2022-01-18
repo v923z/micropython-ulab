@@ -1,3 +1,9 @@
+Tue, 18 Jan 2022
+
+version 4.2.1
+
+    fix ndarray_copy_view for Boolean dtypes
+
 Fri, 14 Jan 2022
 
 version 4.2.0
