@@ -494,6 +494,10 @@
 #define ULAB_NUMPY_HAS_SAVE             (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_SAVETXT
+#define ULAB_NUMPY_HAS_SAVETXT          (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_SIZE
 #define ULAB_NUMPY_HAS_SIZE             (1)
 #endif

@@ -278,6 +278,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_SAVE
         { MP_OBJ_NEW_QSTR(MP_QSTR_save), (mp_obj_t)&io_save_obj },
     #endif
+    #if ULAB_NUMPY_HAS_SAVETXT
+        { MP_OBJ_NEW_QSTR(MP_QSTR_savetxt), (mp_obj_t)&io_savetxt_obj },
+    #endif
     #if ULAB_NUMPY_HAS_SIZE
         { MP_OBJ_NEW_QSTR(MP_QSTR_size), (mp_obj_t)&transform_size_obj },
     #endif
