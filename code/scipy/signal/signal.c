@@ -158,7 +158,7 @@ static const mp_rom_map_elem_t ulab_scipy_signal_globals_table[] = {
     #if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
         { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&signal_spectrogram_obj },
     #endif
-    #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
+    #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT & ULAB_MAX_DIMS > 1
         { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&signal_sosfilt_obj },
     #endif
 };
