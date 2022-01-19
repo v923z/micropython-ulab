@@ -118,7 +118,7 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             mp_raise_TypeError(translate("zi must be an ndarray"));
         } else {
             ndarray_obj_t *zi = MP_OBJ_TO_PTR(args[2].u_obj);
-            if((zi->shape[ULAB_MAX_DIMS - 1] != lensos) || (zi->shape[ULAB_MAX_DIMS - 1] != 2)) {
+            if((zi->shape[ULAB_MAX_DIMS - 2] != lensos) || (zi->shape[ULAB_MAX_DIMS - 1] != 2)) {
                 mp_raise_ValueError(translate("zi must be of shape (n_section, 2)"));
             }
             if(zi->dtype != NDARRAY_FLOAT) {

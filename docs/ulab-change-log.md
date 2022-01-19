@@ -1,3 +1,9 @@
+Wed, 19 Jan 2022
+
+version 4.2.1
+
+    fix signal.sosfilt
+
 Fri, 14 Jan 2022
 
 version 4.2.0
