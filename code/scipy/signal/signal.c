@@ -53,7 +53,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_spectrogram_obj, 1, 2, signal_spectro
 
 #endif /* ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM */
 
-#if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
+#if ULAB_SCIPY_SIGNAL_HAS_SOSFILT & ULAB_MAX_DIMS > 1
 static void signal_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_float_t *zf, const size_t len) {
     for(size_t i=0; i < len; i++) {
         mp_float_t xn = *x;
