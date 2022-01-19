@@ -376,28 +376,29 @@ MP_DEFINE_CONST_FUN_OBJ_2(io_save_obj, io_save);
 #endif /* ULAB_NUMPY_HAS_SAVE */
 
 #if ULAB_NUMPY_HAS_SAVETXT
-static int8_t io_format_number(ndarray_obj_t *ndarray, mp_float_t (*func)(void *), uint8_t *array, char *buffer, char delimiter) {
+static int8_t io_format_number(ndarray_obj_t *ndarray, mp_float_t (*func)(void *), uint8_t *array, char *buffer, char *delimiter) {
     #if ULAB_SUPPORTS_COMPLEX
     if(ndarray->dtype == NDARRAY_COMPLEX) {
         mp_float_t real = func(array);
         mp_float_t imag = func(array + ndarray->itemsize / 2);
         if(imag >= MICROPY_FLOAT_CONST(0.0)) {
-            return sprintf(buffer, "%.8e+%.8ej%c", real, imag, delimiter);
+            return sprintf(buffer, "%.8e+%.8ej%s", real, imag, delimiter);
         } else {
-            return sprintf(buffer, "%.8e-%.8ej%c", real, -imag, delimiter);
+            return sprintf(buffer, "%.8e-%.8ej%s", real, -imag, delimiter);
         }
     }
     #endif
-    return sprintf(buffer, "%.8e%c", func(array), delimiter);
+    return sprintf(buffer, "%.8e%s", func(array), delimiter);
 }
 
 static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        // { MP_QSTR_header, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = } },
-        // { MP_QSTR_footer, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = } },
-        // { MP_QSTR_comments, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj =  } },
+        { MP_QSTR_delimiter, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_header, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_footer, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_comments, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -426,11 +427,32 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
     int error;
 
+    if(mp_obj_is_str(args[3].u_obj)) {
+        size_t head_len;
+        const char *header = mp_obj_str_get_data(args[3].u_obj, &head_len);
+        if(mp_obj_is_str(args[5].u_obj)) {
+            const char *comments = mp_obj_str_get_data(args[5].u_obj, &head_len);
+            stream_p->write(stream, comments, head_len, &error);
+        } else {
+            stream_p->write(stream, "#", 1, &error);
+        }
+        stream_p->write(stream, header, head_len, &error);
+        stream_p->write(stream, "\n", 1, &error);
+    }
+
     uint8_t *array = (uint8_t *)ndarray->array;
     mp_float_t (*func)(void *) = ndarray_get_float_function(ndarray->dtype);
-    char delimiter = '\n';
-    if(ndarray->ndim > 1) {
-        delimiter = ' ';
+    char *delimiter = m_new(char, 8);
+
+    if(ndarray->ndim == 1) {
+        delimiter[0] = '\n';
+        delimiter[1] = '\0';
+    } else if((args[2].u_obj == mp_const_none)) {
+        delimiter[0] = ' ';
+        delimiter[1] = '\0';
+    } else {
+        size_t delimiter_len;
+        delimiter = (char *)mp_obj_str_get_data(args[2].u_obj, &delimiter_len);
     }
 
     #if ULAB_MAX_DIMS > 1
@@ -439,7 +461,7 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     #endif
         size_t l = 0;
         do {
-            int8_t chars = io_format_number(ndarray, func, array, buffer, delimiter);
+            int8_t chars = io_format_number(ndarray, func, array, buffer, l == ndarray->shape[ULAB_MAX_DIMS - 1] - 1 ? "\n" : delimiter);
             if(chars > 0) {
                 stream_p->write(stream, buffer, chars, &error);
             }
@@ -447,15 +469,24 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             l++;
         } while(l < ndarray->shape[ULAB_MAX_DIMS - 1]);
     #if ULAB_MAX_DIMS > 1
-        if(ndarray->ndim > 1) {
-            buffer[0] = '\n';
-            stream_p->write(stream, buffer, 1, &error);
-        }
         array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
         array += ndarray->strides[ULAB_MAX_DIMS - 2];
         k++;
     } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
     #endif
+
+    if(mp_obj_is_str(args[4].u_obj)) {
+        size_t footer_len;
+        const char *footer = mp_obj_str_get_data(args[4].u_obj, &footer_len);
+        if(mp_obj_is_str(args[5].u_obj)) {
+            const char *comments = mp_obj_str_get_data(args[5].u_obj, &footer_len);
+            stream_p->write(stream, comments, footer_len, &error);
+        } else {
+            stream_p->write(stream, "#", 1, &error);
+        }
+        stream_p->write(stream, footer, footer_len, &error);
+        stream_p->write(stream, "\n", 1, &error);
+    }
 
     stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
 
