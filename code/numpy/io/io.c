@@ -447,7 +447,7 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     if(ndarray->ndim == 1) {
         delimiter[0] = '\n';
         delimiter[1] = '\0';
-    } else if((args[2].u_obj == mp_const_none)) {
+    } else if(args[2].u_obj == mp_const_none) {
         delimiter[0] = ' ';
         delimiter[1] = '\0';
     } else {
