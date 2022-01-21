@@ -19,6 +19,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/numpy/create.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/fft/fft.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/fft/fft_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/filter.c
+SRC_USERMOD += $(USERMODULES_DIR)/numpy/io/io.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/linalg/linalg.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/linalg/linalg_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/numerical.c

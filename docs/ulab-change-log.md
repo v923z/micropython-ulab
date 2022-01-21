@@ -1,14 +1,32 @@
 Wed, 19 Jan 2022
 
-version 4.2.1
+version 4.3.1
 
     fix signal.sosfilt
+
+Wed, 19 Jan 2022
+
+version 4.3.0
+
+    implement numpy.save, numpy.load
+
+Tue, 18 Jan 2022
+
+version 4.2.1
+
+    fix ndarray_copy_view for Boolean dtypes
 
 Fri, 14 Jan 2022
 
 version 4.2.0
 
     add numpy.size, asarray
+
+Wed, 12 Jan 2022
+
+    version 4.2.0
+
+    implement numpy.save, numpy.load
 
 Wed, 12 Jan 2022
 
