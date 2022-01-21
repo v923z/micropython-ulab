@@ -53,7 +53,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_spectrogram_obj, 1, 2, signal_spectro
 
 #endif /* ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM */
 
-#if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
+#if ULAB_SCIPY_SIGNAL_HAS_SOSFILT & ULAB_MAX_DIMS > 1
 static void signal_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_float_t *zf, const size_t len) {
     for(size_t i=0; i < len; i++) {
         mp_float_t xn = *x;
@@ -118,7 +118,7 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             mp_raise_TypeError(translate("zi must be an ndarray"));
         } else {
             ndarray_obj_t *zi = MP_OBJ_TO_PTR(args[2].u_obj);
-            if((zi->shape[ULAB_MAX_DIMS - 1] != lensos) || (zi->shape[ULAB_MAX_DIMS - 1] != 2)) {
+            if((zi->shape[ULAB_MAX_DIMS - 2] != lensos) || (zi->shape[ULAB_MAX_DIMS - 1] != 2)) {
                 mp_raise_ValueError(translate("zi must be of shape (n_section, 2)"));
             }
             if(zi->dtype != NDARRAY_FLOAT) {
@@ -158,7 +158,7 @@ static const mp_rom_map_elem_t ulab_scipy_signal_globals_table[] = {
     #if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
         { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&signal_spectrogram_obj },
     #endif
-    #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT
+    #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT & ULAB_MAX_DIMS > 1
         { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&signal_sosfilt_obj },
     #endif
 };

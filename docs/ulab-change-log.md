@@ -1,6 +1,12 @@
 Wed, 19 Jan 2022
 
-    version 4.3.0
+version 4.3.1
+
+    fix signal.sosfilt
+
+Wed, 19 Jan 2022
+
+version 4.3.0
 
     implement numpy.save, numpy.load
 
