@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/misc.h"
@@ -44,7 +45,7 @@ static mp_obj_t transform_compress(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_obj_t axis = args[2].u_obj;
 
     size_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(condition));
-    int8_t ax, shift_ax;
+    int8_t ax, shift_ax = 0;
 
     if(axis != mp_const_none) {
         ax = tools_get_axis(axis, ndarray->ndim);

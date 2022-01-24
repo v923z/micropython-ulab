@@ -10,8 +10,10 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "py/builtin.h"
+#include "py/formatfloat.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -232,6 +234,36 @@ MP_DEFINE_CONST_FUN_OBJ_1(io_load_obj, io_load);
 #endif /* ULAB_NUMPY_HAS_LOAD */
 
 #if ULAB_NUMPY_HAS_SAVE
+static uint8_t io_sprintf(char *buffer, const char *comma, size_t x) {
+    uint8_t offset = 1;
+    char *buf = buffer;
+    // our own minimal implementation of sprintf for size_t types
+    // this is required on systems, where sprintf is not available
+
+    // find out, how many characters are required
+    // we could call log10 here...
+    for(size_t i = 10; i < 100000000; i *= 10) {
+        if(x < i) {
+            break;
+        }
+        buf++;
+    }
+
+    while(x > 0) {
+        uint8_t rem = x % 10;
+        *buf-- = '0' + rem;
+        x /= 10;
+        offset++;
+    }
+
+    buf += offset;
+    while(*comma != '\0') {
+        *buf++ = *comma++;
+        offset++;
+    }
+    return offset - 1;
+}
+
 static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
     if(!mp_obj_is_str(file) || !mp_obj_is_type(ndarray_, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("wrong input type"));
@@ -303,12 +335,12 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
     offset += 37;
 
     if(ndarray->ndim == 1) {
-        offset += sprintf(buffer+offset, "%zu,", ndarray->shape[ULAB_MAX_DIMS - 1]);
+        offset += io_sprintf(buffer+offset, ",\0", ndarray->shape[ULAB_MAX_DIMS - 1]);
     } else {
         for(uint8_t i = ndarray->ndim; i > 1; i--) {
-            offset += sprintf(buffer+offset, "%zu, ", ndarray->shape[ULAB_MAX_DIMS - i]);
+            offset += io_sprintf(buffer+offset, ", \0", ndarray->shape[ULAB_MAX_DIMS - i]);
         }
-        offset += sprintf(buffer+offset, "%zu", ndarray->shape[ULAB_MAX_DIMS - 1]);
+        offset += io_sprintf(buffer+offset, "\0", ndarray->shape[ULAB_MAX_DIMS - 1]);
     }
     memcpy(buffer+offset, "), }", 4);
     offset += 4;
@@ -376,19 +408,47 @@ MP_DEFINE_CONST_FUN_OBJ_2(io_save_obj, io_save);
 #endif /* ULAB_NUMPY_HAS_SAVE */
 
 #if ULAB_NUMPY_HAS_SAVETXT
-static int8_t io_format_number(ndarray_obj_t *ndarray, mp_float_t (*func)(void *), uint8_t *array, char *buffer, char *delimiter) {
+static int8_t io_format_float(ndarray_obj_t *ndarray, mp_float_t (*func)(void *), uint8_t *array, char *buffer, char *delimiter) {
+    // own implementation of float formatting for platforms that don't have sprintf
+    int8_t offset = 0;
+
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+        const int precision = 6;
+        #else
+        const int precision = 7;
+        #endif
+    #else
+        const int precision = 16;
+    #endif
+
     #if ULAB_SUPPORTS_COMPLEX
     if(ndarray->dtype == NDARRAY_COMPLEX) {
         mp_float_t real = func(array);
         mp_float_t imag = func(array + ndarray->itemsize / 2);
+        offset = mp_format_float(real, buffer, ULAB_IO_BUFFER_SIZE, 'f', precision, 'j');
         if(imag >= MICROPY_FLOAT_CONST(0.0)) {
-            return sprintf(buffer, "%.8e+%.8ej%s", real, imag, delimiter);
+            buffer[offset++] = '+';
         } else {
-            return sprintf(buffer, "%.8e-%.8ej%s", real, -imag, delimiter);
+            buffer[offset++] = '-';
         }
+        offset += mp_format_float(-imag, &buffer[offset], ULAB_IO_BUFFER_SIZE, 'f', precision, 'j');
     }
     #endif
-    return sprintf(buffer, "%.8e%s", func(array), delimiter);
+    offset = (uint8_t)mp_format_float(func(array), buffer, ULAB_IO_BUFFER_SIZE, 'e', precision, '\0');
+
+    #if ULAB_SUPPORTS_COMPLEX
+    if(ndarray->dtype != NDARRAY_COMPLEX) {
+        // complexes end with a 'j', floats with a '\0', so we have to wind back by one character
+        offset--;
+    }
+    #endif
+
+    while(*delimiter != '\0') {
+        buffer[offset++] = *delimiter++;
+    }
+
+    return offset;
 }
 
 static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -461,7 +521,7 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     #endif
         size_t l = 0;
         do {
-            int8_t chars = io_format_number(ndarray, func, array, buffer, l == ndarray->shape[ULAB_MAX_DIMS - 1] - 1 ? "\n" : delimiter);
+            int8_t chars = io_format_float(ndarray, func, array, buffer, l == ndarray->shape[ULAB_MAX_DIMS - 1] - 1 ? "\n" : delimiter);
             if(chars > 0) {
                 stream_p->write(stream, buffer, chars, &error);
             }
