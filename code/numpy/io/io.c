@@ -8,13 +8,16 @@
  * Copyright (c) 2022 Zoltán Vörös
 */
 
-#include <string.h>
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "py/builtin.h"
 #include "py/formatfloat.h"
 #include "py/obj.h"
+#include "py/parsenum.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 
@@ -23,6 +26,7 @@
 #include "io.h"
 
 #define ULAB_IO_BUFFER_SIZE         128
+#define ULAB_IO_CLIPBOARD_SIZE      20
 
 #define ULAB_IO_NULL_ENDIAN         0
 #define ULAB_IO_LITTLE_ENDIAN       1
@@ -232,6 +236,150 @@ static mp_obj_t io_load(mp_obj_t file) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(io_load_obj, io_load);
 #endif /* ULAB_NUMPY_HAS_LOAD */
+
+#if ULAB_NUMPY_HAS_LOADTXT
+static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_delimiter, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_comments, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_usecols, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_max_rows, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t open_args[2] = {
+        args[0].u_obj,
+        MP_OBJ_NEW_QSTR(MP_QSTR_r)
+    };
+
+    mp_obj_t stream = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    const mp_stream_p_t *stream_p = mp_get_stream(stream);
+
+    char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
+    int error;
+
+    // count the columns and rows
+    char *offset;
+    uint16_t columns = 0, rows = 0;
+    uint8_t read;
+
+    do {
+        read = stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE, &error);
+        offset = buffer;
+        uint8_t counter = read;
+        while(counter > 0) {
+            if(*offset == '#') {
+                // clear the line till the end, or the buffer's end
+                for( ; counter > 0; ) {
+                    offset++;
+                    counter--;
+                    if(*offset == '\n') {
+                        offset++;
+                        if(counter > 0) {
+                            counter--;
+                        }
+                        break;
+                    }
+                }
+            }
+            if(*offset == '\n') {
+                // TODO: this counts empty rows
+                rows++;
+                offset++;
+                counter--;
+            }
+            // TODO: implement delimiter keyword
+            if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
+                columns++;
+                offset++;
+                counter--;
+                while(((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n'))
+                        && (counter > 0)) {
+                    offset++;
+                    counter--;
+                }
+            }
+            offset++;
+            counter--;
+        }
+    } while(read > 0);
+
+    // get rid of last, empty, row
+    rows--;
+
+    // TODO: deal with the ULAB_MAX_DIMS == 1 case
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
+    shape[ULAB_MAX_DIMS - 1] = columns / rows;
+    shape[ULAB_MAX_DIMS - 2] = rows;
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, shape, NDARRAY_FLOAT);
+    mp_float_t *array = (mp_float_t *)ndarray->array;
+
+    struct mp_stream_seek_t seek_s;
+    seek_s.offset = 0;
+    seek_s.whence = SEEK_SET;
+    stream_p->ioctl(stream, MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &error);
+
+    char *clipboard = m_new(char, ULAB_IO_CLIPBOARD_SIZE);
+    char *clipboard_origin = clipboard;
+    uint8_t len = 0;
+
+    do {
+        read = stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE, &error);
+        offset = buffer;
+        uint8_t counter = read;
+
+        while(counter > 0) {
+            // TODO: bring in comments keyword
+            if(*offset == '#') {
+                // clear the line till the end, or the buffer's end
+                for( ; counter > 0; ) {
+                    offset++;
+                    counter--;
+                    if(*offset == '\n') {
+                        offset++;
+                        if(counter > 0) {
+                            counter--;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
+                columns++;
+                offset++;
+                counter--;
+                while(((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n'))
+                        && (counter > 0)) {
+                    offset++;
+                    counter--;
+                }
+                clipboard = clipboard_origin;
+                mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
+                *array++ = mp_obj_get_float(value);
+                len = 0;
+            } else {
+                *clipboard++ = *offset++;
+                len++;
+                counter--;
+            }
+        }
+    } while(read > 0);
+
+    stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
+    m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
+    m_del(char, clipboard, ULAB_IO_CLIPBOARD_SIZE);
+
+    return MP_OBJ_FROM_PTR(ndarray);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(io_loadtxt_obj, 1, io_loadtxt);
+#endif /* ULAB_NUMPY_HAS_LOADTXT */
+
 
 #if ULAB_NUMPY_HAS_SAVE
 static uint8_t io_sprintf(char *buffer, const char *comma, size_t x) {

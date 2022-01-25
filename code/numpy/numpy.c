@@ -260,6 +260,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_LOAD
         { MP_OBJ_NEW_QSTR(MP_QSTR_load), (mp_obj_t)&io_load_obj },
     #endif
+    #if ULAB_NUMPY_HAS_LOADTXT
+        { MP_OBJ_NEW_QSTR(MP_QSTR_loadtxt), (mp_obj_t)&io_loadtxt_obj },
+    #endif
     #if ULAB_NUMPY_HAS_MINMAX
         { MP_OBJ_NEW_QSTR(MP_QSTR_max), (mp_obj_t)&numerical_max_obj },
     #endif
