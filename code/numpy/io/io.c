@@ -8,10 +8,6 @@
  * Copyright (c) 2022 Zoltán Vörös
 */
 
-#include <ctype.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "py/builtin.h"
@@ -267,43 +263,51 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     uint8_t read;
 
     do {
-        read = stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE, &error);
+        read = (uint8_t)stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE, &error);
         offset = buffer;
         uint8_t counter = read;
         while(counter > 0) {
             if(*offset == '#') {
                 // clear the line till the end, or the buffer's end
-                for( ; counter > 0; ) {
-                    offset++;
+                while(counter > 0) {
                     counter--;
+                    offset++;
                     if(*offset == '\n') {
-                        offset++;
                         if(counter > 0) {
                             counter--;
+                            offset++;
                         }
                         break;
                     }
                 }
             }
             if(*offset == '\n') {
-                // TODO: this counts empty rows
-                rows++;
-                offset++;
-                counter--;
+                if(counter > 0) {
+                    rows++;
+                    offset++;
+                    counter--;
+                } else {
+                    break;
+                }
             }
             // TODO: implement delimiter keyword
             if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
                 columns++;
-                offset++;
-                counter--;
+                if(counter > 0) {
+                    offset++;
+                    counter--;
+                }
                 while(((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n'))
                         && (counter > 0)) {
                     offset++;
                     counter--;
                 }
+            } else {
+                // if(counter > 0) {
+                    offset++;
+                    counter--;
+                // }
             }
-            offset++;
-            counter--;
         }
     } while(read > 0);
 
