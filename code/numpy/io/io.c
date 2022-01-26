@@ -62,7 +62,7 @@ static mp_obj_t io_load(mp_obj_t file) {
         MP_OBJ_NEW_QSTR(MP_QSTR_rb)
     };
 
-    mp_obj_t stream = io_open_stream(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    mp_obj_t stream = mp_builtin_open_obj.fun.kw(2, open_args, (mp_map_t *)&mp_const_empty_map);
     const mp_stream_p_t *stream_p = mp_get_stream(stream);
 
     // read header
@@ -251,7 +251,7 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
         MP_OBJ_NEW_QSTR(MP_QSTR_wb)
     };
 
-    mp_obj_t stream = io_open_stream(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    mp_obj_t stream = mp_builtin_open_obj.fun.kw(2, open_args, (mp_map_t *)&mp_const_empty_map);
     const mp_stream_p_t *stream_p = mp_get_stream(stream);
 
     // write header;
