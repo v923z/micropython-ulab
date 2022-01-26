@@ -64,7 +64,7 @@ static mp_obj_t io_load(mp_obj_t file) {
         MP_OBJ_NEW_QSTR(MP_QSTR_rb)
     };
 
-    mp_obj_t stream = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    mp_obj_t stream = mp_builtin_open_obj.fun.kw(2, open_args, (mp_map_t *)&mp_const_empty_map);
     const mp_stream_p_t *stream_p = mp_get_stream(stream);
 
     // read header
@@ -251,62 +251,50 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         MP_OBJ_NEW_QSTR(MP_QSTR_r)
     };
 
-    mp_obj_t stream = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    mp_obj_t stream = mp_builtin_open_obj.fun.kw(2, open_args, (mp_map_t *)&mp_const_empty_map);
     const mp_stream_p_t *stream_p = mp_get_stream(stream);
 
     char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
     int error;
 
     // count the columns and rows
+    // we actually count only the rows and the items, and assume that
+    // the number of columns can be gotten by means of a simple division,
+    // i.e., that the rows have the same number of columns
     char *offset;
     uint16_t columns = 0, rows = 0;
     uint8_t read;
 
     do {
-        read = (uint8_t)stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE, &error);
+        read = (uint8_t)stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE - 1, &error);
+        buffer[read] = '\0';
         offset = buffer;
-        uint8_t counter = read;
-        while(counter > 0) {
+        while(*offset != '\0') {
             if(*offset == '#') {
                 // clear the line till the end, or the buffer's end
-                while(counter > 0) {
-                    counter--;
+                while((*offset != '\0')) {
                     offset++;
                     if(*offset == '\n') {
-                        if(counter > 0) {
-                            counter--;
-                            offset++;
-                        }
+                        offset++;
                         break;
                     }
                 }
             }
+            // TODO: deal with last, emtpy row
             if(*offset == '\n') {
-                if(counter > 0) {
-                    rows++;
-                    offset++;
-                    counter--;
-                } else {
-                    break;
-                }
+                rows++;
+                offset++;
             }
             // TODO: implement delimiter keyword
+            // this will incorrectly increment the columns counter, if the previous character was a linebreak
             if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
                 columns++;
-                if(counter > 0) {
+                offset++;
+                while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
                     offset++;
-                    counter--;
-                }
-                while(((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n'))
-                        && (counter > 0)) {
-                    offset++;
-                    counter--;
                 }
             } else {
-                // if(counter > 0) {
-                    offset++;
-                    counter--;
-                // }
+                offset++;
             }
         }
     } while(read > 0);
@@ -332,22 +320,18 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     uint8_t len = 0;
 
     do {
-        read = stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE, &error);
+        read = stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE - 1, &error);
+        buffer[read] = '\0';
         offset = buffer;
-        uint8_t counter = read;
 
-        while(counter > 0) {
+        while(*offset != '\0') {
             // TODO: bring in comments keyword
             if(*offset == '#') {
                 // clear the line till the end, or the buffer's end
-                for( ; counter > 0; ) {
+                while((*offset != '\0')) {
                     offset++;
-                    counter--;
                     if(*offset == '\n') {
                         offset++;
-                        if(counter > 0) {
-                            counter--;
-                        }
                         break;
                     }
                 }
@@ -356,11 +340,8 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
                 columns++;
                 offset++;
-                counter--;
-                while(((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n'))
-                        && (counter > 0)) {
+                while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
                     offset++;
-                    counter--;
                 }
                 clipboard = clipboard_origin;
                 mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
@@ -369,7 +350,6 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             } else {
                 *clipboard++ = *offset++;
                 len++;
-                counter--;
             }
         }
     } while(read > 0);
@@ -435,7 +415,7 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
         MP_OBJ_NEW_QSTR(MP_QSTR_wb)
     };
 
-    mp_obj_t stream = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    mp_obj_t stream = mp_builtin_open_obj.fun.kw(2, open_args, (mp_map_t *)&mp_const_empty_map);
     const mp_stream_p_t *stream_p = mp_get_stream(stream);
 
     // write header;
@@ -633,7 +613,7 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         MP_OBJ_NEW_QSTR(MP_QSTR_w)
     };
 
-    mp_obj_t stream = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
+    mp_obj_t stream = mp_builtin_open_obj.fun.kw(2, open_args, (mp_map_t *)&mp_const_empty_map);
     const mp_stream_p_t *stream_p = mp_get_stream(stream);
 
     char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
