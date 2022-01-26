@@ -22,7 +22,8 @@
 #include "io.h"
 
 #define ULAB_IO_BUFFER_SIZE         128
-#define ULAB_IO_CLIPBOARD_SIZE      20
+#define ULAB_IO_CLIPBOARD_SIZE      32
+#define ULAB_IO_MAX_ROWS            65535
 
 #define ULAB_IO_NULL_ENDIAN         0
 #define ULAB_IO_LITTLE_ENDIAN       1
@@ -240,7 +241,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         { MP_QSTR_delimiter, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_comments, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_usecols, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_max_rows, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_max_rows, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = -1 } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -257,6 +258,48 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
     int error;
 
+    char delimiter = ' ';
+    if(args[1].u_obj != mp_const_none) {
+        size_t _len;
+        char *_delimiter = m_new(char, 8);
+        _delimiter = (char *)mp_obj_str_get_data(args[1].u_obj, &_len);
+        delimiter = _delimiter[0];
+    }
+
+    char comment_char = '#';
+    if(args[2].u_obj != mp_const_none) {
+        size_t _len;
+        char *_comment_char = m_new(char, 8);
+        _comment_char = (char *)mp_obj_str_get_data(args[2].u_obj, &_len);
+        comment_char = _comment_char[0];
+    }
+
+    uint16_t *cols = NULL;
+    uint8_t used_columns = 0;
+    if(args[3].u_obj != mp_const_none) {
+        if(mp_obj_is_int(args[3].u_obj)) {
+            used_columns = 1;
+            cols = m_new(uint16_t, used_columns);
+            cols[0] = (uint16_t)mp_obj_get_int(args[3].u_obj);
+        } else {
+            // assume that the argument is an iterable
+            used_columns = (uint16_t)mp_obj_get_int(mp_obj_len(args[3].u_obj));
+            cols = m_new(uint16_t, used_columns);
+            mp_obj_iter_buf_t iter_buf;
+            mp_obj_t item, iterable = mp_getiter(args[3].u_obj, &iter_buf);
+            while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+                *cols++ = (uint16_t)mp_obj_get_int(args[3].u_obj);
+            }
+            cols -= used_columns;
+        }
+    }
+
+    size_t max_rows = ULAB_IO_MAX_ROWS;
+    if((args[4].u_int > 0) && (args[4].u_int < ULAB_IO_MAX_ROWS)) {
+        max_rows = (size_t)args[4].u_int;
+    }
+
+
     // count the columns and rows
     // we actually count only the rows and the items, and assume that
     // the number of columns can be gotten by means of a simple division,
@@ -270,7 +313,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         buffer[read] = '\0';
         offset = buffer;
         while(*offset != '\0') {
-            if(*offset == '#') {
+            if(*offset == comment_char) {
                 // clear the line till the end, or the buffer's end
                 while((*offset != '\0')) {
                     offset++;
@@ -285,9 +328,9 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 rows++;
                 offset++;
             }
-            // TODO: implement delimiter keyword
             // this will incorrectly increment the columns counter, if the previous character was a linebreak
-            if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
+            if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') ||
+                (*offset == '\f') || (*offset == '\r') || (*offset == '\n') || (*offset == delimiter)) {
                 columns++;
                 offset++;
                 while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
@@ -299,13 +342,21 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         }
     } while(read > 0);
 
+    if(columns < used_columns) {
+        mp_raise_ValueError(translate("usecols is too high"));
+    }
+
     // get rid of last, empty, row
     rows--;
 
     // TODO: deal with the ULAB_MAX_DIMS == 1 case
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
-    shape[ULAB_MAX_DIMS - 1] = columns / rows;
+    if(args[3].u_obj == mp_const_none) {
+        shape[ULAB_MAX_DIMS - 1] = columns / rows;
+    } else {
+        shape[ULAB_MAX_DIMS - 1] = used_columns;
+    }
     shape[ULAB_MAX_DIMS - 2] = rows;
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, shape, NDARRAY_FLOAT);
     mp_float_t *array = (mp_float_t *)ndarray->array;
@@ -319,40 +370,63 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     char *clipboard_origin = clipboard;
     uint8_t len = 0;
 
+    rows = 0;
+    columns = 0;
+
     do {
         read = stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE - 1, &error);
         buffer[read] = '\0';
         offset = buffer;
 
+        if(rows > max_rows) {
+            break;
+        }
+
         while(*offset != '\0') {
-            // TODO: bring in comments keyword
-            if(*offset == '#') {
+            if(*offset == comment_char) {
                 // clear the line till the end, or the buffer's end
                 while((*offset != '\0')) {
                     offset++;
                     if(*offset == '\n') {
+                        rows++;
                         offset++;
                         break;
                     }
                 }
             }
 
-            if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
-                columns++;
+            if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') ||
+                (*offset == '\f') || (*offset == '\r') || (*offset == '\n') || (*offset == delimiter)) {
                 offset++;
                 while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
                     offset++;
                 }
                 clipboard = clipboard_origin;
-                mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
-                *array++ = mp_obj_get_float(value);
+                if(args[3].u_obj == mp_const_none) {
+                    mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
+                    *array++ = mp_obj_get_float(value);
+                } else {
+                    for(uint8_t c = 0; c < used_columns; c++) {
+                        if(columns == cols[c]) {
+                            mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
+                            *array++ = mp_obj_get_float(value);
+                            break;
+                        }
+                    }
+                }
+                columns++;
                 len = 0;
+
+                if(offset[-1] == '\n') {
+                    columns = 0;
+                    rows++;
+                }
             } else {
                 *clipboard++ = *offset++;
                 len++;
             }
         }
-    } while(read > 0);
+    } while((read > 0) && (rows < max_rows));
 
     stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
     m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
@@ -620,15 +694,15 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     int error;
 
     if(mp_obj_is_str(args[3].u_obj)) {
-        size_t head_len;
-        const char *header = mp_obj_str_get_data(args[3].u_obj, &head_len);
+        size_t _len;
         if(mp_obj_is_str(args[5].u_obj)) {
-            const char *comments = mp_obj_str_get_data(args[5].u_obj, &head_len);
-            stream_p->write(stream, comments, head_len, &error);
+            const char *comments = mp_obj_str_get_data(args[5].u_obj, &_len);
+            stream_p->write(stream, comments, _len, &error);
         } else {
             stream_p->write(stream, "#", 1, &error);
         }
-        stream_p->write(stream, header, head_len, &error);
+        const char *header = mp_obj_str_get_data(args[3].u_obj, &_len);
+        stream_p->write(stream, header, _len, &error);
         stream_p->write(stream, "\n", 1, &error);
     }
 
@@ -668,15 +742,15 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     #endif
 
     if(mp_obj_is_str(args[4].u_obj)) {
-        size_t footer_len;
-        const char *footer = mp_obj_str_get_data(args[4].u_obj, &footer_len);
+        size_t _len;
         if(mp_obj_is_str(args[5].u_obj)) {
-            const char *comments = mp_obj_str_get_data(args[5].u_obj, &footer_len);
-            stream_p->write(stream, comments, footer_len, &error);
+            const char *comments = mp_obj_str_get_data(args[5].u_obj, &_len);
+            stream_p->write(stream, comments, _len, &error);
         } else {
             stream_p->write(stream, "#", 1, &error);
         }
-        stream_p->write(stream, footer, footer_len, &error);
+        const char *footer = mp_obj_str_get_data(args[4].u_obj, &_len);
+        stream_p->write(stream, footer, _len, &error);
         stream_p->write(stream, "\n", 1, &error);
     }
 
