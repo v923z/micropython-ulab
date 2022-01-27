@@ -1,3 +1,9 @@
+Tue, 15 Jan 2022
+
+version 4.3.2
+
+    fix rp2 port compilation
+
 Wed, 19 Jan 2022
 
 version 4.3.1
