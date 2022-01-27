@@ -240,8 +240,8 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_delimiter, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_comments, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_usecols, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_max_rows, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = -1 } },
+        { MP_QSTR_usecols, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -274,38 +274,41 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         comment_char = _comment_char[0];
     }
 
+    uint16_t max_rows = ULAB_IO_MAX_ROWS;
+    if((args[3].u_int > 0) && (args[3].u_int < ULAB_IO_MAX_ROWS)) {
+        max_rows = args[3].u_int;
+    }
+
     uint16_t *cols = NULL;
     uint8_t used_columns = 0;
-    if(args[3].u_obj != mp_const_none) {
-        if(mp_obj_is_int(args[3].u_obj)) {
+    if(args[4].u_obj != mp_const_none) {
+        if(mp_obj_is_int(args[4].u_obj)) {
             used_columns = 1;
             cols = m_new(uint16_t, used_columns);
-            cols[0] = (uint16_t)mp_obj_get_int(args[3].u_obj);
+            cols[0] = (uint16_t)mp_obj_get_int(args[4].u_obj);
         } else {
+            #if ULAB_MAX_DIMS == 1
+            mp_raise_ValueError(translate("usecols keyword must be specified"));
+            #else
             // assume that the argument is an iterable
-            used_columns = (uint16_t)mp_obj_get_int(mp_obj_len(args[3].u_obj));
+            used_columns = (uint16_t)mp_obj_get_int(mp_obj_len(args[4].u_obj));
             cols = m_new(uint16_t, used_columns);
             mp_obj_iter_buf_t iter_buf;
-            mp_obj_t item, iterable = mp_getiter(args[3].u_obj, &iter_buf);
+            mp_obj_t item, iterable = mp_getiter(args[4].u_obj, &iter_buf);
             while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-                *cols++ = (uint16_t)mp_obj_get_int(args[3].u_obj);
+                *cols++ = (uint16_t)mp_obj_get_int(item);
             }
             cols -= used_columns;
+            #endif
         }
     }
-
-    size_t max_rows = ULAB_IO_MAX_ROWS;
-    if((args[4].u_int > 0) && (args[4].u_int < ULAB_IO_MAX_ROWS)) {
-        max_rows = (size_t)args[4].u_int;
-    }
-
 
     // count the columns and rows
     // we actually count only the rows and the items, and assume that
     // the number of columns can be gotten by means of a simple division,
-    // i.e., that the rows have the same number of columns
+    // i.e., that each row has the same number of columns
     char *offset;
-    uint16_t columns = 0, rows = 0;
+    uint16_t rows = 0, items = 0, all_rows = 0;
     uint8_t read;
 
     do {
@@ -319,51 +322,62 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                     offset++;
                     if(*offset == '\n') {
                         offset++;
+                        all_rows++;
                         break;
                     }
                 }
             }
-            // TODO: deal with last, emtpy row
+
+            // catch whitespaces here: if these are not on a comment line, then they delimit a number
             if(*offset == '\n') {
                 rows++;
-                offset++;
+                all_rows++;
+                items++;
+                if(all_rows == max_rows) {
+                    break;
+                }
             }
-            // this will incorrectly increment the columns counter, if the previous character was a linebreak
+
             if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') ||
-                (*offset == '\f') || (*offset == '\r') || (*offset == '\n') || (*offset == delimiter)) {
-                columns++;
+                (*offset == '\f') || (*offset == '\r') || (*offset == delimiter)) {
                 offset++;
-                while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
+                while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r')) {
                     offset++;
                 }
+                items++;
             } else {
                 offset++;
             }
         }
-    } while(read > 0);
+    } while((read > 0) && (all_rows < max_rows));
+
+    uint16_t columns = items / rows;
 
     if(columns < used_columns) {
         mp_raise_ValueError(translate("usecols is too high"));
     }
 
-    // get rid of last, empty, row
-    rows--;
-
-    // TODO: deal with the ULAB_MAX_DIMS == 1 case
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
-    if(args[3].u_obj == mp_const_none) {
-        shape[ULAB_MAX_DIMS - 1] = columns / rows;
+
+    #if ULAB_MAX_DIMS == 1
+    shape[0] = rows;
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(1, shape, NDARRAY_FLOAT);
+    #else
+    if(args[4].u_obj == mp_const_none) {
+        shape[ULAB_MAX_DIMS - 1] = columns;
     } else {
         shape[ULAB_MAX_DIMS - 1] = used_columns;
     }
     shape[ULAB_MAX_DIMS - 2] = rows;
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, shape, NDARRAY_FLOAT);
+    #endif
+
     mp_float_t *array = (mp_float_t *)ndarray->array;
 
     struct mp_stream_seek_t seek_s;
     seek_s.offset = 0;
-    seek_s.whence = SEEK_SET;
+    seek_s.whence = MP_SEEK_SET;
     stream_p->ioctl(stream, MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &error);
 
     char *clipboard = m_new(char, ULAB_IO_CLIPBOARD_SIZE);
@@ -377,10 +391,6 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         read = stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE - 1, &error);
         buffer[read] = '\0';
         offset = buffer;
-
-        if(rows > max_rows) {
-            break;
-        }
 
         while(*offset != '\0') {
             if(*offset == comment_char) {
@@ -402,7 +412,13 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                     offset++;
                 }
                 clipboard = clipboard_origin;
-                if(args[3].u_obj == mp_const_none) {
+                #if ULAB_MAX_DIMS == 1
+                if(columns == cols[0]) {
+                    mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
+                    *array++ = mp_obj_get_float(value);
+                }
+                #else
+                if(args[4].u_obj == mp_const_none) {
                     mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
                     *array++ = mp_obj_get_float(value);
                 } else {
@@ -414,12 +430,16 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                         }
                     }
                 }
+                #endif
                 columns++;
                 len = 0;
 
                 if(offset[-1] == '\n') {
                     columns = 0;
                     rows++;
+                    if(rows == max_rows) {
+                        break;
+                    }
                 }
             } else {
                 *clipboard++ = *offset++;
@@ -431,6 +451,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
     m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
     m_del(char, clipboard, ULAB_IO_CLIPBOARD_SIZE);
+    m_del(uint16_t, cols, used_columns);
 
     return MP_OBJ_FROM_PTR(ndarray);
 }
@@ -641,7 +662,7 @@ static int8_t io_format_float(ndarray_obj_t *ndarray, mp_float_t (*func)(void *)
         offset += mp_format_float(-imag, &buffer[offset], ULAB_IO_BUFFER_SIZE, 'f', precision, 'j');
     }
     #endif
-    offset = (uint8_t)mp_format_float(func(array), buffer, ULAB_IO_BUFFER_SIZE, 'e', precision, '\0');
+    offset = (uint8_t)mp_format_float(func(array), buffer, ULAB_IO_BUFFER_SIZE, 'f', precision, '\0');
 
     #if ULAB_SUPPORTS_COMPLEX
     if(ndarray->dtype != NDARRAY_COMPLEX) {
