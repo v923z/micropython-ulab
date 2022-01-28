@@ -26,26 +26,28 @@ the firmware was compiled with complex support.
 18. `numpy.isfinite <#isfinite>`__
 19. `numpy.isinf <#isinf>`__
 20. `numpy.load <#load>`__
-21. `numpy.max <#max>`__
-22. `numpy.maximum <#maximum>`__
-23. `numpy.mean <#mean>`__
-24. `numpy.median <#median>`__
-25. `numpy.min <#min>`__
-26. `numpy.minimum <#minimum>`__
-27. `numpy.not_equal <#equal>`__
-28. `numpy.polyfit <#polyfit>`__
-29. `numpy.polyval <#polyval>`__
-30. `numpy.real\* <#real>`__
-31. `numpy.roll <#roll>`__
-32. `numpy.save <#save>`__
-33. `numpy.size <#size>`__
-34. `numpy.sort <#sort>`__
-35. `numpy.sort_complex\* <#sort_complex>`__
-36. `numpy.std <#std>`__
-37. `numpy.sum <#sum>`__
-38. `numpy.trace <#trace>`__
-39. `numpy.trapz <#trapz>`__
-40. `numpy.where <#where>`__
+21. `numpy.loadtxt <#loadtxt>`__
+22. `numpy.max <#max>`__
+23. `numpy.maximum <#maximum>`__
+24. `numpy.mean <#mean>`__
+25. `numpy.median <#median>`__
+26. `numpy.min <#min>`__
+27. `numpy.minimum <#minimum>`__
+28. `numpy.not_equal <#equal>`__
+29. `numpy.polyfit <#polyfit>`__
+30. `numpy.polyval <#polyval>`__
+31. `numpy.real\* <#real>`__
+32. `numpy.roll <#roll>`__
+33. `numpy.save <#save>`__
+34. `numpy.savetxt <#savetxt>`__
+35. `numpy.size <#size>`__
+36. `numpy.sort <#sort>`__
+37. `numpy.sort_complex\* <#sort_complex>`__
+38. `numpy.std <#std>`__
+39. `numpy.sum <#sum>`__
+40. `numpy.trace <#trace>`__
+41. `numpy.trapz <#trapz>`__
+42. `numpy.where <#where>`__
 
 all
 ---
@@ -1017,6 +1019,50 @@ swapped.
     
 
 
+loadtxt
+-------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
+
+The function reads data from a text file, and returns the generated
+array. It takes a file name as the single positional argument, and the
+``comments`` (with a default value of ``#``), the ``delimiter`` (with a
+default value of ``,``), ``usecols`` (with a default of all columns),
+and ``max_rows`` (with a default of all rows) keyword arguments. The
+array returned is always of type ``float``.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    print('read all data')
+    print(np.loadtxt('loadtxt.dat'))
+    print('\nread maximum 5 rows (first row is a comment line)')
+    print(np.loadtxt('loadtxt.dat', max_rows=5))
+
+.. parsed-literal::
+
+    read all data
+    array([[0.0, 1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0, 7.0],
+           [8.0, 9.0, 10.0, 11.0],
+           [12.0, 13.0, 14.0, 15.0],
+           [16.0, 17.0, 18.0, 19.0],
+           [20.0, 21.0, 22.0, 23.0],
+           [24.0, 25.0, 26.0, 27.0]], dtype=float64)
+    
+    read maximum 5 rows (first row is a comment line)
+    array([[0.0, 1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0, 7.0],
+           [8.0, 9.0, 10.0, 11.0],
+           [12.0, 13.0, 14.0, 15.0]], dtype=float64)
+    
+    
+
+
 mean
 ----
 
@@ -1471,7 +1517,7 @@ save
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.save.html
 
-With the help of this function, numerical array can be save in
+With the help of this function, numerical array can be saved in
 ``numpy``\ ’s `platform-independent
 format <https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html#module-numpy.lib.format>`__.
 
@@ -1484,6 +1530,56 @@ file, and the array.
     
     a = np.array(range(25)).reshape((5, 5))
     np.save('a.npy', a)
+savetxt
+-------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.savetxt.html
+
+With the help of this function, numerical array can be saved in a text
+file. The function takes two positional arguments, the name of the
+output file, and the array, and also implements the ``comments='#'``
+``delimiter=' '``, the ``header=''``, and ``footer=''`` keyword
+arguments. The input is treated as of type ``float``, i.e., the output
+is always in the floating point representation.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(12), dtype=np.uint8).reshape((3, 4))
+    np.savetxt('savetxt.dat', a)
+    
+    with open('savetxt.dat', 'r') as fin:
+        print(fin.read())
+        
+    np.savetxt('savetxt.dat', a, 
+               comments='!', 
+               delimiter=';', 
+               header='col1;col2;col3;col4', 
+               footer='saved data')
+    
+    with open('savetxt.dat', 'r') as fin:
+        print(fin.read())
+
+.. parsed-literal::
+
+    0.000000000000000 1.000000000000000 2.000000000000000 3.000000000000000
+    4.000000000000000 5.000000000000000 6.000000000000000 7.000000000000000
+    8.000000000000000 9.000000000000000 10.000000000000000 11.000000000000000
+    
+    !col1;col2;col3;col4
+    0.000000000000000;1.000000000000000;2.000000000000000;3.000000000000000
+    4.000000000000000;5.000000000000000;6.000000000000000;7.000000000000000
+    8.000000000000000;9.000000000000000;10.000000000000000;11.000000000000000
+    !saved data
+    
+    
+    
+
+
 size
 ----
 
