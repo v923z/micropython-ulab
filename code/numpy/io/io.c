@@ -16,6 +16,7 @@
 #include "py/parsenum.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "extmod/vfs.h"
 
 #include "../../ndarray.h"
 #include "../../ulab_tools.h"
