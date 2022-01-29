@@ -1,3 +1,9 @@
+Sat, 29 Jan 2022
+
+version 4.4.1
+
+    add dtype keyword to loadtxt
+
 Tue, 15 Jan 2022
 
 version 4.3.2

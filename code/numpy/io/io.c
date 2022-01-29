@@ -8,6 +8,7 @@
  * Copyright (c) 2022 Zoltán Vörös
 */
 
+#include <math.h>
 #include <string.h>
 
 #include "py/builtin.h"
@@ -243,6 +244,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         { MP_QSTR_comments, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_max_rows, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = -1 } },
         { MP_QSTR_usecols, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -304,6 +306,8 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         }
     }
 
+    uint8_t dtype = args[5].u_int;
+
     // count the columns and rows
     // we actually count only the rows and the items, and assume that
     // the number of columns can be gotten by means of a simple division,
@@ -363,7 +367,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     #if ULAB_MAX_DIMS == 1
     shape[0] = rows;
-    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(1, shape, NDARRAY_FLOAT);
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(1, shape, dtype);
     #else
     if(args[4].u_obj == mp_const_none) {
         shape[ULAB_MAX_DIMS - 1] = columns;
@@ -371,10 +375,8 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         shape[ULAB_MAX_DIMS - 1] = used_columns;
     }
     shape[ULAB_MAX_DIMS - 2] = rows;
-    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, shape, NDARRAY_FLOAT);
+    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, shape, dtype);
     #endif
-
-    mp_float_t *array = (mp_float_t *)ndarray->array;
 
     struct mp_stream_seek_t seek_s;
     seek_s.offset = 0;
@@ -388,6 +390,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     rows = 0;
     columns = 0;
 
+    size_t idx = 0;
     do {
         read = stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE - 1, &error);
         buffer[read] = '\0';
@@ -421,12 +424,20 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 #else
                 if(args[4].u_obj == mp_const_none) {
                     mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
-                    *array++ = mp_obj_get_float(value);
+                    if(dtype != NDARRAY_FLOAT) {
+                        mp_float_t _value = mp_obj_get_float(value);
+                        value = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(round)(_value));
+                    }
+                    ndarray_set_value(dtype, ndarray->array, idx++, value);
                 } else {
                     for(uint8_t c = 0; c < used_columns; c++) {
                         if(columns == cols[c]) {
                             mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
-                            *array++ = mp_obj_get_float(value);
+                            if(dtype != NDARRAY_FLOAT) {
+                                mp_float_t _value = mp_obj_get_float(value);
+                                value = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(round)(_value));
+                            }
+                            ndarray_set_value(dtype, ndarray->array, idx++, value);
                             break;
                         }
                     }
