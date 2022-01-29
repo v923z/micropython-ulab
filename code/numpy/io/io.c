@@ -237,6 +237,15 @@ MP_DEFINE_CONST_FUN_OBJ_1(io_load_obj, io_load);
 #endif /* ULAB_NUMPY_HAS_LOAD */
 
 #if ULAB_NUMPY_HAS_LOADTXT
+static void io_assign_value(const char *clipboard, uint8_t len, ndarray_obj_t *ndarray, size_t *idx, uint8_t dtype) {
+    mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
+    if(dtype != NDARRAY_FLOAT) {
+        mp_float_t _value = mp_obj_get_float(value);
+        value = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(round)(_value));
+    }
+    ndarray_set_value(dtype, ndarray->array, (*idx)++, value);
+}
+
 static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
@@ -418,26 +427,15 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 clipboard = clipboard_origin;
                 #if ULAB_MAX_DIMS == 1
                 if(columns == cols[0]) {
-                    mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
-                    *array++ = mp_obj_get_float(value);
+                    io_assign_value(clipboard, len, ndarray, &idx, dtype);
                 }
                 #else
                 if(args[4].u_obj == mp_const_none) {
-                    mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
-                    if(dtype != NDARRAY_FLOAT) {
-                        mp_float_t _value = mp_obj_get_float(value);
-                        value = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(round)(_value));
-                    }
-                    ndarray_set_value(dtype, ndarray->array, idx++, value);
+                    io_assign_value(clipboard, len, ndarray, &idx, dtype);
                 } else {
                     for(uint8_t c = 0; c < used_columns; c++) {
                         if(columns == cols[c]) {
-                            mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
-                            if(dtype != NDARRAY_FLOAT) {
-                                mp_float_t _value = mp_obj_get_float(value);
-                                value = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(round)(_value));
-                            }
-                            ndarray_set_value(dtype, ndarray->array, idx++, value);
+                            io_assign_value(clipboard, len, ndarray, &idx, dtype);
                             break;
                         }
                     }
