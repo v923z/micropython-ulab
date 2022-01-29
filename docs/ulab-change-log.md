@@ -1,8 +1,14 @@
 Sat, 29 Jan 2022
 
-version 4.4.1
+version 5.0.0
 
     move scipy.signal.spectrogram to utils.spectrogram
+
+Thu, 27 Jan 2022
+
+version 4.4.0
+
+    implement numpy.savetxt, numpy.loadtxt
 
 Tue, 15 Jan 2022
 
