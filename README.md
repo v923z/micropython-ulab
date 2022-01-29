@@ -188,7 +188,9 @@ In case you got stuck somewhere in the process, a bit more detailed instructions
 
 ### ESP32-based boards
 
-Firmware for `Espressif` boards can be built in two different ways. These are discussed in the next two paragraphs. A solution for issues with the firmware size is outlined in the [last paragraph](#what-to-do-if-the-firmware-is-too-large) in this section.
+`ulab` can be tested on the ESP32 in [wokwi's micropython emulator](https://wokwi.com/arduino/projects/322114140704342610) without having to compile the C code. This utility also offers the possibility to save and share your `micropython` code. 
+
+Firmware for `Espressif` hardware can be built in two different ways, which are discussed in the next two paragraphs. A solution for issues with the firmware size is outlined in the [last paragraph](#what-to-do-if-the-firmware-is-too-large) of this section.
 
 #### Compiling with cmake
 
