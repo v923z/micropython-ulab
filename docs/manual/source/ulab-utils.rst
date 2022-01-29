@@ -137,7 +137,76 @@ These two functions are identical to ``utils.from_int32_buffer``, and
 ``utils.from_uint32_buffer``, with the exception that they convert
 16-bit integers to floating point ``ndarray``\ s.
 
-.. code::
+spectrogram
+-----------
 
-    # code to be run in CPython
+In addition to the Fourier transform and its inverse, ``ulab`` also
+sports a function called ``spectrogram``, which returns the absolute
+value of the Fourier transform, also known as the power spectrum. This
+could be used to find the dominant spectral component in a time series.
+The arguments are treated in the same way as in ``fft``, and ``ifft``.
+This means that, if the firmware was compiled with complex support, the
+input can also be a complex array.
+
+.. code::
+        
+    # code to be run in micropython
     
+    from ulab import numpy as np
+    from ulab import utils as utils
+    
+    x = np.linspace(0, 10, num=1024)
+    y = np.sin(x)
+    
+    a = utils.spectrogram(y)
+    
+    print('original vector:\n', y)
+    print('\nspectrum:\n', a)
+
+.. parsed-literal::
+
+    original vector:
+     array([0.0, 0.009775015390171337, 0.01954909674625918, ..., -0.5275140569487312, -0.5357931822978732, -0.5440211108893697], dtype=float64)
+    
+    spectrum:
+     array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
+    
+    
+
+
+As such, ``spectrogram`` is really just a shorthand for
+``np.sqrt(a*a + b*b)``, however, it saves significant amounts of RAM:
+the expression ``a*a + b*b`` has to allocate memory for ``a*a``,
+``b*b``, and finally, their sum. In contrast, ``spectrogram`` calculates
+the spectrum internally, and stores it in the memory segment that was
+reserved for the real part of the Fourier transform.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    from ulab import utils as utils
+    
+    x = np.linspace(0, 10, num=1024)
+    y = np.sin(x)
+    
+    a, b = np.fft.fft(y)
+    
+    print('\nspectrum calculated the hard way:\n', np.sqrt(a*a + b*b))
+    
+    a = utils.spectrogram(y)
+    
+    print('\nspectrum calculated the lazy way:\n', a)
+
+.. parsed-literal::
+
+    
+    spectrum calculated the hard way:
+     array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
+    
+    spectrum calculated the lazy way:
+     array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
+    
+    
+

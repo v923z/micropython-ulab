@@ -6,7 +6,6 @@ Functions in the ``signal`` module can be called by prepending them by
 ``scipy.signal.``. The module defines the following two functions:
 
 1. `scipy.signal.sosfilt <#sosfilt>`__
-2. `scipy.signal.spectrogram <#spectrogram>`__
 
 sosfilt
 -------
@@ -66,72 +65,6 @@ initial values are assumed to be 0.
     ========================================
     zf:  array([[37242.0, 74835.0],
     	 [1026187.0, 1936542.0]], dtype=float)
-    
-    
-
-
-spectrogram
------------
-
-In addition to the Fourier transform and its inverse, ``ulab`` also
-sports a function called ``spectrogram``, which returns the absolute
-value of the Fourier transform. This could be used to find the dominant
-spectral component in a time series. The arguments are treated in the
-same way as in ``fft``, and ``ifft``. This means that, if the firmware
-was compiled with complex support, the input can also be a complex
-array.
-
-.. code::
-        
-    # code to be run in micropython
-    
-    from ulab import numpy as np
-    from ulab import scipy as spy
-    
-    x = np.linspace(0, 10, num=1024)
-    y = np.sin(x)
-    
-    a = spy.signal.spectrogram(y)
-    
-    print('original vector:\t', y)
-    print('\nspectrum:\t', a)
-
-.. parsed-literal::
-
-    original vector:	 array([0.0, 0.009775015390171337, 0.01954909674625918, ..., -0.5275140569487312, -0.5357931822978732, -0.5440211108893639], dtype=float64)
-    
-    spectrum:	 array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
-    
-    
-
-
-As such, ``spectrogram`` is really just a shorthand for
-``np.sqrt(a*a + b*b)``:
-
-.. code::
-        
-    # code to be run in micropython
-    
-    from ulab import numpy as np
-    from ulab import scipy as spy
-    
-    x = np.linspace(0, 10, num=1024)
-    y = np.sin(x)
-    
-    a, b = np.fft.fft(y)
-    
-    print('\nspectrum calculated the hard way:\t', np.sqrt(a*a + b*b))
-    
-    a = spy.signal.spectrogram(y)
-    
-    print('\nspectrum calculated the lazy way:\t', a)
-
-.. parsed-literal::
-
-    
-    spectrum calculated the hard way:	 array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
-    
-    spectrum calculated the lazy way:	 array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
     
     
 

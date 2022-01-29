@@ -663,10 +663,6 @@
 #define ULAB_SCIPY_HAS_SIGNAL_MODULE        (1)
 #endif
 
-#ifndef ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
-#define ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM   (1)
-#endif
-
 #ifndef ULAB_SCIPY_SIGNAL_HAS_SOSFILT
 #define ULAB_SCIPY_SIGNAL_HAS_SOSFILT       (1)
 #endif
@@ -711,12 +707,7 @@
 #define ULAB_SCIPY_SPECIAL_HAS_GAMMALN      (1)
 #endif
 
-// user-defined module; source of the module and
-// its sub-modules should be placed in code/user/
-#ifndef ULAB_HAS_USER_MODULE
-#define ULAB_HAS_USER_MODULE                (0)
-#endif
-
+// functions of the utils module
 #ifndef ULAB_HAS_UTILS_MODULE
 #define ULAB_HAS_UTILS_MODULE               (1)
 #endif
@@ -735,6 +726,16 @@
 
 #ifndef ULAB_UTILS_HAS_FROM_UINT32_BUFFER
 #define ULAB_UTILS_HAS_FROM_UINT32_BUFFER   (1)
+#endif
+
+#ifndef ULAB_UTILS_HAS_SPECTROGRAM
+#define ULAB_UTILS_HAS_SPECTROGRAM          (1)
+#endif
+
+// user-defined module; source of the module and
+// its sub-modules should be placed in code/user/
+#ifndef ULAB_HAS_USER_MODULE
+#define ULAB_HAS_USER_MODULE                (0)
 #endif
 
 #endif
