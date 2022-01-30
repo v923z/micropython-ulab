@@ -324,6 +324,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     char *offset;
     uint16_t rows = 0, items = 0, all_rows = 0;
     uint8_t read;
+    uint8_t len = 0;
 
     do {
         read = (uint8_t)stream_p->read(stream, buffer, ULAB_IO_BUFFER_SIZE - 1, &error);
@@ -347,6 +348,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 rows++;
                 all_rows++;
                 items++;
+                len = 0;
                 if(all_rows == max_rows) {
                     break;
                 }
@@ -358,9 +360,13 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r')) {
                     offset++;
                 }
-                items++;
+                if(len > 0) {
+                    items++;
+                    len = 0;
+                }
             } else {
                 offset++;
+                len++;
             }
         }
     } while((read > 0) && (all_rows < max_rows));
@@ -394,10 +400,10 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     char *clipboard = m_new(char, ULAB_IO_CLIPBOARD_SIZE);
     char *clipboard_origin = clipboard;
-    uint8_t len = 0;
 
     rows = 0;
     columns = 0;
+    len = 0;
 
     size_t idx = 0;
     do {
@@ -421,34 +427,37 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') ||
                 (*offset == '\f') || (*offset == '\r') || (*offset == '\n') || (*offset == delimiter)) {
                 offset++;
-                while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') || (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
+                while((*offset == ' ') || (*offset == '\t') || (*offset == '\v') ||
+                    (*offset == '\f') || (*offset == '\r') || (*offset == '\n')) {
                     offset++;
                 }
-                clipboard = clipboard_origin;
-                #if ULAB_MAX_DIMS == 1
-                if(columns == cols[0]) {
-                    io_assign_value(clipboard, len, ndarray, &idx, dtype);
-                }
-                #else
-                if(args[4].u_obj == mp_const_none) {
-                    io_assign_value(clipboard, len, ndarray, &idx, dtype);
-                } else {
-                    for(uint8_t c = 0; c < used_columns; c++) {
-                        if(columns == cols[c]) {
-                            io_assign_value(clipboard, len, ndarray, &idx, dtype);
-                            break;
+                if(len > 0) {
+                    clipboard = clipboard_origin;
+                    #if ULAB_MAX_DIMS == 1
+                    if(columns == cols[0]) {
+                        io_assign_value(clipboard, len, ndarray, &idx, dtype);
+                    }
+                    #else
+                    if(args[4].u_obj == mp_const_none) {
+                        io_assign_value(clipboard, len, ndarray, &idx, dtype);
+                    } else {
+                        for(uint8_t c = 0; c < used_columns; c++) {
+                            if(columns == cols[c]) {
+                                io_assign_value(clipboard, len, ndarray, &idx, dtype);
+                                break;
+                            }
                         }
                     }
-                }
-                #endif
-                columns++;
-                len = 0;
+                    #endif
+                    columns++;
+                    len = 0;
 
-                if(offset[-1] == '\n') {
-                    columns = 0;
-                    rows++;
-                    if(rows == max_rows) {
-                        break;
+                    if(offset[-1] == '\n') {
+                        columns = 0;
+                        rows++;
+                        if(rows == max_rows) {
+                            break;
+                        }
                     }
                 }
             } else {
