@@ -775,7 +775,7 @@ ndarray_obj_t *ndarray_copy_view_convert_type(ndarray_obj_t *source, uint8_t dty
                         if((source->dtype == NDARRAY_FLOAT) && (dtype != NDARRAY_FLOAT)) {
                             // floats must be treated separately, because they can't directly be converted to integer types
                             mp_float_t f = ndarray_get_float_value(sarray, source->dtype);
-                            item = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(floor)(f));
+                            item = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(round)(f));
                         } else {
                             item = mp_binary_get_val_array(source->dtype, sarray, 0);
                         }
