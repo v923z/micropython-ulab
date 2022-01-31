@@ -751,7 +751,7 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             const char *comments = mp_obj_str_get_data(args[5].u_obj, &_len);
             stream_p->write(stream, comments, _len, &error);
         } else {
-            stream_p->write(stream, "#", 1, &error);
+            stream_p->write(stream, "# ", 2, &error);
         }
         const char *header = mp_obj_str_get_data(args[3].u_obj, &_len);
         stream_p->write(stream, header, _len, &error);
@@ -799,7 +799,7 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             const char *comments = mp_obj_str_get_data(args[5].u_obj, &_len);
             stream_p->write(stream, comments, _len, &error);
         } else {
-            stream_p->write(stream, "#", 1, &error);
+            stream_p->write(stream, "# ", 2, &error);
         }
         const char *footer = mp_obj_str_get_data(args[4].u_obj, &_len);
         stream_p->write(stream, footer, _len, &error);
