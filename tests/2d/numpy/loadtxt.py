@@ -32,3 +32,6 @@ print()
 a = np.array(range(36)).reshape((9, 4))
 np.savetxt('loadtxt.dat', a, header='9 data rows and a comment')
 print(np.loadtxt('loadtxt.dat', max_rows=5))
+
+print()
+print(np.loadtxt('loadtxt.dat', skiprows=5, dtype=np.uint16))

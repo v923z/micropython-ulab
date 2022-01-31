@@ -254,6 +254,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         { MP_QSTR_max_rows, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = -1 } },
         { MP_QSTR_usecols, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
+        { MP_QSTR_skiprows, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -286,9 +287,10 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         comment_char = _comment_char[0];
     }
 
+    uint16_t skiprows = args[6].u_int;
     uint16_t max_rows = ULAB_IO_MAX_ROWS;
     if((args[3].u_int > 0) && (args[3].u_int < ULAB_IO_MAX_ROWS)) {
-        max_rows = args[3].u_int;
+        max_rows = args[3].u_int + skiprows;
     }
 
     uint16_t *cols = NULL;
@@ -345,10 +347,12 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
             // catch whitespaces here: if these are not on a comment line, then they delimit a number
             if(*offset == '\n') {
-                rows++;
                 all_rows++;
-                items++;
-                len = 0;
+                if(all_rows > skiprows) {
+                    rows++;
+                    items++;
+                    len = 0;
+                }
                 if(all_rows == max_rows) {
                     break;
                 }
@@ -361,7 +365,9 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                     offset++;
                 }
                 if(len > 0) {
-                    items++;
+                    if(all_rows >= skiprows) {
+                        items++;
+                    }
                     len = 0;
                 }
             } else {
@@ -371,6 +377,9 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         }
     } while((read > 0) && (all_rows < max_rows));
 
+    if(rows == 0) {
+        mp_raise_ValueError(translate("empty file"));
+    }
     uint16_t columns = items / rows;
 
     if(columns < used_columns) {
@@ -424,6 +433,10 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 }
             }
 
+            if(rows == max_rows) {
+                break;
+            }
+
             if((*offset == ' ') || (*offset == '\t') || (*offset == '\v') ||
                 (*offset == '\f') || (*offset == '\r') || (*offset == '\n') || (*offset == delimiter)) {
                 offset++;
@@ -433,31 +446,30 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
                 }
                 if(len > 0) {
                     clipboard = clipboard_origin;
-                    #if ULAB_MAX_DIMS == 1
-                    if(columns == cols[0]) {
-                        io_assign_value(clipboard, len, ndarray, &idx, dtype);
-                    }
-                    #else
-                    if(args[4].u_obj == mp_const_none) {
-                        io_assign_value(clipboard, len, ndarray, &idx, dtype);
-                    } else {
-                        for(uint8_t c = 0; c < used_columns; c++) {
-                            if(columns == cols[c]) {
-                                io_assign_value(clipboard, len, ndarray, &idx, dtype);
-                                break;
+                    if(rows >= skiprows) {
+                        #if ULAB_MAX_DIMS == 1
+                        if(columns == cols[0]) {
+                            io_assign_value(clipboard, len, ndarray, &idx, dtype);
+                        }
+                        #else
+                        if(args[4].u_obj == mp_const_none) {
+                            io_assign_value(clipboard, len, ndarray, &idx, dtype);
+                        } else {
+                            for(uint8_t c = 0; c < used_columns; c++) {
+                                if(columns == cols[c]) {
+                                    io_assign_value(clipboard, len, ndarray, &idx, dtype);
+                                    break;
+                                }
                             }
                         }
+                        #endif
                     }
-                    #endif
                     columns++;
                     len = 0;
 
                     if(offset[-1] == '\n') {
                         columns = 0;
                         rows++;
-                        if(rows == max_rows) {
-                            break;
-                        }
                     }
                 }
             } else {
