@@ -435,22 +435,22 @@ static mp_obj_t linalg_qr(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
             // [[c  s],
             //  [s -c]]
             if(MICROPY_FLOAT_C_FUN(fabs)(rarray[i * n + j]) < LINALG_EPSILON) { // r[i, j]
-                c = (rarray[(i - 1) * n + j] >= 0.0) ? 1.0 : -1.0; // r[i-1, j]
+                c = (rarray[(i - 1) * n + j] >= MICROPY_FLOAT_CONST(0.0)) ? MICROPY_FLOAT_CONST(1.0) : MICROPY_FLOAT_CONST(-1.0); // r[i-1, j]
                 s = 0.0;
             } else if(MICROPY_FLOAT_C_FUN(fabs)(rarray[(i - 1) * n + j]) < LINALG_EPSILON) { // r[i-1, j]
                 c = 0.0;
-                s = (rarray[i * n + j] >= 0.0) ? -1.0 : 1.0; // r[i, j]
+                s = (rarray[i * n + j] >= MICROPY_FLOAT_CONST(0.0)) ? MICROPY_FLOAT_CONST(-1.0) : MICROPY_FLOAT_CONST(1.0); // r[i, j]
             } else {
                 mp_float_t t, u;
                 if(MICROPY_FLOAT_C_FUN(fabs)(rarray[(i - 1) * n + j]) > MICROPY_FLOAT_C_FUN(fabs)(rarray[i * n + j])) { // r[i-1, j], r[i, j]
                     t = rarray[i * n + j] / rarray[(i - 1) * n + j]; // r[i, j]/r[i-1, j]
                     u = MICROPY_FLOAT_C_FUN(sqrt)(1 + t * t);
-                    c = -1.0 / u;
+                    c = MICROPY_FLOAT_CONST(-1.0) / u;
                     s = c * t;
                 } else {
                     t = rarray[(i - 1) * n + j] / rarray[i * n + j]; // r[i-1, j]/r[i, j]
                     u = MICROPY_FLOAT_C_FUN(sqrt)(1 + t * t);
-                    s = -1.0 / u;
+                    s = MICROPY_FLOAT_CONST(-1.0) / u;
                     c = s * t;
                 }
             }
