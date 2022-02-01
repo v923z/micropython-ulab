@@ -355,7 +355,7 @@ in the ``vector_arctan2`` function:
 
 .. code:: c
 
-   mp_obj_t vectorise_arctan2(mp_obj_t y, mp_obj_t x) {
+   mp_obj_t vector_arctan2(mp_obj_t y, mp_obj_t x) {
        ...
        uint8_t ndim = 0;
        size_t *shape = m_new(size_t, ULAB_MAX_DIMS);

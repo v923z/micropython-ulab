@@ -1,5 +1,11 @@
 Tue, 1 Feb 2022
 
+version 5.0.0
+
+    move scipy.signal.spectrogram to utils.spectrogram
+
+Tue, 1 Feb 2022
+
 version 4.4.2
 
     add skiprows keyword to loadtxt
@@ -9,6 +15,12 @@ Sat, 29 Jan 2022
 version 4.4.1
 
     add dtype keyword to loadtxt
+
+Thu, 27 Jan 2022
+
+version 4.4.0
+
+    implement numpy.savetxt, numpy.loadtxt
 
 Tue, 15 Jan 2022
 

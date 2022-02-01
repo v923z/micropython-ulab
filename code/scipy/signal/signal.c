@@ -19,39 +19,6 @@
 #include "../../ulab.h"
 #include "../../ndarray.h"
 #include "../../numpy/carray/carray_tools.h"
-#include "../../numpy/fft/fft_tools.h"
-
-#if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
-//| import ulab.numpy
-//|
-//| def spectrogram(r: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
-//|     """
-//|     :param ulab.numpy.ndarray r: A 1-dimension array of values whose size is a power of 2
-//|
-//|     Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
-//|     This function is similar to scipy's ``scipy.signal.spectrogram``."""
-//|     ...
-//|
-
-mp_obj_t signal_spectrogram(size_t n_args, const mp_obj_t *args) {
-    #if ULAB_SUPPORTS_COMPLEX & ULAB_FFT_IS_NUMPY_COMPATIBLE
-        return fft_fft_ifft_spectrogram(args[0], FFT_SPECTROGRAM);
-    #else
-    if(n_args == 2) {
-        return fft_fft_ifft_spectrogram(n_args, args[0], args[1], FFT_SPECTROGRAM);
-    } else {
-        return fft_fft_ifft_spectrogram(n_args, args[0], mp_const_none, FFT_SPECTROGRAM);
-    }
-    #endif
-}
-
-#if ULAB_SUPPORTS_COMPLEX & ULAB_FFT_IS_NUMPY_COMPATIBLE
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_spectrogram_obj, 1, 1, signal_spectrogram);
-#else
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(signal_spectrogram_obj, 1, 2, signal_spectrogram);
-#endif
-
-#endif /* ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM */
 
 #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT & ULAB_MAX_DIMS > 1
 static void signal_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_float_t *zf, const size_t len) {
@@ -155,9 +122,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(signal_sosfilt_obj, 2, signal_sosfilt);
 
 static const mp_rom_map_elem_t ulab_scipy_signal_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_signal) },
-    #if ULAB_SCIPY_SIGNAL_HAS_SPECTROGRAM
-        { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&signal_spectrogram_obj },
-    #endif
     #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT & ULAB_MAX_DIMS > 1
         { MP_OBJ_NEW_QSTR(MP_QSTR_sosfilt), (mp_obj_t)&signal_sosfilt_obj },
     #endif
