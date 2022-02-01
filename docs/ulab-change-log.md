@@ -1,3 +1,9 @@
+Tue, 1 Feb 2022
+
+version 4.4.2
+
+    add skiprows keyword to loadtxt
+
 Sat, 29 Jan 2022
 
 version 4.4.1

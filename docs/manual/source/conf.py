@@ -27,7 +27,7 @@ copyright = '2019-2022, Zoltán Vörös and contributors'
 author = 'Zoltán Vörös'
 
 # The full version, including alpha/beta/rc tags
-release = '4.4.1'
+release = '4.4.2'
 
 
 # -- General configuration ---------------------------------------------------

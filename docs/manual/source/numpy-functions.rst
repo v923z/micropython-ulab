@@ -1027,11 +1027,16 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
 
 The function reads data from a text file, and returns the generated
 array. It takes a file name as the single positional argument, and the
-``dtype`` (with a default value of ``float``), the ``comments`` (with a
-default value of ``#``), the ``delimiter`` (with a default value of
-``,``), ``usecols`` (with a default of all columns), and the
-``max_rows`` (with a default of all rows) keyword arguments. If
-``dtype`` is supplied and is not ``float``, the data entries will be
+following keyword arguments:
+
+1. ``comments='#'``
+2. ``dtype=float``
+3. ``delimiter=','``
+4. ``max_rows`` (with a default of all rows)
+5. ``skip_rows=0``
+6. ``usecols`` (with a default of all columns)
+
+If ``dtype`` is supplied and is not ``float``, the data entries will be
 converted to the appropriate integer type by rounding the values.
 
 .. code::
@@ -1046,8 +1051,11 @@ converted to the appropriate integer type by rounding the values.
     print('\nread maximum 5 rows (first row is a comment line)')
     print(np.loadtxt('loadtxt.dat', max_rows=5))
     
-    print('\nread maximum 5 rows, convert dtype')
+    print('\nread maximum 5 rows, convert dtype (first row is a comment line)')
     print(np.loadtxt('loadtxt.dat', max_rows=5, dtype=np.uint8))
+    
+    print('\nskip the first 3 rows, convert dtype (first row is a comment line)')
+    print(np.loadtxt('loadtxt.dat', skiprows=3, dtype=np.uint8))
 
 .. parsed-literal::
 
@@ -1068,11 +1076,20 @@ converted to the appropriate integer type by rounding the values.
            [8.0, 9.0, 10.0, 11.0],
            [12.0, 13.0, 14.0, 15.0]], dtype=float64)
     
-    read maximum 5 rows, convert dtype
+    read maximum 5 rows, convert dtype (first row is a comment line)
     array([[0, 1, 2, 3],
            [4, 5, 6, 7],
            [8, 9, 10, 11],
            [12, 13, 14, 15]], dtype=uint8)
+    
+    skip the first 3 rows, convert dtype (first row is a comment line)
+    array([[8, 9, 10, 11],
+           [12, 13, 14, 15],
+           [16, 17, 18, 19],
+           [20, 21, 22, 23],
+           [24, 25, 26, 27],
+           [28, 29, 30, 31],
+           [32, 33, 34, 35]], dtype=uint8)
     
     
 
