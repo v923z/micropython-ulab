@@ -15,16 +15,18 @@ detected and handled.
     2. [numpy and scipy functions](#numpy-and-scipy-functions)
     3. [ulab utilities](#ulab-utilities)
     4. [user module](#user-module)
-3. [Customising the firmware](#customising-the-firmware)
 4. [Usage](#usage)
 5. [Finding help](#finding-help)
 6. [Benchmarks](#benchmarks)
 7. [Firmware](#firmware)
-    1. [UNIX](#unix-port)
-    1. [STM-based boards](#stm-based-boards)
-    1. [ESP32-based boards](#esp32-based-boards)
-    1. [RP2-based boards](#rp2-based-boards)
-    1. [Compiling for CircuitPython](#compiling-for-circuitpython)
+    1. [Customising the firmware](#customising-the-firmware)
+    1. [Platforms including ulab](#platforms-including-ulab)
+    1. [Compiling](#compiling)
+        1. [UNIX](#unix-port)
+        1. [STM-based boards](#stm-based-boards)
+        1. [ESP32-based boards](#esp32-based-boards)
+        1. [RP2-based boards](#rp2-based-boards)
+        1. [Compiling for CircuitPython](#compiling-for-circuitpython)
 8. [Issues, contributing, and testing](#issues-contributing-and-testing)
     1. [Testing](#testing)
 
@@ -57,14 +59,6 @@ numerical arrays and hardware components.
 ## `user` module
 
 User-defined functions operating on numerical data can easily be added via the `user` module. This allows for transparent extensions, without having to change anything in the core. Hints as to how to work with `ndarray`s at the C level can be found in the [programming manual](https://micropython-ulab.readthedocs.io/en/latest/ulab-programming.html).
-
-# Customising the firmware
-
-If flash space is a concern, unnecessary functions can be excluded from the compiled firmware with
-pre-processor switches. In addition, `ulab` also has options for trading execution speed for firmware size.
-A thorough discussion on how the firmware can be customised can be found in the
-[corresponding section](https://micropython-ulab.readthedocs.io/en/latest/ulab-intro.html#customising-the-firmware)
-of the user manual.
 
 # Usage
 
@@ -99,16 +93,17 @@ Representative numbers on performance can be found under [ulab samples](https://
 
 # Firmware
 
-## Compiled
+Pre-built, and up-to-date firmware files for select platforms can be downloaded
+from [micropython-builder](https://github.com/v923z/micropython-builder).
+## Customising the firmware
 
-Compiled firmware for many hardware platforms can be downloaded from Roberto Colistete's
-gitlab repository: for the [pyboard](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/Pyboard/Firmware/), and
-for [ESP8266](https://gitlab.com/rcolistete/micropython-samples/-/tree/master/ESP8266/Firmware).
-Since a number of features can be set in the firmware (threading, support for SD card, LEDs, user switch etc.), and it is
-impossible to create something that suits everyone, these releases should only be used for
-quick testing of `ulab`. Otherwise, compilation from the source is required with
-the appropriate settings, which are usually defined in the `mpconfigboard.h` file of the port
-in question.
+If flash space is a concern, unnecessary functions can be excluded from the compiled firmware with
+pre-processor switches. In addition, `ulab` also has options for trading execution speed for firmware size.
+A thorough discussion on how the firmware can be customised can be found in the
+[corresponding section](https://micropython-ulab.readthedocs.io/en/latest/ulab-intro.html#customising-the-firmware)
+of the user manual.
+
+## Platforms including ulab
 
 `ulab` is also included in the following compiled `micropython` variants and derivatives:
 
@@ -188,7 +183,7 @@ In case you got stuck somewhere in the process, a bit more detailed instructions
 
 ### ESP32-based boards
 
-`ulab` can be tested on the ESP32 in [wokwi's micropython emulator](https://wokwi.com/arduino/projects/322114140704342610) without having to compile the C code. This utility also offers the possibility to save and share your `micropython` code. 
+`ulab` can be tested on the ESP32 in [wokwi's micropython emulator](https://wokwi.com/arduino/projects/322114140704342610) without having to compile the C code. This utility also offers the possibility to save and share your `micropython` code.
 
 Firmware for `Espressif` hardware can be built in two different ways, which are discussed in the next two paragraphs. A solution for issues with the firmware size is outlined in the [last paragraph](#what-to-do-if-the-firmware-is-too-large) of this section.
 
