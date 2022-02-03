@@ -33,7 +33,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 5.0.0
+#define ULAB_VERSION 5.0.1
 #define xstr(s) str(s)
 #define str(s) #s
 
@@ -45,6 +45,9 @@
 
 STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
+#ifdef ULAB_HASH
+STATIC MP_DEFINE_STR_OBJ(ulab_sha_obj, xstr(ULAB_HASH));
+#endif
 
 STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #if ULAB_MAX_DIMS > 1
@@ -149,6 +152,9 @@ const mp_obj_type_t ndarray_flatiter_type = {
 STATIC const mp_map_elem_t ulab_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
+    #ifdef ULAB_HASH
+    { MP_ROM_QSTR(MP_QSTR___sha__), MP_ROM_PTR(&ulab_sha_obj) },
+    #endif
     #if ULAB_HAS_DTYPE_OBJECT
         { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ulab_dtype_type },
     #else
