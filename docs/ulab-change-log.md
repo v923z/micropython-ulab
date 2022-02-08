@@ -1,3 +1,9 @@
+Tue, 8 Feb 2022
+
+version 5.0.2
+
+    fix np.diag
+
 Thu, 3 Feb 2022
 
 version 5.0.1
