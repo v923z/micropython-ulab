@@ -250,7 +250,7 @@ and will, therefore, be faster. Keep this in mind, whenever the output
 type, or performance is important.
 
 Array initialisation functions
-------------------------------
+==============================
 
 There are nine functions that can be used for initialising an array.
 Starred functions accept ``complex`` as the value of the ``dtype``, if
@@ -269,7 +269,7 @@ the firmware was compiled with complex support.
 11. `numpy.zeros\* <#zeros>`__
 
 arange
-~~~~~~
+------
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.arange.html
@@ -300,7 +300,7 @@ keyword argument.
 
 
 concatenate
-~~~~~~~~~~~
+-----------
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.concatenate.html
@@ -387,14 +387,19 @@ https://numpy.org/doc/stable/reference/generated/numpy.diag.html
 
 Extract a diagonal, or construct a diagonal array.
 
-The function takes two arguments, an ``ndarray``, and a shift. If the
-first argument is a two-dimensional array, the function returns a
-one-dimensional array containing the diagonal entries. The diagonal can
-be shifted by an amount given in the second argument.
+The function takes a positional argument, an ``ndarray``, or any
+``micropython`` iterable, and an optional keyword argument, a shift,
+with a default value of 0. If the first argument is a two-dimensional
+array (or a two-dimensional iterable, e.g., a list of lists), the
+function returns a one-dimensional array containing the diagonal
+entries. The diagonal can be shifted by an amount given in the second
+argument. If the shift is larger than the length of the corresponding
+axis, an empty array is returned.
 
 If the first argument is a one-dimensional array, the function returns a
-two-dimensional tensor with its diagonal elements given by the first
-argument.
+two-dimensional square tensor with its diagonal elements given by the
+first argument. Again, the diagonal be shifted by an amount given by the
+keyword argument.
 
 The ``diag`` function can accept a complex array, if the firmware was
 compiled with complex support.
@@ -405,15 +410,34 @@ compiled with complex support.
     
     from ulab import numpy as np
     
-    a = np.array([1, 2, 3, 4])
+    a = np.array([1, 2, 3], dtype=np.uint8)
     print(np.diag(a))
+    
+    print('\ndiagonal shifted by 2')
+    print(np.diag(a, k=2))
+    
+    print('\ndiagonal shifted by -2')
+    print(np.diag(a, k=-2))
 
 .. parsed-literal::
 
-    array([[1.0, 0.0, 0.0, 0.0],
-           [0.0, 2.0, 0.0, 0.0],
-           [0.0, 0.0, 3.0, 0.0],
-           [0.0, 0.0, 0.0, 4.0]], dtype=float64)
+    array([[1, 0, 0],
+           [0, 2, 0],
+           [0, 0, 3]], dtype=uint8)
+    
+    diagonal shifted by 2
+    array([[0, 0, 1, 0, 0],
+           [0, 0, 0, 2, 0],
+           [0, 0, 0, 0, 3],
+           [0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0]], dtype=uint8)
+    
+    diagonal shifted by -2
+    array([[0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0],
+           [1, 0, 0, 0, 0],
+           [0, 2, 0, 0, 0],
+           [0, 0, 3, 0, 0]], dtype=uint8)
     
     
 
@@ -424,19 +448,38 @@ compiled with complex support.
     
     from ulab import numpy as np
     
-    a = np.array(range(16)).reshape((4, 4))
-    print('a: ', a)
-    print()
-    print('diagonal of a: ', np.diag(a))
+    a = np.arange(16).reshape((4, 4))
+    print(a)
+    print('\ndiagonal of a:')
+    print(np.diag(a))
+    
+    print('\ndiagonal of a:')
+    print(np.diag(a))
+    
+    print('\ndiagonal of a, shifted by 2')
+    print(np.diag(a, k=2))
+    
+    print('\ndiagonal of a, shifted by 5')
+    print(np.diag(a, k=5))
 
 .. parsed-literal::
 
-    a:  array([[0.0, 1.0, 2.0, 3.0],
-           [4.0, 5.0, 6.0, 7.0],
-           [8.0, 9.0, 10.0, 11.0],
-           [12.0, 13.0, 14.0, 15.0]], dtype=float64)
+    array([[0, 1, 2, 3],
+           [4, 5, 6, 7],
+           [8, 9, 10, 11],
+           [12, 13, 14, 15]], dtype=int16)
     
-    diagonal of a:  array([0.0, 5.0, 10.0, 15.0], dtype=float64)
+    diagonal of a:
+    array([0, 5, 10, 15], dtype=int16)
+    
+    diagonal of a:
+    array([0, 5, 10, 15], dtype=int16)
+    
+    diagonal of a, shifted by 2
+    array([2, 7], dtype=int16)
+    
+    diagonal of a, shifted by 5
+    array([], dtype=int16)
     
     
 
@@ -454,7 +497,7 @@ The ``empty`` function can accept complex as the value of the dtype, if
 the firmware was compiled with complex support.
 
 eye
-~~~
+---
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.eye.html
@@ -475,7 +518,7 @@ The ``eye`` function can accept ``complex`` as the value of the
 ``dtype``, if the firmware was compiled with complex support.
 
 With a single argument
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. code::
         
@@ -497,7 +540,7 @@ With a single argument
 
 
 Specifying the dimensions of the matrix
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code::
         
@@ -536,7 +579,7 @@ Specifying the dimensions of the matrix
 
 
 frombuffer
-~~~~~~~~~~
+----------
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.frombuffer.html
@@ -582,7 +625,7 @@ a default of -1, meaning that all data are taken in.
 
 
 full
-~~~~
+----
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.full.html
@@ -622,7 +665,7 @@ value of ``dtype``, if the firmware was compiled with complex support.
 
 
 linspace
-~~~~~~~~
+--------
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.linspace.html
@@ -671,7 +714,7 @@ complex scalar.
 
 
 logspace
-~~~~~~~~
+--------
 
 ``linspace``\ ’ equivalent for logarithmically spaced data is
 ``logspace``. This function produces a sequence of numbers, in which the
@@ -723,7 +766,7 @@ also accepts the ``base`` argument. The default value is 10.
 
 
 ones, zeros
-~~~~~~~~~~~
+-----------
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.zeros.html
@@ -793,7 +836,7 @@ larger than the maximum dimension of your firmware.
 
 
 Customising array printouts
----------------------------
+===========================
 
 ``ndarray``\ s are pretty-printed, i.e., if the number of entries along
 the last axis is larger than 10 (default value), then only the first and
@@ -817,7 +860,7 @@ last three entries will be printed. Also note that, as opposed to
 
 
 set_printoptions
-~~~~~~~~~~~~~~~~
+----------------
 
 The default values can be overwritten by means of the
 ``set_printoptions`` function
@@ -855,7 +898,7 @@ the ellipsis, if the array is longer than ``threshold``.
 
 
 get_printoptions
-~~~~~~~~~~~~~~~~
+----------------
 
 The set value of the ``threshold`` and ``edgeitems`` can be retrieved by
 calling the ``get_printoptions`` function with no arguments. The
@@ -878,7 +921,7 @@ function returns a *dictionary* with two keys.
 
 
 Methods and properties of ndarrays
-----------------------------------
+==================================
 
 Arrays have several *properties* that can queried, and some methods that
 can be called. With the exception of the flatten and transpose
@@ -905,7 +948,7 @@ compiled with complex support.
 16. `.sort <#.sort>`__
 
 .byteswap
-~~~~~~~~~
+---------
 
 ``numpy``
 https://numpy.org/doc/stable/reference/generated/numpy.char.chararray.byteswap.html
@@ -951,7 +994,7 @@ value of ``inplace``.
 
 
 .copy
-~~~~~
+-----
 
 The ``.copy`` method creates a new *deep copy* of an array, i.e., the
 entries of the source array are *copied* into the target array.
@@ -978,7 +1021,7 @@ entries of the source array are *copied* into the target array.
 
 
 .dtype
-~~~~~~
+------
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.dtype.htm
@@ -1048,7 +1091,7 @@ the type code for signed 8-bit integers. The object definition adds
 around 600 bytes to the firmware.
 
 .flat
-~~~~~
+-----
 
 numpy:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flat.htm
@@ -1103,7 +1146,7 @@ iterator itself, while flattening produces a new copy.
 
 
 .flatten
-~~~~~~~~
+--------
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.htm
@@ -1142,7 +1185,7 @@ https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.htm
 
 
 .imag
-~~~~~
+-----
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.imag.html
@@ -1179,7 +1222,7 @@ always ``float``, irrespective of the values.
 
 
 .itemsize
-~~~~~~~~~
+---------
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.itemsize.html
@@ -1216,7 +1259,7 @@ the array.
 
 
 .real
-~~~~~
+-----
 
 numpy:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.real.html
@@ -1250,7 +1293,7 @@ with complex support, and returns a copy with the real part of an array.
 
 
 .reshape
-~~~~~~~~
+--------
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html
@@ -1291,7 +1334,7 @@ consistent with the old, a ``ValueError`` exception will be raised.
     
     Note that `ndarray.reshape()` can also be called by assigning to `ndarray.shape`.
 .shape
-~~~~~~
+------
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.shape.html
@@ -1356,7 +1399,7 @@ By assigning a tuple to the ``.shape`` property, the array can be
 
 
 .size
-~~~~~
+-----
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.size.html
@@ -1398,7 +1441,7 @@ The ``.T`` property of the ``ndarray`` is equivalent to
 `.transpose <#.transpose>`__.
 
 .tobytes
-~~~~~~~~
+--------
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.tobytes.html
@@ -1444,7 +1487,7 @@ not dense (i.e., it has already been sliced).
 
 
 .tolist
-~~~~~~~
+-------
 
 ``numpy``:
 https://numpy.org/doc/stable/reference/generated/numpy.ndarray.tolist.html
@@ -1482,7 +1525,7 @@ into a (nested) ``python`` lists.
 
 
 .transpose
-~~~~~~~~~~
+----------
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html
@@ -1550,7 +1593,7 @@ property:
 
 
 .sort
-~~~~~
+-----
 
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.sort.html
@@ -1605,13 +1648,13 @@ In-place sorting of an ``ndarray``. For a more detailed exposition, see
 
 
 Unary operators
----------------
+===============
 
 With the exception of ``len``, which returns a single number, all unary
 operators manipulate the underlying data element-wise.
 
 len
-~~~
+---
 
 This operator takes a single argument, the array, and returns either the
 length of the first axis.
@@ -1652,7 +1695,7 @@ The number returned by ``len`` is also the length of the iterations,
 when the array supplies the elements for an iteration (see later).
 
 invert
-~~~~~~
+------
 
 The function is defined for integer data types (``uint8``, ``int8``,
 ``uint16``, and ``int16``) only, takes a single argument, and returns
@@ -1688,7 +1731,7 @@ unexpected, as in the example below:
 
 
 abs
-~~~
+---
 
 This function takes a single argument, and returns the
 element-by-element absolute value of the array. When the data type is
@@ -1714,7 +1757,7 @@ returned immediately, and no calculation takes place.
 
 
 neg
-~~~
+---
 
 This operator takes a single argument, and changes the sign of each
 element in the array. Unsigned values are wrapped.
@@ -1745,7 +1788,7 @@ element in the array. Unsigned values are wrapped.
 
 
 pos
-~~~
+---
 
 This function takes a single argument, and simply returns a copy of the
 array.
@@ -1769,7 +1812,7 @@ array.
 
 
 Binary operators
-----------------
+================
 
 ``ulab`` implements the ``+``, ``-``, ``*``, ``/``, ``**``, ``<``,
 ``>``, ``<=``, ``>=``, ``==``, ``!=``, ``+=``, ``-=``, ``*=``, ``/=``,
@@ -1826,7 +1869,7 @@ exception:
 on `array comparison <#Comparison-of-arrays>`__ for details.
 
 Upcasting
-~~~~~~~~~
+---------
 
 Binary operations require special attention, because two arrays with
 different typecodes can be the operands of an operation, in which case
@@ -1849,7 +1892,9 @@ conventions.
    ``dtype``. Thus, e.g., if the scalar is 123, it will be converted
    into an array of ``dtype`` ``uint8``, while -1000 will be converted
    into ``int16``. An ``mp_obj_float``, will always be promoted to
-   ``dtype`` ``float``. Other micropython types (e.g., lists, tuples,
+   ``dtype`` ``float``. Similarly, if ``ulab`` supports complex arrays,
+   the result of a binary operation involving a ``complex`` array is
+   always complex. Other ``micropython`` types (e.g., lists, tuples,
    etc.) raise a ``TypeError`` exception.
 
 4. 
@@ -1905,7 +1950,7 @@ Upcasting can be seen in action in the following snippet:
 
 
 Benchmarks
-~~~~~~~~~~
+----------
 
 The following snippet compares the performance of binary operations to a
 possible implementation in python. For the time measurement, we will
@@ -1998,7 +2043,7 @@ on graphical
 displays <https://forum.micropython.org/viewtopic.php?f=15&t=5815&p=33362&hilit=ufont#p33383>`__.
 
 Comparison operators
---------------------
+====================
 
 The smaller than, greater than, smaller or equal, and greater or equal
 operators return a vector of Booleans indicating the positions
@@ -2046,7 +2091,7 @@ following code will not work:
 
 
 Iterating over arrays
----------------------
+=====================
 
 ``ndarray``\ s are iterable, which means that their elements can also be
 accessed as can the elements of a list, tuple, etc. If the array is
@@ -2094,10 +2139,10 @@ reduced-dimensional *view* is created and returned.
 
 
 Slicing and indexing
---------------------
+====================
 
 Views vs. copies
-~~~~~~~~~~~~~~~~
+----------------
 
 ``numpy`` has a very important concept called *views*, which is a
 powerful extension of ``python``\ ’s own notion of slicing. Slices are
@@ -2210,7 +2255,7 @@ section `Slicing and assigning to
 slices <#Slicing-and-assigning-to-slices>`__ should clarify the issue.
 
 Indexing
-~~~~~~~~
+--------
 
 The simplest form of indexing is specifying a single integer between the
 square brackets as in
@@ -2373,7 +2418,7 @@ On the right hand side of the assignment we can even have another array.
 
 
 Slicing and assigning to slices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 You can also generate sub-arrays by specifying slices as the index of an
 array. Slices are special python objects of the form
