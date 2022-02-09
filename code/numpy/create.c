@@ -370,33 +370,43 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     ndarray_obj_t *source = ndarray_from_iterable(args[0].u_obj, NDARRAY_FLOAT);
     ndarray_obj_t *target = NULL;
 
+    int32_t k = args[1].u_int;
+    size_t k_abs = k >= 0 ? (size_t)k : (size_t)(-k);
     if(source->ndim == 2) { // return the diagonal
-        size_t len = MIN(source->shape[ULAB_MAX_DIMS - 1], source->shape[ULAB_MAX_DIMS - 2]);
+        size_t len;
+        if(k >= 0) {
+           len = (k_abs <= source->shape[ULAB_MAX_DIMS - 1]) ? source->shape[ULAB_MAX_DIMS - 1] - k_abs : 0;
+        } else {
+           len = (k_abs <= source->shape[ULAB_MAX_DIMS - 2]) ? source->shape[ULAB_MAX_DIMS - 2] - k_abs : 0;
+        }
         target = ndarray_new_linear_array(len, source->dtype);
+
+        if(len == 0) {
+            return MP_OBJ_FROM_PTR(target);
+        }
+
         uint8_t *sarray = (uint8_t *)source->array;
         uint8_t *tarray = (uint8_t *)target->array;
+        if(k >= 0) {
+            sarray += source->strides[ULAB_MAX_DIMS - 1] * k;
+        } else {
+            sarray += source->strides[ULAB_MAX_DIMS - 2] * k_abs;
+        }
         for(size_t i=0; i < len; i++) {
             memcpy(tarray, sarray, source->itemsize);
             sarray += (source->strides[ULAB_MAX_DIMS - 1] + source->strides[ULAB_MAX_DIMS - 2]);
             tarray += target->itemsize;
         }
     } else if(source->ndim == 1) { // return a rank-2 tensor with the prescribed diagonal
-        int32_t k = args[1].u_int;
-        size_t len = source->len;
-        if(k < 0) {
-            len -= k;
-        } else {
-            len += k;
-        }
+        size_t len = source->len + k_abs;
         target = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, len, len), source->dtype);
         uint8_t *sarray = (uint8_t *)source->array;
         uint8_t *tarray = (uint8_t *)target->array;
 
         if(k < 0) {
-            k = -k;
-            tarray += len * k * target->itemsize;
+            tarray += len * k_abs * target->itemsize;
         } else {
-            tarray += k * target->itemsize;
+            tarray += k_abs * target->itemsize;
         }
         for(size_t i = 0; i < source->len; i++) {
             memcpy(tarray, sarray, source->itemsize);
