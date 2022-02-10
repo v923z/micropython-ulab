@@ -1,3 +1,9 @@
+Thu, 10 Feb 2020
+
+version 5.0.3
+
+    fix complex slicing
+
 Tue, 8 Feb 2022
 
 version 5.0.2
