@@ -737,7 +737,6 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
     if(source->boolean) {
         dtype = NDARRAY_BOOL;
     }
-    // printf("%d\n", dtype);
     ndarray_obj_t *ndarray = ndarray_new_ndarray(source->ndim, source->shape, strides, dtype);
     ndarray_copy_array(source, ndarray, 0);
     return ndarray;
