@@ -387,6 +387,14 @@ MP_DEFINE_CONST_FUN_OBJ_0(ndarray_get_printoptions_obj, ndarray_get_printoptions
 mp_obj_t ndarray_get_item(ndarray_obj_t *ndarray, void *array) {
     // returns a proper micropython object from an array
     if(!ndarray->boolean) {
+        #if ULAB_SUPPORTS_COMPLEX
+        if(ndarray->dtype == NDARRAY_COMPLEX) {
+            mp_float_t *c = (mp_float_t *)array;
+            mp_float_t real = *c++;
+            mp_float_t imag = *c;
+            return mp_obj_new_complex(real, imag);
+        }
+        #endif
         return mp_binary_get_val_array(ndarray->dtype, array, 0);
     } else {
         if(*(uint8_t *)array) {
@@ -729,7 +737,6 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
     if(source->boolean) {
         dtype = NDARRAY_BOOL;
     }
-    // printf("%d\n", dtype);
     ndarray_obj_t *ndarray = ndarray_new_ndarray(source->ndim, source->shape, strides, dtype);
     ndarray_copy_array(source, ndarray, 0);
     return ndarray;
