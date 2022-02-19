@@ -87,10 +87,10 @@ static const mp_rom_map_elem_t ulab_user_globals_table[] = {
 
 static MP_DEFINE_CONST_DICT(mp_module_ulab_user_globals, ulab_user_globals_table);
 
-mp_obj_module_t ulab_user_module = {
+const mp_obj_module_t ulab_user_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_user_globals,
 };
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_user, ulab_user_module, ULAB_HAS_USER_MODULE);
+MP_REGISTER_MODULE(MP_QSTR_ulab_dot_user, ulab_user_module, ULAB_HAS_USER_MODULE && CIRCUITPY_ULAB);
 
 #endif
