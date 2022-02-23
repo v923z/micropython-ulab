@@ -1,4 +1,10 @@
-Thu, 10 Feb 2020
+Fri, 18 Feb 2022
+
+version 5.0.4
+
+    fix the handling of empty arrays in binary_op
+
+Thu, 10 Feb 2022
 
 version 5.0.3
 

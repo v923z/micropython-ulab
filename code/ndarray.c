@@ -1865,7 +1865,7 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     // the empty arrays have to be treated separately
     uint8_t dtype = NDARRAY_INT16;
     ndarray_obj_t *nd;
-    if((lhs->ndim == 0) || (rhs->ndim == 0)) {
+    if((lhs->len == 0) || (rhs->len == 0)) {
         switch(op) {
             case MP_BINARY_OP_INPLACE_ADD:
             case MP_BINARY_OP_INPLACE_MULTIPLY:
