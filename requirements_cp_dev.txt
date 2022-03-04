@@ -1,15 +1,29 @@
-# for extract-pyi
-isort
+# For string compression
+huffman
+
+# For nvm.toml
+cascadetoml
+jinja2
+typer
+
+sh
+click
+cpp-coveralls
+requests
+requests-cache
+
+# For translate check
+polib
+
+# For pre-commit
+pyyaml
 black
 
-# For docs
-Sphinx<4
-sphinx-rtd-theme
-myst-parser
-sphinx-autoapi
-sphinxcontrib-svg2pdfconverter
-readthedocs-sphinx-search
+# for combining the Nordic SoftDevice with CircuitPython
+intelhex
 
-# for check-stubs
-mypy
+# for building & testing natmods
+pyelftools
 
+# for stubs and annotations
+adafruit-circuitpython-typing
