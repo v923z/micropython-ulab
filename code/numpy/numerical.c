@@ -793,12 +793,14 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     // reset the array
     iarray = indices->array;
 
-    if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
-        HEAP_ARGSORT(ndarray, uint8_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
-    } else if((ndarray->dtype == NDARRAY_UINT16) || (ndarray->dtype == NDARRAY_INT16)) {
-        HEAP_ARGSORT(ndarray, uint16_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
-    } else {
-        HEAP_ARGSORT(ndarray, mp_float_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
+    if(ndarray->shape[ax]) {
+        if((ndarray->dtype == NDARRAY_UINT8) || (ndarray->dtype == NDARRAY_INT8)) {
+            HEAP_ARGSORT(ndarray, uint8_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
+        } else if((ndarray->dtype == NDARRAY_UINT16) || (ndarray->dtype == NDARRAY_INT16)) {
+            HEAP_ARGSORT(ndarray, uint16_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
+        } else {
+            HEAP_ARGSORT(ndarray, mp_float_t, array, shape, strides, ax, increment, ndarray->shape[ax], iarray, istrides, iincrement);
+        }
     }
     return MP_OBJ_FROM_PTR(indices);
 }
