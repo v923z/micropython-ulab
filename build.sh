@@ -41,11 +41,8 @@ NPROC=`python3 -c 'import multiprocessing; print(multiprocessing.cpu_count())'`
 set -e
 HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
 [ -e micropython/py/py.mk ] || git clone --no-recurse-submodules https://github.com/micropython/micropython
-[ -e micropython/lib/axtls/README ] || (cd micropython && git submodule update --init lib/axtls )
 dims=${1-2}
-make -C micropython/mpy-cross -j${NPROC}
-make -C micropython/ports/unix -j${NPROC} axtls
-make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DULAB_MAX_DIMS=$dims CFLAGS_EXTRA+=-DULAB_HASH=$GIT_HASH BUILD=build-$dims PROG=micropython-$dims
+make -C micropython/ports/unix -j${NPROC} MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 FROZEN_MANIFEST= USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DULAB_MAX_DIMS=$dims CFLAGS_EXTRA+=-DULAB_HASH=$GIT_HASH CFLAGS_EXTRA+=-g3 CFLAGS_EXTRA+=-Og LDFLAGS_EXTRA+=-g3 LDFLAGS_EXTRA+=-Og BUILD=build-$dims PROG=micropython-$dims V=2
 
 bash test-common.sh "${dims}" "micropython/ports/unix/micropython-$dims"
 
