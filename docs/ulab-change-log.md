@@ -1,3 +1,9 @@
+Thu, 14 Apr 2022
+
+version 5.0.5
+
+    fix sorting on empty arrays
+
 Fri, 18 Feb 2022
 
 version 5.0.4
