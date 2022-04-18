@@ -1,0 +1,25 @@
+
+array([], dtype=uint8)
+[]
+array([1, 2, 3, 4], dtype=uint8)
+[1, 3, 2, 0]
+
+array([], dtype=int8)
+[]
+array([1, 2, 3, 4], dtype=int8)
+[1, 3, 2, 0]
+
+array([], dtype=uint16)
+[]
+array([0, 0, 0, 0], dtype=uint16)
+[1, 3, 2, 0]
+
+array([], dtype=int16)
+[]
+array([1, 2, 3, 4], dtype=int16)
+[1, 3, 2, 0]
+
+array([], dtype=float64)
+[]
+array([1.0, 2.0, 3.0, 4.0], dtype=float64)
+[1, 3, 2, 0]
