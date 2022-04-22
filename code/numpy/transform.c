@@ -258,7 +258,6 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
         result = ndarray_new_linear_array(ndarray->len - index_len, ndarray->dtype);
         rstrides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
         memset(rshape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
-        // rshape[ULAB_MAX_DIMS - 1] = 0;
     } else {
         rshape[shift_ax] = shape[shift_ax] - index_len;
 
@@ -323,13 +322,14 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
     #if ULAB_MAX_DIMS > 3
         array -= strides[ULAB_MAX_DIMS - 3] * shape[ULAB_MAX_DIMS - 3];
         array += strides[ULAB_MAX_DIMS - 4];
-        rarray -= rstrides[ULAB_MAX_DIMS - 2] * rshape[ULAB_MAX_DIMS - 2];
-        rarray += rstrides[ULAB_MAX_DIMS - 3];
+        rarray -= rstrides[ULAB_MAX_DIMS - 3] * rshape[ULAB_MAX_DIMS - 3];
+        rarray += rstrides[ULAB_MAX_DIMS - 4];
         i++;
     } while(i < shape[ULAB_MAX_DIMS - 4]);
     #endif
 
-    m_del(size_t, shape, ULAB_MAX_DIMS);
+    // TODO: deleting shape generates a seg fault
+    // m_del(size_t, shape, ULAB_MAX_DIMS);
     m_del(size_t, rshape, ULAB_MAX_DIMS);
     m_del(int32_t, strides, ULAB_MAX_DIMS);
     m_del(int32_t, rstrides, ULAB_MAX_DIMS);
