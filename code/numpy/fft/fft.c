@@ -26,6 +26,7 @@
 //| """Frequency-domain functions"""
 //|
 //| import ulab.numpy
+//| import ulab.utils
 
 
 //| def fft(r: ulab.numpy.ndarray, c: Optional[ulab.numpy.ndarray] = None) -> Tuple[ulab.numpy.ndarray, ulab.numpy.ndarray]:
@@ -36,7 +37,7 @@
 //|
 //|     Perform a Fast Fourier Transform from the time domain into the frequency domain
 //|
-//|     See also ~ulab.extras.spectrum, which computes the magnitude of the fft,
+//|     See also `ulab.utils.spectrogram`, which computes the magnitude of the fft,
 //|     rather than separately returning its real and imaginary parts."""
 //|     ...
 //|
