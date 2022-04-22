@@ -132,9 +132,6 @@ static mp_obj_t io_load(mp_obj_t file) {
     io_read_(stream, stream_p, buffer, "', 'fortran_order': False, 'shape': (", 37, &error);
 
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
-    #endif
 
     uint16_t bytes_to_read = MIN(ULAB_IO_BUFFER_SIZE, header_length - 51);
     // bytes_to_read is 128 at most. This should be enough to contain a
@@ -389,9 +386,6 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     }
 
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
-    #endif
 
     #if ULAB_MAX_DIMS == 1
     shape[0] = rows;

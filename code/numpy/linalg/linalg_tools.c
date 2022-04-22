@@ -28,10 +28,6 @@ bool linalg_invert_matrix(mp_float_t *data, size_t N) {
     // will be returned after all the transformations
     mp_float_t *unit = m_new0(mp_float_t, N*N);
     mp_float_t elem = 1.0;
-    // initialise the unit matrix
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(unit, 0, sizeof(mp_float_t)*N*N);
-    #endif
 
     for(size_t m=0; m < N; m++) {
         memcpy(&unit[m * (N+1)], &elem, sizeof(mp_float_t));

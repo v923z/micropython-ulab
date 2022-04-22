@@ -164,9 +164,6 @@ void ndarray_fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
 #if ULAB_HAS_FUNCTION_ITERATOR
 size_t *ndarray_new_coords(uint8_t ndim) {
     size_t *coords = m_new0(size_t, ndim);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(coords, 0, ndim*sizeof(size_t));
-    #endif
     return coords;
 }
 
@@ -623,9 +620,6 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     uint8_t *array = m_new0(byte, len);
     // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
     // we could, perhaps, leave this step out, and initialise the array only, when needed
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(array, 0, len);
-    #endif
     ndarray->array = array;
     ndarray->origin = array;
     return ndarray;
@@ -1064,10 +1058,6 @@ bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim
     //
     // 1. the two shapes are either equal
     // 2. one of the shapes is 1
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(lstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    memset(rstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    #endif
 
     lstrides[ULAB_MAX_DIMS - 1] = lhs->strides[ULAB_MAX_DIMS - 1];
     rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];
@@ -1101,9 +1091,6 @@ bool ndarray_can_broadcast_inplace(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32
     //
     // 1. the two shapes are either equal
     // 2. the shapes on the right hand side is 1
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(rstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    #endif
 
     rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];
     for(uint8_t i=ULAB_MAX_DIMS; i > 0; i--) {
@@ -1154,10 +1141,6 @@ static mp_bound_slice_t generate_slice(mp_int_t n, mp_obj_t index) {
 static ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *tuple) {
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
     int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    #endif
 
     uint8_t ndim = ndarray->ndim;
 
@@ -1199,9 +1182,9 @@ void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
         return;
     }
     uint8_t ndim = 0;
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
-    int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
+    int32_t *lstrides = m_new0(int32_t, ULAB_MAX_DIMS);
+    int32_t *rstrides = m_new0(int32_t, ULAB_MAX_DIMS);
     if(!ndarray_can_broadcast(view, values, &ndim, shape, lstrides, rstrides)) {
         mp_raise_ValueError(translate("operands could not be broadcast together"));
         m_del(size_t, shape, ULAB_MAX_DIMS);
@@ -2170,9 +2153,6 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
         mp_raise_ValueError(translate("maximum number of dimensions is 4"));
     }
     size_t *new_shape = m_new0(size_t, ULAB_MAX_DIMS);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(new_shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    #endif
 
     size_t new_length = 1;
     for(uint8_t i=0; i < shape->len; i++) {

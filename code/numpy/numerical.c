@@ -517,10 +517,6 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         uint8_t *array = (uint8_t *)ndarray->array;
         size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
         int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
-        #if !MICROPY_GC_CONSERVATIVE_CLEAR
-        memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
-        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-        #endif
 
         numerical_reduce_axes(ndarray, ax, shape, strides);
         uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
@@ -641,10 +637,6 @@ static mp_obj_t numerical_sort_helper(mp_obj_t oin, mp_obj_t axis, uint8_t inpla
 
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
     int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
-    #endif
 
     numerical_reduce_axes(ndarray, ax, shape, strides);
     ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
@@ -741,10 +733,6 @@ mp_obj_t numerical_argsort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
     int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
-    #endif
     numerical_reduce_axes(ndarray, ax, shape, strides);
 
     // We could return an NDARRAY_UINT8 array, if all lengths are shorter than 256
@@ -956,9 +944,6 @@ mp_obj_t numerical_diff(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
     int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(strides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
-    #endif
     numerical_reduce_axes(ndarray, ax, shape, strides);
 
     if(ndarray->dtype == NDARRAY_UINT8) {
@@ -1094,10 +1079,6 @@ mp_obj_t numerical_median(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
         size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
         int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
-        #if !MICROPY_GC_CONSERVATIVE_CLEAR
-        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-        memset(strides, 0, sizeof(uint32_t)*ULAB_MAX_DIMS);
-        #endif
         numerical_reduce_axes(ndarray, ax, shape, strides);
 
         ax = ULAB_MAX_DIMS - ndarray->ndim + ax;
@@ -1251,18 +1232,10 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
         size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
         int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
-        #if !MICROPY_GC_CONSERVATIVE_CLEAR
-        memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-        memset(strides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
-        #endif
         numerical_reduce_axes(ndarray, ax, shape, strides);
 
         size_t *rshape = m_new0(size_t, ULAB_MAX_DIMS);
         int32_t *rstrides = m_new0(int32_t, ULAB_MAX_DIMS);
-        #if !MICROPY_GC_CONSERVATIVE_CLEAR
-        memset(rshape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-        memset(rstrides, 0, sizeof(int32_t)*ULAB_MAX_DIMS);
-        #endif
         numerical_reduce_axes(results, ax, rshape, rstrides);
 
         ax = ULAB_MAX_DIMS - ndarray->ndim + ax;

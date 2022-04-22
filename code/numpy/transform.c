@@ -84,9 +84,6 @@ static mp_obj_t transform_compress(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     if(axis == mp_const_none) {
         result = ndarray_new_linear_array(true_count, ndarray->dtype);
-        #if !MICROPY_GC_CONSERVATIVE_CLEAR
-        memset(rstrides, 0, ndarray->ndim * sizeof(int32_t));
-        #endif
 
         rstrides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
         rshape[ULAB_MAX_DIMS - 1] = 0;
@@ -254,9 +251,6 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     if(axis == mp_const_none) {
         result = ndarray_new_linear_array(ndarray->len - index_len, ndarray->dtype);
-        #if !MICROPY_GC_CONSERVATIVE_CLEAR
-        memset(rstrides, 0, ndarray->ndim * sizeof(int32_t));
-        #endif
         rstrides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
         memset(rshape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
         // rshape[ULAB_MAX_DIMS - 1] = 0;

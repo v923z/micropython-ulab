@@ -36,9 +36,6 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
             mp_raise_TypeError(translate("too many dimensions"));
         }
         size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
-        #if !MICROPY_GC_CONSERVATIVE_CLEAR
-        memset(shape, 0, ULAB_MAX_DIMS * sizeof(size_t));
-        #endif
 
         size_t i = 0;
         mp_obj_iter_buf_t iter_buf;
@@ -249,9 +246,6 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     }
     int8_t axis = (int8_t)args[1].u_int;
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    #endif
     mp_obj_tuple_t *ndarrays = MP_OBJ_TO_PTR(args[0].u_obj);
 
     // first check, whether the arrays are compatible
