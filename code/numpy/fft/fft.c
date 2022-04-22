@@ -36,7 +36,7 @@
 //|
 //|     Perform a Fast Fourier Transform from the time domain into the frequency domain
 //|
-//|     See also `~ulab.utils.spectrum`, which computes the magnitude of the fft,
+//|     See also `~ulab.utils.spectrogram`, which computes the magnitude of the fft,
 //|     rather than separately returning its real and imaginary parts."""
 //|     ...
 //|
