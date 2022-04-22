@@ -80,11 +80,11 @@ static mp_obj_t transform_compress(size_t n_args, const mp_obj_t *pos_args, mp_m
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
     memcpy(strides, ndarray->strides, ULAB_MAX_DIMS * sizeof(int32_t));
 
-    int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    int32_t *rstrides = m_new0(int32_t, ULAB_MAX_DIMS);
 
     if(axis == mp_const_none) {
         result = ndarray_new_linear_array(true_count, ndarray->dtype);
-        memset(rstrides, 0, ndarray->ndim * sizeof(int32_t));
+
         rstrides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
         rshape[ULAB_MAX_DIMS - 1] = 0;
     } else {
@@ -151,6 +151,11 @@ static mp_obj_t transform_compress(size_t n_args, const mp_obj_t *pos_args, mp_m
         i++;
     } while(i < shape[ULAB_MAX_DIMS - 4]);
     #endif
+
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(size_t, rshape, ULAB_MAX_DIMS);
+    m_del(int32_t, strides, ULAB_MAX_DIMS);
+    m_del(int32_t, rstrides, ULAB_MAX_DIMS);
 
     return result;
 }
@@ -245,16 +250,14 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
     memcpy(strides, ndarray->strides, ULAB_MAX_DIMS * sizeof(int32_t));
 
-    int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    int32_t *rstrides = m_new0(int32_t, ULAB_MAX_DIMS);
 
     ndarray_obj_t *result = NULL;
 
     if(axis == mp_const_none) {
         result = ndarray_new_linear_array(ndarray->len - index_len, ndarray->dtype);
-        memset(rstrides, 0, ndarray->ndim * sizeof(int32_t));
         rstrides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
         memset(rshape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
-        // rshape[ULAB_MAX_DIMS - 1] = 0;
     } else {
         rshape[shift_ax] = shape[shift_ax] - index_len;
 
@@ -319,11 +322,17 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
     #if ULAB_MAX_DIMS > 3
         array -= strides[ULAB_MAX_DIMS - 3] * shape[ULAB_MAX_DIMS - 3];
         array += strides[ULAB_MAX_DIMS - 4];
-        rarray -= rstrides[ULAB_MAX_DIMS - 2] * rshape[ULAB_MAX_DIMS - 2];
-        rarray += rstrides[ULAB_MAX_DIMS - 3];
+        rarray -= rstrides[ULAB_MAX_DIMS - 3] * rshape[ULAB_MAX_DIMS - 3];
+        rarray += rstrides[ULAB_MAX_DIMS - 4];
         i++;
     } while(i < shape[ULAB_MAX_DIMS - 4]);
     #endif
+
+    // TODO: deleting shape generates a seg fault
+    // m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(size_t, rshape, ULAB_MAX_DIMS);
+    m_del(int32_t, strides, ULAB_MAX_DIMS);
+    m_del(int32_t, rstrides, ULAB_MAX_DIMS);
 
     return MP_OBJ_FROM_PTR(result);
 }

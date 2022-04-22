@@ -1,4 +1,9 @@
 Thu, 14 Apr 2022
+version 5.0.6
+
+    use m_new0 conditionally
+
+Thu, 14 Apr 2022
 
 version 5.0.5
 
