@@ -152,6 +152,11 @@ static mp_obj_t transform_compress(size_t n_args, const mp_obj_t *pos_args, mp_m
     } while(i < shape[ULAB_MAX_DIMS - 4]);
     #endif
 
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(size_t, rshape, ULAB_MAX_DIMS);
+    m_del(int32_t, strides, ULAB_MAX_DIMS);
+    m_del(int32_t, rstrides, ULAB_MAX_DIMS);
+
     return result;
 }
 
@@ -323,6 +328,11 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
         i++;
     } while(i < shape[ULAB_MAX_DIMS - 4]);
     #endif
+
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(size_t, rshape, ULAB_MAX_DIMS);
+    m_del(int32_t, strides, ULAB_MAX_DIMS);
+    m_del(int32_t, rstrides, ULAB_MAX_DIMS);
 
     return MP_OBJ_FROM_PTR(result);
 }

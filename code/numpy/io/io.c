@@ -229,6 +229,8 @@ static mp_obj_t io_load(mp_obj_t file) {
         m_del(char, tmpbuff, sz);
     }
 
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+
     return MP_OBJ_FROM_PTR(ndarray);
 }
 
@@ -478,6 +480,8 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     } while((read > 0) && (rows < max_rows));
 
     stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
+
+    m_del(size_t, shape, ULAB_MAX_DIMS);
     m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
     m_del(char, clipboard, ULAB_IO_CLIPBOARD_SIZE);
     m_del(uint16_t, cols, used_columns);
