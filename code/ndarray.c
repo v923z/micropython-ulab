@@ -1192,139 +1192,66 @@ void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
     int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
     if(!ndarray_can_broadcast(view, values, &ndim, shape, lstrides, rstrides)) {
         mp_raise_ValueError(translate("operands could not be broadcast together"));
-        m_del(size_t, shape, ULAB_MAX_DIMS);
-        m_del(int32_t, lstrides, ULAB_MAX_DIMS);
-        m_del(int32_t, rstrides, ULAB_MAX_DIMS);
-    }
+    } else {
 
-    uint8_t *rarray = (uint8_t *)values->array;
+        ndarray_obj_t *ndarray = ndarray_copy_view_convert_type(values, view->dtype);
+        // re-calculate rstrides, since the copy operation might have changed the directions of the strides
+        ndarray_can_broadcast(view, ndarray, &ndim, shape, lstrides, rstrides);
+        uint8_t *rarray = (uint8_t *)ndarray->array;
 
-    #if ULAB_SUPPORTS_COMPLEX
-    if(values->dtype == NDARRAY_COMPLEX) {
-        if(view->dtype != NDARRAY_COMPLEX) {
-            mp_raise_TypeError(translate("cannot convert complex to dtype"));
-        } else {
-            uint8_t *larray = (uint8_t *)view->array;
 
-            #if ULAB_MAX_DIMS > 3
-            size_t i = 0;
+        uint8_t *larray = (uint8_t *)view->array;
+
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
             do {
             #endif
-                #if ULAB_MAX_DIMS > 2
-                size_t j = 0;
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
                 do {
                 #endif
-                    #if ULAB_MAX_DIMS > 1
-                    size_t k = 0;
+                    size_t l = 0;
                     do {
-                    #endif
-                        size_t l = 0;
-                        do {
-                            memcpy(larray, rarray, view->itemsize);
-                            larray += lstrides[ULAB_MAX_DIMS - 1];
-                            rarray += rstrides[ULAB_MAX_DIMS - 1];
-                            l++;
-                        } while(l <  view->shape[ULAB_MAX_DIMS - 1]);
-                    #if ULAB_MAX_DIMS > 1
-                        larray -= lstrides[ULAB_MAX_DIMS - 1] * view->shape[ULAB_MAX_DIMS-1];
-                        larray += lstrides[ULAB_MAX_DIMS - 2];
-                        rarray -= rstrides[ULAB_MAX_DIMS - 1] * view->shape[ULAB_MAX_DIMS-1];
-                        rarray += rstrides[ULAB_MAX_DIMS - 2];
-                        k++;
-                    } while(k <  view->shape[ULAB_MAX_DIMS - 2]);
-                    #endif
-                #if ULAB_MAX_DIMS > 2
-                    larray -= lstrides[ULAB_MAX_DIMS - 2] * view->shape[ULAB_MAX_DIMS-2];
-                    larray += lstrides[ULAB_MAX_DIMS - 3];
-                    rarray -= rstrides[ULAB_MAX_DIMS - 2] * view->shape[ULAB_MAX_DIMS-2];
-                    rarray += rstrides[ULAB_MAX_DIMS - 3];
-                    j++;
-                } while(j <  view->shape[ULAB_MAX_DIMS - 3]);
+                        memcpy(larray, rarray, view->itemsize);
+                        larray += lstrides[ULAB_MAX_DIMS - 1];
+                        rarray += rstrides[ULAB_MAX_DIMS - 1];
+                        l++;
+                    } while(l <  view->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    larray -= lstrides[ULAB_MAX_DIMS - 1] * view->shape[ULAB_MAX_DIMS-1];
+                    larray += lstrides[ULAB_MAX_DIMS - 2];
+                    rarray -= rstrides[ULAB_MAX_DIMS - 1] * view->shape[ULAB_MAX_DIMS-1];
+                    rarray += rstrides[ULAB_MAX_DIMS - 2];
+                    k++;
+                } while(k <  view->shape[ULAB_MAX_DIMS - 2]);
                 #endif
-            #if ULAB_MAX_DIMS > 3
-                larray -= lstrides[ULAB_MAX_DIMS - 3] * view->shape[ULAB_MAX_DIMS-3];
-                larray += lstrides[ULAB_MAX_DIMS - 4];
-                rarray -= rstrides[ULAB_MAX_DIMS - 3] * view->shape[ULAB_MAX_DIMS-3];
-                rarray += rstrides[ULAB_MAX_DIMS - 4];
-                i++;
-            } while(i <  view->shape[ULAB_MAX_DIMS - 4]);
+            #if ULAB_MAX_DIMS > 2
+                larray -= lstrides[ULAB_MAX_DIMS - 2] * view->shape[ULAB_MAX_DIMS-2];
+                larray += lstrides[ULAB_MAX_DIMS - 3];
+                rarray -= rstrides[ULAB_MAX_DIMS - 2] * view->shape[ULAB_MAX_DIMS-2];
+                rarray += rstrides[ULAB_MAX_DIMS - 3];
+                j++;
+            } while(j <  view->shape[ULAB_MAX_DIMS - 3]);
             #endif
-        }
-        return;
-    }
-    #endif
-
-    // since in ASSIGNMENT_LOOP the array has a type, we have to divide the strides by the itemsize
-    for(uint8_t i=0; i < ULAB_MAX_DIMS; i++) {
-        lstrides[i] /= view->itemsize;
-        #if ULAB_SUPPORTS_COMPLEX
-        if(view->dtype == NDARRAY_COMPLEX) {
-            lstrides[i] *= 2;
-        }
+        #if ULAB_MAX_DIMS > 3
+            larray -= lstrides[ULAB_MAX_DIMS - 3] * view->shape[ULAB_MAX_DIMS-3];
+            larray += lstrides[ULAB_MAX_DIMS - 4];
+            rarray -= rstrides[ULAB_MAX_DIMS - 3] * view->shape[ULAB_MAX_DIMS-3];
+            rarray += rstrides[ULAB_MAX_DIMS - 4];
+            i++;
+        } while(i <  view->shape[ULAB_MAX_DIMS - 4]);
         #endif
     }
 
-    if(view->dtype == NDARRAY_UINT8) {
-        if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(view, uint8_t, uint8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(view, uint8_t, int8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(view, uint8_t, uint16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(view, uint8_t, int16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(view, uint8_t, mp_float_t, lstrides, rarray, rstrides);
-        }
-    } else if(view->dtype == NDARRAY_INT8) {
-        if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(view, int8_t, uint8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(view, int8_t, int8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(view, int8_t, uint16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(view, int8_t, int16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(view, int8_t, mp_float_t, lstrides, rarray, rstrides);
-        }
-    } else if(view->dtype == NDARRAY_UINT16) {
-        if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(view, uint16_t, uint8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(view, uint16_t, int8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(view, uint16_t, uint16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(view, uint16_t, int16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(view, uint16_t, mp_float_t, lstrides, rarray, rstrides);
-        }
-    } else if(view->dtype == NDARRAY_INT16) {
-        if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(view, int16_t, uint8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(view, int16_t, int8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(view, int16_t, uint16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(view, int16_t, int16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(view, int16_t, mp_float_t, lstrides, rarray, rstrides);
-        }
-    } else { // the dtype must be an mp_float_t or complex now
-        if(values->dtype == NDARRAY_UINT8) {
-            ASSIGNMENT_LOOP(view, mp_float_t, uint8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT8) {
-            ASSIGNMENT_LOOP(view, mp_float_t, int8_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_UINT16) {
-            ASSIGNMENT_LOOP(view, mp_float_t, uint16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_INT16) {
-            ASSIGNMENT_LOOP(view, mp_float_t, int16_t, lstrides, rarray, rstrides);
-        } else if(values->dtype == NDARRAY_FLOAT) {
-            ASSIGNMENT_LOOP(view, mp_float_t, mp_float_t, lstrides, rarray, rstrides);
-        }
-    }
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(int32_t, lstrides, ULAB_MAX_DIMS);
+    m_del(int32_t, rstrides, ULAB_MAX_DIMS);
+
+    return;
 }
 
 static mp_obj_t ndarray_from_boolean_index(ndarray_obj_t *ndarray, ndarray_obj_t *index) {

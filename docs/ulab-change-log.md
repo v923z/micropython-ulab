@@ -1,3 +1,9 @@
+Mon, 16 May 2022
+
+version 5.0.7
+
+    fix in-place assignment from slices
+
 Fri, 18 Feb 2022
 
 version 5.0.4
