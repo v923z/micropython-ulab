@@ -131,8 +131,7 @@ static mp_obj_t io_load(mp_obj_t file) {
 
     io_read_(stream, stream_p, buffer, "', 'fortran_order': False, 'shape': (", 37, &error);
 
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
 
     uint16_t bytes_to_read = MIN(ULAB_IO_BUFFER_SIZE, header_length - 51);
     // bytes_to_read is 128 at most. This should be enough to contain a
@@ -229,6 +228,8 @@ static mp_obj_t io_load(mp_obj_t file) {
         #endif
         m_del(char, tmpbuff, sz);
     }
+
+    m_del(size_t, shape, ULAB_MAX_DIMS);
 
     return MP_OBJ_FROM_PTR(ndarray);
 }
@@ -386,8 +387,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         mp_raise_ValueError(translate("usecols is too high"));
     }
 
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(shape, 0, sizeof(size_t) * ULAB_MAX_DIMS);
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
 
     #if ULAB_MAX_DIMS == 1
     shape[0] = rows;
@@ -480,6 +480,8 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     } while((read > 0) && (rows < max_rows));
 
     stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
+
+    m_del(size_t, shape, ULAB_MAX_DIMS);
     m_del(char, buffer, ULAB_IO_BUFFER_SIZE);
     m_del(char, clipboard, ULAB_IO_CLIPBOARD_SIZE);
     m_del(uint16_t, cols, used_columns);
