@@ -1,15 +1,19 @@
-# for extract-pyi
-isort
-black
-
 # For docs
-Sphinx<4
-sphinx-rtd-theme
-myst-parser
+mypy
+black
+isort
+astroid
+setuptools
+setuptools_scm
+
+Sphinx>=4.0.0
 sphinx-autoapi
+sphinx-rtd-theme
 sphinxcontrib-svg2pdfconverter
 readthedocs-sphinx-search
+myst-parser
 
-# for check-stubs
-mypy
+# For stubs and annotations
+adafruit-circuitpython-typing
+
 

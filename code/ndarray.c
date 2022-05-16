@@ -163,8 +163,7 @@ void ndarray_fill_array_iterable(mp_float_t *array, mp_obj_t iterable) {
 
 #if ULAB_HAS_FUNCTION_ITERATOR
 size_t *ndarray_new_coords(uint8_t ndim) {
-    size_t *coords = m_new(size_t, ndim);
-    memset(coords, 0, ndim*sizeof(size_t));
+    size_t *coords = m_new0(size_t, ndim);
     return coords;
 }
 
@@ -618,10 +617,9 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
 
     // if the length is 0, still allocate a single item, so that contractions can be handled
     size_t len = ndarray->itemsize * MAX(1, ndarray->len);
-    uint8_t *array = m_new(byte, len);
+    uint8_t *array = m_new0(byte, len);
     // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
     // we could, perhaps, leave this step out, and initialise the array only, when needed
-    memset(array, 0, len);
     ndarray->array = array;
     ndarray->origin = array;
     return ndarray;
@@ -1060,8 +1058,7 @@ bool ndarray_can_broadcast(ndarray_obj_t *lhs, ndarray_obj_t *rhs, uint8_t *ndim
     //
     // 1. the two shapes are either equal
     // 2. one of the shapes is 1
-    memset(lstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    memset(rstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+
     lstrides[ULAB_MAX_DIMS - 1] = lhs->strides[ULAB_MAX_DIMS - 1];
     rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];
     for(uint8_t i=ULAB_MAX_DIMS; i > 0; i--) {
@@ -1094,7 +1091,7 @@ bool ndarray_can_broadcast_inplace(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32
     //
     // 1. the two shapes are either equal
     // 2. the shapes on the right hand side is 1
-    memset(rstrides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+
     rstrides[ULAB_MAX_DIMS - 1] = rhs->strides[ULAB_MAX_DIMS - 1];
     for(uint8_t i=ULAB_MAX_DIMS; i > 0; i--) {
         if((lhs->shape[i-1] == rhs->shape[i-1]) || (rhs->shape[i-1] == 0) || (rhs->shape[i-1] == 1)) {
@@ -1142,10 +1139,8 @@ static mp_bound_slice_t generate_slice(mp_int_t n, mp_obj_t index) {
 }
 
 static ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tuple_t *tuple) {
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
-    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    memset(strides, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
+    int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
 
     uint8_t ndim = ndarray->ndim;
 
@@ -1187,9 +1182,9 @@ void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
         return;
     }
     uint8_t ndim = 0;
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
-    int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
+    int32_t *lstrides = m_new0(int32_t, ULAB_MAX_DIMS);
+    int32_t *rstrides = m_new0(int32_t, ULAB_MAX_DIMS);
     if(!ndarray_can_broadcast(view, values, &ndim, shape, lstrides, rstrides)) {
         mp_raise_ValueError(translate("operands could not be broadcast together"));
     } else {
@@ -1773,9 +1768,9 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
     }
 
     uint8_t ndim = 0;
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
-    int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
+    int32_t *lstrides = m_new0(int32_t, ULAB_MAX_DIMS);
+    int32_t *rstrides = m_new0(int32_t, ULAB_MAX_DIMS);
     uint8_t broadcastable;
     if((op == MP_BINARY_OP_INPLACE_ADD) || (op == MP_BINARY_OP_INPLACE_MULTIPLY) || (op == MP_BINARY_OP_INPLACE_POWER) ||
         (op == MP_BINARY_OP_INPLACE_SUBTRACT) || (op == MP_BINARY_OP_INPLACE_TRUE_DIVIDE)) {
@@ -2084,8 +2079,8 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
     if(shape->len > ULAB_MAX_DIMS) {
         mp_raise_ValueError(translate("maximum number of dimensions is 4"));
     }
-    size_t *new_shape = m_new(size_t, ULAB_MAX_DIMS);
-    memset(new_shape, 0, sizeof(size_t)*ULAB_MAX_DIMS);
+    size_t *new_shape = m_new0(size_t, ULAB_MAX_DIMS);
+
     size_t new_length = 1;
     for(uint8_t i=0; i < shape->len; i++) {
         new_shape[ULAB_MAX_DIMS - i - 1] = mp_obj_get_int(shape->items[shape->len - i - 1]);

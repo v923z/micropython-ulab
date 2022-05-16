@@ -84,7 +84,7 @@ jobs:
             echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
             echo >>$GITHUB_PATH /usr/local/opt/librsvg/bin
         fi
-        python3 -mpip install -r requirements_cp_dev.txt
+        python3 -mpip install --upgrade -r requirements_cp_dev.txt
 
     - name: Run build-cp.sh
       run: ./build-cp.sh ${{ matrix.dims }}
