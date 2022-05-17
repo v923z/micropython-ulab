@@ -1,4 +1,11 @@
+Mon, 16 May 2022
+
+version 5.0.7
+
+    fix in-place assignment from slices
+
 Thu, 14 Apr 2022
+
 version 5.0.6
 
     use m_new0 conditionally
