@@ -22,8 +22,8 @@
 #include "../../ulab_tools.h"
 #include "optimize.h"
 
-const mp_obj_float_t xtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(2.4e-7)};
-const mp_obj_float_t rtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(0.0)};
+ULAB_DEFINE_FLOAT_CONST(xtolerance, 2.4e-7, 0x3e901b2b29a4692bULL);
+ULAB_DEFINE_FLOAT_CONST(rtolerance, 0.0, 0ULL);
 
 static mp_float_t optimize_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
     // Helper function for calculating the value of f(x, a, b, c, ...),
@@ -61,7 +61,7 @@ STATIC mp_obj_t optimize_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
-        { MP_QSTR_xtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
+        { MP_QSTR_xtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(xtolerance)} },
         { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100} },
     };
 
@@ -130,8 +130,8 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
-        { MP_QSTR_xatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
-        { MP_QSTR_fatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
+        { MP_QSTR_xatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(xtolerance)} },
+        { MP_QSTR_fatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(xtolerance)} },
         { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 200} },
     };
 
@@ -355,8 +355,8 @@ static mp_obj_t optimize_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
-        { MP_QSTR_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&xtolerance) } },
-        { MP_QSTR_rtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&rtolerance) } },
+        { MP_QSTR_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(xtolerance) } },
+        { MP_QSTR_rtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(rtolerance) } },
         { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 50 } },
     };
 

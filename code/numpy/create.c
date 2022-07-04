@@ -676,14 +676,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 //|     ...
 //|
 
-const mp_obj_float_t create_float_const_ten = {{&mp_type_float}, MICROPY_FLOAT_CONST(10.0)};
+ULAB_DEFINE_FLOAT_CONST(const_ten, 10.0, 0x4024000000000000ULL);
 
 mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_num, MP_ARG_INT, { .u_int = 50 } },
-        { MP_QSTR_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&create_float_const_ten) } },
+        { MP_QSTR_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(const_ten) } },
         { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_TRUE } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
     };
