@@ -272,7 +272,7 @@ mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_OBJ, { .u_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
     };
     mp_arg_val_t _args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, _args);
@@ -317,7 +317,7 @@ mp_obj_t ndarray_dtype_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         }
         dtype->dtype = _dtype;
     }
-    return dtype;
+    return MP_OBJ_FROM_PTR(dtype);
 }
 
 mp_obj_t ndarray_dtype(mp_obj_t self_in) {
@@ -325,7 +325,7 @@ mp_obj_t ndarray_dtype(mp_obj_t self_in) {
     dtype_obj_t *dtype = m_new_obj(dtype_obj_t);
     dtype->base.type = &ulab_dtype_type;
     dtype->dtype = self->dtype;
-    return dtype;
+    return MP_OBJ_FROM_PTR(dtype);
 }
 
 #else
@@ -356,17 +356,17 @@ mp_obj_t ndarray_dtype(mp_obj_t self_in) {
 #if ULAB_HAS_PRINTOPTIONS
 mp_obj_t ndarray_set_printoptions(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_threshold, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_edgeitems, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_threshold, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_edgeitems, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    if(args[0].u_rom_obj != mp_const_none) {
-        ndarray_print_threshold = mp_obj_get_int(args[0].u_rom_obj);
+    if(args[0].u_obj != mp_const_none) {
+        ndarray_print_threshold = mp_obj_get_int(args[0].u_obj);
     }
-    if(args[1].u_rom_obj != mp_const_none) {
-        ndarray_print_edgeitems = mp_obj_get_int(args[1].u_rom_obj);
+    if(args[1].u_obj != mp_const_none) {
+        ndarray_print_edgeitems = mp_obj_get_int(args[1].u_obj);
     }
     return mp_const_none;
 }
@@ -816,7 +816,7 @@ ndarray_obj_t *ndarray_copy_view_convert_type(ndarray_obj_t *source, uint8_t dty
         i++;
     } while(i < source->shape[ULAB_MAX_DIMS - 4]);
     #endif
-    return MP_OBJ_FROM_PTR(ndarray);
+    return ndarray;
 }
 
 #if NDARRAY_HAS_BYTESWAP
@@ -824,8 +824,8 @@ mp_obj_t ndarray_byteswap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     // changes the endiannes of an array
     // if the dtype of the input uint8/int8/bool, simply return a copy or view
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_inplace, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_false } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_inplace, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_FALSE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1004,8 +1004,8 @@ ndarray_obj_t *ndarray_from_iterable(mp_obj_t obj, uint8_t dtype) {
 
 STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_ROM_INT(NDARRAY_FLOAT) } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(NDARRAY_FLOAT) } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1413,7 +1413,7 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
         } else {
             mp_obj_t *items = m_new(mp_obj_t, 1);
             items[0] = index;
-            tuple = mp_obj_new_tuple(1, items);
+            tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(1, items));
         }
         ndarray_obj_t *view = ndarray_view_from_slices(ndarray, tuple);
         if(values == NULL) { // return value(s)
@@ -1724,7 +1724,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
         mp_float_t *array = (mp_float_t *)ndarray->array;
         array[0] = mp_obj_get_float(obj);
     } else if(mp_obj_is_type(obj, &ulab_ndarray_type)){
-        return obj;
+        return MP_OBJ_TO_PTR(obj);
     }
     #if ULAB_SUPPORTS_COMPLEX
     else if(mp_obj_is_type(obj, &mp_type_complex)) {
@@ -1949,7 +1949,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             if(self->dtype == NDARRAY_COMPLEX) {
                 int32_t *strides = strides_from_shape(self->shape, NDARRAY_FLOAT);
                 ndarray_obj_t *target = ndarray_new_ndarray(self->ndim, self->shape, strides, NDARRAY_FLOAT);
-                ndarray = carray_abs(self, target);
+                ndarray = MP_OBJ_TO_PTR(carray_abs(self, target));
             } else {
             #endif
                 ndarray = ndarray_copy_view(self);
@@ -2121,10 +2121,10 @@ MP_DEFINE_CONST_FUN_OBJ_2(ndarray_reshape_obj, ndarray_reshape);
 
 #if ULAB_NUMPY_HAS_NDINFO
 mp_obj_t ndarray_info(mp_obj_t obj_in) {
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj_in);
-    if(!mp_obj_is_type(ndarray, &ulab_ndarray_type)) {
+    if(!mp_obj_is_type(obj_in, &ulab_ndarray_type)) {
         mp_raise_TypeError(translate("function is defined for ndarrays only"));
     }
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj_in);
     mp_printf(MP_PYTHON_PRINTER, "class: ndarray\n");
     mp_printf(MP_PYTHON_PRINTER, "shape: (");
     if(ndarray->ndim == 1) {

@@ -213,7 +213,7 @@ static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
                 // ...so flip all values in the array, if the function was called from isfinite
                 memset(rarray, 1, results->len);
             }
-            return results;
+            return MP_OBJ_FROM_PTR(results);
         }
         uint8_t *xarray = (uint8_t *)x->array;
 
@@ -259,7 +259,7 @@ static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
         } while(i < x->shape[ULAB_MAX_DIMS - 4]);
         #endif
 
-        return results;
+        return MP_OBJ_FROM_PTR(results);
     } else {
         mp_raise_TypeError(translate("wrong input type"));
     }

@@ -231,7 +231,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     tuple->items[0] = MP_OBJ_FROM_PTR(eigenvalues);
     tuple->items[1] = MP_OBJ_FROM_PTR(eigenvectors);
-    return tuple;
+    return MP_OBJ_FROM_PTR(tuple);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(linalg_eig_obj, linalg_eig);
@@ -285,8 +285,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(linalg_inv_obj, linalg_inv);
 
 static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} } ,
-        { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
+        { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -364,7 +364,7 @@ static mp_obj_t linalg_norm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         if(results->ndim == 0) {
             return mp_obj_new_float(*rarray);
         }
-        return results;
+        return MP_OBJ_FROM_PTR(results);
     }
     return mp_const_none; // we should never reach this point
 }
@@ -384,7 +384,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_norm_obj, 1, linalg_norm);
 
 static mp_obj_t linalg_qr(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_mode, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_QSTR(MP_QSTR_reduced) } },
     };
 
@@ -500,33 +500,33 @@ static mp_obj_t linalg_qr(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     } else {
         mp_raise_ValueError(translate("mode must be complete, or reduced"));
     }
-    return tuple;
+    return MP_OBJ_FROM_PTR(tuple);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(linalg_qr_obj, 1, linalg_qr);
 #endif
 
 STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_linalg) },
     #if ULAB_MAX_DIMS > 1
         #if ULAB_LINALG_HAS_CHOLESKY
-        { MP_ROM_QSTR(MP_QSTR_cholesky), (mp_obj_t)&linalg_cholesky_obj },
+        { MP_ROM_QSTR(MP_QSTR_cholesky), MP_ROM_PTR(&linalg_cholesky_obj) },
         #endif
         #if ULAB_LINALG_HAS_DET
-        { MP_ROM_QSTR(MP_QSTR_det), (mp_obj_t)&linalg_det_obj },
+        { MP_ROM_QSTR(MP_QSTR_det), MP_ROM_PTR(&linalg_det_obj) },
         #endif
         #if ULAB_LINALG_HAS_EIG
-        { MP_ROM_QSTR(MP_QSTR_eig), (mp_obj_t)&linalg_eig_obj },
+        { MP_ROM_QSTR(MP_QSTR_eig), MP_ROM_PTR(&linalg_eig_obj) },
         #endif
         #if ULAB_LINALG_HAS_INV
-        { MP_ROM_QSTR(MP_QSTR_inv), (mp_obj_t)&linalg_inv_obj },
+        { MP_ROM_QSTR(MP_QSTR_inv), MP_ROM_PTR(&linalg_inv_obj) },
         #endif
         #if ULAB_LINALG_HAS_QR
-        { MP_ROM_QSTR(MP_QSTR_qr), (mp_obj_t)&linalg_qr_obj },
+        { MP_ROM_QSTR(MP_QSTR_qr), MP_ROM_PTR(&linalg_qr_obj) },
         #endif
     #endif
     #if ULAB_LINALG_HAS_NORM
-    { MP_ROM_QSTR(MP_QSTR_norm), (mp_obj_t)&linalg_norm_obj },
+    { MP_ROM_QSTR(MP_QSTR_norm), MP_ROM_PTR(&linalg_norm_obj) },
     #endif
 };
 

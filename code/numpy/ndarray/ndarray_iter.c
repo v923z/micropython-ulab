@@ -24,9 +24,9 @@ mp_obj_t ndarray_flatiter_make_new(mp_obj_t self_in) {
     ndarray_flatiter_t *flatiter = m_new_obj(ndarray_flatiter_t);
     flatiter->base.type = &ndarray_flatiter_type;
     flatiter->iternext = ndarray_flatiter_next;
-    flatiter->ndarray = MP_OBJ_TO_PTR(self_in);
+    flatiter->ndarray = self_in;
     flatiter->cur = 0;
-    return flatiter;
+    return MP_OBJ_FROM_PTR(flatiter);
 }
 
 mp_obj_t ndarray_flatiter_next(mp_obj_t self_in) {

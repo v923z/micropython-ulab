@@ -50,9 +50,9 @@ static mp_obj_t solve_triangular(size_t n_args, const mp_obj_t *pos_args, mp_map
     size_t i, j;
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} } ,
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none} } ,
-        { MP_QSTR_lower, MP_ARG_OBJ, { .u_rom_obj = mp_const_false } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
+        { MP_QSTR_lower, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_TRUE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -258,13 +258,13 @@ MP_DEFINE_CONST_FUN_OBJ_2(linalg_cho_solve_obj, cho_solve);
 #endif
 
 static const mp_rom_map_elem_t ulab_scipy_linalg_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_linalg) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_linalg) },
     #if ULAB_MAX_DIMS > 1
         #if ULAB_SCIPY_LINALG_HAS_SOLVE_TRIANGULAR
-        { MP_ROM_QSTR(MP_QSTR_solve_triangular), (mp_obj_t)&linalg_solve_triangular_obj },
+        { MP_ROM_QSTR(MP_QSTR_solve_triangular), MP_ROM_PTR(&linalg_solve_triangular_obj) },
         #endif
         #if ULAB_SCIPY_LINALG_HAS_CHO_SOLVE
-        { MP_ROM_QSTR(MP_QSTR_cho_solve), (mp_obj_t)&linalg_cho_solve_obj },
+        { MP_ROM_QSTR(MP_QSTR_cho_solve), MP_ROM_PTR(&linalg_cho_solve_obj) },
         #endif
     #endif
 };

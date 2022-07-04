@@ -118,10 +118,10 @@ static ndarray_obj_t *create_linspace_arange(mp_float_t start, mp_float_t step, 
 
 mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -170,8 +170,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_arange_obj, 1, create_arange);
 #if ULAB_NUMPY_HAS_ASARRAY
 mp_obj_t create_asarray(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -234,7 +234,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_asarray_obj, 1, create_asarray);
 
 mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 } },
     };
 
@@ -359,7 +359,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_concatenate_obj, 1, create_concatenate);
 
 mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_k, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 } },
     };
 
@@ -450,7 +450,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_diag_obj, 1, create_diag);
 mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_INT, { .u_int = 0 } },
-        { MP_QSTR_M, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_M, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_k, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 0 } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
     };
@@ -461,10 +461,10 @@ mp_obj_t create_eye(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) 
     size_t n = args[0].u_int, m;
     size_t k = args[2].u_int > 0 ? (size_t)args[2].u_int : (size_t)(-args[2].u_int);
     uint8_t dtype = args[3].u_int;
-    if(args[1].u_rom_obj == mp_const_none) {
+    if(args[1].u_obj == mp_const_none) {
         m = n;
     } else {
-        m = mp_obj_get_int(args[1].u_rom_obj);
+        m = mp_obj_get_int(args[1].u_obj);
     }
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, n, m), dtype);
     if(dtype == NDARRAY_BOOL) {
@@ -557,11 +557,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_full_obj, 0, create_full);
 
 mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_num, MP_ARG_INT, { .u_int = 50 } },
-        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_true } },
-        { MP_QSTR_retstep, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_false } },
+        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_TRUE } },
+        { MP_QSTR_retstep, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_FALSE } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
     };
 
@@ -626,7 +626,7 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         return MP_OBJ_FROM_PTR(ndarray);
     } else {
         mp_obj_t tuple[2];
-        tuple[0] = ndarray;
+        tuple[0] = MP_OBJ_FROM_PTR(ndarray);
         #if ULAB_SUPPORTS_COMPLEX
         if(complex_out) {
             tuple[1] = mp_obj_new_complex(step_real, step_imag);
@@ -680,11 +680,11 @@ const mp_obj_float_t create_float_const_ten = {{&mp_type_float}, MICROPY_FLOAT_C
 
 mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_num, MP_ARG_INT, { .u_int = 50 } },
         { MP_QSTR_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&create_float_const_ten) } },
-        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = mp_const_true } },
+        { MP_QSTR_endpoint, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_TRUE } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = NDARRAY_FLOAT } },
     };
 
@@ -791,7 +791,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_zeros_obj, 0, create_zeros);
 #if ULAB_NUMPY_HAS_FROMBUFFER
 mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(NDARRAY_FLOAT) } },
         { MP_QSTR_count, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(-1) } },
         { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(0) } },

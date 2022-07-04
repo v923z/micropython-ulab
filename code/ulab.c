@@ -149,17 +149,17 @@ const mp_obj_type_t ndarray_flatiter_type = {
 };
 #endif
 
-STATIC const mp_map_elem_t ulab_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ulab) },
+STATIC const mp_rom_map_elem_t ulab_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
     #ifdef ULAB_HASH
     { MP_ROM_QSTR(MP_QSTR___sha__), MP_ROM_PTR(&ulab_sha_obj) },
     #endif
     #if ULAB_HAS_DTYPE_OBJECT
-        { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ulab_dtype_type },
+        { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ulab_dtype_type) },
     #else
         #if NDARRAY_HAS_DTYPE
-        { MP_OBJ_NEW_QSTR(MP_QSTR_dtype), (mp_obj_t)&ndarray_dtype_obj },
+        { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
         #endif /* NDARRAY_HAS_DTYPE */
     #endif /* ULAB_HAS_DTYPE_OBJECT */
         { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
