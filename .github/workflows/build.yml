@@ -33,6 +33,12 @@ jobs:
       with:
         python-version: 3.8
 
+    - name: Install requirements
+      run: |
+        if type -path apt-get; then
+            sudo apt-get install gcc-multilib
+        fi
+
     - name: Versions
       run: |
         gcc --version

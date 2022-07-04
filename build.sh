@@ -38,6 +38,7 @@ readlinkf_posix() {
   return 1
 }
 NPROC=`python3 -c 'import multiprocessing; print(multiprocessing.cpu_count())'`
+PLATFORM=`python3 -c 'import sys; print(sys.platform)'`
 set -e
 HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
 [ -e micropython/py/py.mk ] || git clone --no-recurse-submodules https://github.com/micropython/micropython
@@ -46,6 +47,12 @@ dims=${1-2}
 make -C micropython/mpy-cross -j${NPROC}
 make -C micropython/ports/unix -j${NPROC} axtls
 make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DULAB_MAX_DIMS=$dims CFLAGS_EXTRA+=-DULAB_HASH=$GIT_HASH BUILD=build-$dims PROG=micropython-$dims
+
+# The unix nanbox variant builds as a 32-bit executable and requires gcc-multilib.
+# macOS doesn't support i386 builds so only build on linux.
+if [ $PLATFORM = linux ]; then
+    make -C micropython/ports/unix -j${NPROC} VARIANT=nanbox USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DULAB_MAX_DIMS=$dims CFLAGS_EXTRA+=-DULAB_HASH=$GIT_HASH BUILD=build-nanbox-$dims PROG=micropython-nanbox-$dims
+fi
 
 bash test-common.sh "${dims}" "micropython/ports/unix/micropython-$dims"
 
