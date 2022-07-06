@@ -22,8 +22,8 @@
 #include "../../ulab_tools.h"
 #include "optimize.h"
 
-const mp_obj_float_t xtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(2.4e-7)};
-const mp_obj_float_t rtolerance = {{&mp_type_float}, MICROPY_FLOAT_CONST(0.0)};
+ULAB_DEFINE_FLOAT_CONST(xtolerance, 2.4e-7, 0x3480d959UL, 0x3e901b2b29a4692bULL);
+ULAB_DEFINE_FLOAT_CONST(rtolerance, 0.0, 0UL, 0ULL);
 
 static mp_float_t optimize_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
     // Helper function for calculating the value of f(x, a, b, c, ...),
@@ -58,10 +58,10 @@ static mp_float_t optimize_python_call(const mp_obj_type_t *type, mp_obj_t fun, 
 STATIC mp_obj_t optimize_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // Simple bisection routine
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_xtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_xtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(xtolerance)} },
         { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100} },
     };
 
@@ -128,10 +128,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(optimize_bisect_obj, 3, optimize_bisect);
 STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // downhill simplex method in 1D
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_xatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
-        { MP_QSTR_fatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_xatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(xtolerance)} },
+        { MP_QSTR_fatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(xtolerance)} },
         { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 200} },
     };
 
@@ -262,13 +262,13 @@ mp_obj_t optimize_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     // Levenberg-Marquardt non-linear fit
     // The implementation follows the introductory discussion in Mark Tanstrum's paper, https://arxiv.org/abs/1201.5885
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
-        { MP_QSTR_p0, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_p0, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_xatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
         { MP_QSTR_fatol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&xtolerance)} },
-        { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -353,10 +353,10 @@ static mp_obj_t optimize_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_
     // is not accepted as an argument. The function whose root we want to solve for
     // must depend on a single variable without parameters, i.e., f(x)
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&xtolerance) } },
-        { MP_QSTR_rtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_PTR(&rtolerance) } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(xtolerance) } },
+        { MP_QSTR_rtol, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = ULAB_REFERENCE_FLOAT_CONST(rtolerance) } },
         { MP_QSTR_maxiter, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_int = 50 } },
     };
 
@@ -391,18 +391,18 @@ MP_DEFINE_CONST_FUN_OBJ_KW(optimize_newton_obj, 2, optimize_newton);
 #endif
 
 static const mp_rom_map_elem_t ulab_scipy_optimize_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_optimize) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_optimize) },
     #if ULAB_SCIPY_OPTIMIZE_HAS_BISECT
-        { MP_OBJ_NEW_QSTR(MP_QSTR_bisect), (mp_obj_t)&optimize_bisect_obj },
+        { MP_ROM_QSTR(MP_QSTR_bisect), MP_ROM_PTR(&optimize_bisect_obj) },
     #endif
     #if ULAB_SCIPY_OPTIMIZE_HAS_CURVE_FIT
-        { MP_OBJ_NEW_QSTR(MP_QSTR_curve_fit), (mp_obj_t)&optimize_curve_fit_obj },
+        { MP_ROM_QSTR(MP_QSTR_curve_fit), MP_ROM_PTR(&optimize_curve_fit_obj) },
     #endif
     #if ULAB_SCIPY_OPTIMIZE_HAS_FMIN
-        { MP_OBJ_NEW_QSTR(MP_QSTR_fmin), (mp_obj_t)&optimize_fmin_obj },
+        { MP_ROM_QSTR(MP_QSTR_fmin), MP_ROM_PTR(&optimize_fmin_obj) },
     #endif
     #if ULAB_SCIPY_OPTIMIZE_HAS_NEWTON
-        { MP_OBJ_NEW_QSTR(MP_QSTR_newton), (mp_obj_t)&optimize_newton_obj },
+        { MP_ROM_QSTR(MP_QSTR_newton), MP_ROM_PTR(&optimize_newton_obj) },
     #endif
 };
 

@@ -30,11 +30,11 @@ enum UTILS_BUFFER_TYPE {
 #if ULAB_UTILS_HAS_FROM_INT16_BUFFER | ULAB_UTILS_HAS_FROM_UINT16_BUFFER | ULAB_UTILS_HAS_FROM_INT32_BUFFER | ULAB_UTILS_HAS_FROM_UINT32_BUFFER
 static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, uint8_t buffer_type) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = mp_const_none } } ,
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } } ,
         { MP_QSTR_count, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(-1) } },
         { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(0) } },
-        { MP_QSTR_out, MP_ARG_OBJ, { .u_rom_obj = mp_const_none } },
-        { MP_QSTR_byteswap, MP_ARG_OBJ, { .u_rom_obj = mp_const_false } },
+        { MP_QSTR_out, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_byteswap, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_FALSE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -225,21 +225,21 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(utils_spectrogram_obj, 1, 2, utils_spectrogr
 
 
 static const mp_rom_map_elem_t ulab_utils_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utils) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utils) },
     #if ULAB_UTILS_HAS_FROM_INT16_BUFFER
-        { MP_OBJ_NEW_QSTR(MP_QSTR_from_int16_buffer), (mp_obj_t)&utils_from_int16_buffer_obj },
+        { MP_ROM_QSTR(MP_QSTR_from_int16_buffer), MP_ROM_PTR(&utils_from_int16_buffer_obj) },
     #endif
     #if ULAB_UTILS_HAS_FROM_UINT16_BUFFER
-        { MP_OBJ_NEW_QSTR(MP_QSTR_from_uint16_buffer), (mp_obj_t)&utils_from_uint16_buffer_obj },
+        { MP_ROM_QSTR(MP_QSTR_from_uint16_buffer), MP_ROM_PTR(&utils_from_uint16_buffer_obj) },
     #endif
     #if ULAB_UTILS_HAS_FROM_INT32_BUFFER
-        { MP_OBJ_NEW_QSTR(MP_QSTR_from_int32_buffer), (mp_obj_t)&utils_from_int32_buffer_obj },
+        { MP_ROM_QSTR(MP_QSTR_from_int32_buffer), MP_ROM_PTR(&utils_from_int32_buffer_obj) },
     #endif
     #if ULAB_UTILS_HAS_FROM_UINT32_BUFFER
-        { MP_OBJ_NEW_QSTR(MP_QSTR_from_uint32_buffer), (mp_obj_t)&utils_from_uint32_buffer_obj },
+        { MP_ROM_QSTR(MP_QSTR_from_uint32_buffer), MP_ROM_PTR(&utils_from_uint32_buffer_obj) },
     #endif
     #if ULAB_UTILS_HAS_SPECTROGRAM
-        { MP_OBJ_NEW_QSTR(MP_QSTR_spectrogram), (mp_obj_t)&utils_spectrogram_obj },
+        { MP_ROM_QSTR(MP_QSTR_spectrogram), MP_ROM_PTR(&utils_spectrogram_obj) },
     #endif
 };
 

@@ -33,11 +33,55 @@
 #define FLOAT_TYPECODE 'd'
 #endif
 
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
+
+// For object representations A and B a Python float object is allocated as a
+// concrete object in a struct, with the first entry pointing to &mp_type_float.
+// Constant float objects are a struct in ROM and are referenced via their pointer.
+
+// Use ULAB_DEFINE_FLOAT_CONST to define a constant float object.
+// id is the name of the constant, num is it's floating point value.
+// hex32 is computed as: hex(int.from_bytes(array.array('f', [num]), 'little'))
+// hex64 is computed as: hex(int.from_bytes(array.array('d', [num]), 'little'))
+
+// Use ULAB_REFERENCE_FLOAT_CONST to reference a constant float object in code.
+
+#define ULAB_DEFINE_FLOAT_CONST(id, num, hex32, hex64) \
+    const mp_obj_float_t id##_obj = {{&mp_type_float}, MICROPY_FLOAT_CONST(num)}
+
+#define ULAB_REFERENCE_FLOAT_CONST(id) MP_ROM_PTR(&id##_obj)
+
 // this typedef is lifted from objfloat.c, because mp_obj_float_t is not exposed
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;
 } mp_obj_float_t;
+
+#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+
+// For object representation C a Python float object is stored directly in the
+// mp_obj_t value.
+
+// See above for how to use ULAB_DEFINE_FLOAT_CONST and ULAB_REFERENCE_FLOAT_CONST.
+
+#define ULAB_DEFINE_FLOAT_CONST(id, num, hex32, hex64) \
+    const uint32_t id = (((((uint32_t)hex32) & ~3) | 2) + 0x80800000)
+
+#define ULAB_REFERENCE_FLOAT_CONST(id) ((mp_obj_t)(id))
+
+#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+
+// For object representation D (nan-boxing) a Python float object is stored
+// directly in the mp_obj_t value.
+
+// See above for how to use ULAB_DEFINE_FLOAT_CONST and ULAB_REFERENCE_FLOAT_CONST.
+
+#define ULAB_DEFINE_FLOAT_CONST(id, num, hex32, hex64) \
+    const uint64_t id = (((uint64_t)hex64) + 0x8004000000000000ULL)
+
+#define ULAB_REFERENCE_FLOAT_CONST(id) {id}
+
+#endif
 
 #if defined(MICROPY_VERSION_MAJOR) && MICROPY_VERSION_MAJOR == 1 && MICROPY_VERSION_MINOR == 11
 typedef struct _mp_obj_slice_t {

@@ -89,9 +89,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fft_ifft_obj, 1, 2, fft_ifft);
 #endif
 
 STATIC const mp_rom_map_elem_t ulab_fft_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_fft) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_fft), (mp_obj_t)&fft_fft_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifft), (mp_obj_t)&fft_ifft_obj },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_fft) },
+    { MP_ROM_QSTR(MP_QSTR_fft), MP_ROM_PTR(&fft_fft_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifft), MP_ROM_PTR(&fft_ifft_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_fft_globals, ulab_fft_globals_table);

@@ -276,11 +276,11 @@ mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_i
         }
     }
     if(type == FFT_SPECTROGRAM) {
-        return MP_OBJ_TO_PTR(out_re);
+        return MP_OBJ_FROM_PTR(out_re);
     } else {
         mp_obj_t tuple[2];
-        tuple[0] = out_re;
-        tuple[1] = out_im;
+        tuple[0] = MP_OBJ_FROM_PTR(out_re);
+        tuple[1] = MP_OBJ_FROM_PTR(out_im);
         return mp_obj_new_tuple(2, tuple);
     }
 }
