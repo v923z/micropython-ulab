@@ -2077,7 +2077,7 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
 
     mp_obj_tuple_t *shape = MP_OBJ_TO_PTR(_shape);
     if(shape->len > ULAB_MAX_DIMS) {
-        mp_raise_ValueError(translate("maximum number of dimensions is 4"));
+        mp_raise_ValueError(translate("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
     }
     size_t *new_shape = m_new0(size_t, ULAB_MAX_DIMS);
 
