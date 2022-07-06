@@ -676,7 +676,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_linspace_obj, 2, create_linspace);
 //|     ...
 //|
 
-ULAB_DEFINE_FLOAT_CONST(const_ten, 10.0, 0x4024000000000000ULL);
+ULAB_DEFINE_FLOAT_CONST(const_ten, 10.0, 0x41200000UL, 0x4024000000000000ULL);
 
 mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
