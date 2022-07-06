@@ -57,47 +57,19 @@
 
 // math constants
 #if ULAB_NUMPY_HAS_E
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
-#define ulab_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
-#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-#define ulab_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
-#else
-mp_obj_float_t ulab_const_float_e_obj = {{&mp_type_float}, MP_E};
-#define ulab_const_float_e MP_ROM_PTR(&ulab_const_float_e_obj)
-#endif
+ULAB_DEFINE_FLOAT_CONST(ulab_const_float_e, MP_E, 0x4005bf0a8b145769ULL);
 #endif
 
 #if ULAB_NUMPY_HAS_INF
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
-#define numpy_const_float_inf MP_ROM_PTR((mp_obj_t)(0x7f800002 + 0x80800000))
-#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-#define numpy_const_float_inf {((mp_obj_t)((uint64_t)0x7ff0000000000000 + 0x8004000000000000))}
-#else
-mp_obj_float_t numpy_const_float_inf_obj = {{&mp_type_float}, (mp_float_t)INFINITY};
-#define numpy_const_float_inf MP_ROM_PTR(&numpy_const_float_inf_obj)
-#endif
+ULAB_DEFINE_FLOAT_CONST(numpy_const_float_inf, (mp_float_t)INFINITY, 0x7ff0000000000000ULL);
 #endif
 
 #if ULAB_NUMPY_HAS_NAN
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
-#define numpy_const_float_nan MP_ROM_PTR((mp_obj_t)(0x7fc00002 + 0x80800000))
-#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-#define numpy_const_float_nan {((mp_obj_t)((uint64_t)0x7ff8000000000000 + 0x8004000000000000))}
-#else
-mp_obj_float_t numpy_const_float_nan_obj = {{&mp_type_float}, (mp_float_t)NAN};
-#define numpy_const_float_nan MP_ROM_PTR(&numpy_const_float_nan_obj)
-#endif
+ULAB_DEFINE_FLOAT_CONST(numpy_const_float_nan, (mp_float_t)NAN, 0x7ff8000000000000ULL);
 #endif
 
 #if ULAB_NUMPY_HAS_PI
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
-#define ulab_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
-#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-#define ulab_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
-#else
-mp_obj_float_t ulab_const_float_pi_obj = {{&mp_type_float}, MP_PI};
-#define ulab_const_float_pi MP_ROM_PTR(&ulab_const_float_pi_obj)
-#endif
+ULAB_DEFINE_FLOAT_CONST(ulab_const_float_pi, MP_PI, 0x400921fb54442d18ULL);
 #endif
 
 static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
@@ -109,16 +81,16 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #endif
     // math constants
     #if ULAB_NUMPY_HAS_E
-        { MP_ROM_QSTR(MP_QSTR_e), ulab_const_float_e },
+        { MP_ROM_QSTR(MP_QSTR_e), ULAB_REFERENCE_FLOAT_CONST(ulab_const_float_e) },
     #endif
     #if ULAB_NUMPY_HAS_INF
-        { MP_ROM_QSTR(MP_QSTR_inf), numpy_const_float_inf },
+        { MP_ROM_QSTR(MP_QSTR_inf), ULAB_REFERENCE_FLOAT_CONST(numpy_const_float_inf) },
     #endif
     #if ULAB_NUMPY_HAS_NAN
-        { MP_ROM_QSTR(MP_QSTR_nan), numpy_const_float_nan },
+        { MP_ROM_QSTR(MP_QSTR_nan), ULAB_REFERENCE_FLOAT_CONST(numpy_const_float_nan) },
     #endif
     #if ULAB_NUMPY_HAS_PI
-        { MP_ROM_QSTR(MP_QSTR_pi), ulab_const_float_pi },
+        { MP_ROM_QSTR(MP_QSTR_pi), ULAB_REFERENCE_FLOAT_CONST(ulab_const_float_pi) },
     #endif
     // class constants, always included
     { MP_ROM_QSTR(MP_QSTR_bool), MP_ROM_INT(NDARRAY_BOOL) },
