@@ -35,7 +35,7 @@ readlinkf_posix() {
   done
   return 1
 }
-NPROC=$(python -c 'import multiprocessing; print(multiprocessing.cpu_count())')
+NPROC=$(python3 -c 'import multiprocessing; print(multiprocessing.cpu_count())')
 HERE="$(dirname -- "$(readlinkf_posix -- "${0}")" )"
 [ -e circuitpython/py/py.mk ] || (git clone --branch main https://github.com/adafruit/circuitpython && cd circuitpython && make fetch-submodules && git submodule update --init lib/uzlib tools)
 rm -rf circuitpython/extmod/ulab; ln -s "$HERE" circuitpython/extmod/ulab

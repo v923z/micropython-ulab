@@ -15,6 +15,6 @@
 #include "../ulab.h"
 #include "../ndarray.h"
 
-extern mp_obj_module_t ulab_user_module;
+extern const mp_obj_module_t ulab_user_module;
 
 #endif

@@ -271,9 +271,15 @@ static const mp_rom_map_elem_t ulab_scipy_linalg_globals_table[] = {
 
 static MP_DEFINE_CONST_DICT(mp_module_ulab_scipy_linalg_globals, ulab_scipy_linalg_globals_table);
 
-mp_obj_module_t ulab_scipy_linalg_module = {
+const mp_obj_module_t ulab_scipy_linalg_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_scipy_linalg_globals,
 };
-
+#if CIRCUITPY_ULAB
+#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
+MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_linalg, ulab_scipy_linalg_module, MODULE_ULAB_ENABLED);
+#else
+MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_linalg, ulab_scipy_linalg_module);
+#endif
+#endif
 #endif

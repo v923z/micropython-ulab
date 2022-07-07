@@ -32,7 +32,7 @@
 #define ULAB_IO_BIG_ENDIAN          2
 
 #if ULAB_NUMPY_HAS_LOAD
-static void io_read_(mp_obj_t stream, const mp_stream_p_t *stream_p, char *buffer, char *string, uint16_t len, int *error) {
+static void io_read_(mp_obj_t stream, const mp_stream_p_t *stream_p, char *buffer, const char *string, uint16_t len, int *error) {
     size_t read = stream_p->read(stream, buffer, len, error);
     bool fail = false;
     if(read == len) {
@@ -668,7 +668,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(io_save_obj, io_save);
 #endif /* ULAB_NUMPY_HAS_SAVE */
 
 #if ULAB_NUMPY_HAS_SAVETXT
-static int8_t io_format_float(ndarray_obj_t *ndarray, mp_float_t (*func)(void *), uint8_t *array, char *buffer, char *delimiter) {
+static int8_t io_format_float(ndarray_obj_t *ndarray, mp_float_t (*func)(void *), uint8_t *array, char *buffer, const char *delimiter) {
     // own implementation of float formatting for platforms that don't have sprintf
     int8_t offset = 0;
 

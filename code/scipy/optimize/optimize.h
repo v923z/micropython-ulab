@@ -31,7 +31,7 @@
 #define     OPTIMIZE_GAMMA        MICROPY_FLOAT_CONST(0.5)
 #define     OPTIMIZE_DELTA        MICROPY_FLOAT_CONST(0.5)
 
-extern mp_obj_module_t ulab_scipy_optimize_module;
+extern const mp_obj_module_t ulab_scipy_optimize_module;
 
 MP_DECLARE_CONST_FUN_OBJ_KW(optimize_bisect_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(optimize_curve_fit_obj);

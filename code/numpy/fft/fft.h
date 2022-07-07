@@ -17,7 +17,7 @@
 #include "../../ndarray.h"
 #include "fft_tools.h"
 
-extern mp_obj_module_t ulab_fft_module;
+extern const mp_obj_module_t ulab_fft_module;
 
 #if ULAB_SUPPORTS_COMPLEX & ULAB_FFT_IS_NUMPY_COMPATIBLE
 MP_DECLARE_CONST_FUN_OBJ_3(fft_fft_obj);
