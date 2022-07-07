@@ -536,6 +536,11 @@ const mp_obj_module_t ulab_linalg_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_linalg_globals,
 };
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_linalg, ulab_linalg_module, MODULE_ULAB_ENABLED && CIRCUITPY_ULAB);
-
+#if CIRCUITPY_ULAB
+#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
+MP_REGISTER_MODULE(MP_QSTR_ulab_dot_numpy_dot_linalg, ulab_linalg_module, MODULE_ULAB_ENABLED);
+#else
+MP_REGISTER_MODULE(MP_QSTR_ulab_dot_numpy_dot_linalg, ulab_linalg_module);
+#endif
+#endif
 #endif
