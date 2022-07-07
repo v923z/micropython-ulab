@@ -16,7 +16,7 @@
 #include "../../ulab.h"
 #include "../../ndarray.h"
 
-extern mp_obj_module_t ulab_scipy_signal_module;
+extern const mp_obj_module_t ulab_scipy_signal_module;
 
 MP_DECLARE_CONST_FUN_OBJ_KW(signal_sosfilt_obj);
 

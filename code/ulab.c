@@ -162,15 +162,15 @@ STATIC const mp_rom_map_elem_t ulab_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
         #endif /* NDARRAY_HAS_DTYPE */
     #endif /* ULAB_HAS_DTYPE_OBJECT */
-        { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
+        { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR((mp_obj_t)&ulab_numpy_module) },
     #if ULAB_HAS_SCIPY
-        { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR(&ulab_scipy_module) },
+        { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR((mp_obj_t)&ulab_scipy_module) },
     #endif
     #if ULAB_HAS_USER_MODULE
-        { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR(&ulab_user_module) },
+        { MP_ROM_QSTR(MP_QSTR_user), MP_ROM_PTR((mp_obj_t)&ulab_user_module) },
     #endif
     #if ULAB_HAS_UTILS_MODULE
-        { MP_ROM_QSTR(MP_QSTR_utils), MP_ROM_PTR(&ulab_utils_module) },
+        { MP_ROM_QSTR(MP_QSTR_utils), MP_ROM_PTR((mp_obj_t)&ulab_utils_module) },
     #endif
 };
 
