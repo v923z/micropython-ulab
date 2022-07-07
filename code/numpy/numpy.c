@@ -61,11 +61,11 @@ ULAB_DEFINE_FLOAT_CONST(ulab_const_float_e, MP_E, 0x402df854UL, 0x4005bf0a8b1457
 #endif
 
 #if ULAB_NUMPY_HAS_INF
-ULAB_DEFINE_FLOAT_CONST(numpy_const_float_inf, (mp_float_t)INFINITY, 0x7f800000UL, 0x7ff0000000000000ULL);
+ULAB_DEFINE_FLOAT_CONST(numpy_const_float_inf, (mp_float_t)INFINITY+0., 0x7f800000UL, 0x7ff0000000000000ULL);
 #endif
 
 #if ULAB_NUMPY_HAS_NAN
-ULAB_DEFINE_FLOAT_CONST(numpy_const_float_nan, (mp_float_t)NAN, 0x7fc00000UL, 0x7ff8000000000000ULL);
+ULAB_DEFINE_FLOAT_CONST(numpy_const_float_nan, (mp_float_t)NAN+0., 0x7fc00000UL, 0x7ff8000000000000ULL);
 #endif
 
 #if ULAB_NUMPY_HAS_PI
