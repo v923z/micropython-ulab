@@ -190,7 +190,7 @@ const mp_obj_module_t ulab_user_cmodule = {
 
 // Use old three-argument MP_REGISTER_MODULE for
 // MicroPython <= v1.18.0: (1 << 16) | (18 << 8) | 0
-#if MICROPY_VERSION <= 70144
+#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
 MP_REGISTER_MODULE(MP_QSTR_ulab, ulab_user_cmodule, MODULE_ULAB_ENABLED);
 #else
 MP_REGISTER_MODULE(MP_QSTR_ulab, ulab_user_cmodule);
