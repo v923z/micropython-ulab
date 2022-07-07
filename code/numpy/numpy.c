@@ -57,7 +57,7 @@
 
 // math constants
 #if ULAB_NUMPY_HAS_E
-ULAB_DEFINE_FLOAT_CONST(ulab_const_float_e, MP_E, 0x402df854UL, 0x4005bf0a8b145769ULL);
+ULAB_DEFINE_FLOAT_CONST(ulab_const_float_e, MP_E+0., 0x402df854UL, 0x4005bf0a8b145769ULL);
 #endif
 
 #if ULAB_NUMPY_HAS_INF
@@ -69,7 +69,7 @@ ULAB_DEFINE_FLOAT_CONST(numpy_const_float_nan, (mp_float_t)NAN+0., 0x7fc00000UL,
 #endif
 
 #if ULAB_NUMPY_HAS_PI
-ULAB_DEFINE_FLOAT_CONST(ulab_const_float_pi, MP_PI, 0x40490fdbUL, 0x400921fb54442d18ULL);
+ULAB_DEFINE_FLOAT_CONST(ulab_const_float_pi, (mp_float_t)MP_PI+0., 0x40490fdbUL, 0x400921fb54442d18ULL);
 #endif
 
 static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
