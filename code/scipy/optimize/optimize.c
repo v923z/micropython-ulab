@@ -74,7 +74,7 @@ STATIC mp_obj_t optimize_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_
         mp_raise_TypeError(translate("first argument must be a function"));
     }
     mp_float_t xtol = mp_obj_get_float(args[3].u_obj);
-    mp_obj_t *fargs = m_new(mp_obj_t, 1);
+    mp_obj_t fargs[1];
     mp_float_t left, right;
     mp_float_t x_mid;
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
@@ -154,7 +154,7 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
     mp_float_t x0 = mp_obj_get_float(args[1].u_obj);
     mp_float_t x1 = MICROPY_FLOAT_C_FUN(fabs)(x0) > OPTIMIZE_EPSILON ? (MICROPY_FLOAT_CONST(1.0) + OPTIMIZE_NONZDELTA) * x0 : OPTIMIZE_ZDELTA;
-    mp_obj_t *fargs = m_new(mp_obj_t, 1);
+    mp_obj_t fargs[1];
     mp_float_t f0 = optimize_python_call(type, fun, x0, fargs, 0);
     mp_float_t f1 = optimize_python_call(type, fun, x1, fargs, 0);
     if(f1 < f0) {
@@ -373,7 +373,7 @@ static mp_obj_t optimize_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_float_t rtol = mp_obj_get_float(args[3].u_obj);
     mp_float_t dx, df, fx;
     dx = x > MICROPY_FLOAT_CONST(0.0) ? OPTIMIZE_EPS * x : -OPTIMIZE_EPS * x;
-    mp_obj_t *fargs = m_new(mp_obj_t, 1);
+    mp_obj_t fargs[1];
     if(args[4].u_int <= 0) {
         mp_raise_ValueError(translate("maxiter must be > 0"));
     }
