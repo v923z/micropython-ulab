@@ -47,7 +47,7 @@
 // Use ULAB_REFERENCE_FLOAT_CONST to reference a constant float object in code.
 
 #define ULAB_DEFINE_FLOAT_CONST(id, num, hex32, hex64) \
-    const mp_obj_float_t id##_obj = {{&mp_type_float}, MICROPY_FLOAT_CONST(num)}
+    const mp_obj_float_t id##_obj = {{&mp_type_float}, (num)}
 
 #define ULAB_REFERENCE_FLOAT_CONST(id) MP_ROM_PTR(&id##_obj)
 
