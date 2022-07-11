@@ -25,7 +25,7 @@
 //| """Numerical approximation methods"""
 //|
 
-ULAB_DEFINE_FLOAT_CONST(approx_trapz_dx, 1.0, 0x3f800000UL, 0x3ff0000000000000ULL);
+ULAB_DEFINE_FLOAT_CONST(approx_trapz_dx, MICROPY_FLOAT_CONST(1.0), 0x3f800000UL, 0x3ff0000000000000ULL);
 
 #if ULAB_NUMPY_HAS_INTERP
 //| def interp(
