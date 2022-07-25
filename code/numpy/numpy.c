@@ -186,6 +186,10 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_MINIMUM
         { MP_ROM_QSTR(MP_QSTR_minimum), MP_ROM_PTR(&compare_minimum_obj) },
     #endif
+    #if ULAB_NUMPY_HAS_NONZERO
+        { MP_ROM_QSTR(MP_QSTR_nonzero), MP_ROM_PTR(&compare_nonzero_obj) },
+    #endif
+
     #if ULAB_NUMPY_HAS_WHERE
         { MP_ROM_QSTR(MP_QSTR_where), MP_ROM_PTR(&compare_where_obj) },
     #endif
