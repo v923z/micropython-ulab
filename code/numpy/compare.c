@@ -315,10 +315,27 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
 #if ULAB_NUMPY_HAS_NONZERO
 
 mp_obj_t compare_nonzero(mp_obj_t x) {
-    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(x);
-    if(!ndarray->boolean) {
-        mp_raise_TypeError(translate("input array must be of Boolean dtype"));
-    }
+    ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x, 0);
+    // since ndarray_new_linear_array calls m_new0, the content of zero is a single zero
+    ndarray_obj_t *zero = ndarray_new_linear_array(1, NDARRAY_UINT8);
+
+    uint8_t ndim = 0;
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    int32_t *x_strides = m_new(int32_t, ULAB_MAX_DIMS);
+    int32_t *zero_strides = m_new(int32_t, ULAB_MAX_DIMS);
+    // we don't actually have to inspect the outcome of ndarray_can_broadcast,
+    // because the right hand side is a linear array with a single element
+    ndarray_can_broadcast(ndarray_x, zero, &ndim, shape, x_strides, zero_strides);
+
+    // equal_obj is a Boolean ndarray
+    mp_obj_t equal_obj = ndarray_binary_equality(ndarray_x, zero, ndim, shape, x_strides, zero_strides, MP_BINARY_OP_NOT_EQUAL);
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(equal_obj);
+
+    // these are no longer needed, get rid of them
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(int32_t, x_strides, ULAB_MAX_DIMS);
+    m_del(int32_t, zero_strides, ULAB_MAX_DIMS);
+
     uint8_t *array = (uint8_t *)ndarray->array;
     uint8_t *origin = (uint8_t *)ndarray->array;
 
