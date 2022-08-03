@@ -4,14 +4,13 @@ except:
    import numpy as np
 
 array = np.array(range(16)).reshape((4,4))
-boolean_array = array < 3
+print(array)
+print(array < 5)
+print(np.nonzero(array < 5))
 
-# np.nonzero() returns a tuple of corresponding row and column 
-# indices array for each element being true in boolean array
-row_indices, column_indices = np.nonzero(boolean_array)
+dtypes = (np.uint8, np.int8, np.uint16, np.int16, np.float)
 
-print("Given Array:\n", array)
-print("\nBoolean Array:\n", boolean_array)
-print("\nFollowing indices have non-zero values:")
-for i in range(len(row_indices)):
-	print("row", row_indices[i], "and column", column_indices[i])
+for dtype in dtypes:
+    array = (np.arange(2, 12, 3, dtype=dtype)).reshape((2,2)) - 2
+    print(array)
+    print(np.nonzero(array))
