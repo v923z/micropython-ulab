@@ -312,6 +312,136 @@ mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
 MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
 #endif
 
+#if ULAB_NUMPY_HAS_NONZERO
+
+mp_obj_t compare_nonzero(mp_obj_t x) {
+    ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x, 0);
+    // since ndarray_new_linear_array calls m_new0, the content of zero is a single zero
+    ndarray_obj_t *zero = ndarray_new_linear_array(1, NDARRAY_UINT8);
+
+    uint8_t ndim = 0;
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    int32_t *x_strides = m_new(int32_t, ULAB_MAX_DIMS);
+    int32_t *zero_strides = m_new(int32_t, ULAB_MAX_DIMS);
+    // we don't actually have to inspect the outcome of ndarray_can_broadcast,
+    // because the right hand side is a linear array with a single element
+    ndarray_can_broadcast(ndarray_x, zero, &ndim, shape, x_strides, zero_strides);
+
+    // equal_obj is a Boolean ndarray
+    mp_obj_t equal_obj = ndarray_binary_equality(ndarray_x, zero, ndim, shape, x_strides, zero_strides, MP_BINARY_OP_NOT_EQUAL);
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(equal_obj);
+
+    // these are no longer needed, get rid of them
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    m_del(int32_t, x_strides, ULAB_MAX_DIMS);
+    m_del(int32_t, zero_strides, ULAB_MAX_DIMS);
+
+    uint8_t *array = (uint8_t *)ndarray->array;
+    uint8_t *origin = (uint8_t *)ndarray->array;
+
+    // First, count the number of Trues:
+    uint16_t count = 0;
+    size_t indices[ULAB_MAX_DIMS];
+
+    #if ULAB_MAX_DIMS > 3
+    indices[3] = 0;
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        indices[2] = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            indices[1] = 0;
+            do {
+            #endif
+                indices[0] = 0;
+                do {
+                    if(*array != 0) {
+                        count++;
+                    }
+                    array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                    indices[0]++;
+                } while(indices[0] < ndarray->shape[ULAB_MAX_DIMS - 1]);
+            #if ULAB_MAX_DIMS > 1
+                array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                indices[1]++;
+            } while(indices[1] < ndarray->shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+            array += ndarray->strides[ULAB_MAX_DIMS - 3];
+            indices[2]++;
+        } while(indices[2] < ndarray->shape[ULAB_MAX_DIMS - 3]);
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+        array += ndarray->strides[ULAB_MAX_DIMS - 4];
+        indices[3]++;
+    } while(indices[3] < ndarray->shape[ULAB_MAX_DIMS - 4]);
+    #endif
+
+    mp_obj_t *items = m_new(mp_obj_t, ndarray->ndim);
+    uint16_t *arrays[ULAB_MAX_DIMS];
+
+    for(uint8_t i = 0; i < ndarray->ndim; i++) {
+        ndarray_obj_t *item_array = ndarray_new_linear_array(count, NDARRAY_UINT16);
+        uint16_t *iarray = (uint16_t *)item_array->array;
+        arrays[ULAB_MAX_DIMS - 1 - i] = iarray;
+        items[ndarray->ndim - 1 - i] = MP_OBJ_FROM_PTR(item_array);
+    }
+    array = origin;
+    count = 0;
+
+    #if ULAB_MAX_DIMS > 3
+    indices[3] = 0;
+    do {
+    #endif
+        #if ULAB_MAX_DIMS > 2
+        indices[2] = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 1
+            indices[1] = 0;
+            do {
+            #endif
+                indices[0] = 0;
+                do {
+                    if(*array != 0) {
+                        for(uint8_t d = 0; d < ndarray->ndim; d++) {
+                            arrays[ULAB_MAX_DIMS - 1 - d][count] = indices[d];
+                        }
+                        count++;
+                    }
+                    array += ndarray->strides[ULAB_MAX_DIMS - 1];
+                    indices[0]++;
+                } while(indices[0] < ndarray->shape[ULAB_MAX_DIMS - 1]);
+            #if ULAB_MAX_DIMS > 1
+                array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
+                array += ndarray->strides[ULAB_MAX_DIMS - 2];
+                indices[1]++;
+            } while(indices[1] < ndarray->shape[ULAB_MAX_DIMS - 2]);
+            #endif
+        #if ULAB_MAX_DIMS > 2
+            array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
+            array += ndarray->strides[ULAB_MAX_DIMS - 3];
+            indices[2]++;
+        } while(indices[2] < ndarray->shape[ULAB_MAX_DIMS - 3]);
+        #endif
+    #if ULAB_MAX_DIMS > 3
+        array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
+        array += ndarray->strides[ULAB_MAX_DIMS - 4];
+        indices[3]++;
+    } while(indices[3] < ndarray->shape[ULAB_MAX_DIMS - 4]);
+    #endif
+
+    return mp_obj_new_tuple(ndarray->ndim, items);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(compare_nonzero_obj, compare_nonzero);
+#endif /* ULAB_NUMPY_HAS_NONZERO */
+
 #if ULAB_NUMPY_HAS_WHERE
 
 mp_obj_t compare_where(mp_obj_t _condition, mp_obj_t _x, mp_obj_t _y) {

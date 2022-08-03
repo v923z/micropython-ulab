@@ -44,7 +44,7 @@ make -C circuitpython/mpy-cross -j$NPROC
 sed -e '/MICROPY_PY_UHASHLIB/s/1/0/' < circuitpython/ports/unix/mpconfigport.h > circuitpython/ports/unix/mpconfigport_ulab.h
 make -k -C circuitpython/ports/unix -j$NPROC DEBUG=1 MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_SSL_AXTLS=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMP_CONFIGFILE=\"<mpconfigport_ulab.h>\" -Wno-tautological-constant-out-of-range-compare -Wno-unknown-pragmas -DULAB_MAX_DIMS=$dims" BUILD=build-$dims PROG=micropython-$dims
 
-bash test-common.sh "${dims}" "circuitpython/ports/unix/micropython-$dims"
+# bash test-common.sh "${dims}" "circuitpython/ports/unix/micropython-$dims"
 
 # Docs don't depend on the dimensionality, so only do it once
 if [ "$dims" -eq 2 ]; then

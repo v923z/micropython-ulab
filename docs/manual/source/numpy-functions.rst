@@ -33,21 +33,22 @@ the firmware was compiled with complex support.
 25. `numpy.median <#median>`__
 26. `numpy.min <#min>`__
 27. `numpy.minimum <#minimum>`__
-28. `numpy.not_equal <#equal>`__
-29. `numpy.polyfit <#polyfit>`__
-30. `numpy.polyval <#polyval>`__
-31. `numpy.real\* <#real>`__
-32. `numpy.roll <#roll>`__
-33. `numpy.save <#save>`__
-34. `numpy.savetxt <#savetxt>`__
-35. `numpy.size <#size>`__
-36. `numpy.sort <#sort>`__
-37. `numpy.sort_complex\* <#sort_complex>`__
-38. `numpy.std <#std>`__
-39. `numpy.sum <#sum>`__
-40. `numpy.trace <#trace>`__
-41. `numpy.trapz <#trapz>`__
-42. `numpy.where <#where>`__
+28. `numpy.nozero <#nonzero>`__
+29. `numpy.not_equal <#equal>`__
+30. `numpy.polyfit <#polyfit>`__
+31. `numpy.polyval <#polyval>`__
+32. `numpy.real\* <#real>`__
+33. `numpy.roll <#roll>`__
+34. `numpy.save <#save>`__
+35. `numpy.savetxt <#savetxt>`__
+36. `numpy.size <#size>`__
+37. `numpy.sort <#sort>`__
+38. `numpy.sort_complex\* <#sort_complex>`__
+39. `numpy.std <#std>`__
+40. `numpy.sum <#sum>`__
+41. `numpy.trace <#trace>`__
+42. `numpy.trapz <#trapz>`__
+43. `numpy.where <#where>`__
 
 all
 ---
@@ -1289,6 +1290,46 @@ implemented.
     
 
 
+nonzero
+-------
+
+``numpy``:
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.nonzero.html
+
+``nonzero`` returns the indices of the elements of an array that are not
+zero. If the number of dimensions of the array is larger than one, a
+tuple of arrays is returned, one for each dimension, containing the
+indices of the non-zero elements in that dimension.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(9)) - 5
+    print('a:\n', a)
+    print(np.nonzero(a))
+    
+    a = a.reshape((3,3))
+    print('\na:\n', a)
+    print(np.nonzero(a))
+
+.. parsed-literal::
+
+    a:
+     array([-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0], dtype=float64)
+    (array([0, 1, 2, 3, 4, 6, 7, 8], dtype=uint16),)
+    
+    a:
+     array([[-5.0, -4.0, -3.0],
+           [-2.0, -1.0, 0.0],
+           [1.0, 2.0, 3.0]], dtype=float64)
+    (array([0, 0, 0, 1, 1, 2, 2, 2], dtype=uint16), array([0, 1, 2, 0, 1, 0, 1, 2], dtype=uint16))
+    
+    
+
+
 not_equal
 ---------
 
@@ -1300,11 +1341,12 @@ polyfit
 ``numpy``:
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.polyfit.html
 
-polyfit takes two, or three arguments. The last one is the degree of the
-polynomial that will be fitted, the last but one is an array or iterable
-with the ``y`` (dependent) values, and the first one, an array or
-iterable with the ``x`` (independent) values, can be dropped. If that is
-the case, ``x`` will be generated in the function as ``range(len(y))``.
+``polyfit`` takes two, or three arguments. The last one is the degree of
+the polynomial that will be fitted, the last but one is an array or
+iterable with the ``y`` (dependent) values, and the first one, an array
+or iterable with the ``x`` (independent) values, can be dropped. If that
+is the case, ``x`` will be generated in the function as
+``range(len(y))``.
 
 If the lengths of ``x``, and ``y`` are not the same, the function raises
 a ``ValueError``.

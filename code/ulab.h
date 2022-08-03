@@ -349,6 +349,10 @@
 #define ULAB_NUMPY_HAS_MINIMUM          (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_NONZERO
+#define ULAB_NUMPY_HAS_NONZERO          (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_NOTEQUAL
 #define ULAB_NUMPY_HAS_NOTEQUAL         (1)
 #endif
