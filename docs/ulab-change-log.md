@@ -1,3 +1,9 @@
+Thu, 4 Aug 2022
+
+version 5.1.1
+
+    fix how arctan2 treats scalars
+
 Mon, 25 July 2022
 
 version 5.1.0

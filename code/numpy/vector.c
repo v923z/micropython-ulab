@@ -240,6 +240,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_atan_obj, vector_atan);
 //|
 
 mp_obj_t vector_arctan2(mp_obj_t y, mp_obj_t x) {
+    if((mp_obj_is_float(y) || mp_obj_is_int(y)) &&
+        (mp_obj_is_float(x) || mp_obj_is_int(x))) {
+        mp_float_t _y = mp_obj_get_float(y);
+        mp_float_t _x = mp_obj_get_float(x);
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(atan2)(_y, _x));
+    }
+
     ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x, 0);
     COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray_x->dtype)
 
