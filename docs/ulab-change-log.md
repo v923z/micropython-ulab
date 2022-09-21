@@ -1,3 +1,9 @@
+Wed, 21 Sep 2022
+
+version 6.0.0
+
+    bring ulab in line with the latest version of micropython
+
 Thu, 4 Aug 2022
 
 version 5.1.1
