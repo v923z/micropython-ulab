@@ -51,8 +51,13 @@ make -C micropython/mpy-cross -j${NPROC}
 make -C micropython/ports/unix submodules
 make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DULAB_MAX_DIMS=$dims CFLAGS_EXTRA+=-DULAB_HASH=$GIT_HASH BUILD=build-$dims PROG=micropython-$dims
 
+PROG="micropython/ports/unix/build-$dims/micropython-$dims"
+if [ ! -e "$PROG" ]; then
+  # Older MicroPython revision, executable is still in ports/unix.
+  PROG="micropython/ports/unix/micropython-$dims"
+fi
 
-bash test-common.sh "${dims}" "micropython/ports/unix/micropython-$dims"
+bash test-common.sh "${dims}" "$PROG"
 
 # Build with single-precision float.
 make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT CFLAGS_EXTRA+=-DULAB_MAX_DIMS=$dims CFLAGS_EXTRA+=-DULAB_HASH=$GIT_HASH BUILD=build-nanbox-$dims PROG=micropython-nanbox-$dims

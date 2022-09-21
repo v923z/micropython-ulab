@@ -93,11 +93,20 @@ typedef struct _mp_obj_slice_t {
 #define MP_ERROR_TEXT(x) x
 #endif
 
-#if !defined(MP_TYPE_FLAG_EXTENDED)
-#define MP_TYPE_CALL call
-#define mp_type_get_call_slot(t) t->call
+#if !defined(MP_OBJ_TYPE_GET_SLOT)
+#if defined(MP_TYPE_FLAG_EXTENDED)
+// Provide MP_OBJ_TYPE_{HAS,GET}_SLOT for CircuitPython.
+#define MP_OBJ_TYPE_HAS_SLOT(t, f) (mp_type_get_##f##_slot(t) != NULL)
+#define MP_OBJ_TYPE_GET_SLOT(t, f) mp_type_get_##f##_slot(t)
+#else
+// Provide MP_OBJ_TYPE_{HAS,GET}_SLOT for older revisions of MicroPython.
+#define MP_OBJ_TYPE_HAS_SLOT(t, f) ((t)->f != NULL)
+#define MP_OBJ_TYPE_GET_SLOT(t, f) (t)->f
+
+// Also allow CiruitPython-style mp_obj_type_t definitions.
 #define MP_TYPE_FLAG_EXTENDED (0)
 #define MP_TYPE_EXTENDED_FIELDS(...) __VA_ARGS__
+#endif
 #endif
 
 #if !CIRCUITPY

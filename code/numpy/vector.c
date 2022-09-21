@@ -762,7 +762,7 @@ static mp_obj_t vector_vectorized_function_call(mp_obj_t self_in, size_t n_args,
         ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, self->otypes);
         for(size_t i=0; i < source->len; i++) {
             avalue[0] = mp_binary_get_val_array(source->dtype, source->array, i);
-            fvalue = self->type->MP_TYPE_CALL(self->fun, 1, 0, avalue);
+            fvalue = MP_OBJ_TYPE_GET_SLOT(self->type, call)(self->fun, 1, 0, avalue);
             ndarray_set_value(self->otypes, ndarray->array, i, fvalue);
         }
         return MP_OBJ_FROM_PTR(ndarray);
@@ -774,14 +774,14 @@ static mp_obj_t vector_vectorized_function_call(mp_obj_t self_in, size_t n_args,
         mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
         size_t i=0;
         while ((avalue[0] = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            fvalue = self->type->MP_TYPE_CALL(self->fun, 1, 0, avalue);
+            fvalue = MP_OBJ_TYPE_GET_SLOT(self->type, call)(self->fun, 1, 0, avalue);
             ndarray_set_value(self->otypes, ndarray->array, i, fvalue);
             i++;
         }
         return MP_OBJ_FROM_PTR(ndarray);
     } else if(mp_obj_is_int(args[0]) || mp_obj_is_float(args[0])) {
         ndarray_obj_t *ndarray = ndarray_new_linear_array(1, self->otypes);
-        fvalue = self->type->MP_TYPE_CALL(self->fun, 1, 0, args);
+        fvalue = MP_OBJ_TYPE_GET_SLOT(self->type, call)(self->fun, 1, 0, args);
         ndarray_set_value(self->otypes, ndarray->array, 0, fvalue);
         return MP_OBJ_FROM_PTR(ndarray);
     } else {
@@ -790,6 +790,14 @@ static mp_obj_t vector_vectorized_function_call(mp_obj_t self_in, size_t n_args,
     return mp_const_none;
 }
 
+#if defined(MP_DEFINE_CONST_OBJ_TYPE)
+MP_DEFINE_CONST_OBJ_TYPE(
+    vector_function_type,
+    MP_QSTR_,
+    MP_TYPE_FLAG_NONE,
+    call, vector_vectorized_function_call
+);
+#else
 const mp_obj_type_t vector_function_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
@@ -798,6 +806,7 @@ const mp_obj_type_t vector_function_type = {
     .call = vector_vectorized_function_call,
     )
 };
+#endif
 
 //| def vectorize(
 //|     f: Union[Callable[[int], _float], Callable[[_float], _float]],
@@ -821,7 +830,7 @@ static mp_obj_t vector_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     const mp_obj_type_t *type = mp_obj_get_type(args[0].u_obj);
-    if(mp_type_get_call_slot(type) == NULL) {
+    if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
         mp_raise_TypeError(translate("first argument must be a callable"));
     }
     mp_obj_t _otypes = args[1].u_obj;
