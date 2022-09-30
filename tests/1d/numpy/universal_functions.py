@@ -58,7 +58,7 @@ print(np.log(np.exp(1)))
 print(np.log2(2**1))
 
 print(np.log10(10**1))
-print(np.exp(1) - np.expm1(1))
+print(math.isclose(np.exp(1) - np.expm1(1), 1))
 
 x = np.array([-1, +1, +1, -1])
 y = np.array([-1, -1, +1, +1])
