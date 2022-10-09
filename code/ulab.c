@@ -182,7 +182,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ulab_dtype_type,
     MP_QSTR_dtype,
     MP_TYPE_FLAG_NONE,
-    print, ndarray_dtype_print
+    print, ndarray_dtype_print,
     make_new, ndarray_dtype_make_new
 );
 #else
