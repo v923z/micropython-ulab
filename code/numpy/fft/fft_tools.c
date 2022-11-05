@@ -118,9 +118,9 @@ mp_obj_t fft_fft_ifft_spectrogram(mp_obj_t data_in, uint8_t type) {
 
     if(in->dtype == NDARRAY_COMPLEX) {
         uint8_t sz = 2 * sizeof(mp_float_t);
-        uint8_t *data_ = (uint8_t *)out->array;
         for(size_t i = 0; i < len; i++) {
-            memcpy(data_, array, sz);
+            memcpy(data, array, sz);
+            data += 2;
             array += in->strides[ULAB_MAX_DIMS - 1];
         }
     } else {
@@ -149,7 +149,7 @@ mp_obj_t fft_fft_ifft_spectrogram(mp_obj_t data_in, uint8_t type) {
     } else { // inverse transform
         fft_kernel_complex(data, len, -1);
         // TODO: numpy accepts the norm keyword argument
-        for(size_t i = 0; i < len; i++) {
+        for(size_t i = 0; i < 2 * len; i++) {
             *data++ /= len;
         }
     }
