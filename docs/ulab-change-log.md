@@ -1,3 +1,9 @@
+Sat, 5 Nov 2022
+
+version 6.0.1
+
+    fix fft.ifft
+
 Wed, 21 Sep 2022
 
 version 6.0.0
