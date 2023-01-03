@@ -1,3 +1,9 @@
+Tue, 3 Jan 2023
+
+version 6.0.2
+
+    fix vectorize
+
 Sat, 5 Nov 2022
 
 version 6.0.1
