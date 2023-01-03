@@ -129,7 +129,7 @@ git clone https://github.com/v923z/micropython-ulab.git ulab
 and then run
 
 ```bash
-./build.sh
+./build.sh [matrix.dims] # Dimensions is 2 by default
 ```
 This command will clone `micropython`, and build the `unix` port automatically, as well as run the test scripts. If you want an interactive `unix` session, you can launch it in
 
