@@ -3,6 +3,18 @@ try:
 except:
     import numpy as np
 
+# test input types; the following should raise ValueErrors
+objects = [([1, 2], [3, 4]),
+            ((1, 2), (3, 4)), 
+            (1, 2, 3)]
+
+for obj in objects:
+    try:
+        np.concatenate(obj)
+    except ValueError as e:
+        print('ValueError: {}; failed with object {}\n'.format(e, obj))
+
+
 a = np.array([1,2,3], dtype=np.float)
 b = np.array([4,5,6], dtype=np.float)
 
