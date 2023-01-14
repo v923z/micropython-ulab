@@ -11,8 +11,8 @@ assignees: ''
 A clear and concise description of what the bug is. Give the `ulab` version
 
 ```python
-from ulab import numpy as np
-print(np.__version__)
+import ulab
+print(ulab.__version__)
 ```
 
 **To Reproduce**
