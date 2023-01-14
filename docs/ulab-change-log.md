@@ -1,3 +1,9 @@
+Sat, 14 Jan 2023
+
+version 6.0.3
+
+    fix how concatenate deals with scalar inputs
+
 Tue, 3 Jan 2023
 
 version 6.0.2
