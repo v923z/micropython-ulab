@@ -1,3 +1,10 @@
+
+Sun, 15 Jan 2023
+
+version 6.0.4
+
+    fix dot function
+    
 Sat, 14 Jan 2023
 
 version 6.0.3
