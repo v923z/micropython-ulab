@@ -37,3 +37,6 @@ array([[0.0, 0.0],
        [0.0, 0.0],
        [0.0, 0.0],
        [0.0, 0.0]], dtype=float64)
+ValueError
+ValueError
+ValueError
