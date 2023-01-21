@@ -1,4 +1,10 @@
 
+Sun, 21 Jan 2023
+
+version 6.0.5
+
+    fix ones()/zeros() method when the amount of memory to allocate overflows
+
 Sun, 15 Jan 2023
 
 version 6.0.4
