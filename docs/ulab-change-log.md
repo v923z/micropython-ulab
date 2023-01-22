@@ -1,6 +1,12 @@
 
 Sun, 21 Jan 2023
 
+version 6.0.7
+
+    treat empty arrays in sort_complex correctly
+    
+Sun, 21 Jan 2023
+
 version 6.0.5
 
     fix ones()/zeros() method when the amount of memory to allocate overflows
