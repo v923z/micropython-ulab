@@ -593,6 +593,13 @@ bool ndarray_is_dense(ndarray_obj_t *ndarray) {
     return stride == ndarray->strides[ULAB_MAX_DIMS-ndarray->ndim] ? true : false;
 }
 
+static size_t multiply_size(size_t a, size_t b) {
+    size_t result;
+    if (__builtin_mul_overflow(a, b, &result)) {
+            mp_raise_ValueError(translate("array is too big"));
+    }
+    return result;
+}
 
 ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
     // Creates the base ndarray with shape, and initialises the values to straight 0s
@@ -612,11 +619,11 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndim; i--) {
         ndarray->shape[i-1] = shape[i-1];
         ndarray->strides[i-1] = _strides[i-1];
-        ndarray->len *= shape[i-1];
+        ndarray->len = multiply_size(ndarray->len, shape[i-1]);
     }
 
     // if the length is 0, still allocate a single item, so that contractions can be handled
-    size_t len = ndarray->itemsize * MAX(1, ndarray->len);
+    size_t len = multiply_size(ndarray->itemsize, MAX(1, ndarray->len));
     uint8_t *array = m_new0(byte, len);
     // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
     // we could, perhaps, leave this step out, and initialise the array only, when needed
