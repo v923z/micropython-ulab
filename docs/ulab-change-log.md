@@ -1,4 +1,9 @@
+Sun, 21 Jan 2023
 
+version 6.0.6
+
+    raise proper exception in arange
+    
 Sun, 21 Jan 2023
 
 version 6.0.5
