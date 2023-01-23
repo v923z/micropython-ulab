@@ -7,6 +7,8 @@ dtypes = (np.uint8, np.int8, np.uint16, np.int16, np.float, np.complex)
 
 for dtype in dtypes:
     print(np.sort_complex(np.array(range(5, 0, -1), dtype=dtype)))
+    # these should all return an empty complex array
+    print(np.sort_complex(np.array(range(5, 0, 1), dtype=dtype)))
 
 print()
 n = 6

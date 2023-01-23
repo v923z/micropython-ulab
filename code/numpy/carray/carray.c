@@ -191,8 +191,12 @@ mp_obj_t carray_sort_complex(mp_obj_t _source) {
     }
 
     ndarray_obj_t *ndarray = ndarray_copy_view_convert_type(source, NDARRAY_COMPLEX);
-    mp_float_t *array = (mp_float_t *)ndarray->array;
-    carray_sort_complex_(array, ndarray->len);
+
+    if(ndarray->len != 0) {
+        mp_float_t *array = (mp_float_t *)ndarray->array;
+        carray_sort_complex_(array, ndarray->len);
+    }
+    
     return MP_OBJ_FROM_PTR(ndarray);
 }
 
