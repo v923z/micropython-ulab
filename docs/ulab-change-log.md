@@ -1,3 +1,9 @@
+Fri, 10 Feb 2023
+
+version 6.1.0
+
+    add logical operators and, or, xor
+
 Sun, 21 Jan 2023
 
 version 6.0.6

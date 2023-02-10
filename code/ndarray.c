@@ -6,8 +6,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2022 Zoltán Vörös
- *               2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019-2023 Zoltán Vörös
+ *               2020-2023 Jeff Epler for Adafruit Industries
  *               2020 Taku Fukada
 */
 
@@ -960,6 +960,11 @@ ndarray_obj_t *ndarray_from_iterable(mp_obj_t obj, uint8_t dtype) {
         shape[ULAB_MAX_DIMS - i - 1] = shape[ndim - 1 - i];
     }
 
+    // reset the shapes on the left hand side
+    for(uint8_t i = 0; i < ULAB_MAX_DIMS - 1 - ndim; i++) {
+        shape[i] = 0;
+    }
+
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(ndim, shape, dtype);
     item = obj;
     for(uint8_t i = 0; i < ndim - 1; i++) {
@@ -1749,7 +1754,6 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
 
 #if NDARRAY_HAS_BINARY_OPS || NDARRAY_HAS_INPLACE_OPS
 mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
-    // TODO: implement in-place operators
     // if the ndarray stands on the right hand side of the expression, simply swap the operands
     ndarray_obj_t *lhs, *rhs;
     mp_binary_op_t op = _op;
@@ -1934,6 +1938,13 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
         case MP_BINARY_OP_POWER:
             COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_binary_power(lhs, rhs, ndim, shape, lstrides, rstrides);
+            break;
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_OR | NDARRAY_HAS_BINARY_OP_XOR | NDARRAY_HAS_BINARY_OP_AND
+        case MP_BINARY_OP_OR:
+        case MP_BINARY_OP_XOR:
+        case MP_BINARY_OP_AND:
+            return ndarray_binary_logical(lhs, rhs, ndim, shape, lstrides, rstrides, op);
             break;
         #endif
         default:

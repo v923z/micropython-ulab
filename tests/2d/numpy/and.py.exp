@@ -1,0 +1,16 @@
+a & b:  array([0, 1, 0, 1, 4], dtype=uint16)
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)
+a & b:  array([0, 1, 0, 1, 4], dtype=uint16)
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)
+a & b:  array([0, 1, 0, 1, 4], dtype=int8)
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)
+a & b:  array([0, 1, 0, 1, 4], dtype=uint16)
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)
+a & b:  array([0, 1, 0, 1, 4], dtype=uint16)
+dtype of int32 is not supported
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)
+dtype of int32 is not supported
+a & b:  array([0, 1, 0, 1, 4], dtype=int16)

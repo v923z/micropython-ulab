@@ -1,0 +1,16 @@
+a ^ b:  array([250, 250, 254, 254, 250], dtype=uint16)
+a ^ b:  array([-6, -6, -2, -2, -6], dtype=int16)
+a ^ b:  array([250, 250, 254, 254, 250], dtype=uint16)
+a ^ b:  array([250, 250, 254, 254, 250], dtype=int16)
+a ^ b:  array([250, 250, 254, 254, 250], dtype=int16)
+a ^ b:  array([-6, -6, -2, -2, -6], dtype=int8)
+a ^ b:  array([250, 250, 254, 254, 250], dtype=int16)
+a ^ b:  array([250, 250, 254, 254, 250], dtype=int16)
+a ^ b:  array([250, 250, 254, 254, 250], dtype=uint16)
+a ^ b:  array([-6, -6, -2, -2, -6], dtype=int16)
+a ^ b:  array([250, 250, 254, 254, 250], dtype=uint16)
+dtype of int32 is not supported
+a ^ b:  array([250, 250, 254, 254, 250], dtype=int16)
+a ^ b:  array([-6, -6, -2, -2, -6], dtype=int16)
+dtype of int32 is not supported
+a ^ b:  array([250, 250, 254, 254, 250], dtype=int16)

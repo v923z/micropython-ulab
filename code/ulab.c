@@ -6,8 +6,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2021 Zoltán Vörös
- *               2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019-2023 Zoltán Vörös
+ *               2020-2023 Jeff Epler for Adafruit Industries
 */
 
 #include <math.h>
@@ -33,7 +33,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 6.0.7
+#define ULAB_VERSION 6.1.0
 #define xstr(s) str(s)
 #define str(s) #s
 
