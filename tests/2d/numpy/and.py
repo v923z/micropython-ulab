@@ -13,3 +13,9 @@ for dtype_a in dtypes:
             print('a & b: ', a & b)
         except Exception as e:
             print(e)
+
+    b = np.array([False, True, False, True, False], dtype=np.bool)
+    try:
+        print('a & b (bool): ', a & b)
+    except Exception as e:
+        print(e)
