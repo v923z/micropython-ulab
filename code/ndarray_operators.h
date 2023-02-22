@@ -393,10 +393,12 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
             (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
             l++;\
         } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 1];\
-        (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
         k++;\
-    } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
 } while(0)
 
 #define FLOOR_DIVIDE_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
@@ -405,14 +407,18 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
         size_t l = 0;\
         do {\
             FLOOR_DIVIDE1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
-            (array) -= (ss).strides[0] * (ss).shape[0];\
-            (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
             l++;\
-        } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
-        (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
         k++;\
-    } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
 } while(0)
 
 #define FLOOR_DIVIDE_LOOP_FLOAT(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
@@ -421,14 +427,18 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
         size_t l = 0;\
         do {\
             FLOOR_DIVIDE_FLOAT1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
-            (array) -= (ss).strides[0] * (ss).shape[0];\
-            (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
             l++;\
-        } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
-        (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+        (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
         k++;\
-    } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
 } while(0)
 
 #endif /* ULAB_MAX_DIMS == 3 */
@@ -442,18 +452,24 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
             size_t l = 0;\
             do {\
                 FLOOR_DIVIDE_UINT1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
-                (array) -= (ss).strides[0] * (ss).shape[0];\
-                (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
+                (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
                 l++;\
-            } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
-            (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
             k++;\
-        } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
-        (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         j++;\
-    } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 4]);\
 } while(0)
 
 #define FLOOR_DIVIDE_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
@@ -464,18 +480,24 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
             size_t l = 0;\
             do {\
                 FLOOR_DIVIDE1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
-                (array) -= (ss).strides[0] * (ss).shape[0];\
-                (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
+                (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
                 l++;\
-            } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
-            (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
             k++;\
-        } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
-        (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         j++;\
-    } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 4]);\
 } while(0)
 
 #define FLOOR_DIVIDE_LOOP_FLOAT(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
@@ -486,18 +508,24 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
             size_t l = 0;\
             do {\
                 FLOOR_DIVIDE_FLOAT1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
-                (array) -= (ss).strides[0] * (ss).shape[0];\
-                (array) += (ss).strides[ULAB_MAX_DIMS - 1];\
+                (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+                (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
                 l++;\
-            } while(l < (ss).shape[ULAB_MAX_DIMS - 1]);\
-            (array) -= (ss).strides[ULAB_MAX_DIMS - 1] * (ss).shape[ULAB_MAX_DIMS - 1];\
-            (array) += (ss).strides[ULAB_MAX_DIMS - 2];\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
             k++;\
-        } while(k < (ss).shape[ULAB_MAX_DIMS - 2]);\
-        (array) -= (ss).strides[ULAB_MAX_DIMS - 2] * (ss).shape[ULAB_MAX_DIMS - 2];\
-        (array) += (ss).strides[ULAB_MAX_DIMS - 3];\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
+            (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
+            (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         j++;\
-    } while(j < (ss).shape[ULAB_MAX_DIMS - 3]);\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 4]);\
 } while(0)
 
 #endif /* ULAB_MAX_DIMS == 4 */
