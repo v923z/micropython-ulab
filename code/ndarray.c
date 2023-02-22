@@ -1936,6 +1936,12 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             return ndarray_binary_power(lhs, rhs, ndim, shape, lstrides, rstrides);
             break;
         #endif
+        #if NDARRAY_HAS_BINARY_OP_FLOOR_DIVIDE
+        case MP_BINARY_OP_FLOOR_DIVIDE:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
+            return ndarray_binary_floor_divide(lhs, rhs, ndim, shape, lstrides, rstrides);
+            break;
+        #endif
         default:
             return MP_OBJ_NULL; // op not supported
             break;
