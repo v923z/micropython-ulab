@@ -382,11 +382,12 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 
 #if ULAB_MAX_DIMS == 3
 #define FLOOR_DIVIDE_LOOP_UINT(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
+  type_out *array = (type_out *)(results)->array;\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            FLOOR_DIVIDE_UINT1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
+            FLOOR_DIVIDE_UINT1((results), (array), type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
             (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
             (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
             (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
@@ -402,11 +403,12 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 } while(0)
 
 #define FLOOR_DIVIDE_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
+    type_out *array = (type_out *)(results)->array;\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            FLOOR_DIVIDE1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
+            FLOOR_DIVIDE1((results), (array), type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
             (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
             (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
             (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
@@ -422,11 +424,12 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 } while(0)
 
 #define FLOOR_DIVIDE_LOOP_FLOAT(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
+    type_out *array = (type_out *)(results)->array;\
     size_t k = 0;\
     do {\
         size_t l = 0;\
         do {\
-            FLOOR_DIVIDE_FLOAT1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
+            FLOOR_DIVIDE_FLOAT1((results), (array), type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
             (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
             (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
             (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
@@ -445,13 +448,14 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 
 #if ULAB_MAX_DIMS == 4
 #define FLOOR_DIVIDE_LOOP_UINT(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
+    type_out *array = (type_out *)(results)->array;\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                FLOOR_DIVIDE_UINT1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
+                FLOOR_DIVIDE_UINT1((results), (array), type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
                 (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
                 (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
                 (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
@@ -473,13 +477,14 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 } while(0)
 
 #define FLOOR_DIVIDE_LOOP(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
+    type_out *array = (type_out *)(results)->array;\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                FLOOR_DIVIDE1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
+                FLOOR_DIVIDE1((results), (array), type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
                 (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
                 (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
                 (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
@@ -501,13 +506,14 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 } while(0)
 
 #define FLOOR_DIVIDE_LOOP_FLOAT(results, type_out, type_left, type_right, larray, lstrides, rarray, rstrides) do {\
+    type_out *array = (type_out *)(results)->array;\
     size_t j = 0;\
     do {\
         size_t k = 0;\
         do {\
             size_t l = 0;\
             do {\
-                FLOOR_DIVIDE_FLOAT1((results), type_out, type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
+                FLOOR_DIVIDE_FLOAT1((results), (array), type_left, type_right, (larray), (lstrides), (rarray), (rstrides));\
                 (larray) -= (lstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
                 (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
                 (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
