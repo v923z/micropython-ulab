@@ -65,7 +65,9 @@ typedef struct _mp_obj_float_t {
 // See above for how to use ULAB_DEFINE_FLOAT_CONST and ULAB_REFERENCE_FLOAT_CONST.
 
 #define ULAB_DEFINE_FLOAT_CONST(id, num, hex32, hex64) \
-    const uint32_t id = (((((uint32_t)hex32) & ~3) | 2) + 0x80800000)
+    enum { \
+        id = (((((uint32_t)hex32) & ~3) | 2) + 0x80800000) \
+    }
 
 #define ULAB_REFERENCE_FLOAT_CONST(id) ((mp_obj_t)(id))
 
