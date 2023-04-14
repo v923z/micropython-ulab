@@ -569,9 +569,11 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
         mp_raise_TypeError(translate("axis must be None, or an integer"));
     }
 
+#if ULAB_NUMPY_HAS_ALL | ULAB_NUMPY_HAS_ANY
     if((optype == NUMERICAL_ALL) || (optype == NUMERICAL_ANY)) {
         return numerical_all_any(oin, axis, optype);
     }
+#endif
     if(mp_obj_is_type(oin, &mp_type_tuple) || mp_obj_is_type(oin, &mp_type_list) ||
         mp_obj_is_type(oin, &mp_type_range)) {
         switch(optype) {
