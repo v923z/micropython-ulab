@@ -363,7 +363,7 @@ This file can be found in `$BUILD_DIR/micropython/ports/esp32/boards/TINYPICO/`.
 
 ### RP2-based boards
 
-RP2 firmware can be compiled either by downloading and running the single [build script](https://github.com/v923z/micropython-ulab/blob/master/build/rp2.sh), or executing the commands below.
+RP2 firmware can be compiled either by downloading and running the single [build script](https://github.com/v923z/micropython-ulab/blob/master/build/rp2.sh)/[build script for Pico W](https://github.com/v923z/micropython-ulab/blob/master/build/rp2w.sh), or executing the commands below.
 
 First, clone `micropython`:
 
