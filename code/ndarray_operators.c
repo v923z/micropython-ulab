@@ -908,7 +908,7 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t 
     }
     return MP_OBJ_FROM_PTR(lhs);
 }
-#endif /* NDARRAY_HAS_INPLACE_DIVIDE */
+#endif /* NDARRAY_HAS_INPLACE_TRUE_DIVIDE */
 
 #if NDARRAY_HAS_INPLACE_POWER
 mp_obj_t ndarray_inplace_power(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides) {
