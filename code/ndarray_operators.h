@@ -291,9 +291,10 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 #define FLOOR_DIVIDE1(results, array, type_left, type_right, larray, lstrides, rarray, rstrides)\
 ({\
     size_t l = 0;\
-    int16_t num = (int16_t)*((type_left *)(larray));\
+    int16_t num;\
     int16_t denom = (int16_t)*((type_right *)(rarray));\
     do {\
+        num = (int16_t)*((type_left *)(larray));\
         if(num >= 0) {\
             if(denom < 0) {\
                 num += -denom - 1;\
