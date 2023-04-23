@@ -101,6 +101,10 @@
 #define NDARRAY_HAS_BINARY_OP_EQUAL         (1)
 #endif
 
+#ifndef NDARRAY_HAS_BINARY_OP_FLOOR_DIVIDE
+#define NDARRAY_HAS_BINARY_OP_FLOOR_DIVIDE  (1)
+#endif
+
 #ifndef NDARRAY_HAS_BINARY_OP_LESS
 #define NDARRAY_HAS_BINARY_OP_LESS          (1)
 #endif
