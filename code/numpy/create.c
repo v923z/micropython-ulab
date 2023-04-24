@@ -159,7 +159,7 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     }
 
     ndarray_obj_t *ndarray;
-    if((stop - start)/step < 0) {
+    if((stop - start)/step <= 0) {
         ndarray = ndarray_new_linear_array(0, dtype);
     } else {
         size_t len = (size_t)(MICROPY_FLOAT_C_FUN(ceil)((stop - start) / step));
@@ -254,14 +254,14 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
     mp_obj_tuple_t *ndarrays = MP_OBJ_TO_PTR(args[0].u_obj);
 
-    // first check, whether 
+    // first check, whether
 
     for(uint8_t i = 0; i < ndarrays->len; i++) {
         if(!mp_obj_is_type(ndarrays->items[i], &ulab_ndarray_type)) {
             mp_raise_ValueError(translate("only ndarrays can be concatenated"));
         }
     }
-    
+
     // first check, whether the arrays are compatible
     ndarray_obj_t *_ndarray = MP_OBJ_TO_PTR(ndarrays->items[0]);
     uint8_t dtype = _ndarray->dtype;
