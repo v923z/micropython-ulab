@@ -155,8 +155,8 @@ static mp_float_t poly_eval(mp_float_t x, mp_float_t *p, uint8_t plen) {
 }
 
 mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
-    if(!ndarray_object_is_array_like(o_p) || !ndarray_object_is_array_like(o_x)) {
-        mp_raise_TypeError(translate("inputs are not iterable"));
+    if(!ndarray_object_is_array_like(o_p)) {
+        mp_raise_TypeError(translate("input is not iterable"));
     }
     #if ULAB_SUPPORTS_COMPLEX
     ndarray_obj_t *input;
@@ -178,6 +178,10 @@ mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     while((p_item = mp_iternext(p_iterable)) != MP_OBJ_STOP_ITERATION) {
         p[i] = mp_obj_get_float(p_item);
         i++;
+    }
+
+    if(!ndarray_object_is_array_like(o_x)) {
+        return mp_obj_new_float(poly_eval(mp_obj_get_float(o_x), p, plen));
     }
 
     // polynomials are going to be of type float, except, when both
