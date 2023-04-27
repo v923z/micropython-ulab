@@ -17,3 +17,9 @@ try:
     np.arange(0, 10, 0)
 except ZeroDivisionError as e:
     print('ZeroDivisionError: ', e)
+
+# test for NAN length exception
+try:
+    np.arange(0, np.nan)
+except ValueError as e:
+    print('ValueError: ', e)
