@@ -1,5 +1,11 @@
 Sat, 6 May 2023
 
+version 6.0.11
+
+    .reshape can now interpret unknown shape dimension
+
+Sat, 6 May 2023
+
 version 6.0.10
 
     fix binary division
