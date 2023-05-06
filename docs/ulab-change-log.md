@@ -1,3 +1,9 @@
+Sun, 7 May 2023
+
+version 6.0.12
+
+    ndarray_from_mp_obj correctly treats Boolean arguments
+    
 Sat, 6 May 2023
 
 version 6.0.11
