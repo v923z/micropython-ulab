@@ -1,3 +1,9 @@
+Sat, 6 May 2023
+
+version 6.0.10
+
+    fix binary division
+    
 Sun, 21 Jan 2023
 
 version 6.0.6
