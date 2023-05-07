@@ -1730,6 +1730,12 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
         ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
         array[0] = mp_obj_get_float(obj);
+    } else if(mp_obj_is_bool(obj)) {
+        ndarray = ndarray_new_linear_array(1, NDARRAY_BOOLEAN);
+        uint8_t *array = (uint8_t *)ndarray->array;
+        if(obj == mp_const_true) {
+            *array = 1;
+        }
     } else if(mp_obj_is_type(obj, &ulab_ndarray_type)){
         return MP_OBJ_TO_PTR(obj);
     }
