@@ -12,6 +12,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/ndarray.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/ndarray/ndarray_iter.c
 SRC_USERMOD += $(USERMODULES_DIR)/ndarray_properties.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/approx.c
+SRC_USERMOD += $(USERMODULES_DIR)/numpy/bitwise.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/compare.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/carray/carray.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/carray/carray_tools.c
