@@ -18,6 +18,7 @@
 
 #include "numpy.h"
 #include "approx.h"
+#include "bitwise.h"
 #include "carray/carray.h"
 #include "compare.h"
 #include "create.h"
@@ -164,7 +165,6 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_ZEROS
         { MP_ROM_QSTR(MP_QSTR_zeros), MP_ROM_PTR(&create_zeros_obj) },
     #endif
-    // functions of the compare sub-module
     #if ULAB_NUMPY_HAS_CLIP
         { MP_ROM_QSTR(MP_QSTR_clip), MP_ROM_PTR(&compare_clip_obj) },
     #endif
@@ -189,9 +189,24 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_NONZERO
         { MP_ROM_QSTR(MP_QSTR_nonzero), MP_ROM_PTR(&compare_nonzero_obj) },
     #endif
-
     #if ULAB_NUMPY_HAS_WHERE
         { MP_ROM_QSTR(MP_QSTR_where), MP_ROM_PTR(&compare_where_obj) },
+    #endif
+    // bitwise operators
+    #if ULAB_NUMPY_HAS_BITWISE_AND
+        { MP_ROM_QSTR(MP_QSTR_bitwise_and), MP_ROM_PTR(&bitwise_bitwise_and_obj) },
+    #endif
+    #if ULAB_NUMPY_HAS_BITWISE_OR
+        { MP_ROM_QSTR(MP_QSTR_bitwise_or), MP_ROM_PTR(&bitwise_bitwise_or_obj) },
+    #endif
+    #if ULAB_NUMPY_HAS_BITWISE_XOR
+        { MP_ROM_QSTR(MP_QSTR_bitwise_xor), MP_ROM_PTR(&bitwise_bitwise_xor_obj) },
+    #endif
+    #if ULAB_NUMPY_HAS_LEFT_SHIFT
+        { MP_ROM_QSTR(MP_QSTR_left_shift), MP_ROM_PTR(&left_shift_obj) },
+    #endif
+    #if ULAB_NUMPY_HAS_RIGHT_SHIFT
+        { MP_ROM_QSTR(MP_QSTR_right_shift), MP_ROM_PTR(&right_shift_obj) },
     #endif
     // functions of the filter sub-module
     #if ULAB_NUMPY_HAS_CONVOLVE

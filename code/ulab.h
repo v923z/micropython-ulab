@@ -165,6 +165,27 @@
 #define NDARRAY_HAS_INPLACE_TRUE_DIVIDE     (1)
 #endif
 
+// bitwise operators
+#ifndef ULAB_NUMPY_HAS_BITWISE_AND
+#define ULAB_NUMPY_HAS_BITWISE_AND          (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_BITWISE_OR
+#define ULAB_NUMPY_HAS_BITWISE_OR           (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_BITWISE_XOR
+#define ULAB_NUMPY_HAS_BITWISE_XOR          (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_LEFT_SHIFT
+#define ULAB_NUMPY_HAS_LEFT_SHIFT           (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_RIGHT_SHIFT
+#define ULAB_NUMPY_HAS_RIGHT_SHIFT          (1)
+#endif
+
 // the ndarray unary operators
 #ifndef NDARRAY_HAS_UNARY_OPS
 #define NDARRAY_HAS_UNARY_OPS               (1)
