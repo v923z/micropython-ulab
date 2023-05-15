@@ -616,6 +616,10 @@
 #define ULAB_NUMPY_HAS_SIN              (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_SINC
+#define ULAB_NUMPY_HAS_SINC             (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_SINH
 #define ULAB_NUMPY_HAS_SINH             (1)
 #endif

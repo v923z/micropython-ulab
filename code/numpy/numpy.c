@@ -340,6 +340,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_SIN
     { MP_ROM_QSTR(MP_QSTR_sin), MP_ROM_PTR(&vector_sin_obj) },
     #endif
+    #if ULAB_NUMPY_HAS_SINC
+    { MP_ROM_QSTR(MP_QSTR_sinc), MP_ROM_PTR(&vector_sinc_obj) },
+    #endif
     #if ULAB_NUMPY_HAS_SINH
     { MP_ROM_QSTR(MP_QSTR_sinh), MP_ROM_PTR(&vector_sinh_obj) },
     #endif

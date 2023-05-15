@@ -570,6 +570,27 @@ MATH_FUN_1(sin, sin);
 MP_DEFINE_CONST_FUN_OBJ_1(vector_sin_obj, vector_sin);
 #endif
 
+#if ULAB_NUMPY_HAS_SINC
+//| def sin(a: _ArrayLike) -> ulab.numpy.ndarray:
+//|    """Computes the sine function"""
+//|    ...
+//|
+
+static mp_float_t ulab_sinc1(mp_float_t x) {
+    if (fpclassify(x) == FP_ZERO) {
+        return MICROPY_FLOAT_CONST(1.);
+    }
+    x *= MP_PI;
+    return MICROPY_FLOAT_C_FUN(sin)(x) / x;
+}
+
+static mp_obj_t vector_sinc(mp_obj_t x_obj) {
+    return vector_generic_vector(x_obj, ulab_sinc1);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(vector_sinc_obj, vector_sinc);
+#endif
+
 #if ULAB_NUMPY_HAS_SINH
 //| def sinh(a: _ArrayLike) -> ulab.numpy.ndarray:
 //|    """Computes the hyperbolic sine"""
