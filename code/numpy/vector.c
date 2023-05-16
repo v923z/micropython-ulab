@@ -571,8 +571,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_sin_obj, vector_sin);
 #endif
 
 #if ULAB_NUMPY_HAS_SINC
-//| def sin(a: _ArrayLike) -> ulab.numpy.ndarray:
-//|    """Computes the sine function"""
+//| def sinc(a: _ArrayLike) -> ulab.numpy.ndarray:
+//|    """Computes the normalized sinc function"""
 //|    ...
 //|
 
