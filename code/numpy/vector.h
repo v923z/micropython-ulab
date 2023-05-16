@@ -39,6 +39,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(vector_log10_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vector_log2_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vector_radians_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vector_sin_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(vector_sinc_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(vector_sinh_obj);
 #if ULAB_SUPPORTS_COMPLEX
 MP_DECLARE_CONST_FUN_OBJ_KW(vector_sqrt_obj);
