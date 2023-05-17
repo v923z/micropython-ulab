@@ -1438,6 +1438,9 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
 }
 
 mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if(value == MP_OBJ_NULL) {
+        mp_raise_ValueError(translate("cannot delete array elements"));
+    }
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (value == MP_OBJ_SENTINEL) { // return value(s)
