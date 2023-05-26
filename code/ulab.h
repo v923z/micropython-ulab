@@ -536,6 +536,12 @@
 
 // vectorised versions of the functions of the math python module, with
 // the exception of the functions listed in scipy.special
+
+// if this constant is set, math functions support the out keyword argument
+#ifndef ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+#define ULAB_MATH_FUNCTIONS_OUT_KEYWORD (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_ACOS
 #define ULAB_NUMPY_HAS_ACOS             (1)
 #endif
