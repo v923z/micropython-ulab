@@ -75,11 +75,12 @@ MP_DECLARE_CONST_FUN_OBJ_1(vector_tanh_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(vector_arctan2_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(vector_around_obj);
 
-#if ULAB_SUPPORTS_COMPLEX
+#if ULAB_SUPPORTS_COMPLEX | ULAB_MATH_FUNCTIONS_OUT_KEYWORD
 MP_DECLARE_CONST_FUN_OBJ_KW(vector_sqrt_obj);
 #else
 MP_DECLARE_CONST_FUN_OBJ_1(vector_sqrt_obj);
 #endif
+
 MP_DECLARE_CONST_FUN_OBJ_KW(vector_vectorize_obj);
 
 typedef struct _vectorized_function_obj_t {
