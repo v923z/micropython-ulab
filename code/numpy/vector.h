@@ -108,7 +108,7 @@ typedef struct _vectorized_function_obj_t {
 #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
 
 #if ULAB_MAX_DIMS == 1
-#define ITERATE_VECTOR(type, tarray, tshape, tstrides, source, sarray) do {\
+#define ITERATE_VECTOR(type, target, tarray, tstrides, source, sarray) do {\
     size_t l = 0;\
     do {\
         *(tarray) = f(*((type *)(sarray)));\
@@ -120,7 +120,7 @@ typedef struct _vectorized_function_obj_t {
 #endif /* ULAB_MAX_DIMS == 1 */
 
 #if ULAB_MAX_DIMS == 2
-#define ITERATE_VECTOR(type, tarray, tshape, tstrides, source, sarray) do {\
+#define ITERATE_VECTOR(type, target, tarray, tstrides, source, sarray) do {\
     size_t k = 0;\
     do {\
         size_t l = 0;\
@@ -132,7 +132,7 @@ typedef struct _vectorized_function_obj_t {
         } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
         (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS - 1];\
         (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
-        (tarray) -= (tstrides)[ULAB_MAX_DIMS - 1] * (tshape)[ULAB_MAX_DIMS - 1];\
+        (tarray) -= (tstrides)[ULAB_MAX_DIMS - 1] * (target)->shape[ULAB_MAX_DIMS - 1];\
         (tarray) += (tstrides)[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (source)->shape[ULAB_MAX_DIMS - 2]);\
@@ -140,7 +140,7 @@ typedef struct _vectorized_function_obj_t {
 #endif /* ULAB_MAX_DIMS == 2 */
 
 #if ULAB_MAX_DIMS == 3
-#define ITERATE_VECTOR(type, tarray, tshape, tstrides, source, sarray) do {\
+#define ITERATE_VECTOR(type, target, tarray, tstrides, source, sarray) do {\
     size_t j = 0;\
     do {\
         size_t k = 0;\
@@ -154,13 +154,13 @@ typedef struct _vectorized_function_obj_t {
             } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
             (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS - 1];\
             (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
-            (tarray) -= (tstrides)[ULAB_MAX_DIMS - 1] * (tshape)[ULAB_MAX_DIMS - 1];\
+            (tarray) -= (tstrides)[ULAB_MAX_DIMS - 1] * (target)->shape[ULAB_MAX_DIMS - 1];\
             (tarray) += (tstrides)[ULAB_MAX_DIMS - 2];\
             k++;\
         } while(k < (source)->shape[ULAB_MAX_DIMS-2]);\
         (sarray) -= (source)->strides[ULAB_MAX_DIMS - 2] * (source)->shape[ULAB_MAX_DIMS - 2];\
         (sarray) += (source)->strides[ULAB_MAX_DIMS - 3];\
-        (tarray) -= (tstrides)[ULAB_MAX_DIMS - 2] * (tshape)[ULAB_MAX_DIMS - 2];\
+        (tarray) -= (tstrides)[ULAB_MAX_DIMS - 2] * (target)->shape[ULAB_MAX_DIMS - 2];\
         (tarray) += (tstrides)[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (source)->shape[ULAB_MAX_DIMS - 3]);\
@@ -168,7 +168,7 @@ typedef struct _vectorized_function_obj_t {
 #endif /* ULAB_MAX_DIMS == 3 */
 
 #if ULAB_MAX_DIMS == 4
-#define ITERATE_VECTOR(type, tarray, tshape, tstrides, source, sarray) do {\
+#define ITERATE_VECTOR(type, target, tshape, tstrides, source, sarray) do {\
     size_t i = 0;\
     do {\
         size_t j = 0;\
@@ -184,19 +184,19 @@ typedef struct _vectorized_function_obj_t {
                 } while(l < (source)->shape[ULAB_MAX_DIMS-1]);\
                 (sarray) -= (source)->strides[ULAB_MAX_DIMS - 1] * (source)->shape[ULAB_MAX_DIMS - 1];\
                 (sarray) += (source)->strides[ULAB_MAX_DIMS - 2];\
-                (tarray) -= (tstrides)[ULAB_MAX_DIMS - 1] * (tshape)[ULAB_MAX_DIMS - 1];\
+                (tarray) -= (tstrides)[ULAB_MAX_DIMS - 1] * (target)->shape[ULAB_MAX_DIMS - 1];\
                 (tarray) += (tstrides)[ULAB_MAX_DIMS - 2];\
                 k++;\
             } while(k < (source)->shape[ULAB_MAX_DIMS-2]);\
             (sarray) -= (source)->strides[ULAB_MAX_DIMS - 2] * (source)->shape[ULAB_MAX_DIMS - 2];\
             (sarray) += (source)->strides[ULAB_MAX_DIMS - 3];\
-            (tarray) -= (tstrides)[ULAB_MAX_DIMS - 2] * (tshape)[ULAB_MAX_DIMS - 2];\
+            (tarray) -= (tstrides)[ULAB_MAX_DIMS - 2] * (target)->shape[ULAB_MAX_DIMS - 2];\
             (tarray) += (tstrides)[ULAB_MAX_DIMS - 3];\
             j++;\
         } while(j < (source)->shape[ULAB_MAX_DIMS - 3]);\
         (sarray) -= (source)->strides[ULAB_MAX_DIMS - 3] * (source)->shape[ULAB_MAX_DIMS - 3];\
         (sarray) += (source)->strides[ULAB_MAX_DIMS - 4];\
-        (tarray) -= (tstrides)[ULAB_MAX_DIMS - 3] * (tshape)[ULAB_MAX_DIMS - 3];\
+        (tarray) -= (tstrides)[ULAB_MAX_DIMS - 3] * (target)->shape[ULAB_MAX_DIMS - 3];\
         (tarray) += (tstrides)[ULAB_MAX_DIMS - 4];\
         i++;\
     } while(i < (source)->shape[ULAB_MAX_DIMS - 4]);\

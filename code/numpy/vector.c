@@ -80,7 +80,6 @@ static mp_obj_t vector_generic_vector(size_t n_args, const mp_obj_t *pos_args, m
             }
         }
         mp_float_t *tarray = (mp_float_t *)target->array;
-        size_t *tshape = target->shape;
         int32_t *tstrides = m_new(int32_t, ULAB_MAX_DIMS);
         for(uint8_t d = 0; d < target->ndim; d++) {
             tstrides[ULAB_MAX_DIMS - 1 - d] = target->strides[ULAB_MAX_DIMS - 1 - d] / target->itemsize;
@@ -89,15 +88,15 @@ static mp_obj_t vector_generic_vector(size_t n_args, const mp_obj_t *pos_args, m
         uint8_t *sarray = (uint8_t *)source->array;
 
         if(source->dtype == NDARRAY_UINT8) {
-            ITERATE_VECTOR(uint8_t, tarray, tshape, tstrides, source, sarray);
+            ITERATE_VECTOR(uint8_t, target, tarray, tstrides, source, sarray);
         } else if(source->dtype == NDARRAY_INT8) {
-           ITERATE_VECTOR(int8_t, tarray, tshape, tstrides, source, sarray);
+           ITERATE_VECTOR(int8_t, target, tarray, tstrides, source, sarray);
         } else if(source->dtype == NDARRAY_UINT16) {
-            ITERATE_VECTOR(uint16_t, tarray, tshape, tstrides, source, sarray);
+            ITERATE_VECTOR(uint16_t, target, tarray, tstrides, source, sarray);
         } else if(source->dtype == NDARRAY_INT16) {
-            ITERATE_VECTOR(int16_t, tarray, tshape, tstrides, source, sarray);
+            ITERATE_VECTOR(int16_t, target, tarray, tstrides, source, sarray);
         } else {
-            ITERATE_VECTOR(mp_float_t, tarray, tshape, tstrides, source, sarray);
+            ITERATE_VECTOR(mp_float_t, target, tarray, tstrides, source, sarray);
         }
     } else {
         target = ndarray_from_mp_obj(o_in, 0);
