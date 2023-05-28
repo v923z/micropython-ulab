@@ -6,8 +6,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2021 Zoltán Vörös
- *               2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019-2023 Zoltán Vörös
+ *               2020-2023 Jeff Epler for Adafruit Industries
  *               2020 Scott Shawcroft for Adafruit Industries
  *               2020 Taku Fukada
 */
@@ -31,6 +31,85 @@
 //| applying the function to every element in the array.  This is typically
 //| much more efficient than expressing the same operation as a Python loop."""
 //|
+
+
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+static mp_obj_t vector_generic_vector(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, mp_float_t (*f)(mp_float_t)) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
+        { MP_QSTR_out, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        // this keyword argument is not used; it's only here, so that functions that 
+        // support the complex dtype can call vector_generic_vector directly
+        { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t o_in = args[0].u_obj;
+
+    // Return a single value, if o_in is not iterable
+    if(mp_obj_is_float(o_in) || mp_obj_is_int(o_in)) {
+        return mp_obj_new_float(f(mp_obj_get_float(o_in)));
+    }
+    mp_obj_t out = args[1].u_obj;
+
+    ndarray_obj_t *target = NULL;
+    ndarray_obj_t *source = NULL;
+
+    if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
+        source = MP_OBJ_TO_PTR(o_in);
+        COMPLEX_DTYPE_NOT_IMPLEMENTED(source->dtype)
+        if(out == mp_const_none) {
+            target = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
+        } else {
+            if(!mp_obj_is_type(out, &ulab_ndarray_type)) {
+                mp_raise_ValueError(translate("out must be an ndarray"));
+            }
+            target = MP_OBJ_TO_PTR(out);
+            if(target->dtype != NDARRAY_FLOAT) {
+                mp_raise_ValueError(translate("out must be of float dtype"));
+            }
+            if(target->ndim != source->ndim) {
+                mp_raise_ValueError(translate("input and output dimensions differ"));
+            }
+            for(uint8_t d = 0; d < target->ndim; d++) {
+                if(target->shape[ULAB_MAX_DIMS - 1 - d] != source->shape[ULAB_MAX_DIMS - 1 - d]) {
+                    mp_raise_ValueError(translate("input and output shapes differ"));
+                }
+            }
+        }
+        mp_float_t *tarray = (mp_float_t *)target->array;
+        int32_t *tstrides = m_new(int32_t, ULAB_MAX_DIMS);
+        for(uint8_t d = 0; d < target->ndim; d++) {
+            tstrides[ULAB_MAX_DIMS - 1 - d] = target->strides[ULAB_MAX_DIMS - 1 - d] / target->itemsize;
+        }
+
+        uint8_t *sarray = (uint8_t *)source->array;
+
+        if(source->dtype == NDARRAY_UINT8) {
+            ITERATE_VECTOR(uint8_t, target, tarray, tstrides, source, sarray);
+        } else if(source->dtype == NDARRAY_INT8) {
+           ITERATE_VECTOR(int8_t, target, tarray, tstrides, source, sarray);
+        } else if(source->dtype == NDARRAY_UINT16) {
+            ITERATE_VECTOR(uint16_t, target, tarray, tstrides, source, sarray);
+        } else if(source->dtype == NDARRAY_INT16) {
+            ITERATE_VECTOR(int16_t, target, tarray, tstrides, source, sarray);
+        } else {
+            ITERATE_VECTOR(mp_float_t, target, tarray, tstrides, source, sarray);
+        }
+    } else {
+        target = ndarray_from_mp_obj(o_in, 0);
+        mp_float_t *tarray = (mp_float_t *)target->array;
+        for(size_t i = 0; i < target->len; i++) {
+            *tarray = f(*tarray);
+            tarray++;
+        }
+    }
+    return MP_OBJ_FROM_PTR(target);
+}
+
+#else
 
 static mp_obj_t vector_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)) {
     // Return a single value, if o_in is not iterable
@@ -109,6 +188,8 @@ static mp_obj_t vector_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)
     }
     return MP_OBJ_FROM_PTR(ndarray);
 }
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+
 
 #if ULAB_NUMPY_HAS_ACOS
 //| def acos(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -117,8 +198,12 @@ static mp_obj_t vector_generic_vector(mp_obj_t o_in, mp_float_t (*f)(mp_float_t)
 //|
 
 MATH_FUN_1(acos, acos);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_acos_obj, 1, vector_acos);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_acos_obj, vector_acos);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_ACOS */
 
 #if ULAB_NUMPY_HAS_ACOSH
 //| def acosh(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -127,8 +212,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_acos_obj, vector_acos);
 //|
 
 MATH_FUN_1(acosh, acosh);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_acosh_obj, 1, vector_acosh);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_acosh_obj, vector_acosh);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_ACOSH */
 
 #if ULAB_NUMPY_HAS_ASIN
 //| def asin(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -137,8 +226,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_acosh_obj, vector_acosh);
 //|
 
 MATH_FUN_1(asin, asin);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_asin_obj, 1, vector_asin);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_asin_obj, vector_asin);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_ASIN */
 
 #if ULAB_NUMPY_HAS_ASINH
 //| def asinh(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -147,8 +240,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_asin_obj, vector_asin);
 //|
 
 MATH_FUN_1(asinh, asinh);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_asinh_obj, 1, vector_asinh);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_asinh_obj, vector_asinh);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_ASINH */
 
 #if ULAB_NUMPY_HAS_AROUND
 //| def around(a: _ArrayLike, *, decimals: int = 0) -> ulab.numpy.ndarray:
@@ -160,7 +257,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_asinh_obj, vector_asinh);
 mp_obj_t vector_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_decimals, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 } }
+        { MP_QSTR_decimals, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 } },
+        #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+        { MP_QSTR_out, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } }
+        #endif  
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -172,6 +272,12 @@ mp_obj_t vector_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     mp_float_t mul = MICROPY_FLOAT_C_FUN(pow)(10.0, n);
     ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
     COMPLEX_DTYPE_NOT_IMPLEMENTED(source->dtype)
+    #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+    mp_obj_t out = args[2].u_obj;
+    if(out != mp_const_none) {
+        mp_raise_ValueError(translate("out keyword is not supported for function"));
+    }
+    #endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
     mp_float_t *narray = (mp_float_t *)ndarray->array;
     uint8_t *sarray = (uint8_t *)source->array;
@@ -219,7 +325,7 @@ mp_obj_t vector_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(vector_around_obj, 1, vector_around);
-#endif
+#endif /* ULAB_NUMPY_HAS_AROUND */
 
 #if ULAB_NUMPY_HAS_ATAN
 //| def atan(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -229,8 +335,27 @@ MP_DEFINE_CONST_FUN_OBJ_KW(vector_around_obj, 1, vector_around);
 //|
 
 MATH_FUN_1(atan, atan);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_atan_obj, 1, vector_atan);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_atan_obj, vector_atan);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_ATAN */
+
+
+#if ULAB_NUMPY_HAS_ATANH
+//| def atanh(a: _ArrayLike) -> ulab.numpy.ndarray:
+//|    """Computes the inverse hyperbolic tangent function"""
+//|    ...
+//|
+
+MATH_FUN_1(atanh, atanh);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_atanh_obj, 1, vector_atanh);
+#else
+MP_DEFINE_CONST_FUN_OBJ_1(vector_atanh_obj, vector_atanh);
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_ATANH */
 
 #if ULAB_NUMPY_HAS_ARCTAN2
 //| def arctan2(ya: _ArrayLike, xa: _ArrayLike) -> ulab.numpy.ndarray:
@@ -325,16 +450,6 @@ mp_obj_t vector_arctan2(mp_obj_t y, mp_obj_t x) {
 MP_DEFINE_CONST_FUN_OBJ_2(vector_arctan2_obj, vector_arctan2);
 #endif /* ULAB_VECTORISE_HAS_ARCTAN2 */
 
-#if ULAB_NUMPY_HAS_ATANH
-//| def atanh(a: _ArrayLike) -> ulab.numpy.ndarray:
-//|    """Computes the inverse hyperbolic tangent function"""
-//|    ...
-//|
-
-MATH_FUN_1(atanh, atanh);
-MP_DEFINE_CONST_FUN_OBJ_1(vector_atanh_obj, vector_atanh);
-#endif
-
 #if ULAB_NUMPY_HAS_CEIL
 //| def ceil(a: _ArrayLike) -> ulab.numpy.ndarray:
 //|    """Rounds numbers up to the next whole number"""
@@ -342,8 +457,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_atanh_obj, vector_atanh);
 //|
 
 MATH_FUN_1(ceil, ceil);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_ceil_obj, 1, vector_ceil);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_ceil_obj, vector_ceil);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_CEIL */
 
 #if ULAB_NUMPY_HAS_COS
 //| def cos(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -352,8 +471,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_ceil_obj, vector_ceil);
 //|
 
 MATH_FUN_1(cos, cos);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_cos_obj, 1, vector_cos);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_cos_obj, vector_cos);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_COS */
 
 #if ULAB_NUMPY_HAS_COSH
 //| def cosh(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -362,8 +485,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_cos_obj, vector_cos);
 //|
 
 MATH_FUN_1(cosh, cosh);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_cosh_obj, 1, vector_cosh);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_cosh_obj, vector_cosh);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_COSH */
 
 #if ULAB_NUMPY_HAS_DEGREES
 //| def degrees(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -375,12 +502,18 @@ static mp_float_t vector_degrees_(mp_float_t value) {
     return value * MICROPY_FLOAT_CONST(180.0) / MP_PI;
 }
 
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+static mp_obj_t vector_degrees(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return vector_generic_vector(n_args, pos_args, kw_args, vector_degrees_);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_degrees_obj, 1, vector_degrees);
+#else
 static mp_obj_t vector_degrees(mp_obj_t x_obj) {
     return vector_generic_vector(x_obj, vector_degrees_);
 }
-
 MP_DEFINE_CONST_FUN_OBJ_1(vector_degrees_obj, vector_degrees);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_DEGREES */
 
 #if ULAB_SCIPY_SPECIAL_HAS_ERF
 //| def erf(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -389,8 +522,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_degrees_obj, vector_degrees);
 //|
 
 MATH_FUN_1(erf, erf);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_erf_obj, 1, vector_erf);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_erf_obj, vector_erf);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_SCIPY_SPECIAL_HAS_ERF */
 
 #if ULAB_SCIPY_SPECIAL_HAS_ERFC
 //| def erfc(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -399,17 +536,41 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_erf_obj, vector_erf);
 //|
 
 MATH_FUN_1(erfc, erfc);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_erfc_obj, 1, vector_erfc);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_erfc_obj, vector_erfc);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_SCIPY_SPECIAL_HAS_ERFC */
 
 #if ULAB_NUMPY_HAS_EXP
 //| def exp(a: _ArrayLike) -> ulab.numpy.ndarray:
 //|    """Computes the exponent function."""
 //|    ...
 //|
-
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+static mp_obj_t vector_exp(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+#else
 static mp_obj_t vector_exp(mp_obj_t o_in) {
+#endif
     #if ULAB_SUPPORTS_COMPLEX
+    
+    #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+    // since the complex case is dissimilar to the rest, we've got to do the parsing of the keywords here
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
+        { MP_QSTR_out, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_obj_t o_in = args[0].u_obj;
+    mp_obj_t out = args[1].u_obj;
+    if(out != mp_const_none) {
+        mp_raise_ValueError(translate("out keyword is not supported for complex dtype"));
+    }
+    #endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+    
     if(mp_obj_is_type(o_in, &mp_type_complex)) {
         mp_float_t real, imag;
         mp_obj_get_complex(o_in, &real, &imag);
@@ -466,12 +627,20 @@ static mp_obj_t vector_exp(mp_obj_t o_in) {
             return MP_OBJ_FROM_PTR(ndarray);
         }
     }
-    #endif
+    #endif /* ULAB_SUPPORTS_COMPLEX */
+    #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+    return vector_generic_vector(n_args, pos_args, kw_args, MICROPY_FLOAT_C_FUN(exp));   
+    #else
     return vector_generic_vector(o_in, MICROPY_FLOAT_C_FUN(exp));
+    #endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
 }
 
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_exp_obj, 1, vector_exp);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_exp_obj, vector_exp);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_EXP */
 
 #if ULAB_NUMPY_HAS_EXPM1
 //| def expm1(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -480,8 +649,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_exp_obj, vector_exp);
 //|
 
 MATH_FUN_1(expm1, expm1);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_expm1_obj, 1, vector_expm1);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_expm1_obj, vector_expm1);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_EXPM1 */
 
 #if ULAB_NUMPY_HAS_FLOOR
 //| def floor(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -490,8 +663,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_expm1_obj, vector_expm1);
 //|
 
 MATH_FUN_1(floor, floor);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_floor_obj, 1, vector_floor);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_floor_obj, vector_floor);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_FLOOR */
 
 #if ULAB_SCIPY_SPECIAL_HAS_GAMMA
 //| def gamma(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -500,8 +677,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_floor_obj, vector_floor);
 //|
 
 MATH_FUN_1(gamma, tgamma);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_gamma_obj, 1, vector_gamma);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_gamma_obj, vector_gamma);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_SCIPY_SPECIAL_HAS_GAMMA */
 
 #if ULAB_SCIPY_SPECIAL_HAS_GAMMALN
 //| def lgamma(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -510,8 +691,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_gamma_obj, vector_gamma);
 //|
 
 MATH_FUN_1(lgamma, lgamma);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_lgamma_obj, 1, vector_lgamma);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_lgamma_obj, vector_lgamma);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_SCIPY_SEPCIAL_HAS_GAMMALN */
 
 #if ULAB_NUMPY_HAS_LOG
 //| def log(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -520,8 +705,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_lgamma_obj, vector_lgamma);
 //|
 
 MATH_FUN_1(log, log);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_log_obj, 1, vector_log);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_log_obj, vector_log);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_LOG */
 
 #if ULAB_NUMPY_HAS_LOG10
 //| def log10(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -530,8 +719,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_log_obj, vector_log);
 //|
 
 MATH_FUN_1(log10, log10);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_log10_obj, 1, vector_log10);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_log10_obj, vector_log10);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_LOG10 */
 
 #if ULAB_NUMPY_HAS_LOG2
 //| def log2(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -540,8 +733,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_log10_obj, vector_log10);
 //|
 
 MATH_FUN_1(log2, log2);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_log2_obj, 1, vector_log2);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_log2_obj, vector_log2);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_LOG2 */
 
 #if ULAB_NUMPY_HAS_RADIANS
 //| def radians(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -553,12 +750,18 @@ static mp_float_t vector_radians_(mp_float_t value) {
     return value * MP_PI / MICROPY_FLOAT_CONST(180.0);
 }
 
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+static mp_obj_t vector_radians(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return vector_generic_vector(n_args, pos_args, kw_args, vector_radians_);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_radians_obj, 1, vector_radians);
+#else
 static mp_obj_t vector_radians(mp_obj_t x_obj) {
     return vector_generic_vector(x_obj, vector_radians_);
 }
-
 MP_DEFINE_CONST_FUN_OBJ_1(vector_radians_obj, vector_radians);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_RADIANS */
 
 #if ULAB_NUMPY_HAS_SIN
 //| def sin(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -567,8 +770,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_radians_obj, vector_radians);
 //|
 
 MATH_FUN_1(sin, sin);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_sin_obj, 1, vector_sin);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_sin_obj, vector_sin);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_SIN */
 
 #if ULAB_NUMPY_HAS_SINC
 //| def sinc(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -576,7 +783,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_sin_obj, vector_sin);
 //|    ...
 //|
 
-static mp_float_t ulab_sinc1(mp_float_t x) {
+static mp_float_t vector_sinc1(mp_float_t x) {
     if (fpclassify(x) == FP_ZERO) {
         return MICROPY_FLOAT_CONST(1.);
     }
@@ -584,12 +791,18 @@ static mp_float_t ulab_sinc1(mp_float_t x) {
     return MICROPY_FLOAT_C_FUN(sin)(x) / x;
 }
 
-static mp_obj_t vector_sinc(mp_obj_t x_obj) {
-    return vector_generic_vector(x_obj, ulab_sinc1);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+static mp_obj_t vector_sinc(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return vector_generic_vector(n_args, pos_args, kw_args, vector_sinc1);
 }
-
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_sinc_obj, 1, vector_sinc);
+#else
+static mp_obj_t vector_sinc(mp_obj_t x_obj) {
+    return vector_generic_vector(x_obj, vector_sinc1);
+}
 MP_DEFINE_CONST_FUN_OBJ_1(vector_sinc_obj, vector_sinc);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_SINC */
 
 #if ULAB_NUMPY_HAS_SINH
 //| def sinh(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -598,8 +811,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_sinc_obj, vector_sinc);
 //|
 
 MATH_FUN_1(sinh, sinh);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_sinh_obj, 1, vector_sinh);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_sinh_obj, vector_sinh);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_SINH */
 
 
 #if ULAB_NUMPY_HAS_SQRT
@@ -608,22 +825,29 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_sinh_obj, vector_sinh);
 //|    ...
 //|
 
-#if ULAB_SUPPORTS_COMPLEX
+#if ULAB_SUPPORTS_COMPLEX | ULAB_MATH_FUNCTIONS_OUT_KEYWORD
 mp_obj_t vector_sqrt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+        { MP_QSTR_out, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        #endif
+        #if ULAB_SUPPORTS_COMPLEX
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_INT(NDARRAY_FLOAT) } },
+        #endif
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t o_in = args[0].u_obj;
-    uint8_t dtype = mp_obj_get_int(args[1].u_obj);
+
+    #if ULAB_SUPPORTS_COMPLEX
+    uint8_t dtype = mp_obj_get_int(args[2].u_obj);
     if((dtype != NDARRAY_FLOAT) && (dtype != NDARRAY_COMPLEX)) {
         mp_raise_TypeError(translate("dtype must be float, or complex"));
     }
-
+    
     if(mp_obj_is_type(o_in, &mp_type_complex)) {
         mp_float_t real, imag;
         mp_obj_get_complex(o_in, &real, &imag);
@@ -638,6 +862,12 @@ mp_obj_t vector_sqrt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
         }
 
         if(dtype == NDARRAY_COMPLEX) {
+            #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+            mp_obj_t out = args[1].u_obj;
+            if(out != mp_const_none) {
+                mp_raise_ValueError(translate("out keyword is not supported for complex dtype"));
+            }
+            #endif
             if(source->dtype == NDARRAY_COMPLEX) {
                 uint8_t *sarray = (uint8_t *)source->array;
                 ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_COMPLEX);
@@ -741,14 +971,15 @@ mp_obj_t vector_sqrt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
             }
         }
     }
-    return vector_generic_vector(o_in, MICROPY_FLOAT_C_FUN(sqrt));
+    #endif /* ULAB_SUPPORTS_COMPLEX */
+    return vector_generic_vector(n_args, pos_args, kw_args, MICROPY_FLOAT_C_FUN(sqrt));
 }
+
 MP_DEFINE_CONST_FUN_OBJ_KW(vector_sqrt_obj, 1, vector_sqrt);
 #else
 MATH_FUN_1(sqrt, sqrt);
 MP_DEFINE_CONST_FUN_OBJ_1(vector_sqrt_obj, vector_sqrt);
-#endif /* ULAB_SUPPORTS_COMPLEX */
-
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD | ULAB_SUPPORTS_COMPLEX */
 #endif /* ULAB_NUMPY_HAS_SQRT */
 
 #if ULAB_NUMPY_HAS_TAN
@@ -758,8 +989,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_sqrt_obj, vector_sqrt);
 //|
 
 MATH_FUN_1(tan, tan);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_tan_obj, 1, vector_tan);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_tan_obj, vector_tan);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_TAN */
 
 #if ULAB_NUMPY_HAS_TANH
 //| def tanh(a: _ArrayLike) -> ulab.numpy.ndarray:
@@ -767,8 +1002,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_tan_obj, vector_tan);
 //|    ...
 
 MATH_FUN_1(tanh, tanh);
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+MP_DEFINE_CONST_FUN_OBJ_KW(vector_tanh_obj, 1, vector_tanh);
+#else
 MP_DEFINE_CONST_FUN_OBJ_1(vector_tanh_obj, vector_tanh);
-#endif
+#endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+#endif /* ULAB_NUMPY_HAS_TANH */
 
 #if ULAB_NUMPY_HAS_VECTORIZE
 static mp_obj_t vector_vectorized_function_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
