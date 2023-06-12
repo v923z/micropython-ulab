@@ -4,11 +4,17 @@ except:
     import numpy as np
 
 
-dtypes = (np.uint8, np.int8, np.uint16, np.int16)
+shift_values = (
+    (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+    (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
+)
 
-for dtype1 in dtypes:
-    x1 = np.array(range(5), dtype=dtype1)
-    for dtype2 in dtypes:
-        x2 = np.array(range(5, 0, -1), dtype=dtype2)
 
-        print(np.right_shift(x1, x2))
+for shift_value in shift_values:
+    dtypes = (np.uint8, np.int8, np.uint16, np.int16)
+    for dtype1 in dtypes:
+        x1 = np.array([0, 1, 2, 4, 8, 16, 32, 3, 5, 7, 11, 13], dtype=dtype1)
+        for dtype2 in dtypes:
+            x2 = np.array(shift_value, dtype=dtype2)
+            print(np.right_shift(x1, x2))
