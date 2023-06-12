@@ -9,10 +9,10 @@ shift_values = (
     (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
     (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
 )
+dtypes = (np.uint8, np.int8, np.uint16, np.int16)
 
 
 for shift_value in shift_values:
-    dtypes = (np.uint8, np.int8, np.uint16, np.int16)
     for dtype1 in dtypes:
         x1 = np.array([0, 1, 2, 4, 8, 16, 32, 3, 5, 7, 11, 13], dtype=dtype1)
         for dtype2 in dtypes:
