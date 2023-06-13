@@ -1,6 +1,18 @@
-Fri, 12 May 2023
+Wed, 17 May 2023
+
+version 6.1.1
+
+    fix ndarray subscription, when value is NULL
+     
+Tue, 16 May 2023
 
 version 6.1.0
+
+    add sinc function
+
+Fri, 12 May 2023
+
+version 6.0.13
 
     add bitwise operators
 

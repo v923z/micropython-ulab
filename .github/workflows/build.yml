@@ -19,7 +19,7 @@ jobs:
     strategy:
         matrix:
             os:
-                - ubuntu-latest
+                - ubuntu-20.04
                 - macOS-latest
             dims: [1, 2, 3, 4]
     runs-on: ${{ matrix.os }}
