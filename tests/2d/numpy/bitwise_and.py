@@ -2,6 +2,7 @@ try:
     from ulab import numpy as np
 except:
     import numpy as np
+np.set_printoptions(threshold=100)
 
 
 dtypes = (np.uint8, np.int8, np.uint16, np.int16)
