@@ -2,7 +2,6 @@ try:
     from ulab import numpy as np
 except:
     import numpy as np
-np.set_printoptions(threshold=100)
 
 
 shift_values = (
