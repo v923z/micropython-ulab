@@ -16,6 +16,12 @@ version 6.1.0
 
     add sinc function
 
+Fri, 12 May 2023
+
+version 6.0.13
+
+    add bitwise operators
+
 Sun, 7 May 2023
 
 version 6.0.12
