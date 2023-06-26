@@ -165,6 +165,27 @@
 #define NDARRAY_HAS_INPLACE_TRUE_DIVIDE     (1)
 #endif
 
+// bitwise operators
+#ifndef ULAB_NUMPY_HAS_BITWISE_AND
+#define ULAB_NUMPY_HAS_BITWISE_AND          (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_BITWISE_OR
+#define ULAB_NUMPY_HAS_BITWISE_OR           (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_BITWISE_XOR
+#define ULAB_NUMPY_HAS_BITWISE_XOR          (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_LEFT_SHIFT
+#define ULAB_NUMPY_HAS_LEFT_SHIFT           (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_RIGHT_SHIFT
+#define ULAB_NUMPY_HAS_RIGHT_SHIFT          (1)
+#endif
+
 // the ndarray unary operators
 #ifndef NDARRAY_HAS_UNARY_OPS
 #define NDARRAY_HAS_UNARY_OPS               (1)
@@ -536,6 +557,12 @@
 
 // vectorised versions of the functions of the math python module, with
 // the exception of the functions listed in scipy.special
+
+// if this constant is set, math functions support the out keyword argument
+#ifndef ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+#define ULAB_MATH_FUNCTIONS_OUT_KEYWORD (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_ACOS
 #define ULAB_NUMPY_HAS_ACOS             (1)
 #endif
@@ -614,6 +641,10 @@
 
 #ifndef ULAB_NUMPY_HAS_SIN
 #define ULAB_NUMPY_HAS_SIN              (1)
+#endif
+
+#ifndef ULAB_NUMPY_HAS_SINC
+#define ULAB_NUMPY_HAS_SINC             (1)
 #endif
 
 #ifndef ULAB_NUMPY_HAS_SINH

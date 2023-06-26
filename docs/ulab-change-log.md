@@ -1,3 +1,45 @@
+Fri, 12 May 2023
+
+version 6.3.0
+
+    add bitwise operators
+ 
+Wed, 17 May 2023
+
+version 6.1.1
+
+    fix ndarray subscription, when value is NULL
+     
+Tue, 16 May 2023
+
+version 6.1.0
+
+    add sinc function
+
+Fri, 12 May 2023
+
+version 6.0.13
+
+    add bitwise operators
+
+Sun, 7 May 2023
+
+version 6.0.12
+
+    ndarray_from_mp_obj correctly treats Boolean arguments
+    
+Sat, 6 May 2023
+
+version 6.0.11
+
+    .reshape can now interpret unknown shape dimension
+
+Sat, 6 May 2023
+
+version 6.0.10
+
+    fix binary division
+    
 Sun, 21 Jan 2023
 
 version 6.0.6

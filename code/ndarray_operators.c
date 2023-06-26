@@ -652,7 +652,7 @@ mp_obj_t ndarray_binary_true_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
         } else if(rhs->dtype == NDARRAY_INT16) {
             BINARY_LOOP(results, mp_float_t, int16_t, int16_t, larray, lstrides, rarray, rstrides, /);
         } else if(rhs->dtype == NDARRAY_FLOAT) {
-            BINARY_LOOP(results, mp_float_t, uint16_t, mp_float_t, larray, lstrides, rarray, rstrides, /);
+            BINARY_LOOP(results, mp_float_t, int16_t, mp_float_t, larray, lstrides, rarray, rstrides, /);
         }
     } else if(lhs->dtype == NDARRAY_FLOAT) {
         if(rhs->dtype == NDARRAY_UINT8) {
