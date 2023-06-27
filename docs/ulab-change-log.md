@@ -1,5 +1,17 @@
 Fri, 12 May 2023
 
+version 6.3.3
+
+    fix compile error when COMPLEX support not enabled
+
+version 6.3.2
+
+    fix out of bound read
+
+version 6.3.1
+
+    fix integer overflows
+
 version 6.3.0
 
     add bitwise operators
