@@ -1,8 +1,12 @@
 Fri, 12 May 2023
 
-version 6.3.3
+version 6.3.4
 
     fix compile error when COMPLEX support not enabled
+
+version 6.3.3
+
+    Polyval handles non-array as second argument (#601)
 
 version 6.3.2
 
