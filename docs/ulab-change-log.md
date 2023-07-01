@@ -1,3 +1,9 @@
+Sat, 1 Jul 2023
+
+version 6.3.5
+
+    allow function itertor in math functions with the out keyword
+
 Wed, 17 May 2023
 
 version 6.1.1
