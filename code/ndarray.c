@@ -622,6 +622,10 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
         ndarray->len = multiply_size(ndarray->len, shape[i-1]);
     }
 
+    if (SIZE_MAX / ndarray->itemsize <= ndarray->len) {
+      mp_raise_ValueError(translate("ndarray length overflows"));
+    }
+
     // if the length is 0, still allocate a single item, so that contractions can be handled
     size_t len = multiply_size(ndarray->itemsize, MAX(1, ndarray->len));
     uint8_t *array = m_new0(byte, len);
@@ -648,10 +652,10 @@ ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dt
     // the function should work in the general n-dimensional case
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     for(size_t i=0; i < ULAB_MAX_DIMS; i++) {
-        if(i < ULAB_MAX_DIMS - _shape->len) {
-            shape[i] = 0;
+        if(i >= _shape->len) {
+            shape[ULAB_MAX_DIMS - i] = 0;
         } else {
-            shape[i] = mp_obj_get_int(_shape->items[i]);
+            shape[ULAB_MAX_DIMS - i] = mp_obj_get_int(_shape->items[i]);
         }
     }
     return ndarray_new_dense_ndarray(_shape->len, shape, dtype);

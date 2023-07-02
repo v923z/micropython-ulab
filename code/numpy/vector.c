@@ -883,9 +883,9 @@ mp_obj_t vector_sqrt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t o_in = args[0].u_obj;
 
     #if ULAB_SUPPORTS_COMPLEX
+    mp_obj_t o_in = args[0].u_obj;
     uint8_t dtype = mp_obj_get_int(args[2].u_obj);
     if((dtype != NDARRAY_FLOAT) && (dtype != NDARRAY_COMPLEX)) {
         mp_raise_TypeError(translate("dtype must be float, or complex"));

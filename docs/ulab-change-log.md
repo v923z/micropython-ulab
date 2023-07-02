@@ -4,6 +4,28 @@ version 6.3.5
 
     allow function itertor in math functions with the out keyword
 
+Fri, 12 May 2023
+
+version 6.3.4
+
+    fix compile error when COMPLEX support not enabled
+
+version 6.3.3
+
+    Polyval handles non-array as second argument (#601)
+
+version 6.3.2
+
+    fix out of bound read
+
+version 6.3.1
+
+    fix integer overflows
+
+version 6.3.0
+
+    add bitwise operators
+ 
 Wed, 17 May 2023
 
 version 6.1.1
@@ -15,6 +37,12 @@ Tue, 16 May 2023
 version 6.1.0
 
     add sinc function
+
+Fri, 12 May 2023
+
+version 6.0.13
+
+    add bitwise operators
 
 Sun, 7 May 2023
 
