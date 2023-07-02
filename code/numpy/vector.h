@@ -90,22 +90,24 @@ typedef struct _vectorized_function_obj_t {
     const mp_obj_type_t *type;
 } vectorized_function_obj_t;
 
+
+#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+
 #if ULAB_HAS_FUNCTION_ITERATOR
-#define ITERATE_VECTOR(type, array, source, sarray, shift)\
+#define ITERATE_VECTOR(type, target, tarray, tstrides, source, sarray)\
 ({\
     size_t *scoords = ndarray_new_coords((source)->ndim);\
-    for(size_t i=0; i < (source)->len/(source)->shape[ULAB_MAX_DIMS -1]; i++) {\
-        for(size_t l=0; l < (source)->shape[ULAB_MAX_DIMS - 1]; l++) {\
-            *(array) = f(*((type *)(sarray)));\
-            (array) += (shift);\
+    for(size_t i = 0; i < (source)->len / (source)->shape[ULAB_MAX_DIMS - 1]; i++) {\
+        for(size_t l = 0; l < (source)->shape[ULAB_MAX_DIMS - 1]; l++) {\
+            *(tarray) = f(*((type *)(sarray)));\
+            (tarray) += (tstrides)[ULAB_MAX_DIMS - 1];\
             (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
         }\
         ndarray_rewind_array((source)->ndim, sarray, (source)->shape, (source)->strides, scoords);\
     }\
 })
-#endif /* ULAB_HAS_FUNCTION_ITERATOR */
 
-#if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+#else 
 
 #if ULAB_MAX_DIMS == 1
 #define ITERATE_VECTOR(type, target, tarray, tstrides, source, sarray) do {\
@@ -202,6 +204,7 @@ typedef struct _vectorized_function_obj_t {
     } while(i < (source)->shape[ULAB_MAX_DIMS - 4]);\
 } while(0)
 #endif /* ULAB_MAX_DIMS == 4 */
+#endif /* ULAB_HAS_FUNCTION_ITERATOR */
 
 #define MATH_FUN_1(py_name, c_name) \
     static mp_obj_t vector_ ## py_name(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) { \
@@ -209,6 +212,22 @@ typedef struct _vectorized_function_obj_t {
 }
 
 #else /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+
+#if ULAB_HAS_FUNCTION_ITERATOR
+#define ITERATE_VECTOR(type, array, source, sarray, shift)\
+({\
+    size_t *scoords = ndarray_new_coords((source)->ndim);\
+    for(size_t i=0; i < (source)->len / (source)->shape[ULAB_MAX_DIMS - 1]; i++) {\
+        for(size_t l = 0; l < (source)->shape[ULAB_MAX_DIMS - 1]; l++) {\
+            *(array) = f(*((type *)(sarray)));\
+            (array)++;\
+            (sarray) += (source)->strides[ULAB_MAX_DIMS - 1];\
+        }\
+        ndarray_rewind_array((source)->ndim, sarray, (source)->shape, (source)->strides, scoords);\
+    }\
+})
+
+#else 
 
 #if ULAB_MAX_DIMS == 1
 #define ITERATE_VECTOR(type, array, source, sarray) do {\
@@ -289,6 +308,8 @@ typedef struct _vectorized_function_obj_t {
     } while(i < (source)->shape[ULAB_MAX_DIMS - 4]);\
 } while(0)
 #endif /* ULAB_MAX_DIMS == 4 */
+
+#endif /* ULAB_HAS_FUNCTION_ITERATOR */
 
 #define MATH_FUN_1(py_name, c_name) \
     static mp_obj_t vector_ ## py_name(mp_obj_t x_obj) { \
