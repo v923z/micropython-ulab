@@ -112,6 +112,13 @@ for i in range(len(x)):
     cmp_result.append(math.isclose(result[i], ref_result[i], rel_tol=1E-9, abs_tol=1E-9))
 print(cmp_result)
 
+result = np.sinc(x)
+ref_result = np.array([0.03935584386392389, -0.04359862862918773, 1.0, -0.04359862862918773, 0.03935584386392389])
+cmp_result = []
+for i in range(len(x)):
+    cmp_result.append(math.isclose(result[i], ref_result[i], rel_tol=1E-9, abs_tol=1E-9))
+print(cmp_result)
+
 result = (spy.special.erf(np.linspace(-3, 3, num=5)))
 ref_result = np.array([-0.9999779095030014, -0.9661051464753108, 0.0, 0.9661051464753108, 0.9999779095030014], dtype=np.float)
 cmp_result = []

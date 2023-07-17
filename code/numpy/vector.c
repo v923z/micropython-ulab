@@ -827,7 +827,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(vector_sin_obj, vector_sin);
 //|
 
 static mp_float_t vector_sinc1(mp_float_t x) {
-    if (fpclassify(x) == FP_ZERO) {
+    if (x == MICROPY_FLOAT_CONST(0.)) {
         return MICROPY_FLOAT_CONST(1.);
     }
     x *= MP_PI;
