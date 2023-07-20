@@ -622,6 +622,10 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
         ndarray->len = multiply_size(ndarray->len, shape[i-1]);
     }
 
+    if (SIZE_MAX / ndarray->itemsize <= ndarray->len) {
+      mp_raise_ValueError(translate("ndarray length overflows"));
+    }
+
     // if the length is 0, still allocate a single item, so that contractions can be handled
     size_t len = multiply_size(ndarray->itemsize, MAX(1, ndarray->len));
     uint8_t *array = m_new0(byte, len);
@@ -648,10 +652,10 @@ ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dt
     // the function should work in the general n-dimensional case
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     for(size_t i=0; i < ULAB_MAX_DIMS; i++) {
-        if(i < ULAB_MAX_DIMS - _shape->len) {
-            shape[i] = 0;
+        if(i >= _shape->len) {
+            shape[ULAB_MAX_DIMS - i] = 0;
         } else {
-            shape[i] = mp_obj_get_int(_shape->items[i]);
+            shape[ULAB_MAX_DIMS - i] = mp_obj_get_int(_shape->items[i]);
         }
     }
     return ndarray_new_dense_ndarray(_shape->len, shape, dtype);
@@ -1443,6 +1447,9 @@ static mp_obj_t ndarray_get_slice(ndarray_obj_t *ndarray, mp_obj_t index, ndarra
 }
 
 mp_obj_t ndarray_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if(value == MP_OBJ_NULL) {
+        mp_raise_ValueError(translate("cannot delete array elements"));
+    }
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (value == MP_OBJ_SENTINEL) { // return value(s)
@@ -1735,6 +1742,12 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
         ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
         mp_float_t *array = (mp_float_t *)ndarray->array;
         array[0] = mp_obj_get_float(obj);
+    } else if(mp_obj_is_bool(obj)) {
+        ndarray = ndarray_new_linear_array(1, NDARRAY_BOOLEAN);
+        uint8_t *array = (uint8_t *)ndarray->array;
+        if(obj == mp_const_true) {
+            *array = 1;
+        }
     } else if(mp_obj_is_type(obj, &ulab_ndarray_type)){
         return MP_OBJ_TO_PTR(obj);
     }
@@ -1940,11 +1953,16 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             return ndarray_binary_power(lhs, rhs, ndim, shape, lstrides, rstrides);
             break;
         #endif
+
         #if NDARRAY_HAS_BINARY_OP_OR | NDARRAY_HAS_BINARY_OP_XOR | NDARRAY_HAS_BINARY_OP_AND
         case MP_BINARY_OP_OR:
         case MP_BINARY_OP_XOR:
         case MP_BINARY_OP_AND:
             return ndarray_binary_logical(lhs, rhs, ndim, shape, lstrides, rstrides, op);
+        #if NDARRAY_HAS_BINARY_OP_FLOOR_DIVIDE
+        case MP_BINARY_OP_FLOOR_DIVIDE:
+            COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
+            return ndarray_binary_floor_divide(lhs, rhs, ndim, shape, lstrides, rstrides);
             break;
         #endif
         default:
@@ -2089,24 +2107,51 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
 #if NDARRAY_HAS_RESHAPE
 mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
     ndarray_obj_t *source = MP_OBJ_TO_PTR(oin);
-    if(!mp_obj_is_type(_shape, &mp_type_tuple)) {
-        mp_raise_TypeError(translate("shape must be a tuple"));
+    if(!mp_obj_is_type(_shape, &mp_type_tuple) && !mp_obj_is_int(_shape)) {
+        mp_raise_TypeError(translate("shape must be integer or tuple of integers"));
     }
 
-    mp_obj_tuple_t *shape = MP_OBJ_TO_PTR(_shape);
+    mp_obj_tuple_t *shape;
+
+    if(mp_obj_is_int(_shape)) {
+        mp_obj_t *items = m_new(mp_obj_t, 1);
+        items[0] = _shape;
+        shape = mp_obj_new_tuple(1, items);
+    } else {
+        shape = MP_OBJ_TO_PTR(_shape);
+    }
+
     if(shape->len > ULAB_MAX_DIMS) {
         mp_raise_ValueError(translate("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
     }
-    size_t *new_shape = m_new0(size_t, ULAB_MAX_DIMS);
 
     size_t new_length = 1;
-    for(uint8_t i=0; i < shape->len; i++) {
-        new_shape[ULAB_MAX_DIMS - i - 1] = mp_obj_get_int(shape->items[shape->len - i - 1]);
-        new_length *= new_shape[ULAB_MAX_DIMS - i - 1];
+    size_t *new_shape = m_new0(size_t, ULAB_MAX_DIMS);
+    uint8_t unknown_dim = 0;
+    uint8_t unknown_index = 0;
+
+    for(uint8_t i = 0; i < shape->len; i++) {
+        int32_t ax_len = mp_obj_get_int(shape->items[shape->len - i - 1]);
+        if(ax_len >= 0) {
+            new_shape[ULAB_MAX_DIMS - i - 1] = (size_t)ax_len;
+            new_length *= new_shape[ULAB_MAX_DIMS - i - 1];
+        } else {
+            unknown_dim++;
+            unknown_index = ULAB_MAX_DIMS - i - 1;
+        }
     }
+
+    if(unknown_dim > 1) {
+        mp_raise_ValueError(translate("can only specify one unknown dimension"));
+    } else if(unknown_dim == 1) {
+        new_shape[unknown_index] = source->len / new_length;
+        new_length = source->len;
+    }
+
     if(source->len != new_length) {
-        mp_raise_ValueError(translate("input and output shapes are not compatible"));
+        mp_raise_ValueError(translate("cannot reshape array"));
     }
+
     ndarray_obj_t *ndarray;
     if(ndarray_is_dense(source)) {
         int32_t *new_strides = strides_from_shape(new_shape, source->dtype);
@@ -2123,7 +2168,11 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
         if(inplace) {
             mp_raise_ValueError(translate("cannot assign new shape"));
         }
-        ndarray = ndarray_new_ndarray_from_tuple(shape, source->dtype);
+        if(mp_obj_is_type(_shape, &mp_type_tuple)) {
+            ndarray = ndarray_new_ndarray_from_tuple(shape, source->dtype);
+        } else {
+            ndarray = ndarray_new_linear_array(source->len, source->dtype);
+        }
         ndarray_copy_array(source, ndarray, 0);
     }
     return MP_OBJ_FROM_PTR(ndarray);

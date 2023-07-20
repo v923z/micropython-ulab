@@ -65,7 +65,9 @@ typedef struct _mp_obj_float_t {
 // See above for how to use ULAB_DEFINE_FLOAT_CONST and ULAB_REFERENCE_FLOAT_CONST.
 
 #define ULAB_DEFINE_FLOAT_CONST(id, num, hex32, hex64) \
-    const uint32_t id = (((((uint32_t)hex32) & ~3) | 2) + 0x80800000)
+    enum { \
+        id = (((((uint32_t)hex32) & ~3) | 2) + 0x80800000) \
+    }
 
 #define ULAB_REFERENCE_FLOAT_CONST(id) ((mp_obj_t)(id))
 
@@ -228,11 +230,25 @@ mp_obj_t ndarray_flatten(size_t , const mp_obj_t *, mp_map_t *);
 MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_flatten_obj);
 #endif
 
+#if NDARRAY_HAS_DTYPE
 mp_obj_t ndarray_dtype(mp_obj_t );
+#endif
+
+#if NDARRAY_HAS_ITEMSIZE
 mp_obj_t ndarray_itemsize(mp_obj_t );
+#endif
+
+#if NDARRAY_HAS_SIZE
 mp_obj_t ndarray_size(mp_obj_t );
+#endif
+
+#if NDARRAY_HAS_SHAPE
 mp_obj_t ndarray_shape(mp_obj_t );
+#endif
+
+#if NDARRAY_HAS_STRIDES
 mp_obj_t ndarray_strides(mp_obj_t );
+#endif
 
 #if NDARRAY_HAS_RESHAPE
 mp_obj_t ndarray_reshape_core(mp_obj_t , mp_obj_t , bool );
@@ -245,7 +261,7 @@ mp_obj_t ndarray_tobytes(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tobytes_obj);
 #endif
 
-#if NDARRAY_HAS_TOBYTES
+#if NDARRAY_HAS_TOLIST
 mp_obj_t ndarray_tolist(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tolist_obj);
 #endif

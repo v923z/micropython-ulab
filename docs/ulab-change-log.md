@@ -1,9 +1,73 @@
-Fri, 10 Feb 2023
+Thu, 20 Jul 2023
 
-version 6.1.0
+version 6.4.0
 
     add logical operators and, or, xor
 
+Sat, 1 Jul 2023
+
+version 6.3.5
+
+    allow function itertor in math functions with the out keyword
+
+Fri, 12 May 2023
+
+version 6.3.4
+
+    fix compile error when COMPLEX support not enabled
+
+version 6.3.3
+
+    Polyval handles non-array as second argument (#601)
+
+version 6.3.2
+
+    fix out of bound read
+
+version 6.3.1
+
+    fix integer overflows
+
+version 6.3.0
+
+    add bitwise operators
+ 
+Wed, 17 May 2023
+
+version 6.1.1
+
+    fix ndarray subscription, when value is NULL
+     
+Tue, 16 May 2023
+
+version 6.1.0
+
+    add sinc function
+
+Fri, 12 May 2023
+
+version 6.0.13
+
+    add bitwise operators
+
+Sun, 7 May 2023
+
+version 6.0.12
+
+    ndarray_from_mp_obj correctly treats Boolean arguments
+    
+Sat, 6 May 2023
+
+version 6.0.11
+
+    .reshape can now interpret unknown shape dimension
+
+Sat, 6 May 2023
+
+version 6.0.10
+
+    fix binary division
+    
 Sun, 21 Jan 2023
 
 version 6.0.6
