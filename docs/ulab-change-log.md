@@ -1,3 +1,9 @@
+Thu, 20 Jul 2023
+
+version 6.4.0
+
+    implement AND, OR, and XOR binary operators
+
 Sat, 1 Jul 2023
 
 version 6.3.5

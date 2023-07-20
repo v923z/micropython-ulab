@@ -97,6 +97,10 @@
 #define NDARRAY_HAS_BINARY_OP_ADD           (1)
 #endif
 
+#ifndef NDARRAY_HAS_BINARY_OP_AND
+#define NDARRAY_HAS_BINARY_OP_AND           (1)
+#endif
+
 #ifndef NDARRAY_HAS_BINARY_OP_EQUAL
 #define NDARRAY_HAS_BINARY_OP_EQUAL         (1)
 #endif
@@ -129,6 +133,10 @@
 #define NDARRAY_HAS_BINARY_OP_NOT_EQUAL     (1)
 #endif
 
+#ifndef NDARRAY_HAS_BINARY_OP_OR
+#define NDARRAY_HAS_BINARY_OP_OR            (1)
+#endif
+
 #ifndef NDARRAY_HAS_BINARY_OP_POWER
 #define NDARRAY_HAS_BINARY_OP_POWER         (1)
 #endif
@@ -139,6 +147,10 @@
 
 #ifndef NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE
 #define NDARRAY_HAS_BINARY_OP_TRUE_DIVIDE   (1)
+#endif
+
+#ifndef NDARRAY_HAS_BINARY_OP_XOR
+#define NDARRAY_HAS_BINARY_OP_XOR           (1)
 #endif
 
 #ifndef NDARRAY_HAS_INPLACE_OPS
