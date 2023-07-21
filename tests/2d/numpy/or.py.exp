@@ -1,4 +1,3 @@
-
 a | b:  array([250, 251, 254, 255, 254], dtype=uint8)
 a | b:  array([-6, -5, -2, -1, -2], dtype=int16)
 a | b:  array([250, 251, 254, 255, 254], dtype=uint16)
