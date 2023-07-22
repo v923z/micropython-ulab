@@ -14,6 +14,21 @@
 
 extern const mp_obj_module_t ulab_numpy_random_module;
 
+extern const mp_obj_type_t random_generator_type;
+
+typedef struct _random_generator_obj_t {
+    mp_obj_base_t base;
+    uint32_t value;
+    // const mp_obj_type_t *type;
+
+} random_generator_obj_t;
+
+MP_DECLARE_CONST_FUN_OBJ_KW(random_generator_constructor_obj);
+mp_obj_t random_generator_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_t *);
+void random_generator_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
+
+
+
 MP_DECLARE_CONST_FUN_OBJ_1(random_uniform_obj);
 
 #endif

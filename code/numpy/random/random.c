@@ -15,6 +15,53 @@
 #include "../../ndarray.h"
 #include "random.h"
 
+
+// random's Generator object is defined here
+#if defined(MP_DEFINE_CONST_OBJ_TYPE)
+MP_DEFINE_CONST_OBJ_TYPE(
+    random_generator_type,
+    MP_QSTR_generator,
+    MP_TYPE_FLAG_NONE,
+    print, random_generator_print,
+    make_new, random_generator_make_new
+);
+#else
+const mp_obj_type_t random_generator_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_generator,
+    .print = random_generator_print,
+    .make_new = random_generator_make_new,
+};
+#endif
+
+void random_generator_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
+    random_generator_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(MP_PYTHON_PRINTER, "Gnerator() at 0x%p", self);
+}
+
+mp_obj_t random_generator_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void) type;
+    mp_arg_check_num(n_args, n_kw, 0, 1, true);
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+    };
+    mp_arg_val_t _args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, _args);
+
+    random_generator_obj_t *generator = m_new_obj(random_generator_obj_t);
+    generator->base.type = &random_generator_type;
+    // we should add the seed here!
+    generator->value = 1;
+
+    return MP_OBJ_FROM_PTR(generator);
+}
+
+// END OF GENERATOR COMPONENTS
+
 #if ULAB_NUMPY_RANDOM_HAS_UNIFORM
 static mp_obj_t random_uniform(mp_obj_t oin) {
     (void)oin;
@@ -27,6 +74,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(random_uniform_obj, random_uniform);
 
 STATIC const mp_rom_map_elem_t ulab_numpy_random_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_random) },
+    { MP_ROM_QSTR(MP_QSTR_Generator), MP_ROM_PTR(&random_generator_type) },
     #if ULAB_NUMPY_RANDOM_HAS_UNIFORM
     { MP_ROM_QSTR(MP_QSTR_uniform), MP_ROM_PTR(&random_uniform_obj) },
     #endif
