@@ -697,6 +697,16 @@
 #define ULAB_NUMPY_HAS_SORT_COMPLEX     (1)
 #endif
 
+// random module
+#ifndef ULAB_NUMPY_HAS_RANDOM_MODULE
+#define ULAB_NUMPY_HAS_RANDOM_MODULE    (1)
+#endif
+
+#ifndef ULAB_NUMPY_RANDOM_HAS_UNIFORM
+#define ULAB_NUMPY_RANDOM_HAS_UNIFORM   (1)
+#endif
+
+
 // scipy modules
 #ifndef ULAB_SCIPY_HAS_LINALG_MODULE
 #define ULAB_SCIPY_HAS_LINALG_MODULE        (1)
