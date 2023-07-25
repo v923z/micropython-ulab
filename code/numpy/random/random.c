@@ -65,12 +65,29 @@ mp_obj_t random_generator_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_val_t _args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, _args);
 
-    random_generator_obj_t *generator = m_new_obj(random_generator_obj_t);
-    generator->base.type = &random_generator_type;
-    // we should add the seed here!
-    generator->state = 1;
+    if(!mp_obj_is_int(args[0]) && !mp_obj_is_type(args[0], &mp_type_tuple)) {
+        mp_raise_TypeError(translate("argument must be an integer or a tuple of integers"));
+    }
 
-    return MP_OBJ_FROM_PTR(generator);
+    if(mp_obj_is_int(args[0])) {
+        random_generator_obj_t *generator = m_new_obj(random_generator_obj_t);
+        generator->base.type = &random_generator_type;
+        generator->state = (size_t)mp_obj_get_int(args[0]);
+        return MP_OBJ_FROM_PTR(generator);
+    } else {
+        mp_obj_tuple_t *seeds = MP_OBJ_TO_PTR(args[0]);
+        mp_obj_t *items = m_new(mp_obj_t, seeds->len);
+        
+        for(uint8_t i = 0; i < seeds->len; i++) {
+            random_generator_obj_t *generator = m_new_obj(random_generator_obj_t);
+            generator->base.type = &random_generator_type;
+            generator->state = (size_t)mp_obj_get_int(seeds->items[i]);
+            items[i] = generator;
+        }
+        return mp_obj_new_tuple(seeds->len, items);
+    }
+    // we should never end up here
+    return mp_const_none;
 }
 
 // END OF GENERATOR COMPONENTS
