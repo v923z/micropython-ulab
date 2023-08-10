@@ -1,3 +1,11 @@
+Thu, 10 Aug 2023
+
+version 6.4.1
+
+```
+fix BOOLEAN issue, which would cause numpy.where funciton abnormally on RP2040(#643)
+```
+
 Thu, 20 Jul 2023
 
 version 6.4.0
@@ -31,13 +39,13 @@ version 6.3.1
 version 6.3.0
 
     add bitwise operators
- 
+
 Wed, 17 May 2023
 
 version 6.1.1
 
     fix ndarray subscription, when value is NULL
-     
+
 Tue, 16 May 2023
 
 version 6.1.0
@@ -55,7 +63,7 @@ Sun, 7 May 2023
 version 6.0.12
 
     ndarray_from_mp_obj correctly treats Boolean arguments
-    
+
 Sat, 6 May 2023
 
 version 6.0.11
@@ -67,19 +75,19 @@ Sat, 6 May 2023
 version 6.0.10
 
     fix binary division
-    
+
 Sun, 21 Jan 2023
 
 version 6.0.6
 
     raise proper exception in arange
-    
+
 Sun, 21 Jan 2023
 
 version 6.0.7
 
     treat empty arrays in sort_complex correctly
-    
+
 Sun, 21 Jan 2023
 
 version 6.0.5
@@ -91,7 +99,7 @@ Sun, 15 Jan 2023
 version 6.0.4
 
     fix dot function
-    
+
 Sat, 14 Jan 2023
 
 version 6.0.3
@@ -227,7 +235,7 @@ version 4.2.0
 Wed, 12 Jan 2022
 
     version 4.2.0
-
+    
     implement numpy.save, numpy.load
 
 Wed, 12 Jan 2022
