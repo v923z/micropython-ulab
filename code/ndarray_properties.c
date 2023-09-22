@@ -24,29 +24,6 @@
 #include "numpy/carray/carray.h"
 #endif
 
-#ifndef CIRCUITPY
-
-// a somewhat hackish implementation of property getters/setters;
-// this functions is hooked into the attr member of ndarray
-
-STATIC void call_local_method(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
-    const mp_obj_type_t *type = mp_obj_get_type(obj);
-    while (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict)) {
-        assert(MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->base.type == &mp_type_dict); // MicroPython restriction, for now
-        mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->map;
-        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
-        if (elem != NULL) {
-            mp_convert_member_lookup(obj, type, elem->value, dest);
-            break;
-        }
-        if (!MP_OBJ_TYPE_HAS_SLOT(type, parent)) {
-            break;
-        }
-        type = MP_OBJ_TYPE_GET_SLOT(type, parent);
-    }
-}
-
-
 void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         switch(attr) {
@@ -98,7 +75,8 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             #endif
             #endif /* ULAB_SUPPORTS_COMPLEX */
             default:
-                call_local_method(self_in, attr, dest);
+                // forward to locals dict
+                dest[1] = MP_OBJ_SENTINEL;
                 break;
         }
     } else {
@@ -119,5 +97,3 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         }
     }
 }
-
-#endif /* CIRCUITPY */

@@ -92,11 +92,7 @@ const mp_obj_module_t ulab_user_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_user_globals,
 };
 #if CIRCUITPY_ULAB
-#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_user, ulab_user_module, ULAB_HAS_USER_MODULE);
-#else
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_user, ulab_user_module);
 #endif
 #endif
 
-#endif

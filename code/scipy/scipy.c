@@ -49,10 +49,6 @@ const mp_obj_module_t ulab_scipy_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_scipy_globals,
 };
 #if CIRCUITPY_ULAB
-#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy, ulab_scipy_module, MODULE_ULAB_ENABLED);
-#else
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy, ulab_scipy_module);
-#endif
 #endif
 #endif /* ULAB_HAS_SCIPY */

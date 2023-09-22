@@ -76,26 +76,6 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #if NDARRAY_HAS_SORT
         { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&numerical_sort_inplace_obj) },
     #endif
-    #ifdef CIRCUITPY
-        #if NDARRAY_HAS_DTYPE
-            { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
-        #endif
-        #if NDARRAY_HAS_FLATITER
-            { MP_ROM_QSTR(MP_QSTR_flat), MP_ROM_PTR(&ndarray_flat_obj) },
-        #endif
-        #if NDARRAY_HAS_ITEMSIZE
-            { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&ndarray_itemsize_obj) },
-        #endif
-        #if NDARRAY_HAS_SHAPE
-            { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&ndarray_shape_obj) },
-        #endif
-        #if NDARRAY_HAS_SIZE
-            { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&ndarray_size_obj) },
-        #endif
-        #if NDARRAY_HAS_STRIDES
-            { MP_ROM_QSTR(MP_QSTR_strides), MP_ROM_PTR(&ndarray_strides_obj) },
-        #endif
-    #endif /* CIRCUITPY */
 };
 
 STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);
@@ -167,9 +147,7 @@ const mp_obj_type_t ulab_ndarray_type = {
     #if NDARRAY_HAS_BINARY_OPS
     .binary_op = ndarray_binary_op,
     #endif
-    #ifndef CIRCUITPY
     .attr = ndarray_properties_attr,
-    #endif
     .buffer_p = { .get_buffer = ndarray_get_buffer, },
     )
 };
@@ -253,10 +231,4 @@ const mp_obj_module_t ulab_user_cmodule = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_globals,
 };
 
-// Use old three-argument MP_REGISTER_MODULE for
-// MicroPython <= v1.18.0: (1 << 16) | (18 << 8) | 0
-#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
-MP_REGISTER_MODULE(MP_QSTR_ulab, ulab_user_cmodule, MODULE_ULAB_ENABLED);
-#else
 MP_REGISTER_MODULE(MP_QSTR_ulab, ulab_user_cmodule);
-#endif
