@@ -274,3 +274,64 @@ bool ulab_tools_mp_obj_is_scalar(mp_obj_t obj) {
     }
     #endif
 }
+
+#if 0
+#if ULAB_NUMPY_HAS_RANDOM_MODULE
+ndarray_obj_t *ulab_tools_create_out(mp_obj_t shape, mp_obj_t out, uint8_t dtype, bool check_dense) {
+    // raise various exceptions, if the supplied output is not compatible with 
+    // the requested shape or the output of a particular function
+
+    // if no out object is supplied, there is nothing to inspect
+    if(out == mp_const_none) {
+        return;
+    }
+
+    if(mp_obj_is_int(shape)) {
+        size_t len = (size_t)mp_obj_get_int(shape);
+        return ndarray_new_linear_array(len, dtype);
+    } else if(mp_obj_is_type(size, &mp_type_tuple)) {
+        mp_obj_tuple_t *shape = MP_OBJ_TO_PTR(shape);
+        if(shape->len > ULAB_MAX_DIMS) {
+            mp_raise_ValueError(translate("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
+        }
+        if(out != mp_const_none) {
+            if(!mp_obj_is_type(out, &ulab_ndarray_type)) {
+                mp_raise_TypeError(translate("out must be an ndarray"));
+            }
+            ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(out);
+            if(ndarray->dtype != dtype) {
+                mp_raise_TypeError(translate("incompatible output dtype"));
+            }
+            // some functions require a dense output array
+            if(check_dense && !ndarray_is_dense(ndarray)) {
+                mp_raise_ValueError(translate("supplied output array must be contiguous"));
+            }
+
+
+                // check if the requested shape and the output shape are compatible
+    bool shape_is_compatible = ndarray->ndim == shape->len;
+    for(uint8_t i = 0; i < ndarray->ndim; i++) {
+        if(ndarray->shape[ULAB_MAX_DIMS - ndarray->ndim + i] != mp_obj_get_int(shape->items[i])) {
+            shape_is_compatible = false;
+            break;
+        }
+    }
+    if(!shape_is_compatible) {
+        mp_raise_ValueError(translate("size must match out shape when used together"));
+    }
+
+        }
+
+
+        return ndarray_new_ndarray_from_tuple(shape, dtype);
+    } else { // input type not supported
+        mp_raise_TypeError(translate("shape must be None, and integer or a tuple of integers"));
+    }
+
+
+    if(mp_obj_is_type(shape, &mp_tuple_type)) {
+
+    }
+}
+#endif /* ULAB_NUMPY_HAS_RANDOM_MODULE */
+#endif
