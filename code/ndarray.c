@@ -1646,7 +1646,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
         mp_float_t *array = (mp_float_t *)ndarray->array;
         array[0] = mp_obj_get_float(obj);
     } else if(mp_obj_is_bool(obj)) {
-        ndarray = ndarray_new_linear_array(1, NDARRAY_BOOLEAN);
+        ndarray = ndarray_new_linear_array(1, NDARRAY_BOOL);
         uint8_t *array = (uint8_t *)ndarray->array;
         if(obj == mp_const_true) {
             *array = 1;
@@ -1856,6 +1856,12 @@ mp_obj_t ndarray_binary_op(mp_binary_op_t _op, mp_obj_t lobj, mp_obj_t robj) {
             COMPLEX_DTYPE_NOT_IMPLEMENTED(lhs->dtype);
             return ndarray_binary_power(lhs, rhs, ndim, shape, lstrides, rstrides);
             break;
+        #endif
+        #if NDARRAY_HAS_BINARY_OP_OR | NDARRAY_HAS_BINARY_OP_XOR | NDARRAY_HAS_BINARY_OP_AND
+        case MP_BINARY_OP_OR:
+        case MP_BINARY_OP_XOR:
+        case MP_BINARY_OP_AND:
+            return ndarray_binary_logical(lhs, rhs, ndim, shape, lstrides, rstrides, op);
         #endif
         #if NDARRAY_HAS_BINARY_OP_FLOOR_DIVIDE
         case MP_BINARY_OP_FLOOR_DIVIDE:
