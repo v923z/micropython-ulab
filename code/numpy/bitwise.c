@@ -331,11 +331,11 @@ mp_obj_t *bitwise_binary_operators(mp_obj_t x1, mp_obj_t x2, uint8_t optype) {
     
     #if ULAB_SUPPORTS_COMPLEX
     if((lhs->dtype == NDARRAY_FLOAT) || (rhs->dtype == NDARRAY_FLOAT) || (lhs->dtype == NDARRAY_COMPLEX) || (rhs->dtype == NDARRAY_COMPLEX)) {
-        mp_raise_ValueError(translate("not supported for input types"));
+        mp_raise_ValueError(MP_ERROR_TEXT("not supported for input types"));
     }
     #else
     if((lhs->dtype == NDARRAY_FLOAT) || (rhs->dtype == NDARRAY_FLOAT)) {
-        mp_raise_ValueError(translate("not supported for input types"));
+        mp_raise_ValueError(MP_ERROR_TEXT("not supported for input types"));
     }
     #endif
     
@@ -348,7 +348,7 @@ mp_obj_t *bitwise_binary_operators(mp_obj_t x1, mp_obj_t x2, uint8_t optype) {
         m_del(size_t, shape, ULAB_MAX_DIMS);
         m_del(int32_t, lstrides, ULAB_MAX_DIMS);
         m_del(int32_t, rstrides, ULAB_MAX_DIMS);
-        mp_raise_ValueError(translate("operands could not be broadcast together"));
+        mp_raise_ValueError(MP_ERROR_TEXT("operands could not be broadcast together"));
     }
 
     ndarray_obj_t *results = NULL;

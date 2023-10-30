@@ -111,13 +111,7 @@ typedef struct _mp_obj_slice_t {
 #endif
 #endif
 
-#if !CIRCUITPY
-#define translate(x) MP_ERROR_TEXT(x)
 #define ndarray_set_value(a, b, c, d) mp_binary_set_val_array(a, b, c, d)
-#else
-void ndarray_set_value(char , void *, size_t , mp_obj_t );
-#endif
-
 void ndarray_set_complex_value(void *, size_t , mp_obj_t );
 
 #define NDARRAY_NUMERIC   0

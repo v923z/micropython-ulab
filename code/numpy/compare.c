@@ -36,7 +36,7 @@ static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
     int32_t *lstrides = m_new(int32_t, ULAB_MAX_DIMS);
     int32_t *rstrides = m_new(int32_t, ULAB_MAX_DIMS);
     if(!ndarray_can_broadcast(lhs, rhs, &ndim, shape, lstrides, rstrides)) {
-        mp_raise_ValueError(translate("operands could not be broadcast together"));
+        mp_raise_ValueError(MP_ERROR_TEXT("operands could not be broadcast together"));
         m_del(size_t, shape, ULAB_MAX_DIMS);
         m_del(int32_t, lstrides, ULAB_MAX_DIMS);
         m_del(int32_t, rstrides, ULAB_MAX_DIMS);
@@ -263,7 +263,7 @@ static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
 
         return MP_OBJ_FROM_PTR(results);
     } else {
-        mp_raise_TypeError(translate("wrong input type"));
+        mp_raise_TypeError(MP_ERROR_TEXT("wrong input type"));
     }
     return mp_const_none;
 }
@@ -470,7 +470,7 @@ mp_obj_t compare_where(mp_obj_t _condition, mp_obj_t _x, mp_obj_t _y) {
     if(!ndarray_can_broadcast(c, x, &ndim, oshape, cstrides, ystrides) ||
         !ndarray_can_broadcast(c, y, &ndim, oshape, cstrides, ystrides) ||
         !ndarray_can_broadcast(x, y, &ndim, oshape, xstrides, ystrides)) {
-        mp_raise_ValueError(translate("operands could not be broadcast together"));
+        mp_raise_ValueError(MP_ERROR_TEXT("operands could not be broadcast together"));
     }
 
     ndim = MAX(MAX(c->ndim, x->ndim), y->ndim);

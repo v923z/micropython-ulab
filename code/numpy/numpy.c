@@ -397,9 +397,5 @@ const mp_obj_module_t ulab_numpy_module = {
 };
 
 #if CIRCUITPY_ULAB
-#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_numpy, ulab_numpy_module, MODULE_ULAB_ENABLED);
-#else
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_numpy, ulab_numpy_module);
-#endif
 #endif

@@ -71,7 +71,7 @@ STATIC mp_obj_t optimize_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_obj_t fun = args[0].u_obj;
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
-        mp_raise_TypeError(translate("first argument must be a function"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
     }
     mp_float_t xtol = mp_obj_get_float(args[3].u_obj);
     mp_obj_t fargs[1];
@@ -82,12 +82,12 @@ STATIC mp_obj_t optimize_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_
     left = optimize_python_call(type, fun, a, fargs, 0);
     right = optimize_python_call(type, fun, b, fargs, 0);
     if(left * right > 0) {
-        mp_raise_ValueError(translate("function has the same sign at the ends of interval"));
+        mp_raise_ValueError(MP_ERROR_TEXT("function has the same sign at the ends of interval"));
     }
     mp_float_t rtb = left < MICROPY_FLOAT_CONST(0.0) ? a : b;
     mp_float_t dx = left < MICROPY_FLOAT_CONST(0.0) ? b - a : a - b;
     if(args[4].u_int < 0) {
-        mp_raise_ValueError(translate("maxiter should be > 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("maxiter should be > 0"));
     }
     for(uint16_t i=0; i < args[4].u_int; i++) {
         dx *= MICROPY_FLOAT_CONST(0.5);
@@ -141,14 +141,14 @@ STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_obj_t fun = args[0].u_obj;
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
-        mp_raise_TypeError(translate("first argument must be a function"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
     }
 
     // parameters controlling convergence conditions
     mp_float_t xatol = mp_obj_get_float(args[2].u_obj);
     mp_float_t fatol = mp_obj_get_float(args[3].u_obj);
     if(args[4].u_int <= 0) {
-        mp_raise_ValueError(translate("maxiter must be > 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("maxiter must be > 0"));
     }
     uint16_t maxiter = (uint16_t)args[4].u_int;
 
@@ -277,22 +277,22 @@ mp_obj_t optimize_curve_fit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_obj_t fun = args[0].u_obj;
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
-        mp_raise_TypeError(translate("first argument must be a function"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
     }
 
     mp_obj_t x_obj = args[1].u_obj;
     mp_obj_t y_obj = args[2].u_obj;
     mp_obj_t p0_obj = args[3].u_obj;
     if(!ndarray_object_is_array_like(x_obj) || !ndarray_object_is_array_like(y_obj)) {
-        mp_raise_TypeError(translate("data must be iterable"));
+        mp_raise_TypeError(MP_ERROR_TEXT("data must be iterable"));
     }
     if(!ndarray_object_is_nditerable(p0_obj)) {
-        mp_raise_TypeError(translate("initial values must be iterable"));
+        mp_raise_TypeError(MP_ERROR_TEXT("initial values must be iterable"));
     }
     size_t len = (size_t)mp_obj_get_int(mp_obj_len_maybe(x_obj));
     uint8_t lenp = (uint8_t)mp_obj_get_int(mp_obj_len_maybe(p0_obj));
     if(len != (uint16_t)mp_obj_get_int(mp_obj_len_maybe(y_obj))) {
-        mp_raise_ValueError(translate("data must be of equal length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("data must be of equal length"));
     }
 
     mp_float_t *x = m_new(mp_float_t, len);
@@ -366,7 +366,7 @@ static mp_obj_t optimize_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_obj_t fun = args[0].u_obj;
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
-        mp_raise_TypeError(translate("first argument must be a function"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
     }
     mp_float_t x = mp_obj_get_float(args[1].u_obj);
     mp_float_t tol = mp_obj_get_float(args[2].u_obj);
@@ -375,7 +375,7 @@ static mp_obj_t optimize_newton(size_t n_args, const mp_obj_t *pos_args, mp_map_
     dx = x > MICROPY_FLOAT_CONST(0.0) ? OPTIMIZE_EPS * x : -OPTIMIZE_EPS * x;
     mp_obj_t fargs[1];
     if(args[4].u_int <= 0) {
-        mp_raise_ValueError(translate("maxiter must be > 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("maxiter must be > 0"));
     }
     for(uint16_t i=0; i < args[4].u_int; i++) {
         fx = optimize_python_call(type, fun, x, fargs, 0);
@@ -413,9 +413,5 @@ const mp_obj_module_t ulab_scipy_optimize_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_scipy_optimize_globals,
 };
 #if CIRCUITPY_ULAB
-#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_optimize, ulab_scipy_optimize_module, MODULE_ULAB_ENABLED);
-#else
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_optimize, ulab_scipy_optimize_module);
-#endif
 #endif

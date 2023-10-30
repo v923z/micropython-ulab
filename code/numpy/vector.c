@@ -64,18 +64,18 @@ static mp_obj_t vector_generic_vector(size_t n_args, const mp_obj_t *pos_args, m
             target = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
         } else {
             if(!mp_obj_is_type(out, &ulab_ndarray_type)) {
-                mp_raise_ValueError(translate("out must be an ndarray"));
+                mp_raise_ValueError(MP_ERROR_TEXT("out must be an ndarray"));
             }
             target = MP_OBJ_TO_PTR(out);
             if(target->dtype != NDARRAY_FLOAT) {
-                mp_raise_ValueError(translate("out must be of float dtype"));
+                mp_raise_ValueError(MP_ERROR_TEXT("out must be of float dtype"));
             }
             if(target->ndim != source->ndim) {
-                mp_raise_ValueError(translate("input and output dimensions differ"));
+                mp_raise_ValueError(MP_ERROR_TEXT("input and output dimensions differ"));
             }
             for(uint8_t d = 0; d < target->ndim; d++) {
                 if(target->shape[ULAB_MAX_DIMS - 1 - d] != source->shape[ULAB_MAX_DIMS - 1 - d]) {
-                    mp_raise_ValueError(translate("input and output shapes differ"));
+                    mp_raise_ValueError(MP_ERROR_TEXT("input and output shapes differ"));
                 }
             }
         }
@@ -309,7 +309,7 @@ mp_obj_t vector_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("first argument must be an ndarray"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be an ndarray"));
     }
     int8_t n = args[1].u_int;
     mp_float_t mul = MICROPY_FLOAT_C_FUN(pow)(10.0, n);
@@ -318,7 +318,7 @@ mp_obj_t vector_around(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
     mp_obj_t out = args[2].u_obj;
     if(out != mp_const_none) {
-        mp_raise_ValueError(translate("out keyword is not supported for function"));
+        mp_raise_ValueError(MP_ERROR_TEXT("out keyword is not supported for function"));
     }
     #endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
     ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_FLOAT);
@@ -426,7 +426,7 @@ mp_obj_t vector_arctan2(mp_obj_t y, mp_obj_t x) {
     int32_t *xstrides = m_new(int32_t, ULAB_MAX_DIMS);
     int32_t *ystrides = m_new(int32_t, ULAB_MAX_DIMS);
     if(!ndarray_can_broadcast(ndarray_x, ndarray_y, &ndim, shape, xstrides, ystrides)) {
-        mp_raise_ValueError(translate("operands could not be broadcast together"));
+        mp_raise_ValueError(MP_ERROR_TEXT("operands could not be broadcast together"));
         m_del(size_t, shape, ULAB_MAX_DIMS);
         m_del(int32_t, xstrides, ULAB_MAX_DIMS);
         m_del(int32_t, ystrides, ULAB_MAX_DIMS);
@@ -610,7 +610,7 @@ static mp_obj_t vector_exp(mp_obj_t o_in) {
     mp_obj_t o_in = args[0].u_obj;
     mp_obj_t out = args[1].u_obj;
     if(out != mp_const_none) {
-        mp_raise_ValueError(translate("out keyword is not supported for complex dtype"));
+        mp_raise_ValueError(MP_ERROR_TEXT("out keyword is not supported for complex dtype"));
     }
     #endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
     
@@ -888,7 +888,7 @@ mp_obj_t vector_sqrt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_obj_t o_in = args[0].u_obj;
     uint8_t dtype = mp_obj_get_int(args[2].u_obj);
     if((dtype != NDARRAY_FLOAT) && (dtype != NDARRAY_COMPLEX)) {
-        mp_raise_TypeError(translate("dtype must be float, or complex"));
+        mp_raise_TypeError(MP_ERROR_TEXT("dtype must be float, or complex"));
     }
     
     if(mp_obj_is_type(o_in, &mp_type_complex)) {
@@ -901,14 +901,14 @@ mp_obj_t vector_sqrt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     } else if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
         if((source->dtype == NDARRAY_COMPLEX) && (dtype == NDARRAY_FLOAT)) {
-            mp_raise_TypeError(translate("can't convert complex to float"));
+            mp_raise_TypeError(MP_ERROR_TEXT("can't convert complex to float"));
         }
 
         if(dtype == NDARRAY_COMPLEX) {
             #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
             mp_obj_t out = args[1].u_obj;
             if(out != mp_const_none) {
-                mp_raise_ValueError(translate("out keyword is not supported for complex dtype"));
+                mp_raise_ValueError(MP_ERROR_TEXT("out keyword is not supported for complex dtype"));
             }
             #endif
             if(source->dtype == NDARRAY_COMPLEX) {
@@ -1010,7 +1010,7 @@ mp_obj_t vector_sqrt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
                 #endif /* ULAB_MAX_DIMS > 3 */
                 return MP_OBJ_FROM_PTR(ndarray);
             } else {
-                mp_raise_TypeError(translate("input dtype must be float or complex"));
+                mp_raise_TypeError(MP_ERROR_TEXT("input dtype must be float or complex"));
             }
         }
     }
@@ -1127,7 +1127,7 @@ static mp_obj_t vector_vectorized_function_call(mp_obj_t self_in, size_t n_args,
         ndarray_set_value(self->otypes, ndarray->array, 0, fvalue);
         return MP_OBJ_FROM_PTR(ndarray);
     } else {
-        mp_raise_ValueError(translate("wrong input type"));
+        mp_raise_ValueError(MP_ERROR_TEXT("wrong input type"));
     }
     return mp_const_none;
 }
@@ -1173,7 +1173,7 @@ static mp_obj_t vector_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     const mp_obj_type_t *type = mp_obj_get_type(args[0].u_obj);
     if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
-        mp_raise_TypeError(translate("first argument must be a callable"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a callable"));
     }
     mp_obj_t _otypes = args[1].u_obj;
     uint8_t otypes = NDARRAY_FLOAT;
@@ -1184,11 +1184,11 @@ static mp_obj_t vector_vectorize(size_t n_args, const mp_obj_t *pos_args, mp_map
         otypes = mp_obj_get_int(_otypes);
         if(otypes != NDARRAY_FLOAT && otypes != NDARRAY_UINT8 && otypes != NDARRAY_INT8 &&
             otypes != NDARRAY_UINT16 && otypes != NDARRAY_INT16) {
-                mp_raise_ValueError(translate("wrong output type"));
+                mp_raise_ValueError(MP_ERROR_TEXT("wrong output type"));
         }
     }
     else {
-        mp_raise_ValueError(translate("wrong output type"));
+        mp_raise_ValueError(MP_ERROR_TEXT("wrong output type"));
     }
     vectorized_function_obj_t *function = m_new_obj(vectorized_function_obj_t);
     function->base.type = &vector_function_type;

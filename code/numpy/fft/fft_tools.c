@@ -98,18 +98,18 @@ void fft_kernel_complex(mp_float_t *data, size_t n, int isign) {
  */
 mp_obj_t fft_fft_ifft_spectrogram(mp_obj_t data_in, uint8_t type) {
     if(!mp_obj_is_type(data_in, &ulab_ndarray_type)) {
-        mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("FFT is defined for ndarrays only"));
     }
     ndarray_obj_t *in = MP_OBJ_TO_PTR(data_in);
     #if ULAB_MAX_DIMS > 1
     if(in->ndim != 1) {
-        mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));
+        mp_raise_TypeError(MP_ERROR_TEXT("FFT is implemented for linear arrays only"));
     }
     #endif
     size_t len = in->len;
     // Check if input is of length of power of 2
     if((len & (len-1)) != 0) {
-        mp_raise_ValueError(translate("input array length must be power of 2"));
+        mp_raise_ValueError(MP_ERROR_TEXT("input array length must be power of 2"));
     }
 
     ndarray_obj_t *out = ndarray_new_linear_array(len, NDARRAY_COMPLEX);
@@ -204,24 +204,24 @@ void fft_kernel(mp_float_t *real, mp_float_t *imag, size_t n, int isign) {
 
 mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_im, uint8_t type) {
     if(!mp_obj_is_type(arg_re, &ulab_ndarray_type)) {
-        mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("FFT is defined for ndarrays only"));
     }
     if(n_args == 2) {
         if(!mp_obj_is_type(arg_im, &ulab_ndarray_type)) {
-            mp_raise_NotImplementedError(translate("FFT is defined for ndarrays only"));
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("FFT is defined for ndarrays only"));
         }
     }
     ndarray_obj_t *re = MP_OBJ_TO_PTR(arg_re);
     #if ULAB_MAX_DIMS > 1
     if(re->ndim != 1) {
         COMPLEX_DTYPE_NOT_IMPLEMENTED(re->dtype)
-        mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));
+        mp_raise_TypeError(MP_ERROR_TEXT("FFT is implemented for linear arrays only"));
     }
     #endif
     size_t len = re->len;
     // Check if input is of length of power of 2
     if((len & (len-1)) != 0) {
-        mp_raise_ValueError(translate("input array length must be power of 2"));
+        mp_raise_ValueError(MP_ERROR_TEXT("input array length must be power of 2"));
     }
 
     ndarray_obj_t *out_re = ndarray_new_linear_array(len, NDARRAY_FLOAT);
@@ -243,11 +243,11 @@ mp_obj_t fft_fft_ifft_spectrogram(size_t n_args, mp_obj_t arg_re, mp_obj_t arg_i
         #if ULAB_MAX_DIMS > 1
         if(im->ndim != 1) {
             COMPLEX_DTYPE_NOT_IMPLEMENTED(im->dtype)
-            mp_raise_TypeError(translate("FFT is implemented for linear arrays only"));
+            mp_raise_TypeError(MP_ERROR_TEXT("FFT is implemented for linear arrays only"));
         }
         #endif
         if (re->len != im->len) {
-            mp_raise_ValueError(translate("real and imaginary parts must be of equal length"));
+            mp_raise_ValueError(MP_ERROR_TEXT("real and imaginary parts must be of equal length"));
         }
         array = (uint8_t *)im->array;
         func = ndarray_get_float_function(im->dtype);
