@@ -24,7 +24,7 @@
 #if ULAB_NUMPY_HAS_ONES | ULAB_NUMPY_HAS_ZEROS | ULAB_NUMPY_HAS_FULL | ULAB_NUMPY_HAS_EMPTY
 static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t value) {
     if(!mp_obj_is_int(oshape) && !mp_obj_is_type(oshape, &mp_type_tuple) && !mp_obj_is_type(oshape, &mp_type_list)) {
-        mp_raise_TypeError(translate("input argument must be an integer, a tuple, or a list"));
+        mp_raise_TypeError(MP_ERROR_TEXT("input argument must be an integer, a tuple, or a list"));
     }
     ndarray_obj_t *ndarray = NULL;
     if(mp_obj_is_int(oshape)) {
@@ -33,7 +33,7 @@ static mp_obj_t create_zeros_ones_full(mp_obj_t oshape, uint8_t dtype, mp_obj_t 
     } else if(mp_obj_is_type(oshape, &mp_type_tuple) || mp_obj_is_type(oshape, &mp_type_list)) {
         uint8_t len = (uint8_t)mp_obj_get_int(mp_obj_len_maybe(oshape));
         if(len > ULAB_MAX_DIMS) {
-            mp_raise_TypeError(translate("too many dimensions"));
+            mp_raise_TypeError(MP_ERROR_TEXT("too many dimensions"));
         }
         size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
 
@@ -144,7 +144,7 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         step = mp_obj_get_float(args[2].u_obj);
         if(mp_obj_is_int(args[0].u_obj) && mp_obj_is_int(args[1].u_obj) && mp_obj_is_int(args[2].u_obj)) dtype = NDARRAY_INT16;
     } else {
-        mp_raise_TypeError(translate("wrong number of arguments"));
+        mp_raise_TypeError(MP_ERROR_TEXT("wrong number of arguments"));
     }
     if((MICROPY_FLOAT_C_FUN(fabs)(stop) > 32768) || (MICROPY_FLOAT_C_FUN(fabs)(start) > 32768) || (MICROPY_FLOAT_C_FUN(fabs)(step) > 32768)) {
         dtype = NDARRAY_FLOAT;
@@ -159,7 +159,7 @@ mp_obj_t create_arange(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     }
 
     if(!isfinite(start) || !isfinite(stop) || !isfinite(step)) {
-        mp_raise_ValueError(translate("arange: cannot compute length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("arange: cannot compute length"));
     }
 
     ndarray_obj_t *ndarray;
@@ -222,7 +222,7 @@ mp_obj_t create_asarray(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         }
         return MP_OBJ_FROM_PTR(ndarray_from_iterable(args[0].u_obj, _dtype));
     } else {
-        mp_raise_TypeError(translate("wrong input type"));
+        mp_raise_TypeError(MP_ERROR_TEXT("wrong input type"));
     }
     return mp_const_none; // this should never happen
 }
@@ -252,7 +252,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(!mp_obj_is_type(args[0].u_obj, &mp_type_tuple)) {
-        mp_raise_TypeError(translate("first argument must be a tuple of ndarrays"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a tuple of ndarrays"));
     }
     int8_t axis = (int8_t)args[1].u_int;
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
@@ -260,7 +260,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     for(uint8_t i = 0; i < ndarrays->len; i++) {
         if(!mp_obj_is_type(ndarrays->items[i], &ulab_ndarray_type)) {
-            mp_raise_ValueError(translate("only ndarrays can be concatenated"));
+            mp_raise_ValueError(MP_ERROR_TEXT("only ndarrays can be concatenated"));
         }
     }
 
@@ -272,7 +272,7 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         axis += ndim;
     }
     if((axis < 0) || (axis >= ndim)) {
-        mp_raise_ValueError(translate("wrong axis specified"));
+        mp_raise_ValueError(MP_ERROR_TEXT("wrong axis specified"));
     }
     // shift axis
     axis = ULAB_MAX_DIMS - ndim + axis;
@@ -284,14 +284,14 @@ mp_obj_t create_concatenate(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         _ndarray = MP_OBJ_TO_PTR(ndarrays->items[i]);
         // check, whether the arrays are compatible
         if((dtype != _ndarray->dtype) || (ndim != _ndarray->ndim)) {
-            mp_raise_ValueError(translate("input arrays are not compatible"));
+            mp_raise_ValueError(MP_ERROR_TEXT("input arrays are not compatible"));
         }
         for(uint8_t j=0; j < ULAB_MAX_DIMS; j++) {
             if(j == axis) {
                 shape[j] += _ndarray->shape[j];
             } else {
                 if(shape[j] != _ndarray->shape[j]) {
-                    mp_raise_ValueError(translate("input arrays are not compatible"));
+                    mp_raise_ValueError(MP_ERROR_TEXT("input arrays are not compatible"));
                 }
             }
         }
@@ -431,7 +431,7 @@ mp_obj_t create_diag(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     }
     #if ULAB_MAX_DIMS > 2
     else {
-        mp_raise_ValueError(translate("input must be 1- or 2-d"));
+        mp_raise_ValueError(MP_ERROR_TEXT("input must be 1- or 2-d"));
     }
     #endif
 
@@ -585,7 +585,7 @@ mp_obj_t create_linspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(args[2].u_int < 2) {
-        mp_raise_ValueError(translate("number of points must be at least 2"));
+        mp_raise_ValueError(MP_ERROR_TEXT("number of points must be at least 2"));
     }
     size_t len = (size_t)args[2].u_int;
     mp_float_t start, step, stop;
@@ -708,7 +708,7 @@ mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(args[2].u_int < 2) {
-        mp_raise_ValueError(translate("number of points must be at least 2"));
+        mp_raise_ValueError(MP_ERROR_TEXT("number of points must be at least 2"));
     }
     size_t len = (size_t)args[2].u_int;
     mp_float_t start, step, quotient;
@@ -824,16 +824,16 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         size_t sz = ulab_binary_get_size(dtype);
 
         if(bufinfo.len < offset) {
-            mp_raise_ValueError(translate("offset must be non-negative and no greater than buffer length"));
+            mp_raise_ValueError(MP_ERROR_TEXT("offset must be non-negative and no greater than buffer length"));
         }
         size_t len = (bufinfo.len - offset) / sz;
         if((len * sz) != (bufinfo.len - offset)) {
-            mp_raise_ValueError(translate("buffer size must be a multiple of element size"));
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer size must be a multiple of element size"));
         }
         if(mp_obj_get_int(args[2].u_obj) > 0) {
             size_t count = mp_obj_get_int(args[2].u_obj);
             if(len < count) {
-                mp_raise_ValueError(translate("buffer is smaller than requested size"));
+                mp_raise_ValueError(MP_ERROR_TEXT("buffer is smaller than requested size"));
             } else {
                 len = count;
             }

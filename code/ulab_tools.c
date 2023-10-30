@@ -168,7 +168,7 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
     // The shape and strides at `axis` are moved to the zeroth position,
     // everything else is aligned to the right
     if(!mp_obj_is_int(axis) & (axis != mp_const_none)) {
-        mp_raise_TypeError(translate("axis must be None, or an integer"));
+        mp_raise_TypeError(MP_ERROR_TEXT("axis must be None, or an integer"));
     }
     shape_strides _shape_strides;
 
@@ -194,7 +194,7 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
         int8_t ax = mp_obj_get_int(axis);
         if(ax < 0) ax += ndarray->ndim;
         if((ax < 0) || (ax > ndarray->ndim - 1)) {
-            mp_raise_ValueError(translate("index out of range"));
+            mp_raise_ValueError(MP_ERROR_TEXT("index out of range"));
         }
         index = ULAB_MAX_DIMS - ndarray->ndim + ax;
         _shape_strides.ndim = ndarray->ndim - 1;
@@ -220,7 +220,7 @@ int8_t tools_get_axis(mp_obj_t axis, uint8_t ndim) {
     int8_t ax = mp_obj_get_int(axis);
     if(ax < 0) ax += ndim;
     if((ax < 0) || (ax > ndim - 1)) {
-        mp_raise_ValueError(translate("axis is out of bounds"));
+        mp_raise_ValueError(MP_ERROR_TEXT("axis is out of bounds"));
     }
     return ax;
 }
@@ -230,11 +230,11 @@ ndarray_obj_t *tools_object_is_square(mp_obj_t obj) {
     // Returns an ndarray, if the object is a square ndarray,
     // raises the appropriate exception otherwise
     if(!mp_obj_is_type(obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("size is defined for ndarrays only"));
+        mp_raise_TypeError(MP_ERROR_TEXT("size is defined for ndarrays only"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(obj);
     if((ndarray->shape[ULAB_MAX_DIMS - 1] != ndarray->shape[ULAB_MAX_DIMS - 2]) || (ndarray->ndim != 2)) {
-        mp_raise_ValueError(translate("input must be square matrix"));
+        mp_raise_ValueError(MP_ERROR_TEXT("input must be square matrix"));
     }
     return ndarray;
 }

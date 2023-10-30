@@ -28,13 +28,13 @@ static mp_obj_t user_square(mp_obj_t arg) {
 
     // raise a TypeError exception, if the input is not an ndarray
     if(!mp_obj_is_type(arg, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("input must be an ndarray"));
+        mp_raise_TypeError(MP_ERROR_TEXT("input must be an ndarray"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(arg);
 
     // make sure that the input is a dense array
     if(!ndarray_is_dense(ndarray)) {
-        mp_raise_TypeError(translate("input must be a dense ndarray"));
+        mp_raise_TypeError(MP_ERROR_TEXT("input must be a dense ndarray"));
     }
 
     // if the input is a dense array, create `results` with the same number of

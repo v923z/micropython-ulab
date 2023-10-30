@@ -43,7 +43,7 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(!ndarray_object_is_array_like(args[0].u_obj) || !ndarray_object_is_array_like(args[1].u_obj)) {
-        mp_raise_TypeError(translate("sosfilt requires iterable arguments"));
+        mp_raise_TypeError(MP_ERROR_TEXT("sosfilt requires iterable arguments"));
     }
     #if ULAB_SUPPORTS_COMPLEX
     if(mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type)) {
@@ -59,7 +59,7 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         ndarray_obj_t *inarray = MP_OBJ_TO_PTR(args[1].u_obj);
         #if ULAB_MAX_DIMS > 1
         if(inarray->ndim > 1) {
-            mp_raise_ValueError(translate("input must be one-dimensional"));
+            mp_raise_ValueError(MP_ERROR_TEXT("input must be one-dimensional"));
         }
         #endif
         uint8_t *iarray = (uint8_t *)inarray->array;
@@ -82,14 +82,14 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     if(args[2].u_obj != mp_const_none) {
         if(!mp_obj_is_type(args[2].u_obj, &ulab_ndarray_type)) {
-            mp_raise_TypeError(translate("zi must be an ndarray"));
+            mp_raise_TypeError(MP_ERROR_TEXT("zi must be an ndarray"));
         } else {
             ndarray_obj_t *zi = MP_OBJ_TO_PTR(args[2].u_obj);
             if((zi->shape[ULAB_MAX_DIMS - 2] != lensos) || (zi->shape[ULAB_MAX_DIMS - 1] != 2)) {
-                mp_raise_ValueError(translate("zi must be of shape (n_section, 2)"));
+                mp_raise_ValueError(MP_ERROR_TEXT("zi must be of shape (n_section, 2)"));
             }
             if(zi->dtype != NDARRAY_FLOAT) {
-                mp_raise_ValueError(translate("zi must be of float type"));
+                mp_raise_ValueError(MP_ERROR_TEXT("zi must be of float type"));
             }
             // TODO: this won't work with sparse arrays
             memcpy(zf_array, zi->array, 2*lensos*sizeof(mp_float_t));
@@ -97,11 +97,11 @@ mp_obj_t signal_sosfilt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if(mp_obj_get_int(mp_obj_len_maybe(item)) != 6) {
-            mp_raise_ValueError(translate("sos array must be of shape (n_section, 6)"));
+            mp_raise_ValueError(MP_ERROR_TEXT("sos array must be of shape (n_section, 6)"));
         } else {
             fill_array_iterable(coeffs, item);
             if(coeffs[3] != MICROPY_FLOAT_CONST(1.0)) {
-                mp_raise_ValueError(translate("sos[:, 3] should be all ones"));
+                mp_raise_ValueError(MP_ERROR_TEXT("sos[:, 3] should be all ones"));
             }
             signal_sosfilt_array(yarray, coeffs, zf_array, lenx);
             zf_array += 2;

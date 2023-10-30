@@ -22,7 +22,7 @@
 #if ULAB_SUPPORTS_COMPLEX
 
 void raise_complex_NotImplementedError(void) {
-    mp_raise_NotImplementedError(translate("not implemented for complex dtype"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("not implemented for complex dtype"));
 }
 
 #endif
