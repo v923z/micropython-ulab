@@ -863,11 +863,11 @@ mp_obj_t ndarray_binary_logical(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
 
     #if ULAB_SUPPORTS_COMPLEX
     if((lhs->dtype == NDARRAY_COMPLEX) || (rhs->dtype == NDARRAY_COMPLEX) || (lhs->dtype == NDARRAY_FLOAT) || (rhs->dtype == NDARRAY_FLOAT))  {
-        mp_raise_TypeError(translate("operation not supported for the input types"));
+        mp_raise_TypeError(MP_ERROR_TEXT("operation not supported for the input types"));
     }
     #else    
     if((lhs->dtype == NDARRAY_FLOAT) || (rhs->dtype == NDARRAY_FLOAT)) {
-        mp_raise_TypeError(translate("operation not supported for the input types"));
+        mp_raise_TypeError(MP_ERROR_TEXT("operation not supported for the input types"));
     }
     #endif
 
@@ -875,7 +875,7 @@ mp_obj_t ndarray_binary_logical(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
     // numpy promotes the result to int32
     if(((lhs->dtype == NDARRAY_INT16) && (rhs->dtype == NDARRAY_UINT16)) || 
         ((lhs->dtype == NDARRAY_UINT16) && (rhs->dtype == NDARRAY_INT16))) {
-        mp_raise_TypeError(translate("dtype of int32 is not supported"));
+        mp_raise_TypeError(MP_ERROR_TEXT("dtype of int32 is not supported"));
     }
 
     ndarray_obj_t *results = NULL;
