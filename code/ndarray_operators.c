@@ -1059,7 +1059,7 @@ mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rs
         UNWRAP_INPLACE_OPERATOR(lhs, larray, rarray, rstrides, +=);
     }
     #endif
-    #if NDARRAY_HAS_INPLACE_ADD
+    #if NDARRAY_HAS_INPLACE_MULTIPLY
     if(optype == MP_BINARY_OP_INPLACE_MULTIPLY) {
         UNWRAP_INPLACE_OPERATOR(lhs, larray, rarray, rstrides, *=);
     }
