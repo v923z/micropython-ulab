@@ -1,3 +1,9 @@
+Thu, 11 Dec 2023
+
+version 6.4.2
+
+    fix upcasting with two uint8 operands (#650)
+
 Thu, 10 Aug 2023
 
 version 6.4.1
