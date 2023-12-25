@@ -1,3 +1,9 @@
+Mon, 25 Dec 2023
+
+version 6.4.3
+
+    fix the 'np.delete' error that occurs when passing an empty iterable object as the second positional argument (#653)
+
 Thu, 11 Dec 2023
 
 version 6.4.2
