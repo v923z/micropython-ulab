@@ -204,6 +204,11 @@ static mp_obj_t transform_delete(size_t n_args, const mp_obj_t *pos_args, mp_map
             mp_raise_TypeError(MP_ERROR_TEXT("wrong index type"));
         }
         index_len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(indices));
+        if (index_len == 0){
+            // if the second positional argument is empty
+            // return the original array
+            return MP_OBJ_FROM_PTR(ndarray);
+        }
     }
 
     if(index_len > axis_len) {
