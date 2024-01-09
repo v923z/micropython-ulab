@@ -5,14 +5,13 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Zoltán Vörös
+ * Copyright (c) 2024 Zoltán Vörös
 */
 
 #include "py/builtin.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "../../ndarray.h"
 #include "random.h"
 
 // methods of the Generator object
