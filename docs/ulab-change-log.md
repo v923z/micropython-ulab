@@ -1,3 +1,9 @@
+Tue, 9 Jan 2024
+
+version 6.5.0
+
+    add random module
+
 Thu, 20 Jul 2023
 
 version 6.4.0
