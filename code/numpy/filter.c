@@ -36,7 +36,7 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type) || !mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("convolve arguments must be ndarrays"));
+        mp_raise_TypeError(MP_ERROR_TEXT("convolve arguments must be ndarrays"));
     }
 
     ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
@@ -44,13 +44,13 @@ mp_obj_t filter_convolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     // deal with linear arrays only
     #if ULAB_MAX_DIMS > 1
     if((a->ndim != 1) || (c->ndim != 1)) {
-        mp_raise_TypeError(translate("convolve arguments must be linear arrays"));
+        mp_raise_TypeError(MP_ERROR_TEXT("convolve arguments must be linear arrays"));
     }
     #endif
     size_t len_a = a->len;
     size_t len_c = c->len;
     if(len_a == 0 || len_c == 0) {
-        mp_raise_TypeError(translate("convolve arguments must not be empty"));
+        mp_raise_TypeError(MP_ERROR_TEXT("convolve arguments must not be empty"));
     }
 
     int len = len_a + len_c - 1; // convolve mode "full"

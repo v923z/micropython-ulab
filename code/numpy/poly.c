@@ -26,7 +26,7 @@
 
 mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
     if(!ndarray_object_is_array_like(args[0])) {
-        mp_raise_ValueError(translate("input data must be an iterable"));
+        mp_raise_ValueError(MP_ERROR_TEXT("input data must be an iterable"));
     }
     #if ULAB_SUPPORTS_COMPLEX
     if(mp_obj_is_type(args[0], &ulab_ndarray_type)) {
@@ -44,7 +44,7 @@ mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
         leny = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
         deg = (uint8_t)mp_obj_get_int(args[1]);
         if(leny < deg) {
-            mp_raise_ValueError(translate("more degrees of freedom than data points"));
+            mp_raise_ValueError(MP_ERROR_TEXT("more degrees of freedom than data points"));
         }
         lenx = leny;
         x = m_new(mp_float_t, lenx); // assume uniformly spaced data points
@@ -55,16 +55,16 @@ mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
         fill_array_iterable(y, args[0]);
     } else /* n_args == 3 */ {
         if(!ndarray_object_is_array_like(args[1])) {
-            mp_raise_ValueError(translate("input data must be an iterable"));
+            mp_raise_ValueError(MP_ERROR_TEXT("input data must be an iterable"));
         }
         lenx = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[0]));
         leny = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[1]));
         if(lenx != leny) {
-            mp_raise_ValueError(translate("input vectors must be of equal length"));
+            mp_raise_ValueError(MP_ERROR_TEXT("input vectors must be of equal length"));
         }
         deg = (uint8_t)mp_obj_get_int(args[2]);
         if(leny < deg) {
-            mp_raise_ValueError(translate("more degrees of freedom than data points"));
+            mp_raise_ValueError(MP_ERROR_TEXT("more degrees of freedom than data points"));
         }
         x = m_new(mp_float_t, lenx);
         fill_array_iterable(x, args[0]);
@@ -104,7 +104,7 @@ mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
         m_del(mp_float_t, x, lenx);
         m_del(mp_float_t, y, lenx);
         m_del(mp_float_t, prod, (deg+1)*(deg+1));
-        mp_raise_ValueError(translate("could not invert Vandermonde matrix"));
+        mp_raise_ValueError(MP_ERROR_TEXT("could not invert Vandermonde matrix"));
     }
     // at this point, we have the inverse of X^T * X
     // y is a column vector; x is free now, we can use it for storing intermediate values
@@ -156,7 +156,7 @@ static mp_float_t poly_eval(mp_float_t x, mp_float_t *p, uint8_t plen) {
 
 mp_obj_t poly_polyval(mp_obj_t o_p, mp_obj_t o_x) {
     if(!ndarray_object_is_array_like(o_p)) {
-        mp_raise_TypeError(translate("input is not iterable"));
+        mp_raise_TypeError(MP_ERROR_TEXT("input is not iterable"));
     }
     #if ULAB_SUPPORTS_COMPLEX
     ndarray_obj_t *input;

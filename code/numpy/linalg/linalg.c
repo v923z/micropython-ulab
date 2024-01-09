@@ -67,7 +67,7 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
         for(size_t n=m+1; n < N; n++) { // columns
             // compare entry (m, n) to (n, m)
             if(LINALG_EPSILON < MICROPY_FLOAT_C_FUN(fabs)(Larray[m * N + n] - Larray[n * N + m])) {
-                mp_raise_ValueError(translate("input matrix is asymmetric"));
+                mp_raise_ValueError(MP_ERROR_TEXT("input matrix is asymmetric"));
             }
         }
     }
@@ -87,7 +87,7 @@ static mp_obj_t linalg_cholesky(mp_obj_t oin) {
             }
             if(i == j) {
                 if(sum <= MICROPY_FLOAT_CONST(0.0)) {
-                    mp_raise_ValueError(translate("matrix is not positive definite"));
+                    mp_raise_ValueError(MP_ERROR_TEXT("matrix is not positive definite"));
                 } else {
                     Larray[i * N + i] = MICROPY_FLOAT_C_FUN(sqrt)(sum);
                 }
@@ -204,7 +204,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
             // compare entry (m, n) to (n, m)
             // TODO: this must probably be scaled!
             if(LINALG_EPSILON < MICROPY_FLOAT_C_FUN(fabs)(array[m * S + n] - array[n * S + m])) {
-                mp_raise_ValueError(translate("input matrix is asymmetric"));
+                mp_raise_ValueError(MP_ERROR_TEXT("input matrix is asymmetric"));
             }
         }
     }
@@ -219,7 +219,7 @@ static mp_obj_t linalg_eig(mp_obj_t oin) {
     if(iterations == 0) {
         // the computation did not converge; numpy raises LinAlgError
         m_del(mp_float_t, array, in->len);
-        mp_raise_ValueError(translate("iterations did not converge"));
+        mp_raise_ValueError(MP_ERROR_TEXT("iterations did not converge"));
     }
     ndarray_obj_t *eigenvalues = ndarray_new_linear_array(S, NDARRAY_FLOAT);
     mp_float_t *eigvalues = (mp_float_t *)eigenvalues->array;
@@ -267,7 +267,7 @@ static mp_obj_t linalg_inv(mp_obj_t o_in) {
     iarray -= N*N;
 
     if(!linalg_invert_matrix(iarray, N)) {
-        mp_raise_ValueError(translate("input matrix is singular"));
+        mp_raise_ValueError(MP_ERROR_TEXT("input matrix is singular"));
     }
     return MP_OBJ_FROM_PTR(inverted);
 }
@@ -393,11 +393,11 @@ static mp_obj_t linalg_qr(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
 
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("operation is defined for ndarrays only"));
+        mp_raise_TypeError(MP_ERROR_TEXT("operation is defined for ndarrays only"));
     }
     ndarray_obj_t *source = MP_OBJ_TO_PTR(args[0].u_obj);
     if(source->ndim != 2) {
-        mp_raise_ValueError(translate("operation is defined for 2D arrays only"));
+        mp_raise_ValueError(MP_ERROR_TEXT("operation is defined for 2D arrays only"));
     }
 
     size_t m = source->shape[ULAB_MAX_DIMS - 2]; // rows
@@ -498,7 +498,7 @@ static mp_obj_t linalg_qr(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         tuple->items[0] = MP_OBJ_FROM_PTR(q);
         tuple->items[1] = MP_OBJ_FROM_PTR(r);
     } else {
-        mp_raise_ValueError(translate("mode must be complete, or reduced"));
+        mp_raise_ValueError(MP_ERROR_TEXT("mode must be complete, or reduced"));
     }
     return MP_OBJ_FROM_PTR(tuple);
 }
@@ -537,10 +537,6 @@ const mp_obj_module_t ulab_linalg_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_linalg_globals,
 };
 #if CIRCUITPY_ULAB
-#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_numpy_dot_linalg, ulab_linalg_module, MODULE_ULAB_ENABLED);
-#else
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_numpy_dot_linalg, ulab_linalg_module);
-#endif
 #endif
 #endif

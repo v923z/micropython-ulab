@@ -45,7 +45,7 @@ static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_a
     if(args[3].u_obj != mp_const_none) {
         ndarray = MP_OBJ_TO_PTR(args[3].u_obj);
         if((ndarray->dtype != NDARRAY_FLOAT) || !ndarray_is_dense(ndarray)) {
-            mp_raise_TypeError(translate("out must be a float dense array"));
+            mp_raise_TypeError(MP_ERROR_TEXT("out must be a float dense array"));
         }
     }
 
@@ -54,7 +54,7 @@ static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_a
     mp_buffer_info_t bufinfo;
     if(mp_get_buffer(args[0].u_obj, &bufinfo, MP_BUFFER_READ)) {
         if(bufinfo.len < offset) {
-            mp_raise_ValueError(translate("offset is too large"));
+            mp_raise_ValueError(MP_ERROR_TEXT("offset is too large"));
         }
         uint8_t sz = sizeof(int16_t);
         #if ULAB_UTILS_HAS_FROM_INT32_BUFFER | ULAB_UTILS_HAS_FROM_UINT32_BUFFER
@@ -65,12 +65,12 @@ static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_a
 
         size_t len = (bufinfo.len - offset) / sz;
         if((len * sz) != (bufinfo.len - offset)) {
-            mp_raise_ValueError(translate("buffer size must be a multiple of element size"));
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer size must be a multiple of element size"));
         }
         if(mp_obj_get_int(args[1].u_obj) > 0) {
             size_t count = mp_obj_get_int(args[1].u_obj);
             if(len < count) {
-                mp_raise_ValueError(translate("buffer is smaller than requested size"));
+                mp_raise_ValueError(MP_ERROR_TEXT("buffer is smaller than requested size"));
             } else {
                 len = count;
             }
@@ -79,7 +79,7 @@ static mp_obj_t utils_from_intbuffer_helper(size_t n_args, const mp_obj_t *pos_a
             ndarray = ndarray_new_linear_array(len, NDARRAY_FLOAT);
         } else {
             if(ndarray->len < len) {
-                mp_raise_ValueError(translate("out array is too small"));
+                mp_raise_ValueError(MP_ERROR_TEXT("out array is too small"));
             }
         }
         uint8_t *buffer = bufinfo.buf;
@@ -250,11 +250,7 @@ const mp_obj_module_t ulab_utils_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_utils_globals,
 };
 #if CIRCUITPY_ULAB
-#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_utils, ulab_utils_module, MODULE_ULAB_ENABLED);
-#else
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_utils, ulab_utils_module);
-#endif
 #endif
 
 #endif /* ULAB_HAS_UTILS_MODULE */

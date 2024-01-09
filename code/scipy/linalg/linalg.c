@@ -59,14 +59,14 @@ static mp_obj_t solve_triangular(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type) || !mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("first two arguments must be ndarrays"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first two arguments must be ndarrays"));
     }
 
     ndarray_obj_t *A = MP_OBJ_TO_PTR(args[0].u_obj);
     ndarray_obj_t *b = MP_OBJ_TO_PTR(args[1].u_obj);
 
     if(!ndarray_is_dense(A) || !ndarray_is_dense(b)) {
-        mp_raise_TypeError(translate("input must be a dense ndarray"));
+        mp_raise_TypeError(MP_ERROR_TEXT("input must be a dense ndarray"));
     }
 
     size_t A_rows = A->shape[ULAB_MAX_DIMS - 2];
@@ -83,7 +83,7 @@ static mp_obj_t solve_triangular(size_t n_args, const mp_obj_t *pos_args, mp_map
     // check if input matrix A is singular
     for (i = 0; i < A_rows; i++) {
         if (MICROPY_FLOAT_C_FUN(fabs)(get_A_ele(A_arr)) < LINALG_EPSILON)
-            mp_raise_ValueError(translate("input matrix is singular"));
+            mp_raise_ValueError(MP_ERROR_TEXT("input matrix is singular"));
         A_arr += A->strides[ULAB_MAX_DIMS - 2];
         A_arr += A->strides[ULAB_MAX_DIMS - 1];
     }
@@ -161,14 +161,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(linalg_solve_triangular_obj, 2, solve_triangular);
 static mp_obj_t cho_solve(mp_obj_t _L, mp_obj_t _b) {
 
     if(!mp_obj_is_type(_L, &ulab_ndarray_type) || !mp_obj_is_type(_b, &ulab_ndarray_type)) {
-        mp_raise_TypeError(translate("first two arguments must be ndarrays"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first two arguments must be ndarrays"));
     }
 
     ndarray_obj_t *L = MP_OBJ_TO_PTR(_L);
     ndarray_obj_t *b = MP_OBJ_TO_PTR(_b);
 
     if(!ndarray_is_dense(L) || !ndarray_is_dense(b)) {
-        mp_raise_TypeError(translate("input must be a dense ndarray"));
+        mp_raise_TypeError(MP_ERROR_TEXT("input must be a dense ndarray"));
     }
 
     mp_float_t (*get_L_ele)(void *) = ndarray_get_float_function(L->dtype);
@@ -276,10 +276,6 @@ const mp_obj_module_t ulab_scipy_linalg_module = {
     .globals = (mp_obj_dict_t*)&mp_module_ulab_scipy_linalg_globals,
 };
 #if CIRCUITPY_ULAB
-#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
-MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_linalg, ulab_scipy_linalg_module, MODULE_ULAB_ENABLED);
-#else
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_linalg, ulab_scipy_linalg_module);
-#endif
 #endif
 #endif
