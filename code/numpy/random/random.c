@@ -133,37 +133,68 @@ static mp_obj_t random_random(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_obj_t size = args[1].u_obj;
     mp_obj_t out = args[2].u_obj;
 
-    if(size == mp_const_none) {
-        // return single value
-        mp_float_t value;
-        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-        uint32_t x = pcg32_next(&self->state);
-        value = (float)(int32_t)(x >> 8) * 0x1.0p-24f;
-        #else
-        uint64_t x = pcg32_next64(&self->state);
-        value = (double)(int64_t)(x >> 11) * 0x1.0p-53;
-        #endif
-        return mp_obj_new_float(value);
-    }
-
     ndarray_obj_t *ndarray = NULL;
+    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    uint8_t ndim = 1;
 
-    if(out != mp_const_none) {
-        ndarray = MP_OBJ_TO_PTR(out);
-    } else {
+    if(size != mp_const_none) {
         if(mp_obj_is_int(size)) {
-            size_t len = (size_t)mp_obj_get_int(size);
-            ndarray = ndarray_new_linear_array(len, NDARRAY_FLOAT);
+            shape[ULAB_MAX_DIMS - 1] = (size_t)mp_obj_get_int(size);
         } else if(mp_obj_is_type(size, &mp_type_tuple)) {
-            mp_obj_tuple_t *shape = MP_OBJ_TO_PTR(size);
-            if(shape->len > ULAB_MAX_DIMS) {
+            mp_obj_tuple_t *_shape = MP_OBJ_TO_PTR(size);
+            if(_shape->len > ULAB_MAX_DIMS) {
                 mp_raise_ValueError(translate("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
             }
-            ndarray = ndarray_new_ndarray_from_tuple(shape, NDARRAY_FLOAT);
+            ndim = _shape->len;
+            for(size_t i = 0; i < ULAB_MAX_DIMS; i++) {
+                if(i >= ndim) {
+                    shape[ULAB_MAX_DIMS - 1 - i] = 0;
+                } else {
+                    shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[i]);
+                }
+            }
         } else { // input type not supported
             mp_raise_TypeError(translate("shape must be None, and integer or a tuple of integers"));
         }
     }
+
+    if(out != mp_const_none) {
+        if(!mp_obj_is_type(out, &ulab_ndarray_type)) {
+            mp_raise_TypeError(translate("out has wrong type"));
+        }
+        
+        ndarray = MP_OBJ_TO_PTR(out);
+
+        if(ndarray->dtype != NDARRAY_FLOAT) {
+            mp_raise_TypeError(translate("output array has wrong type"));
+        }
+        if(size != mp_const_none) {
+            for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
+                if(ndarray->shape[i] != shape[i]) {
+                    mp_raise_ValueError(translate("size must match out.shape when used together"));
+                }
+            }
+        }
+        if(!ndarray_is_dense(ndarray)) {
+            mp_raise_ValueError(translate("output array must be contiguous"));
+        }
+    } else { // out == None
+        if(size != mp_const_none) {
+            ndarray = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
+        } else {
+            // return single value
+            mp_float_t value;
+            #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+            uint32_t x = pcg32_next(&self->state);
+            value = (float)(int32_t)(x >> 8) * 0x1.0p-24f;
+            #else
+            uint64_t x = pcg32_next64(&self->state);
+            value = (double)(int64_t)(x >> 11) * 0x1.0p-53;
+            #endif
+            return mp_obj_new_float(value);
+        }
+    }
+
     mp_float_t *array = (mp_float_t *)ndarray->array;
 
     // numpy's random supports only dense output arrays, so we can simply 
