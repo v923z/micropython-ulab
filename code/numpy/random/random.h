@@ -8,7 +8,7 @@
  * Copyright (c) 2024 Zoltán Vörös
 */
 
-#include "../ulab.h"
+#include "../../ulab.h"
 #include "../../ndarray.h"
 
 #ifndef _NUMPY_RANDOM_
