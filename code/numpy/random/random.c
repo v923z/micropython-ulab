@@ -67,7 +67,7 @@ mp_obj_t random_generator_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     if(args[0] == mp_const_none) {
         #ifndef MICROPY_PY_RANDOM_SEED_INIT_FUNC
-        mp_raise_ValueError(translate("no default seed"));
+        mp_raise_ValueError(MP_ERROR_TEXT("no default seed"));
         #endif
         random_generator_obj_t *generator = m_new_obj(random_generator_obj_t);
         generator->base.type = &random_generator_type;
@@ -90,7 +90,7 @@ mp_obj_t random_generator_make_new(const mp_obj_type_t *type, size_t n_args, siz
         }
         return mp_obj_new_tuple(seeds->len, items);
     } else {
-        mp_raise_TypeError(translate("argument must be None, an integer or a tuple of integers"));
+        mp_raise_TypeError(MP_ERROR_TEXT("argument must be None, an integer or a tuple of integers"));
     }
     // we should never end up here
     return mp_const_none;
@@ -142,7 +142,7 @@ static mp_obj_t random_random(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         } else if(mp_obj_is_type(size, &mp_type_tuple)) {
             mp_obj_tuple_t *_shape = MP_OBJ_TO_PTR(size);
             if(_shape->len > ULAB_MAX_DIMS) {
-                mp_raise_ValueError(translate("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
+                mp_raise_ValueError(MP_ERROR_TEXT("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
             }
             ndim = _shape->len;
             for(size_t i = 0; i < ULAB_MAX_DIMS; i++) {
@@ -153,29 +153,29 @@ static mp_obj_t random_random(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
                 }
             }
         } else { // input type not supported
-            mp_raise_TypeError(translate("shape must be None, and integer or a tuple of integers"));
+            mp_raise_TypeError(MP_ERROR_TEXT("shape must be None, and integer or a tuple of integers"));
         }
     }
 
     if(out != mp_const_none) {
         if(!mp_obj_is_type(out, &ulab_ndarray_type)) {
-            mp_raise_TypeError(translate("out has wrong type"));
+            mp_raise_TypeError(MP_ERROR_TEXT("out has wrong type"));
         }
         
         ndarray = MP_OBJ_TO_PTR(out);
 
         if(ndarray->dtype != NDARRAY_FLOAT) {
-            mp_raise_TypeError(translate("output array has wrong type"));
+            mp_raise_TypeError(MP_ERROR_TEXT("output array has wrong type"));
         }
         if(size != mp_const_none) {
             for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
                 if(ndarray->shape[i] != shape[i]) {
-                    mp_raise_ValueError(translate("size must match out.shape when used together"));
+                    mp_raise_ValueError(MP_ERROR_TEXT("size must match out.shape when used together"));
                 }
             }
         }
         if(!ndarray_is_dense(ndarray)) {
-            mp_raise_ValueError(translate("output array must be contiguous"));
+            mp_raise_ValueError(MP_ERROR_TEXT("output array must be contiguous"));
         }
     } else { // out == None
         if(size != mp_const_none) {
