@@ -31,6 +31,6 @@ void random_generator_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
 
 
 MP_DECLARE_CONST_FUN_OBJ_KW(random_random_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(random_uniform_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(random_uniform_obj);
 
 #endif
