@@ -30,6 +30,7 @@ mp_obj_t random_generator_make_new(const mp_obj_type_t *, size_t , size_t , cons
 void random_generator_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
 
 
+MP_DECLARE_CONST_FUN_OBJ_KW(random_normal_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(random_random_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(random_uniform_obj);
 
