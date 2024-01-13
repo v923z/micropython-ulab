@@ -12,43 +12,48 @@ the firmware was compiled with complex support.
 4.  `numpy.argmin <#argmin>`__
 5.  `numpy.argsort <#argsort>`__
 6.  `numpy.asarray\* <#asarray>`__
-7.  `numpy.clip <#clip>`__
-8.  `numpy.compress\* <#compress>`__
-9.  `numpy.conjugate\* <#conjugate>`__
-10. `numpy.convolve\* <#convolve>`__
-11. `numpy.delete <#delete>`__
-12. `numpy.diff <#diff>`__
-13. `numpy.dot <#dot>`__
-14. `numpy.equal <#equal>`__
-15. `numpy.flip\* <#flip>`__
-16. `numpy.imag\* <#imag>`__
-17. `numpy.interp <#interp>`__
-18. `numpy.isfinite <#isfinite>`__
-19. `numpy.isinf <#isinf>`__
-20. `numpy.load <#load>`__
-21. `numpy.loadtxt <#loadtxt>`__
-22. `numpy.max <#max>`__
-23. `numpy.maximum <#maximum>`__
-24. `numpy.mean <#mean>`__
-25. `numpy.median <#median>`__
-26. `numpy.min <#min>`__
-27. `numpy.minimum <#minimum>`__
-28. `numpy.nozero <#nonzero>`__
-29. `numpy.not_equal <#equal>`__
-30. `numpy.polyfit <#polyfit>`__
-31. `numpy.polyval <#polyval>`__
-32. `numpy.real\* <#real>`__
-33. `numpy.roll <#roll>`__
-34. `numpy.save <#save>`__
-35. `numpy.savetxt <#savetxt>`__
-36. `numpy.size <#size>`__
-37. `numpy.sort <#sort>`__
-38. `numpy.sort_complex\* <#sort_complex>`__
-39. `numpy.std <#std>`__
-40. `numpy.sum <#sum>`__
-41. `numpy.trace <#trace>`__
-42. `numpy.trapz <#trapz>`__
-43. `numpy.where <#where>`__
+7.  `numpy.bitwise_and <#bitwise_and>`__
+8.  `numpy.bitwise_or <#bitwise_and>`__
+9.  `numpy.bitwise_xor <#bitwise_and>`__
+10. `numpy.clip <#clip>`__
+11. `numpy.compress\* <#compress>`__
+12. `numpy.conjugate\* <#conjugate>`__
+13. `numpy.convolve\* <#convolve>`__
+14. `numpy.delete <#delete>`__
+15. `numpy.diff <#diff>`__
+16. `numpy.dot <#dot>`__
+17. `numpy.equal <#equal>`__
+18. `numpy.flip\* <#flip>`__
+19. `numpy.imag\* <#imag>`__
+20. `numpy.interp <#interp>`__
+21. `numpy.isfinite <#isfinite>`__
+22. `numpy.isinf <#isinf>`__
+23. `numpy.left_shift <#left_shift>`__
+24. `numpy.load <#load>`__
+25. `numpy.loadtxt <#loadtxt>`__
+26. `numpy.max <#max>`__
+27. `numpy.maximum <#maximum>`__
+28. `numpy.mean <#mean>`__
+29. `numpy.median <#median>`__
+30. `numpy.min <#min>`__
+31. `numpy.minimum <#minimum>`__
+32. `numpy.nozero <#nonzero>`__
+33. `numpy.not_equal <#equal>`__
+34. `numpy.polyfit <#polyfit>`__
+35. `numpy.polyval <#polyval>`__
+36. `numpy.real\* <#real>`__
+37. `numpy.right_shift <#right_shift>`__
+38. `numpy.roll <#roll>`__
+39. `numpy.save <#save>`__
+40. `numpy.savetxt <#savetxt>`__
+41. `numpy.size <#size>`__
+42. `numpy.sort <#sort>`__
+43. `numpy.sort_complex\* <#sort_complex>`__
+44. `numpy.std <#std>`__
+45. `numpy.sum <#sum>`__
+46. `numpy.trace <#trace>`__
+47. `numpy.trapz <#trapz>`__
+48. `numpy.where <#where>`__
 
 all
 ---
@@ -319,6 +324,58 @@ an alias for ``array``.
     
     c:array([0, 1, 2, 3, 4, 5, 6, 7, 8], dtype=int8)
     a == c: False
+    
+    
+
+
+bitwise_and
+-----------
+
+``numpy``: https://numpy.org/doc/stable/reference/routines.bitwise.html
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.bitwise_and.html
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.bitwise_or.html
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.bitwise_xor.html
+
+Each of ``bitwise_and``, ``bitwise_or``, and ``bitwise_xor`` takes two
+integer-type ``ndarray``\ s as arguments, and returns the element-wise
+results of the ``AND``, ``OR``, and ``XOR`` operators. Broadcasting is
+supported. If the ``dtype`` of the input arrays is not an integer, and
+exception will be raised.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(8), dtype=np.uint8)
+    b = a + 1
+    
+    print(a)
+    print(b)
+    print('\nbitwise_and:\n', np.bitwise_and(a, b))
+    print('\nbitwise_or:\n', np.bitwise_or(a, b))
+    print('\nbitwise_xor:\n', np.bitwise_xor(a, b))
+
+.. parsed-literal::
+
+    array([0, 1, 2, 3, 4, 5, 6, 7], dtype=uint8)
+    array([1, 2, 3, 4, 5, 6, 7, 8], dtype=uint8)
+    
+    bitwise_and:
+     array([0, 0, 2, 0, 4, 4, 6, 0], dtype=uint8)
+    
+    bitwise_or:
+     array([1, 3, 3, 7, 5, 7, 7, 15], dtype=uint8)
+    
+    bitwise_xor:
+     array([1, 3, 1, 7, 1, 3, 1, 15], dtype=uint8)
     
     
 
@@ -983,6 +1040,52 @@ positions, where the input is infinite. Integer types return the
     
     isinf(c):
      array([False, False, False], dtype=bool)
+    
+    
+
+
+left_shift
+----------
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.left_shift.html
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.right_shift.html
+
+``left_shift``, and ``right_shift`` both take two integer-type
+``ndarray``\ s, and bit-wise shift the elements of the first array by an
+amount given by the second array to the left, and right, respectively.
+Broadcasting is supported. If the ``dtype`` of the input arrays is not
+an integer, and exception will be raised.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.ones(7, dtype=np.uint8)
+    b = np.zeros(7, dtype=np.uint8) + 255
+    c = np.array(range(7), dtype=np.uint8) + 1
+    
+    print('a: ', a)
+    print('b: ', b)
+    print('c: ', c)
+    print('\na left shifted by c:\n', np.left_shift(a, c))
+    print('\nb right shifted by c:\n', np.right_shift(b, c))
+
+.. parsed-literal::
+
+    a:  array([1, 1, 1, 1, 1, 1, 1], dtype=uint8)
+    b:  array([255, 255, 255, 255, 255, 255, 255], dtype=uint8)
+    c:  array([1, 2, 3, 4, 5, 6, 7], dtype=uint8)
+    
+    a left shifted by c:
+     array([2, 4, 8, 16, 32, 64, 128], dtype=uint8)
+    
+    b right shifted by c:
+     array([127, 63, 31, 15, 7, 3, 1], dtype=uint8)
     
     
 

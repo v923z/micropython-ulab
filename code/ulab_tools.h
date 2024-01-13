@@ -43,4 +43,8 @@ void ulab_rescale_float_strides(int32_t *);
 #endif
 
 bool ulab_tools_mp_obj_is_scalar(mp_obj_t );
+
+#if ULAB_NUMPY_HAS_RANDOM_MODULE
+ndarray_obj_t *ulab_tools_create_out(mp_obj_tuple_t , mp_obj_t , uint8_t , bool );
+#endif
 #endif

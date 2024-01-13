@@ -40,7 +40,7 @@
 // Constant float objects are a struct in ROM and are referenced via their pointer.
 
 // Use ULAB_DEFINE_FLOAT_CONST to define a constant float object.
-// id is the name of the constant, num is it's floating point value.
+// id is the name of the constant, num is its floating point value.
 // hex32 is computed as: hex(int.from_bytes(array.array('f', [num]), 'little'))
 // hex64 is computed as: hex(int.from_bytes(array.array('d', [num]), 'little'))
 

@@ -559,11 +559,11 @@ ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dt
     // creates a dense array from a tuple
     // the function should work in the general n-dimensional case
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    for(size_t i=0; i < ULAB_MAX_DIMS; i++) {
+    for(size_t i = 0; i < ULAB_MAX_DIMS; i++) {
         if(i >= _shape->len) {
-            shape[ULAB_MAX_DIMS - i] = 0;
+            shape[ULAB_MAX_DIMS - 1 - i] = 0;
         } else {
-            shape[ULAB_MAX_DIMS - i] = mp_obj_get_int(_shape->items[i]);
+            shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[i]);
         }
     }
     return ndarray_new_dense_ndarray(_shape->len, shape, dtype);

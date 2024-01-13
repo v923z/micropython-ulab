@@ -27,6 +27,7 @@
 #include "io/io.h"
 #include "linalg/linalg.h"
 #include "numerical.h"
+#include "random/random.h"
 #include "stats.h"
 #include "transform.h"
 #include "poly.h"
@@ -109,6 +110,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #endif
     #if ULAB_NUMPY_HAS_LINALG_MODULE
         { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_linalg_module) },
+    #endif
+    #if ULAB_NUMPY_HAS_RANDOM_MODULE
+        { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&ulab_numpy_random_module) },
     #endif
     #if ULAB_HAS_PRINTOPTIONS
         { MP_ROM_QSTR(MP_QSTR_set_printoptions), MP_ROM_PTR(&ndarray_set_printoptions_obj) },

@@ -25,6 +25,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/numpy/linalg/linalg.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/linalg/linalg_tools.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/numerical.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/poly.c
+SRC_USERMOD += $(USERMODULES_DIR)/numpy/random/random.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/stats.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/transform.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/vector.c

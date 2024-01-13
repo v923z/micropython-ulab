@@ -1,3 +1,9 @@
+Tue, 9 Jan 2024
+
+version 6.5.0
+
+    add random module
+
 Mon, 25 Dec 2023
 
 version 6.4.3
@@ -14,9 +20,7 @@ Thu, 10 Aug 2023
 
 version 6.4.1
 
-```
-fix BOOLEAN issue, which would cause numpy.where funciton abnormally on RP2040(#643)
-```
+  fix BOOLEAN issue, which would cause numpy.where funciton abnormally on RP2040(#643)
 
 Thu, 20 Jul 2023
 

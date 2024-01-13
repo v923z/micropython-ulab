@@ -20,11 +20,17 @@ operate on, or can return complex arrays):
 ``acos``, ``acosh``, ``arctan2``, ``around``, ``asin``, ``asinh``,
 ``atan``, ``arctan2``, ``atanh``, ``ceil``, ``cos``, ``degrees``,
 ``exp*``, ``expm1``, ``floor``, ``log``, ``log10``, ``log2``,
-``radians``, ``sin``, ``sinh``, ``sqrt*``, ``tan``, ``tanh``.
+``radians``, ``sin``, ``sinc``, ``sinh``, ``sqrt*``, ``tan``, ``tanh``.
 
 These functions are applied element-wise to the arguments, thus, e.g.,
 the exponential of a matrix cannot be calculated in this way, only the
 exponential of the matrix entries.
+
+In order to avoid repeated memory allocations, functions can take the
+``out=None`` optional argument, which must be a floating point
+``ndarray`` of the same size as the input ``array``. If these conditions
+are not fulfilled, and exception will be raised. If ``out=None``, a new
+array will be created upon each invocation of the function.
 
 .. code::
         
@@ -47,6 +53,13 @@ exponential of the matrix entries.
     c = np.array(range(9)).reshape((3, 3))
     print('\n=============\nc:\n', c)
     print('exp(c):\n', np.exp(c))
+    
+    # using the `out` argument
+    d = np.array(range(9)).reshape((3, 3))
+    
+    print('\nd before invoking the function:\n', d)
+    np.exp(c, out=d)
+    print('\nd afteri nvoking the function:\n', d)
 
 .. parsed-literal::
 
@@ -65,6 +78,16 @@ exponential of the matrix entries.
            [3.0, 4.0, 5.0],
            [6.0, 7.0, 8.0]], dtype=float64)
     exp(c):
+     array([[1.0, 2.718281828459045, 7.38905609893065],
+           [20.08553692318767, 54.59815003314424, 148.4131591025766],
+           [403.4287934927351, 1096.633158428459, 2980.957987041728]], dtype=float64)
+    
+    d before invoking the function:
+     array([[0.0, 1.0, 2.0],
+           [3.0, 4.0, 5.0],
+           [6.0, 7.0, 8.0]], dtype=float64)
+    
+    d afteri nvoking the function:
      array([[1.0, 2.718281828459045, 7.38905609893065],
            [20.08553692318767, 54.59815003314424, 148.4131591025766],
            [403.4287934927351, 1096.633158428459, 2980.957987041728]], dtype=float64)
