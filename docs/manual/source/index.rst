@@ -22,6 +22,7 @@ Welcome to the ulab book!
    numpy-universal
    numpy-fft
    numpy-linalg
+   numpy-random
    scipy-linalg
    scipy-optimize
    scipy-signal

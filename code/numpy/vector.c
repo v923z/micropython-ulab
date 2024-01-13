@@ -609,9 +609,6 @@ static mp_obj_t vector_exp(mp_obj_t o_in) {
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     mp_obj_t o_in = args[0].u_obj;
     mp_obj_t out = args[1].u_obj;
-    if(out != mp_const_none) {
-        mp_raise_ValueError(MP_ERROR_TEXT("out keyword is not supported for complex dtype"));
-    }
     #endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
     
     if(mp_obj_is_type(o_in, &mp_type_complex)) {
@@ -621,6 +618,13 @@ static mp_obj_t vector_exp(mp_obj_t o_in) {
         return mp_obj_new_complex(exp_real * MICROPY_FLOAT_C_FUN(cos)(imag), exp_real * MICROPY_FLOAT_C_FUN(sin)(imag));
     } else if(mp_obj_is_type(o_in, &ulab_ndarray_type)) {
         ndarray_obj_t *source = MP_OBJ_TO_PTR(o_in);
+        
+        #if ULAB_MATH_FUNCTIONS_OUT_KEYWORD
+        if((out != mp_const_none) && (source->dtype == NDARRAY_COMPLEX)){
+            mp_raise_ValueError(MP_ERROR_TEXT("out keyword is not supported for complex dtype"));
+        }
+        #endif /* ULAB_MATH_FUNCTIONS_OUT_KEYWORD */
+
         if(source->dtype == NDARRAY_COMPLEX) {
             uint8_t *sarray = (uint8_t *)source->array;
             ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, NDARRAY_COMPLEX);

@@ -1816,12 +1816,17 @@ Binary operators
 
 ``ulab`` implements the ``+``, ``-``, ``*``, ``/``, ``**``, ``<``,
 ``>``, ``<=``, ``>=``, ``==``, ``!=``, ``+=``, ``-=``, ``*=``, ``/=``,
-``**=`` binary operators that work element-wise. Broadcasting is
-available, meaning that the two operands do not even have to have the
-same shape. If the lengths along the respective axes are equal, or one
-of them is 1, or the axis is missing, the element-wise operation can
-still be carried out. A thorough explanation of broadcasting can be
-found under https://numpy.org/doc/stable/user/basics.broadcasting.html.
+``**=`` binary operators, as well as the ``AND``, ``OR``, ``XOR``
+bit-wise operators that work element-wise. Note that the bit-wise
+operators will raise an exception, if either of the operands is of
+``float`` or ``complex`` type.
+
+Broadcasting is available, meaning that the two operands do not even
+have to have the same shape. If the lengths along the respective axes
+are equal, or one of them is 1, or the axis is missing, the element-wise
+operation can still be carried out. A thorough explanation of
+broadcasting can be found under
+https://numpy.org/doc/stable/user/basics.broadcasting.html.
 
 **WARNING**: note that relational operators (``<``, ``>``, ``<=``,
 ``>=``, ``==``, ``!=``) should have the ``ndarray`` on their left hand
