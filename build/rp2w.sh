@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export BOARD=PICO_W
+export BOARD=RPI_PICO_W
 export BUILD_DIR=$(pwd)
 export MPY_DIR=$BUILD_DIR/micropython
 export ULAB_DIR=$BUILD_DIR/../code
