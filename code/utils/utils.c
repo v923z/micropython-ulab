@@ -206,14 +206,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(utils_from_uint32_buffer_obj, 1, utils_from_uint32_bu
 
 mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } } ,
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE }} ,
         #if !ULAB_FFT_IS_NUMPY_COMPATIBLE
         { MP_QSTR_, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
-        #else
+        #endif
         { MP_QSTR_scratchpad, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_out, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_log, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_FALSE } },
-        #endif
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -252,12 +251,13 @@ mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         if(!mp_obj_is_type(out_object, &ulab_ndarray_type)) {
             mp_raise_TypeError(MP_ERROR_TEXT("out must be an ndarray"));
         }
+        
         out = MP_OBJ_TO_PTR(out_object);
         if((out->dtype != NDARRAY_FLOAT) || (out->ndim != 1)){
-            mp_raise_TypeError(MP_ERROR_TEXT("out must be a 1D array of float type"));
+            mp_raise_TypeError(MP_ERROR_TEXT("out array must be a 1D array of float type"));
         }
         if(len != out->len) {
-            mp_raise_ValueError(MP_ERROR_TEXT("input and out arrays are not compatible"));
+            mp_raise_ValueError(MP_ERROR_TEXT("input and out arrays must have same length"));
         }
     } else {
         out = ndarray_new_linear_array(len, NDARRAY_FLOAT);
@@ -272,26 +272,12 @@ mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         }
 
         scratchpad = MP_OBJ_TO_PTR(scratchpad_object);
-        if(!ndarray_is_dense(scratchpad) || (scratchpad->ndim != 1)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("scratchpad must be a 1D dense array"));
+        if(!ndarray_is_dense(scratchpad) || (scratchpad->ndim != 1) || (scratchpad->dtype != NDARRAY_FLOAT)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("scratchpad must be a 1D dense float array"));
         }
-
-        #if ULAB_SUPPORTS_COMPLEX
-        if((scratchpad->dtype != NDARRAY_COMPLEX) && (scratchpad->dtype != NDARRAY_FLOAT)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("scratchpad must be of complex or float type"));
+        if(scratchpad->len != 2 * len) {
+            mp_raise_ValueError(MP_ERROR_TEXT("scratchpad must be twice as long as input"));
         }
-        if(((scratchpad->dtype == NDARRAY_COMPLEX) && (len != scratchpad->len)) || 
-            ((scratchpad->dtype == NDARRAY_FLOAT) && (2 * len != scratchpad->len))) {
-            mp_raise_ValueError(MP_ERROR_TEXT("in and scratchpad arrays are not compatible"));
-        }
-        #else
-        if((scratchpad->dtype != NDARRAY_FLOAT)){
-            mp_raise_TypeError(MP_ERROR_TEXT("scratchpad must be of float type"));
-        }
-        if(2 * len != scratchpad->len) {
-            mp_raise_ValueError(MP_ERROR_TEXT("input and scratchpad arrays are not compatible"));
-        }
-        #endif
 
         tmp = (mp_float_t *)scratchpad->array;
     } else {
@@ -342,8 +328,7 @@ mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     mp_float_t (*func)(void *) = ndarray_get_float_function(in->dtype);
 
     for(size_t i = 0; i < len; i++) {
-        // real part; the imaginary part is 0, no need to assign
-        *tmp++ = func(array);
+        *tmp++ = func(array);       // real part; imageinary will be cleared later
         array += in->strides[ULAB_MAX_DIMS - 1];
     }
     
@@ -355,7 +340,11 @@ mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             array += in2->strides[ULAB_MAX_DIMS - 1];
         }
         tmp -= len;
+    } else {
+        // if there is only one input argument, clear the imaginary part
+        memset(tmp, 0, len * sizeof(mp_float_t));
     }
+
     tmp -= len;
 
     fft_kernel(tmp, tmp + len, len, 1);
