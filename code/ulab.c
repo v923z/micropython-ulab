@@ -26,6 +26,7 @@
 #include "numpy/ndarray/ndarray_iter.h"
 
 #include "numpy/numpy.h"
+#include "pid/pid.h"
 #include "scipy/scipy.h"
 // TODO: we should get rid of this; array.sort depends on it
 #include "numpy/numerical.h"
@@ -33,7 +34,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 6.5.0
+#define ULAB_VERSION 6.6.0
 #define xstr(s) str(s)
 #define str(s) #s
 
@@ -205,7 +206,10 @@ STATIC const mp_rom_map_elem_t ulab_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR_dtype), MP_ROM_PTR(&ndarray_dtype_obj) },
         #endif /* NDARRAY_HAS_DTYPE */
     #endif /* ULAB_HAS_DTYPE_OBJECT */
-        { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
+    { MP_ROM_QSTR(MP_QSTR_numpy), MP_ROM_PTR(&ulab_numpy_module) },
+    #if ULAB_HAS_PID_MODULE
+        { MP_ROM_QSTR(MP_QSTR_PID), MP_ROM_PTR(&ulab_pid_module) },
+    #endif
     #if ULAB_HAS_SCIPY
         { MP_ROM_QSTR(MP_QSTR_scipy), MP_ROM_PTR(&ulab_scipy_module) },
     #endif

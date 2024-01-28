@@ -31,6 +31,7 @@ SRC_USERMOD += $(USERMODULES_DIR)/numpy/transform.c
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/vector.c
 
 SRC_USERMOD += $(USERMODULES_DIR)/numpy/numpy.c
+SRC_USERMOD += $(USERMODULES_DIR)/pid/pid.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/scipy.c
 SRC_USERMOD += $(USERMODULES_DIR)/user/user.c
 SRC_USERMOD += $(USERMODULES_DIR)/utils/utils.c

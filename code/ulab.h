@@ -714,6 +714,10 @@
 #define ULAB_NUMPY_RANDOM_HAS_UNIFORM   (1)
 #endif
 
+// PID module
+#ifndef ULAB_HAS_PID_MODULE
+#define ULAB_HAS_PID_MODULE                 (1)
+#endif
 
 // scipy modules
 #ifndef ULAB_SCIPY_HAS_LINALG_MODULE
