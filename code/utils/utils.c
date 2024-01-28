@@ -367,10 +367,13 @@ mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         spectrum += spectrum_sz;
     }
 
-    // FIXME:
-    // if(scratchpad_object == mp_const_none) {
-    //     m_del(mp_float_t, tmp, 2 * len);
-    // }
+    if(scratchpad_object == mp_const_none) {
+        tmp -= len;
+        #if ULAB_FFT_IS_NUMPY_COMPATIBLE
+        tmp -= len;
+        #endif
+        m_del(mp_float_t, tmp, 2 * len);
+    }
     return MP_OBJ_FROM_PTR(out);
 }
 
