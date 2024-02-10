@@ -558,13 +558,9 @@ ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dt
 ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dtype) {
     // creates a dense array from a tuple
     // the function should work in the general n-dimensional case
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    for(size_t i = 0; i < ULAB_MAX_DIMS; i++) {
-        if(i >= _shape->len) {
-            shape[ULAB_MAX_DIMS - 1 - i] = 0;
-        } else {
-            shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[i]);
-        }
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
+    for(size_t i = 0; i < _shape->len; i++) {
+        shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[_shape->len - 1 - i]);
     }
     return ndarray_new_dense_ndarray(_shape->len, shape, dtype);
 }
@@ -2021,7 +2017,7 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
         mp_obj_t *items = m_new(mp_obj_t, 1);
         items[0] = _shape;
         shape = mp_obj_new_tuple(1, items);
-    } else {
+    } else { // at this point it's certain that _shape is a tuple
         shape = MP_OBJ_TO_PTR(_shape);
     }
 
@@ -2072,11 +2068,7 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
         if(inplace) {
             mp_raise_ValueError(MP_ERROR_TEXT("cannot assign new shape"));
         }
-        if(mp_obj_is_type(_shape, &mp_type_tuple)) {
-            ndarray = ndarray_new_ndarray_from_tuple(shape, source->dtype);
-        } else {
-            ndarray = ndarray_new_linear_array(source->len, source->dtype);
-        }
+        ndarray = ndarray_new_dense_ndarray(shape->len, new_shape, source->dtype);
         ndarray_copy_array(source, ndarray, 0);
     }
     return MP_OBJ_FROM_PTR(ndarray);
