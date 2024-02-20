@@ -162,7 +162,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_offset_obj, 2, 3, pid_pid_offset);
 
 
 static mp_float_t pid_pid_convert(pid_series_t series, mp_float_t x) {
-
+    // taking the coefficients of the Taylor expansion, returns the 
+    // approximate value of a function at the value x
     mp_float_t dx = x - series.x0;
     mp_float_t *coeffs = (mp_float_t *)series.coeffs;
     mp_float_t y = *coeffs++;
@@ -348,14 +349,14 @@ mp_obj_t pid_pid_step(mp_obj_t _self) {
     // TODO: get system time here!
     mp_float_t t = self->last_time + 1.0;
     pid_pid_loop(self, value, t);
-    
+
     // convert value in output buffer
     value = pid_pid_convert(self->out.series, self->output);
     // ensure that output is within limits
     
     if(self->out.buffer.bitdepth != 0) {
         value = (value < 0 ? 0 : value);
-        value = (value > self->max ? self->max: value); 
+        value = (value > (mp_float_t)self->out.buffer.mask ? (mp_float_t)self->out.buffer.mask : value); 
     }
 
     uint32_t output = ((uint32_t)value) & self->out.buffer.mask;

@@ -53,7 +53,6 @@ typedef struct _pid_obj_t {
     mp_float_t value;           // the last converted value supplied to the loop
     mp_float_t error;           // the last calculated error; the difference between value and set_point
     mp_float_t last_time;       // the last time the loop was advanced
-    mp_float_t max;             // the maximum allowed output value; calculated, if out.buffer.bitdepth is given 
     uint64_t steps;
 } pid_obj_t;
 
