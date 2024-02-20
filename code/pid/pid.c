@@ -105,12 +105,9 @@ mp_obj_t pid_pid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     return self;
 }
 
-mp_obj_t pid_pid_bitdepth(size_t n_args, const mp_obj_t *args) {
-    // set/get resolution of ADC/DAC and mask
-    pid_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    GET_STR_DATA_LEN(args[1], which, length);
-
+pid_buffer_t *pid_pid_get_buffer(mp_obj_t arg, pid_obj_t *self) {
     pid_buffer_t *buffer;
+    GET_STR_DATA_LEN(arg, which, length);
 
     if(memcmp(which, "in", 2) == 0) {
         buffer = &(self->in.buffer);
@@ -119,6 +116,14 @@ mp_obj_t pid_pid_bitdepth(size_t n_args, const mp_obj_t *args) {
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("first argument must be 'in' or 'out'"));
     }
+    return buffer;
+}
+
+mp_obj_t pid_pid_bitdepth(size_t n_args, const mp_obj_t *args) {
+    // set/get resolution of ADC/DAC and mask
+    pid_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    pid_buffer_t *buffer = pid_pid_get_buffer(args[1], self);
+
     if(n_args == 2) { // this is a getter
         return MP_OBJ_NEW_SMALL_INT(buffer->bitdepth);
     }
@@ -137,17 +142,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_bitdepth_obj, 2, 3, pid_pid_bitdepth
 mp_obj_t pid_pid_offset(size_t n_args, const mp_obj_t *args) {
     // set/get resolution of ADC/DAC and mask
     pid_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    GET_STR_DATA_LEN(args[1], which, length);
-
-    pid_buffer_t *buffer;
-
-    if(memcmp(which, "in", 2) == 0) {
-        buffer = &(self->in.buffer);
-    } else if(memcmp(which, "out", 3) == 0) {
-        buffer = &(self->out.buffer);
-    } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("first argument must be 'in' or 'out'"));
-    }
+    pid_buffer_t *buffer = pid_pid_get_buffer(args[1], self);
+    
     if(n_args == 2) { // this is a getter
         return MP_OBJ_NEW_SMALL_INT(buffer->offset);
     }
