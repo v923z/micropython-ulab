@@ -45,6 +45,8 @@ enum NUMERICAL_FUNCTION_TYPE {
 //| from typing import Dict
 //|
 //| _ArrayLike = Union[ndarray, List[_float], Tuple[_float], range]
+//| _ScalarOrArrayLike = Union[int, _float, _ArrayLike]
+//| _ScalarOrNdArray = Union[int, _float, ndarray]
 //|
 //| _DType = int
 //| """`ulab.numpy.int8`, `ulab.numpy.uint8`, `ulab.numpy.int16`, `ulab.numpy.uint16`, `ulab.numpy.float` or `ulab.numpy.bool`"""
