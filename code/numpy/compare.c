@@ -140,7 +140,23 @@ static mp_obj_t compare_equal_helper(mp_obj_t x1, mp_obj_t x2, uint8_t comptype)
 #endif
 
 #if ULAB_NUMPY_HAS_CLIP
-
+//| def clip(
+//|     a: _ScalarOrArrayLike,
+//|     a_min: _ScalarOrArrayLike,
+//|     a_max: _ScalarOrArrayLike,
+//| ) -> _ScalarOrNdArray:
+//|     """
+//|     Clips (limits) the values in an array.
+//|
+//|     :param a: Scalar or array containing elements to clip.
+//|     :param a_min: Minimum value, it will be broadcast against ``a``.
+//|     :param a_max: Maximum value, it will be broadcast against ``a``.
+//|     :return:
+//|         A scalar or array with the elements of ``a``, but where
+//|         values < ``a_min`` are replaced with ``a_min``, and those
+//|         > ``a_max`` with ``a_max``.
+//|     """
+//|     ...
 mp_obj_t compare_clip(mp_obj_t x1, mp_obj_t x2, mp_obj_t x3) {
     // Note: this function could be made faster by implementing a single-loop comparison in
     // RUN_COMPARE_LOOP. However, that would add around 2 kB of compile size, while we
@@ -166,7 +182,18 @@ MP_DEFINE_CONST_FUN_OBJ_3(compare_clip_obj, compare_clip);
 #endif
 
 #if ULAB_NUMPY_HAS_EQUAL
-
+//| def equal(x: _ScalarOrArrayLike, y: _ScalarOrArrayLike) -> _ScalarOrNdArray:
+//|     """
+//|     Returns ``x == y`` element-wise.
+//|
+//|     :param x, y:
+//|         Input scalar or array. If ``x.shape != y.shape`` they must
+//|         be broadcastable to a common shape (which becomes the
+//|         shape of the output.)
+//|     :return:
+//|         A boolean scalar or array with the element-wise result of ``x == y``.
+//|     """
+//|     ...
 mp_obj_t compare_equal(mp_obj_t x1, mp_obj_t x2) {
     return compare_equal_helper(x1, x2, COMPARE_EQUAL);
 }
@@ -175,7 +202,21 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_equal_obj, compare_equal);
 #endif
 
 #if ULAB_NUMPY_HAS_NOTEQUAL
-
+//| def not_equal(
+//|     x: _ScalarOrArrayLike,
+//|     y: _ScalarOrArrayLike,
+//| ) -> Union[_bool, ulab.numpy.ndarray]:
+//|     """
+//|     Returns ``x != y`` element-wise.
+//|
+//|     :param x, y:
+//|         Input scalar or array. If ``x.shape != y.shape`` they must
+//|         be broadcastable to a common shape (which becomes the
+//|         shape of the output.)
+//|     :return:
+//|         A boolean scalar or array with the element-wise result of ``x != y``.
+//|     """
+//|     ...
 mp_obj_t compare_not_equal(mp_obj_t x1, mp_obj_t x2) {
     return compare_equal_helper(x1, x2, COMPARE_NOT_EQUAL);
 }
@@ -270,6 +311,16 @@ static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
 #endif
 
 #if ULAB_NUMPY_HAS_ISFINITE
+//| def isfinite(x: _ScalarOrNdArray) -> Union[_bool, ulab.numpy.ndarray]:
+//|     """
+//|     Tests element-wise for finiteness (i.e., it should not be infinity or a NaN).
+//|
+//|     :param x: Input scalar or ndarray.
+//|     :return:
+//|         A boolean scalar or array with True where ``x`` is finite, and
+//|         False otherwise.
+//|     """
+//|     ...
 mp_obj_t compare_isfinite(mp_obj_t _x) {
     return compare_isinf_isfinite(_x, 0);
 }
@@ -278,6 +329,16 @@ MP_DEFINE_CONST_FUN_OBJ_1(compare_isfinite_obj, compare_isfinite);
 #endif
 
 #if ULAB_NUMPY_HAS_ISINF
+//| def isinf(x: _ScalarOrNdArray) -> Union[_bool, ulab.numpy.ndarray]:
+//|     """
+//|     Tests element-wise for positive or negative infinity.
+//|
+//|     :param x: Input scalar or ndarray.
+//|     :return:
+//|         A boolean scalar or array with True where ``x`` is positive or
+//|         negative infinity, and False otherwise.
+//|     """
+//|     ...
 mp_obj_t compare_isinf(mp_obj_t _x) {
     return compare_isinf_isfinite(_x, 1);
 }
@@ -286,6 +347,18 @@ MP_DEFINE_CONST_FUN_OBJ_1(compare_isinf_obj, compare_isinf);
 #endif
 
 #if ULAB_NUMPY_HAS_MAXIMUM
+//| def maximum(x1: _ScalarOrArrayLike, x2: _ScalarOrArrayLike) -> _ScalarOrNdArray:
+//|     """
+//|     Returns the element-wise maximum.
+//|
+//|     :param x1, x2:
+//|         Input scalar or array. If ``x.shape != y.shape`` they must
+//|         be broadcastable to a common shape (which becomes the
+//|         shape of the output.)
+//|     :return:
+//|         A scalar or array with the element-wise maximum of ``x1`` and ``x2``.
+//|     """
+//|     ...
 mp_obj_t compare_maximum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return maximum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MAXIMUM);
@@ -301,6 +374,18 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_maximum_obj, compare_maximum);
 
 #if ULAB_NUMPY_HAS_MINIMUM
 
+//| def minimum(x1: _ScalarOrArrayLike, x2: _ScalarOrArrayLike) -> _ScalarOrNdArray:
+//|     """
+//|     Returns the element-wise minimum.
+//|
+//|     :param x1, x2:
+//|         Input scalar or array. If ``x.shape != y.shape`` they must
+//|         be broadcastable to a common shape (which becomes the
+//|         shape of the output.)
+//|     :return:
+//|         A scalar or array with the element-wise minimum of ``x1`` and ``x2``.
+//|     """
+//|     ...
 mp_obj_t compare_minimum(mp_obj_t x1, mp_obj_t x2) {
     // extra round, so that we can return minimum(3, 4) properly
     mp_obj_t result = compare_function(x1, x2, COMPARE_MINIMUM);
@@ -316,6 +401,17 @@ MP_DEFINE_CONST_FUN_OBJ_2(compare_minimum_obj, compare_minimum);
 
 #if ULAB_NUMPY_HAS_NONZERO
 
+//| def nonzero(x: _ScalarOrArrayLike) -> ulab.numpy.ndarray:
+//|     """
+//|     Returns the indices of elements that are non-zero.
+//|
+//|     :param x:
+//|         Input scalar or array. If ``x`` is a scalar, it is treated
+//|         as a single-element 1-d array.
+//|     :return:
+//|         An array of indices that are non-zero.
+//|     """
+//|     ...
 mp_obj_t compare_nonzero(mp_obj_t x) {
     ndarray_obj_t *ndarray_x = ndarray_from_mp_obj(x, 0);
     // since ndarray_new_linear_array calls m_new0, the content of zero is a single zero
@@ -446,6 +542,27 @@ MP_DEFINE_CONST_FUN_OBJ_1(compare_nonzero_obj, compare_nonzero);
 
 #if ULAB_NUMPY_HAS_WHERE
 
+//| def where(
+//|     condition: _ScalarOrArrayLike,
+//|     x: _ScalarOrArrayLike,
+//|     y: _ScalarOrArrayLike,
+//|     ) -> ulab.numpy.ndarray:
+//|     """
+//|     Returns elements from ``x`` or ``y`` depending on ``condition``.
+//|
+//|     :param condition:
+//|         Input scalar or array. If an element (or scalar) is truthy,
+//|         the corresponding element from ``x`` is chosen, otherwise
+//|         ``y`` is used. ``condition``, ``x`` and ``y`` must also be
+//|         broadcastable to the same shape (which becomes the output
+//|         shape.)
+//|     :param x, y:
+//|         Input scalar or array.
+//|     :return:
+//|         An array with elements from ``x`` when ``condition`` is
+//|         truthy, and ``y`` elsewhere.
+//|     """
+//|     ...
 mp_obj_t compare_where(mp_obj_t _condition, mp_obj_t _x, mp_obj_t _y) {
     // this implementation will work with ndarrays, and scalars only
     ndarray_obj_t *c = ndarray_from_mp_obj(_condition, 0);
