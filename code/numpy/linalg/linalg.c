@@ -506,7 +506,7 @@ static mp_obj_t linalg_qr(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 MP_DEFINE_CONST_FUN_OBJ_KW(linalg_qr_obj, 1, linalg_qr);
 #endif
 
-STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
+static const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_linalg) },
     #if ULAB_MAX_DIMS > 1
         #if ULAB_LINALG_HAS_CHOLESKY
@@ -530,7 +530,7 @@ STATIC const mp_rom_map_elem_t ulab_linalg_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_ulab_linalg_globals, ulab_linalg_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_ulab_linalg_globals, ulab_linalg_globals_table);
 
 const mp_obj_module_t ulab_linalg_module = {
     .base = { &mp_type_module },
