@@ -896,7 +896,7 @@ the ``user`` module:
 
 .. code:: c
 
-   STATIC const mp_rom_map_elem_t ulab_user_globals_table[] = {
+   static const mp_rom_map_elem_t ulab_user_globals_table[] = {
        { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_user) },
        { MP_OBJ_NEW_QSTR(MP_QSTR_square), (mp_obj_t)&user_square_obj },
    };

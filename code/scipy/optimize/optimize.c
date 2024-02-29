@@ -55,7 +55,7 @@ static mp_float_t optimize_python_call(const mp_obj_type_t *type, mp_obj_t fun, 
 //|     ...
 //|
 
-STATIC mp_obj_t optimize_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t optimize_bisect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // Simple bisection routine
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
@@ -125,7 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(optimize_bisect_obj, 3, optimize_bisect);
 //|     ...
 //|
 
-STATIC mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t optimize_fmin(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // downhill simplex method in 1D
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
