@@ -440,7 +440,7 @@
 // Note that in this case, the input also must be numpythonic,
 // i.e., the real an imaginary parts cannot be passed as two arguments
 #ifndef ULAB_FFT_IS_NUMPY_COMPATIBLE
-#define ULAB_FFT_IS_NUMPY_COMPATIBLE    (0)
+#define ULAB_FFT_IS_NUMPY_COMPATIBLE    (1)
 #endif
 
 #ifndef ULAB_FFT_HAS_FFT
