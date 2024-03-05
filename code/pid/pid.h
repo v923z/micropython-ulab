@@ -14,8 +14,15 @@
 #include "../ulab.h"
 
 extern const mp_obj_module_t ulab_pid_module;
-
 extern const mp_obj_type_t ulab_pid_type;
+
+enum PID_PARAMETER {
+    PID_PARAMETER_P,
+    PID_PARAMETER_I,
+    PID_PARAMETER_D,
+    PID_SETPOINT,
+    PID_VALUE,
+};
 
 // structure holding the Taylor series representation of 
 // the conversion of physical values to unitless numbers
@@ -42,7 +49,7 @@ typedef struct _pid_data_converter_t {
 
 typedef struct _pid_obj_t {
     mp_obj_base_t base;
-    mp_float_t set_point;       // set point of the controller loop
+    mp_float_t setpoint;        // set point of the controller loop
     pid_data_converter_t in;    // data converter of the input buffer
     pid_data_converter_t out;   // data converter of the output buffer
     mp_float_t P;               // coefficient of the proportional term
@@ -53,22 +60,21 @@ typedef struct _pid_obj_t {
     mp_float_t value;           // the last converted value supplied to the loop
     mp_float_t error;           // the last calculated error; the difference between value and set_point
     mp_float_t last_time;       // the last time the loop was advanced
-    uint64_t steps;
+    uint64_t steps;             // the step method has been called this many times
 } pid_obj_t;
 
 mp_obj_t pid_pid_make_new(const mp_obj_type_t *, size_t , size_t , const mp_obj_t *);
 void pid_pid_print(const mp_print_t *, mp_obj_t , mp_print_kind_t );
+mp_obj_t pid_pid_parameters(mp_obj_t , mp_obj_t , uint8_t );
+
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_bitdepth_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_offset_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(pid_pid_buffer_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(pid_pid_evaluate_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_parameters_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(pid_pid_reset_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_series_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_set_point_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_float_step_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(pid_pid_step_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(pid_pid_value_obj);
 
 #endif

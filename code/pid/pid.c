@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Zoltán Vörös
+ * Copyright (c) 2024 Zoltán Vörös
 */
 
 
@@ -29,35 +29,73 @@ static const mp_rom_map_elem_t ulab_pid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_offset), MP_ROM_PTR(&pid_pid_offset_obj) },
     { MP_ROM_QSTR(MP_QSTR_evaluate), MP_ROM_PTR(&pid_pid_evaluate_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&pid_pid_reset_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_buffer), MP_ROM_PTR(&pid_pid_buffer_obj) },
     { MP_ROM_QSTR(MP_QSTR_series), MP_ROM_PTR(&pid_pid_series_obj) },
-    { MP_ROM_QSTR(MP_QSTR_parameters), MP_ROM_PTR(&pid_pid_parameters_obj) },
     { MP_ROM_QSTR(MP_QSTR_float_step), MP_ROM_PTR(&pid_pid_float_step_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_point), MP_ROM_PTR(&pid_pid_set_point_obj) },
     { MP_ROM_QSTR(MP_QSTR_step), MP_ROM_PTR(&pid_pid_step_obj) },
-    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pid_pid_value_obj) },
 };
 
 static MP_DEFINE_CONST_DICT(ulab_pid_locals_dict, ulab_pid_locals_dict_table);
 
-#if defined(MP_DEFINE_CONST_OBJ_TYPE)
+static void pid_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] == MP_OBJ_NULL) {
+        switch(attr) {
+            case MP_QSTR_P:
+                dest[0] = pid_pid_parameters(self_in, MP_OBJ_NULL, PID_PARAMETER_P);
+                break;
+            case MP_QSTR_I:
+                dest[0] = pid_pid_parameters(self_in, MP_OBJ_NULL, PID_PARAMETER_I);
+                break;
+            case MP_QSTR_D:
+                dest[0] = pid_pid_parameters(self_in, MP_OBJ_NULL, PID_PARAMETER_D);
+                break;
+            case MP_QSTR_setpoint:
+                dest[0] = pid_pid_parameters(self_in, MP_OBJ_NULL, PID_SETPOINT);
+                break;
+            case MP_QSTR_value:
+                dest[0] = pid_pid_parameters(self_in, MP_OBJ_NULL, PID_VALUE);
+                break;
+            case MP_QSTR_input:
+                dest[0] = pid_pid_buffer(self_in, MP_OBJ_NULL);
+                break;
+            default:
+                // forward to locals dict
+                dest[1] = MP_OBJ_SENTINEL;
+                break;
+        }
+    } else {
+        if(dest[1]) {
+            switch(attr) {
+                case MP_QSTR_P:
+                    pid_pid_parameters(self_in, dest[1], PID_PARAMETER_P);
+                    break;
+                case MP_QSTR_I:
+                    pid_pid_parameters(self_in, dest[1], PID_PARAMETER_I);
+                    break;
+                case MP_QSTR_D:
+                    pid_pid_parameters(self_in, dest[1], PID_PARAMETER_D);
+                    break;
+                case MP_QSTR_setpoint:
+                    pid_pid_parameters(self_in, dest[1], PID_SETPOINT);
+                    break;
+                default:
+                    return;
+                    break;
+            }
+            dest[0] = MP_OBJ_NULL;
+        }
+    }
+}
+
+
 MP_DEFINE_CONST_OBJ_TYPE(
     ulab_pid_type,
     MP_QSTR_PID,
     MP_TYPE_FLAG_NONE,
     print, pid_pid_print,
     make_new, pid_pid_make_new, 
-    locals_dict, &ulab_pid_locals_dict
+    locals_dict, &ulab_pid_locals_dict,
+    attr, pid_properties_attr
 );
-#else
-const mp_obj_type_t ulab_pid_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PID,
-    .print = pid_pid_print,
-    .make_new = pid_pid_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pid_locals_dict
-};
-#endif
 
 void pid_pid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -77,7 +115,7 @@ mp_obj_t pid_pid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     pid_obj_t *self = m_new_obj(pid_obj_t);
     self->base.type = &ulab_pid_type;
 
-    self->set_point = MICROPY_FLOAT_CONST(0.0);
+    self->setpoint = MICROPY_FLOAT_CONST(0.0);
 
     // initialise the converter object with default values, i.e, expand around 0, to first order in the Taylor series
     pid_data_converter_t in, out;
@@ -188,47 +226,29 @@ mp_obj_t pid_pid_evaluate(mp_obj_t _self, mp_obj_t io, mp_obj_t x) {
 
 MP_DEFINE_CONST_FUN_OBJ_3(pid_pid_evaluate_obj, pid_pid_evaluate);
 
-mp_obj_t pid_pid_parameters(size_t n_args, const mp_obj_t *args) {
-    // set/get PID parameters 
-    pid_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    GET_STR_DATA_LEN(args[1], which, length);
+mp_obj_t pid_pid_parameters(mp_obj_t self_in, mp_obj_t value, uint8_t designator) {
+    pid_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_float_t *parameter;
 
-    mp_float_t *param;
-
-    if(memcmp(which, "P", 1) == 0) {
-        param = &(self->P);
-    } else if(memcmp(which, "I", 1) == 0) {
-        param = &(self->I);
-    } else if(memcmp(which, "D", 1) == 0) {
-        param = &(self->D);
+    if(designator == PID_PARAMETER_P) {
+        parameter = &(self->P);
+    } else if(designator == PID_PARAMETER_I) {
+        parameter = &(self->I);
+    } else if(designator == PID_PARAMETER_D) {
+        parameter = &(self->D);
+    } else if(designator == PID_SETPOINT) {
+        parameter = &(self->setpoint);
     } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("first argument must be 'P', 'I', or 'D'"));
+        parameter = &(self->value);
     }
 
-    if(n_args == 2) { // this is a getter
-        return mp_obj_new_float(*param);
-    } else { // this is a setter
-        *param = mp_obj_get_float(args[2]);
-    }
-    return mp_const_none;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_parameters_obj, 2, 3, pid_pid_parameters);
-
-
-mp_obj_t pid_pid_set_point(size_t n_args, const mp_obj_t *args) {
-    // set/get PID parameters 
-    pid_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    if(n_args == 1) { // this is a getter
-        return mp_obj_new_float(self->set_point);
-    } else { // this is a setter
-        self->set_point = mp_obj_get_float(args[1]);
+    if(value == MP_OBJ_NULL) {
+        return mp_obj_new_float(*parameter);
+    } else {
+        *parameter = mp_obj_get_float(value);
     }
     return mp_const_none;
 }
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_set_point_obj, 1, 2, pid_pid_set_point);
-
 
 mp_obj_t pid_pid_reset(mp_obj_t _self) {
     // resets only the PID values but not the parameters
@@ -313,7 +333,7 @@ void pid_pid_loop(pid_obj_t *self, mp_float_t value, mp_float_t t) {
     mp_float_t dt = t - self->last_time;
     self->last_time = t;
 
-    mp_float_t error = value - self->set_point;
+    mp_float_t error = value - self->setpoint;
     
     mp_float_t diff = (error - self->error) / dt;    
     self->integral += error * dt;
@@ -325,8 +345,8 @@ void pid_pid_loop(pid_obj_t *self, mp_float_t value, mp_float_t t) {
 }
 
 mp_obj_t pid_pid_step(mp_obj_t _self) {
-    // The complete PID loop, converting the value from the buffer, 
-    // and converting the results to the buffer
+    // The complete PID loop, converting the value from the input buffer, 
+    // using the value in the PID loop, and then converting the results to the output buffer
     pid_obj_t *self = MP_OBJ_TO_PTR(_self);
 
     // convert value in input buffer
@@ -385,14 +405,6 @@ mp_obj_t pid_pid_float_step(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pid_pid_float_step_obj, 2, 3, pid_pid_float_step);
-
-
-mp_obj_t pid_pid_value(mp_obj_t _self) {
-    pid_obj_t *self = MP_OBJ_TO_PTR(_self);
-    return mp_obj_new_float(self->value);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(pid_pid_value_obj, pid_pid_value);
 
 static const mp_rom_map_elem_t ulab_pid_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_PID) },
