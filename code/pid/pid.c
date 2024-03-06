@@ -12,6 +12,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/misc.h"
 #include "py/obj.h"
@@ -330,7 +332,7 @@ mp_obj_t pid_pid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     self->integral = MICROPY_FLOAT_CONST(0.0);
     self->value = MICROPY_FLOAT_CONST(0.0);
     self->error = MICROPY_FLOAT_CONST(0.0);
-    self->last_time = MICROPY_FLOAT_CONST(0.0);
+    self->time_us = 0L;
     self->out = MICROPY_FLOAT_CONST(0.0);
     self->steps = 0;
     return self;
@@ -383,7 +385,6 @@ mp_obj_t pid_pid_reset(mp_obj_t _self) {
     pid_obj_t *self = MP_OBJ_TO_PTR(_self);
     self->integral = MICROPY_FLOAT_CONST(0.0);
     self->value = MICROPY_FLOAT_CONST(0.0);
-    self->last_time = MICROPY_FLOAT_CONST(0.0);
     self->steps = 0;
     self->out = MICROPY_FLOAT_CONST(0.0);
 
@@ -392,12 +393,22 @@ mp_obj_t pid_pid_reset(mp_obj_t _self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(pid_pid_reset_obj, pid_pid_reset);
 
-void pid_pid_loop(pid_obj_t *self, mp_float_t value, mp_float_t t) {
+mp_float_t pid_float_time_ms(pid_obj_t *self) {
+    // calculates the time difference with respect to the last call
+    mp_uint_t end = mp_hal_ticks_us();
+    mp_float_t dt_ms;
+
+    if(end > self->time_us) {
+        dt_ms = 0.001 * (end - self->time_us);
+    } else { // we have a time warp here, so swap
+        dt_ms = 0.001 * (self->time_us - end);
+    }
+    self->time_us = end;
+    return dt_ms;
+}
+
+void pid_pid_loop(pid_obj_t *self, mp_float_t value, mp_float_t dt) {
     // This is the standard PID loop, stripped of everything
-
-    mp_float_t dt = t - self->last_time;
-    self->last_time = t;
-
     mp_float_t error = value - self->setpoint;
     
     mp_float_t diff = (error - self->error) / dt;    
@@ -426,10 +437,9 @@ mp_obj_t pid_pid_step(mp_obj_t self_in) {
     }
     mp_float_t x = (mp_float_t)(input & self->input->converter.mask);
     mp_float_t value = pid_pid_convert(self->input->series, x);
-
-    // TODO: get system time here!
-    mp_float_t t = self->last_time + 1.0;
-    pid_pid_loop(self, value, t);
+    
+    mp_float_t dt_ms = pid_float_time_ms(self);
+    pid_pid_loop(self, value, dt_ms);
 
     // convert value in output buffer
     value = pid_pid_convert(self->output->series, self->out);
@@ -458,13 +468,13 @@ mp_obj_t pid_pid_float_step(size_t n_args, const mp_obj_t *args) {
     // The simplified PID loop, working with floating points numbers directly
     pid_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    mp_float_t t = self->last_time + 1.0;
+    mp_float_t dt = 1.0;
     if(n_args == 3) {
-        t = mp_obj_get_float(args[2]);
+        dt = mp_obj_get_float(args[2]);
     }
     mp_float_t value = mp_obj_get_float(args[1]);
 
-    pid_pid_loop(self, value, t);
+    pid_pid_loop(self, value, dt);
 
     return mp_obj_new_float(self->out);
 }

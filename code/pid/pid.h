@@ -80,7 +80,7 @@ typedef struct _pid_obj_t {
     mp_float_t out;             // the output value
     mp_float_t value;           // the last converted value supplied to the loop
     mp_float_t error;           // the last calculated error; the difference between value and set_point
-    mp_float_t last_time;       // the last time the loop was advanced
+    mp_uint_t time_us;          // absolute system time, us
     uint64_t steps;             // the step method has been called this many times
 } pid_obj_t;
 
