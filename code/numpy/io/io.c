@@ -239,7 +239,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(io_load_obj, io_load);
 
 #if ULAB_NUMPY_HAS_LOADTXT
 static void io_assign_value(const char *clipboard, uint8_t len, ndarray_obj_t *ndarray, size_t *idx, uint8_t dtype) {
+    #if MICROPY_PY_BUILTINS_COMPLEX
     mp_obj_t value = mp_parse_num_decimal(clipboard, len, false, false, NULL);
+    #else
+    mp_obj_t value = mp_parse_num_float(clipboard, len, false, NULL);
+    #endif
     if(dtype != NDARRAY_FLOAT) {
         mp_float_t _value = mp_obj_get_float(value);
         value = mp_obj_new_int((int32_t)MICROPY_FLOAT_C_FUN(round)(_value));

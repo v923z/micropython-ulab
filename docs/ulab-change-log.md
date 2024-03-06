@@ -1,3 +1,9 @@
+Wed, 6 Mar 2024
+
+version 6.5.2
+
+    allow loadtxt to parse numbers, even if built-in complexes are not supported
+
 Tue, 9 Jan 2024
 
 version 6.5.0
