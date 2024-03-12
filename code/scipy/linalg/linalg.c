@@ -7,6 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2021 Vikas Udupa
+ *               2024 Zoltán Vörös
  *
 */
 
@@ -32,6 +33,7 @@
 
 #if ULAB_MAX_DIMS > 1
 
+#if ULAB_SCIPY_LINALG_HAS_SOLVE_TRIANGULAR
 //| def solve_triangular(A: ulab.numpy.ndarray, b: ulab.numpy.ndarray, lower: bool) -> ulab.numpy.ndarray:
 //|    """
 //|    :param ~ulab.numpy.ndarray A: a matrix
@@ -146,6 +148,9 @@ static mp_obj_t solve_triangular(size_t n_args, const mp_obj_t *pos_args, mp_map
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(linalg_solve_triangular_obj, 2, solve_triangular);
+#endif /* ULAB_SCIPY_LINALG_HAS_SOLVE_TRIANGULAR */
+
+#if ULAB_SCIPY_LINALG_HAS_CHO_SOLVE
 
 //| def cho_solve(L: ulab.numpy.ndarray, b: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
 //|    """
@@ -255,7 +260,59 @@ static mp_obj_t cho_solve(mp_obj_t _L, mp_obj_t _b) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(linalg_cho_solve_obj, cho_solve);
 
-#endif
+#endif /* ULAB_SCIPY_LINALG_HAS_CHO_SOLVE */
+
+#if ULAB_SCIPY_LINALG_HAS_SVD
+
+//| def svd(a: ulab.numpy.ndarray) -> (ulab.numpy.ndarray, ulab.numpy.ndarray, ulab.numpy.ndarray):
+//|    """
+//|    :param ~ulab.numpy.ndarray a: matrix whose singular-value decomposition is requested
+//|    :return: tuple of (U, s, Vh) matrices such that a = U s Vh^*. 
+//|
+//|    Calculate singular-value decomposition of a"""
+//|    ...
+//|
+
+static mp_obj_t linalg_svd(mp_obj_t _a) {
+
+    if(!mp_obj_is_type(_a, &ulab_ndarray_type)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("input matrix must be an ndarray"));
+    }
+
+    ndarray_obj_t *a = MP_OBJ_TO_PTR(_a);
+
+    if(a->ndim != 2) {
+        mp_raise_TypeError(MP_ERROR_TEXT("input must be a 2D array"));
+    }
+
+    #if ULAB_SUPPORTS_COMPLEX
+    if(a->dtype == NDARRAY_COMPLEX) {
+        mp_raise_TypeError(MP_ERROR_TEXT("input matrix must be real"));
+    }
+    #endif
+    mp_float_t (*get_a_element)(void *) = ndarray_get_float_function(a->dtype);
+
+    ndarray_obj_t *A = ndarray_new_dense_ndarray(a->ndim, a->shape, NDARRAY_FLOAT);
+    mp_float_t *A_arr = (mp_float_t *)A->array;
+    uint8_t *a_arr = (uint8_t *)a->array;
+
+    // copy data from a to A
+    for(int i = 0; i < a->shape[ULAB_MAX_DIMS - 2]; i++) {
+        for (int j = 0; j < a->shape[ULAB_MAX_DIMS - 1]; j++) {
+            *A_arr = get_a_element(a);
+            a_arr += a->strides[ULAB_MAX_DIMS - 1];
+            A_arr++;
+        }
+        a_arr -= a->strides[ULAB_MAX_DIMS - 1] * a->shape[ULAB_MAX_DIMS - 1];
+        a_arr += a->strides[ULAB_MAX_DIMS - 2];
+    }
+
+    return MP_OBJ_FROM_PTR(x);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(linalg_svd_obj, linalg_svd);
+
+#endif /* ULAB_SCIPY_LINALG_HAS_SVD */
 
 static const mp_rom_map_elem_t ulab_scipy_linalg_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_linalg) },
@@ -265,6 +322,9 @@ static const mp_rom_map_elem_t ulab_scipy_linalg_globals_table[] = {
         #endif
         #if ULAB_SCIPY_LINALG_HAS_CHO_SOLVE
         { MP_ROM_QSTR(MP_QSTR_cho_solve), MP_ROM_PTR(&linalg_cho_solve_obj) },
+        #endif
+        #if ULAB_SCIPY_LINALG_HAS_SVD
+        { MP_ROM_QSTR(MP_QSTR_svd), MP_ROM_PTR(&linalg_svd_obj) },
         #endif
     #endif
 };
@@ -278,4 +338,4 @@ const mp_obj_module_t ulab_scipy_linalg_module = {
 #if CIRCUITPY_ULAB
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_linalg, ulab_scipy_linalg_module);
 #endif
-#endif
+#endif /* ULAB_SCIPY_HAS_LINALG_MODULE */

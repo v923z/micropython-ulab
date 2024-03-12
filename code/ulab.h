@@ -728,6 +728,10 @@
 #define ULAB_SCIPY_LINALG_HAS_SOLVE_TRIANGULAR  (1)
 #endif
 
+#ifndef ULAB_SCIPY_LINALG_HAS_SVD
+#define ULAB_SCIPY_LINALG_HAS_SVD           (1)
+#endif
+
 #ifndef ULAB_SCIPY_HAS_SIGNAL_MODULE
 #define ULAB_SCIPY_HAS_SIGNAL_MODULE        (1)
 #endif
