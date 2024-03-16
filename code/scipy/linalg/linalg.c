@@ -273,44 +273,518 @@ MP_DEFINE_CONST_FUN_OBJ_2(linalg_cho_solve_obj, cho_solve);
 //|    ...
 //|
 
+static void scipy_linalg_svd22(mp_float_t A00, mp_float_t A01, mp_float_t A10, mp_float_t A11, 
+                        mp_float_t *U, mp_float_t *S, mp_float_t *V) {
+    // adapted from https://github.com/openmv/apriltag/blob/master/common/svd22.c
+
+    mp_float_t B0 = A00 + A11;
+    mp_float_t B1 = A00 - A11;
+    mp_float_t B2 = A01 + A10;
+    mp_float_t B3 = A01 - A10;
+
+    mp_float_t PminusT = atan2(B3, B0);
+    mp_float_t PplusT = atan2(B2, B1);
+
+    mp_float_t P = (PminusT + PplusT) / 2;
+    mp_float_t T = (-PminusT + PplusT) / 2;
+
+    mp_float_t CP = cos(P), SP = sin(P);
+    mp_float_t CT = cos(T), ST = sin(T);
+
+    U[0] = CT;
+    U[1] = -ST;
+    U[2] = ST;
+    U[3] = CT;
+
+    V[0] = CP;
+    V[1] = -SP;
+    V[2] = SP;
+    V[3] = CP;
+
+    // C0 = e + f. There are two ways to compute C0; we pick the one
+    // that is better conditioned.
+    mp_float_t CPmT = cos(P - T), SPmT = sin(P - T);
+    mp_float_t C0 = 0;
+    if(MICROPY_FLOAT_C_FUN(fabs)(CPmT) > MICROPY_FLOAT_C_FUN(fabs)(SPmT)) {
+        C0 = B0 / CPmT;
+    } else {
+        C0 = B3 / SPmT;
+    }
+
+    // C1 = e - f. There are two ways to compute C1; we pick the one
+    // that is better conditioned.
+    mp_float_t CPpT = cos(P+T), SPpT = sin(P+T);
+    mp_float_t C1 = 0;
+    if(MICROPY_FLOAT_C_FUN(fabs)(CPpT) > MICROPY_FLOAT_C_FUN(fabs)(SPpT)) {
+        C1 = B1 / CPpT;
+    } else {
+        C1 = B2 / SPpT;
+    }
+
+    // e and f are the singular values
+    mp_float_t e = (C0 + C1) / 2;
+    mp_float_t f = (C0 - C1) / 2;
+
+    if(e < 0) {
+        e = -e;
+        U[0] = -U[0];
+        U[2] = -U[2];
+    }
+
+    if(f < 0) {
+        f = -f;
+        U[1] = -U[1];
+        U[3] = -U[3];
+    }
+
+    // sort singular values.
+    if(e > f) {
+        // already in big-to-small order
+        S[0] = e;
+        S[1] = f;
+    } else {
+        // P = [ 0 1 ; 1 0 ]
+        // USV' = (UP)(PSP)(PV')
+        //      = (UP)(PSP)(VP)'
+        //      = (UP)(PSP)(P'V')'
+        S[0] = f;
+        S[1] = e;
+
+        // exchange columns of U and V
+        double tmp[2];
+        tmp[0] = U[0];
+        tmp[1] = U[2];
+        U[0] = U[1];
+        U[2] = U[3];
+        U[1] = tmp[0];
+        U[3] = tmp[1];
+
+        tmp[0] = V[0];
+        tmp[1] = V[2];
+        V[0] = V[1];
+        V[2] = V[3];
+        V[1] = tmp[0];
+        V[3] = tmp[1];
+    }
+}
+
+// find the index of the off-diagonal element with the largest mag
+static inline size_t linalg_max_index(mp_float_t *A, size_t row, size_t maxcol) {
+    // in ulab, columns are the second index of matrices, 
+    // so we can simply walk along the axis, as if it was 
+    // a linear array; simply pass *A as A[row * columns]
+
+    size_t maxi = 0;
+    mp_float_t maxv = -1.0;
+    mp_float_t v;
+
+    for(size_t i = 0; i < maxcol; i++) {
+        if(i == row) {
+            continue;
+        }
+        v = MICROPY_FLOAT_C_FUN(fabs)(A[i]);
+        if(v > maxv) {
+            maxi = i;
+            maxv = v;
+        }
+    }
+
+    return maxi;
+}
+
 static mp_obj_t linalg_svd(mp_obj_t _a) {
 
     if(!mp_obj_is_type(_a, &ulab_ndarray_type)) {
         mp_raise_TypeError(MP_ERROR_TEXT("input matrix must be an ndarray"));
     }
 
-    ndarray_obj_t *a = MP_OBJ_TO_PTR(_a);
+    ndarray_obj_t *A = MP_OBJ_TO_PTR(_a);
 
-    if(a->ndim != 2) {
+    if(A->ndim != 2) {
         mp_raise_TypeError(MP_ERROR_TEXT("input must be a 2D array"));
     }
 
     #if ULAB_SUPPORTS_COMPLEX
-    if(a->dtype == NDARRAY_COMPLEX) {
+    if(A->dtype == NDARRAY_COMPLEX) {
         mp_raise_TypeError(MP_ERROR_TEXT("input matrix must be real"));
     }
     #endif
-    mp_float_t (*get_a_element)(void *) = ndarray_get_float_function(a->dtype);
 
-    ndarray_obj_t *A = ndarray_new_dense_ndarray(a->ndim, a->shape, NDARRAY_FLOAT);
-    mp_float_t *A_arr = (mp_float_t *)A->array;
-    uint8_t *a_arr = (uint8_t *)a->array;
+    ndarray_obj_t *B = ndarray_new_dense_ndarray(2, A->shape, NDARRAY_FLOAT);
+    mp_float_t *b = (mp_float_t *)B->array;
+    
+    mp_float_t (*get_A_element)(void *) = ndarray_get_float_function(A->dtype);
+    uint8_t *a = (uint8_t *)A->array;
+    
+    size_t ncolumns = B->shape[ULAB_MAX_DIMS - 1];
+    size_t nrows = B->shape[ULAB_MAX_DIMS - 2];
 
-    // copy data from a to A
-    for(int i = 0; i < a->shape[ULAB_MAX_DIMS - 2]; i++) {
-        for (int j = 0; j < a->shape[ULAB_MAX_DIMS - 1]; j++) {
-            *A_arr = get_a_element(a);
-            a_arr += a->strides[ULAB_MAX_DIMS - 1];
-            A_arr++;
+    // copy data from a to B
+    for(size_t i = 0; i < ncolumns; i++) {
+        for(size_t j = 0; j < nrows; j++) {
+            *b++ = get_A_element(a);
+            a += A->strides[ULAB_MAX_DIMS - 1];
         }
-        a_arr -= a->strides[ULAB_MAX_DIMS - 1] * a->shape[ULAB_MAX_DIMS - 1];
-        a_arr += a->strides[ULAB_MAX_DIMS - 2];
+        a -= A->strides[ULAB_MAX_DIMS - 1] * ncolumns;
+        a += A->strides[ULAB_MAX_DIMS - 2];
     }
 
-    return MP_OBJ_FROM_PTR(x);
+    b -= nrows * ncolumns;
+
+    // LS: cumulative left-handed transformations
+    ndarray_obj_t *U = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, nrows, nrows), NDARRAY_FLOAT);
+    mp_float_t *LS = (mp_float_t *)U->array;
+    // start with the unit matrix
+    for(size_t i = 0; i < nrows; i++) {
+        LS[i * (nrows + 1)] = 1.0; /* U[i, i] */
+    }
+
+    // RS: cumulative right-handed transformations
+    ndarray_obj_t *V = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, ncolumns, ncolumns), NDARRAY_FLOAT);
+    mp_float_t *RS = (mp_float_t *)V->array;
+    // start with the unit matrix
+    for(size_t i = 0; i < ncolumns; i++) {
+        RS[i * (ncolumns + 1)] = 1.0; /* V[i, i] */
+    }
+
+    for(size_t hhidx = 0; hhidx < nrows; hhidx++)  {
+        if(hhidx < ncolumns) {
+            size_t vlen = nrows - hhidx;
+
+            // TODO: free v at the end
+            mp_float_t *v = m_new0(mp_float_t, vlen);
+
+            mp_float_t mag2 = 0.0;
+            for(size_t i = 0; i < vlen; i++) {
+                v[i] = b[(hhidx + i) * ncolumns + hhidx]; /* B[hhidx + i, hhidx] */
+                mag2 += v[i] * v[i];
+            }
+
+            mp_float_t oldv0 = v[0];
+            if(oldv0 < 0) {
+                v[0] -= MICROPY_FLOAT_C_FUN(sqrt)(mag2);
+            } else {
+                v[0] += MICROPY_FLOAT_C_FUN(sqrt)(mag2);
+            }
+
+            mag2 += -oldv0 * oldv0 + v[0] * v[0];
+
+            // normalize v
+            double mag = MICROPY_FLOAT_C_FUN(sqrt)(mag2);
+
+            if(mag == 0.0) {
+                continue;
+            }
+
+            for(size_t i = 0; i < vlen; i++) {
+                v[i] /= mag;
+            }
+
+            // Q = I - 2vv'
+            // TODO: free Q at the end
+            mp_float_t *Q = m_new0(mp_float_t, nrows * nrows);
+            for(size_t i = 0; i < nrows; i++) {
+                Q[i * (ncolumns + 1)] = 1.0;
+            }
+
+            for(size_t i = 0; i < vlen; i++) {
+                for(size_t j = 0; j < vlen; j++) {
+                    Q[(i + hhidx) * nrows +  (j + hhidx)] -= 2*v[i]*v[j]; /* Q[i + hhidx, j + hhidx] */
+                }
+            }
+
+            // LS = matd_op("F*M", LS, Q);
+            // Implementation: take each row of LS, compute dot product with n,
+            // subtract n (scaled by dot product) from it.
+            for(size_t i = 0; i < nrows; i++) {
+                mp_float_t dot = 0.0;
+                for(size_t j = 0; j < vlen; j++) {
+                    dot += LS[i * nrows + (hhidx + j)] * v[j]; /* U[i, hhidx + j] */
+                }
+                for(size_t j = 0; j < vlen; j++) {
+                    LS[i * nrows + (hhidx + j)] -= 2 * dot * v[j]; /* U[i, hhidx + j] */
+                }
+            }
+
+            //  B = matd_op("M*F", Q, B); 
+            // should be Q', but Q is symmetric.
+            for(size_t i = 0; i < ncolumns; i++) {
+                mp_float_t dot = 0.0;
+                for(size_t j = 0; j < vlen; j++) {
+                    dot += b[(hhidx + j) * ncolumns + i] * v[j]; /* B[hhidx + j, i] */
+                }
+                for(size_t j = 0; j < vlen; j++) {
+                    b[(hhidx + j) * ncolumns + i] -= 2*dot*v[j]; /* B[hhidx + j, i] */
+                }
+            }
+            m_del(mp_float_t, v, vlen);
+        }
+
+        if(hhidx + 2 < ncolumns) {
+            size_t vlen = ncolumns - hhidx - 1;
+            // TODO: free v at the end
+            mp_float_t *v = m_new0(mp_float_t, vlen);
+
+            mp_float_t mag2 = 0.0;
+            for(size_t i = 0; i < vlen; i++) {
+                v[i] = b[hhidx * ncolumns + hhidx + i + 1];
+                mag2 += v[i] * v[i];
+            }
+
+            mp_float_t oldv0 = v[0];
+            if(oldv0 < 0) {
+                v[0] -= MICROPY_FLOAT_C_FUN(sqrt)(mag2);
+            } else {
+                v[0] += MICROPY_FLOAT_C_FUN(sqrt)(mag2);
+            }
+
+            mag2 += -oldv0 * oldv0 + v[0] * v[0];
+
+            // compute magnitude of ([1 0 0..]+v)
+            mp_float_t mag = MICROPY_FLOAT_C_FUN(sqrt)(mag2);
+
+            // this case can occur when the vectors are already perpendicular
+            if(mag == 0.0) {
+                continue;
+            }
+
+            for(size_t i = 0; i < vlen; i++) {
+                v[i] /= mag;
+            }
+
+            for(size_t i = 0; i < ncolumns; i++) { // this is the number of rows, but RS is of size ncolumns * ncolumns
+                mp_float_t dot = 0.0;
+                for(size_t j = 0; j < vlen; j++) {
+                    dot += RS[i * ncolumns +  hhidx + 1 + j] * v[j]; /* V[i, hhidx + 1 + j] */
+                }
+                for(size_t j = 0; j < vlen; j++) {
+                    RS[i * ncolumns +  hhidx + 1 + j] -= 2 * dot * v[j]; /* V[i, hhidx + 1 + j] */
+                }
+            }
+
+            //   B = matd_op("F*M", B, Q); // should be Q', but Q is symmetric.
+            for(size_t i = 0; i < nrows; i++) {
+                mp_float_t dot = 0.0;
+                for(size_t j = 0; j < vlen; j++) {
+                    dot += b[i * ncolumns + hhidx + 1 + j] * v[j]; /* B[i, hhidx + 1 + j] */
+                }
+                for(size_t j = 0; j < vlen; j++) {
+                    b[i * ncolumns + hhidx + 1 + j] -= 2 * dot * v[j]; /* B[i, hhidx + 1 + j] */
+                }
+            }
+            m_del(mp_float_t, v, vlen);
+        }
+    }
+
+    mp_float_t maxv; // maximum non-zero value being reduced this iteration
+    // TODO: free maxrowidx at the end
+    size_t *maxrowidx = m_new0(size_t, ncolumns);
+
+    for(size_t i = 2; i < ncolumns; i++) {
+        maxrowidx[i] = linalg_max_index(b + (i * ncolumns), i, ncolumns); /* B[i, ...] */
+    }
+    size_t lastmaxi = 0;
+    size_t lastmaxj = 1;
+
+    for(size_t iterations = 0; iterations < SCIPY_LINALG_SVD_MAXITERATIONS; iterations++) {
+        if(ncolumns < 2) {
+            break;
+        }
+        int32_t maxi = -1;
+        int32_t maxj;
+        maxv = -1;
+
+        // now, EVERY row also had columns lastmaxi and lastmaxj modified.
+        for(size_t rowi = 0; rowi < ncolumns; rowi++) {
+
+            // the magnitude of the largest off-diagonal element
+            // in this row.
+            mp_float_t thismaxv;
+
+            if((rowi == lastmaxi) || (rowi == lastmaxj)) {
+                // maxrowidx[rowi] = max_idx(B, rowi, B->ncols);
+                thismaxv = MICROPY_FLOAT_C_FUN(fabs)(b[rowi * ncolumns + maxrowidx[rowi]]); /* B[rowi, maxrowidx[rowi]] */
+                goto endrowi;
+            }
+
+            if((maxrowidx[rowi] == lastmaxi) || (maxrowidx[rowi] == lastmaxj)) {
+                // maxrowidx[rowi] = max_idx(B, rowi, B->ncols);
+                thismaxv = MICROPY_FLOAT_C_FUN(fabs)(b[rowi * ncolumns + maxrowidx[rowi]]); /* B[rowi, maxrowidx[rowi]] */
+                goto endrowi;
+            }
+
+            thismaxv = MICROPY_FLOAT_C_FUN(fabs)(b[rowi * ncolumns + maxrowidx[rowi]]); /* B[rowi, maxrowidx[rowi]] */
+
+            // check column lastmaxi. Is it now the maximum?
+            if(lastmaxi != rowi) {
+                mp_float_t v = MICROPY_FLOAT_C_FUN(fabs)(b[rowi * ncolumns + maxrowidx[rowi]]); /* B[rowi, maxrowidx[rowi]] */
+                if (v > thismaxv) {
+                    thismaxv = v;
+                    maxrowidx[rowi] = lastmaxi;
+                }
+            }
+
+            // check column lastmaxj
+            if(lastmaxj != rowi) {
+                mp_float_t v = MICROPY_FLOAT_C_FUN(fabs)(b[rowi * ncolumns + lastmaxj]); /* B[rowi, lastmaxj] */
+                if(v > thismaxv) {
+                    thismaxv = v;
+                    maxrowidx[rowi] = lastmaxj;
+                }
+            }
+
+            // does this row have the largest value we've seen so far?
+            endrowi:
+                if(thismaxv > maxv) {
+                    maxv = thismaxv;
+                    maxi = rowi;
+                }
+        }
+
+        assert(maxi >= 0);
+        maxj = maxrowidx[maxi];
+
+        // save these for the next iteration.
+        lastmaxi = maxi;
+        lastmaxj = maxj;
+
+        if(maxv < SCIPY_LINALG_EPSILON) {
+            break;
+        }
+        // Solve the 2x2 SVD problem for the matrix
+        // [ A00 A01 ]
+        // [ A10 A11 ]
+        mp_float_t A00 = b[maxi * ncolumns + maxi]; /* B[maxi, maxi] */
+        mp_float_t A01 = b[maxi * ncolumns + maxj]; /* B[maxi, maxj] */
+        mp_float_t A10 = b[maxj * ncolumns + maxi]; /* B[maxj, maxi] */
+        mp_float_t A11 = b[maxj * ncolumns + maxj]; /* B[maxj, maxj] */
+
+        // TODO: free the arrays
+        mp_float_t *u = m_new(mp_float_t, 4);
+        mp_float_t *s = m_new(mp_float_t, 2);
+        mp_float_t *v = m_new(mp_float_t, 4);
+
+        scipy_linalg_svd22(A00, A01, A10, A11, u, s, v);
+
+        //  LS = matd_op("F*M", LS, QL);
+        for(size_t i = 0; i < nrows; i++) {
+            mp_float_t vi = LS[i * nrows + maxi]; /* U[i, maxi] */
+            mp_float_t vj = LS[i * nrows + maxj]; /* U[i, maxj] */
+
+            LS[i * nrows + maxi] = u[0] * vi + u[2] * vj;  /* U[i, maxi] */
+            LS[i * nrows + maxj] = u[1] * vi + u[3] * vj;  /* U[i, maxj] */
+        }
+
+        //  RS = matd_op("F*M", RS, QR); // remember we'll transpose RS.
+        for(size_t i = 0; i < ncolumns; i++) { // this is the nunber of rows in RS, for it is of size columns * columns
+            mp_float_t vi = RS[i * ncolumns + maxi]; /* V[i, maxi] */
+            mp_float_t vj = RS[i * ncolumns + maxj]; /* V[i, maxj] */
+
+            RS[i * ncolumns + maxi] = v[0] * vi + v[2] * vj; /* V[i, maxi] */
+            RS[i * ncolumns + maxj] = v[1] * vi + v[3] * vj; /* V[i, maxj] */
+        }
+
+        // B = matd_op("M'*F*M", QL, B, QR);
+        // The QL matrix mixes rows of B.
+        for(size_t i = 0; i < ncolumns; i++) {
+            mp_float_t vi = b[maxi * ncolumns + i]; /* B[maxi, i] */
+            mp_float_t vj = b[maxj * ncolumns + i]; /* B[maxj, i] */
+
+            b[maxi * ncolumns + i] = u[0] * vi + u[2] * vj; /* B[maxi, i] */
+            b[maxj * ncolumns + i] = u[1] * vi + u[3] * vj; /* B[maxj, i] */
+        }
+
+        // The QR matrix mixes columns of B.
+        for(size_t i = 0; i < nrows; i++) {
+            mp_float_t vi = b[i * ncolumns + maxi]; /* B[i, maxi] */
+            mp_float_t vj = b[i * ncolumns + maxj]; /* B[i, maxj] */
+
+            b[i * ncolumns + maxi] = v[0] * vi + v[2] * vj; /* B[i, maxi] */
+            b[i * ncolumns + maxj] = v[1] * vi + v[3] * vj; /* B[i, maxj] */
+        }
+    }
+
+    // TODO: free idxs at the end
+    size_t *idxs = m_new(size_t, ncolumns);
+    // TODO: free vals at the end
+    mp_float_t *vals = m_new(mp_float_t, ncolumns);
+    for(size_t i = 0; i < ncolumns; i++) {
+        idxs[i] = i;
+        vals[i] = b[i * ncolumns + i]; /* B[i, i] */
+    }
+
+    // Bubble sort
+    uint8_t changed;
+    do {
+        changed = 0;
+
+        for(size_t i = 0; i + 1 < ncolumns; i++) {
+            if(MICROPY_FLOAT_C_FUN(fabs)(vals[i+1]) > MICROPY_FLOAT_C_FUN(fabs)(vals[i])) {
+                size_t tmpi = idxs[i];
+                idxs[i] = idxs[i + 1];
+                idxs[i + 1] = tmpi;
+
+                mp_float_t tmpv = vals[i];
+                vals[i] = vals[i + 1];
+                vals[i + 1] = tmpv;
+
+                changed = 1;
+            }
+        }
+    } while (changed);
+
+    // TODO: free LP at the end
+    mp_float_t *LP = m_new(mp_float_t, nrows);
+    // start with the unit matrix
+    for(size_t i = 0; i < nrows; i++) {
+        LP[i * (nrows + 1)] = 1.0; /* LP[i, i] */
+    }
+
+    // TODO: free RP at the end
+    mp_float_t *RP = m_new(mp_float_t, ncolumns);
+    // start with the unit matrix
+    for(size_t i = 0; i < ncolumns; i++) {
+        RP[i * (ncolumns + 1)] = 1.0; /* RP[i, i] */
+    }
+
+    for(size_t i = 0; i < ncolumns; i++) {
+        LP[idxs[i] * ncolumns + idxs[i]] = 0.0; /* LP[idxs[i], idxs[i]] */
+        RP[idxs[i] * nrows + idxs[i]] = 0.0; /* RP[idxs[i], idxs[i]] */
+
+        LP[idxs[i] * ncolumns + i] = vals[i] < 0 ? -1.0 : 1.0;
+        RP[idxs[i] * nrows + i] = 1.0;
+    }
+
+    // we've factored:
+    // LP*(something)*RP'
+
+    // // solve for (something)
+    // B = matd_op("M'*F*M", LP, B, RP);
+
+    // // update LS and RS, remembering that RS will be transposed.
+    // LS = matd_op("F*M", LS, LP);
+    // RS = matd_op("F*M", RS, RP);
+
+    // make B exactly diagonal
+    for(size_t i = 0; i < ncolumns; i++) {
+        for(size_t j = 0; j < nrows; j++) {
+            if(i != j) {
+                b[i * ncolumns + j] = 0.0; /* B[i, j] */
+            }
+        }
+    }
+
+    mp_obj_t *items = m_new(mp_obj_t, 3);
+    items[0] = U;
+    items[1] = B;
+    items[2] = V;
+    
+    mp_obj_t tuple = mp_obj_new_tuple(3, items);
+    m_del(mp_obj_t, items, 3);
+    return tuple;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_2(linalg_svd_obj, linalg_svd);
+MP_DEFINE_CONST_FUN_OBJ_1(linalg_svd_obj, linalg_svd);
 
 #endif /* ULAB_SCIPY_LINALG_HAS_SVD */
 
@@ -338,4 +812,6 @@ const mp_obj_module_t ulab_scipy_linalg_module = {
 #if CIRCUITPY_ULAB
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_linalg, ulab_scipy_linalg_module);
 #endif
+
+#endif /* ULAB_MAX_DIMS > 1 */
 #endif /* ULAB_SCIPY_HAS_LINALG_MODULE */
