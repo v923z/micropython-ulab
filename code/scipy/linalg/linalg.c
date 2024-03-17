@@ -432,26 +432,23 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
     b -= nrows * ncolumns;
 
     // LS: cumulative left-handed transformations
-    ndarray_obj_t *U = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, nrows, nrows), NDARRAY_FLOAT);
-    mp_float_t *LS = (mp_float_t *)U->array;
+    mp_float_t *LS = m_new0(mp_float_t, nrows * nrows);
     // start with the unit matrix
     for(size_t i = 0; i < nrows; i++) {
-        LS[i * (nrows + 1)] = 1.0; /* U[i, i] */
+        LS[i * (nrows + 1)] = 1.0; /* LS[i, i] */
     }
 
     // RS: cumulative right-handed transformations
-    ndarray_obj_t *V = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, ncolumns, ncolumns), NDARRAY_FLOAT);
-    mp_float_t *RS = (mp_float_t *)V->array;
+    mp_float_t *RS = m_new0(mp_float_t, ncolumns * ncolumns);
     // start with the unit matrix
     for(size_t i = 0; i < ncolumns; i++) {
-        RS[i * (ncolumns + 1)] = 1.0; /* V[i, i] */
+        RS[i * (ncolumns + 1)] = 1.0; /* RS[i, i] */
     }
 
     for(size_t hhidx = 0; hhidx < nrows; hhidx++)  {
         if(hhidx < ncolumns) {
             size_t vlen = nrows - hhidx;
 
-            // TODO: free v at the end
             mp_float_t *v = m_new0(mp_float_t, vlen);
 
             mp_float_t mag2 = 0.0;
@@ -481,7 +478,6 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
             }
 
             // Q = I - 2vv'
-            // TODO: free Q at the end
             mp_float_t *Q = m_new0(mp_float_t, nrows * nrows);
             for(size_t i = 0; i < nrows; i++) {
                 Q[i * (ncolumns + 1)] = 1.0;
@@ -518,11 +514,11 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
                 }
             }
             m_del(mp_float_t, v, vlen);
+            m_del(mp_float_t, Q, nrows * nrows);
         }
 
         if(hhidx + 2 < ncolumns) {
             size_t vlen = ncolumns - hhidx - 1;
-            // TODO: free v at the end
             mp_float_t *v = m_new0(mp_float_t, vlen);
 
             mp_float_t mag2 = 0.0;
@@ -577,7 +573,6 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
     }
 
     mp_float_t maxv; // maximum non-zero value being reduced this iteration
-    // TODO: free maxrowidx at the end
     size_t *maxrowidx = m_new0(size_t, ncolumns);
 
     for(size_t i = 2; i < ncolumns; i++) {
@@ -602,13 +597,13 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
             mp_float_t thismaxv;
 
             if((rowi == lastmaxi) || (rowi == lastmaxj)) {
-                // maxrowidx[rowi] = max_idx(B, rowi, B->ncols);
+                maxrowidx[rowi] = linalg_max_index(b + rowi * ncolumns, rowi, ncolumns); /* B[rowi, ...] */
                 thismaxv = MICROPY_FLOAT_C_FUN(fabs)(b[rowi * ncolumns + maxrowidx[rowi]]); /* B[rowi, maxrowidx[rowi]] */
                 goto endrowi;
             }
 
             if((maxrowidx[rowi] == lastmaxi) || (maxrowidx[rowi] == lastmaxj)) {
-                // maxrowidx[rowi] = max_idx(B, rowi, B->ncols);
+                maxrowidx[rowi] = linalg_max_index(b + rowi * ncolumns, rowi, ncolumns); /* B[rowi, ... ]*/
                 thismaxv = MICROPY_FLOAT_C_FUN(fabs)(b[rowi * ncolumns + maxrowidx[rowi]]); /* B[rowi, maxrowidx[rowi]] */
                 goto endrowi;
             }
@@ -659,7 +654,7 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
         mp_float_t A10 = b[maxj * ncolumns + maxi]; /* B[maxj, maxi] */
         mp_float_t A11 = b[maxj * ncolumns + maxj]; /* B[maxj, maxj] */
 
-        // TODO: free the arrays
+        // we should probably move this out of the loop...
         mp_float_t *u = m_new(mp_float_t, 4);
         mp_float_t *s = m_new(mp_float_t, 2);
         mp_float_t *v = m_new(mp_float_t, 4);
@@ -702,12 +697,17 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
             b[i * ncolumns + maxi] = v[0] * vi + v[2] * vj; /* B[i, maxi] */
             b[i * ncolumns + maxj] = v[1] * vi + v[3] * vj; /* B[i, maxj] */
         }
+
+        m_del(mp_float_t, u, 4);
+        m_del(mp_float_t, s, 2);
+        m_del(mp_float_t, v, 4);
     }
 
-    // TODO: free idxs at the end
+    m_del(size_t, maxrowidx, ncolumns);
+
     size_t *idxs = m_new(size_t, ncolumns);
-    // TODO: free vals at the end
     mp_float_t *vals = m_new(mp_float_t, ncolumns);
+
     for(size_t i = 0; i < ncolumns; i++) {
         idxs[i] = i;
         vals[i] = b[i * ncolumns + i]; /* B[i, i] */
@@ -733,15 +733,13 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
         }
     } while (changed);
 
-    // TODO: free LP at the end
-    mp_float_t *LP = m_new(mp_float_t, nrows);
+    mp_float_t *LP = m_new(mp_float_t, nrows * nrows);
     // start with the unit matrix
     for(size_t i = 0; i < nrows; i++) {
         LP[i * (nrows + 1)] = 1.0; /* LP[i, i] */
     }
 
-    // TODO: free RP at the end
-    mp_float_t *RP = m_new(mp_float_t, ncolumns);
+    mp_float_t *RP = m_new(mp_float_t, ncolumns * ncolumns);
     // start with the unit matrix
     for(size_t i = 0; i < ncolumns; i++) {
         RP[i * (ncolumns + 1)] = 1.0; /* RP[i, i] */
@@ -755,6 +753,9 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
         RP[idxs[i] * nrows + i] = 1.0;
     }
 
+    m_del(size_t, idxs, ncolumns);
+    m_del(mp_float_t, vals, ncolumns);
+
     // we've factored:
     // LP*(something)*RP'
 
@@ -762,8 +763,39 @@ static mp_obj_t linalg_svd(mp_obj_t _a) {
     // B = matd_op("M'*F*M", LP, B, RP);
 
     // // update LS and RS, remembering that RS will be transposed.
+    
     // LS = matd_op("F*M", LS, LP);
+    ndarray_obj_t *U = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, nrows, nrows), NDARRAY_FLOAT);
+    mp_float_t *u = (mp_float_t *)U->array;
+
+    for(size_t i = 0; i < nrows; i++) {
+        for(size_t j = 0; j < nrows; j++) {
+            mp_float_t tmp = 0.0;
+            for(size_t k = 0; k < nrows; k++) {
+                tmp += LS[i * nrows + k] * LP[k * nrows + j]; /* LS[i, k] * LP[k, j] */
+            }
+            u[i * nrows + j] = tmp; /* U[i, j] */ 
+        }
+    }
+
+    m_del(mp_float_t, LS, nrows * nrows);
+    m_del(mp_float_t, LP, nrows * nrows);
+
     // RS = matd_op("F*M", RS, RP);
+    ndarray_obj_t *V = ndarray_new_dense_ndarray(2, ndarray_shape_vector(0, 0, ncolumns, ncolumns), NDARRAY_FLOAT);
+    mp_float_t *v = (mp_float_t *)V->array;
+    for(size_t i = 0; i < ncolumns; i++) {
+        for(size_t j = 0; j < ncolumns; j++) {
+            mp_float_t tmp = 0.0;
+            for(size_t k = 0; k < ncolumns; k++) {
+                tmp += RS[i * ncolumns + k] * RP[k * ncolumns + j]; /* RS[i, k] * RP[k, j] */
+            }
+            v[i * ncolumns + j] = tmp; /* V[i, j] */ 
+        }
+    }
+
+    m_del(mp_float_t, RS, ncolumns * ncolumns);
+    m_del(mp_float_t, RP, ncolumns * ncolumns);
 
     // make B exactly diagonal
     for(size_t i = 0; i < ncolumns; i++) {
