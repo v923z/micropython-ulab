@@ -837,7 +837,7 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
         }
     }
 
-    int32_t axis_len = (int32_t)a->shape[ULAB_MAX_DIMS - 1 - a->ndim + axis];
+    int32_t axis_len = (int32_t)a->shape[ULAB_MAX_DIMS - a->ndim + axis];
     uint8_t mode;
     
     if(args[4].u_obj == mp_const_none) {
@@ -887,6 +887,22 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
         indices[i] = (size_t)index;
     }
 
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
+    for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
+        shape[i] = a->shape[i];
+        if(i == (ULAB_MAX_DIMS - a->ndim + axis)) {
+            shape[i] = indices_len;
+        }
+    }
+
+    ndarray_obj_t *out = NULL;
+    if(args[3].u_obj == mp_const_none) {
+        out = ndarray_new_dense_ndarray(a->ndim, shape, a->ndim);
+    } else {
+        // TODO: deal with last argument being false!
+        out = ulab_tools_inspect_out(args[3].u_obj, a->dtype, a->ndim, shape, true);
+    }
+    (void)out;
     m_del(size_t, indices, indices_len);
     return mp_const_none;
 }

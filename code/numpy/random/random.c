@@ -175,8 +175,6 @@ static mp_obj_t random_normal(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
     mp_float_t *array = (mp_float_t *)ndarray->array;
 
-    // numpy's random supports only dense output arrays, so we can simply 
-    // loop through the elements in a linear fashion
     for(size_t i = 0; i < ndarray->len; i = i + 2) {
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
         uint32_t x = pcg32_next(&self->state);
