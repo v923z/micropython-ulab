@@ -6,7 +6,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *               2019-2021 Zoltán Vörös
+ *               2019-2024 Zoltán Vörös
  *               2020 Taku Fukada
 */
 
@@ -775,6 +775,124 @@ mp_obj_t create_ones(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 
 MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 #endif
+
+#if ULAB_NUMPY_HAS_TAKE
+//| def take(
+//|    a: ulab.numpy.ndarray,
+//|    indices: _ArrayLike,
+//|    axis: Optional[int] = None,
+//|    out: ulab.numpy.ndarray,
+//|    mode: ) -> ulab.numpy.ndarray:
+//|    """
+//|    .. param: a
+//|       The source array.
+//|    .. param: indices
+//|       The indices of the values to extract.
+//|    .. param: axis
+//|       The axis over which to select values. By default, the flattened input array is used.
+//|    .. param: out
+//|       If provided, the result will be placed in this array. It should be of the appropriate shape and dtype.
+//|    .. param: mode
+//|       Specifies how out-of-bounds indices will behave.
+//|       - `raise`: raise an error (default)
+//|       - `wrap`: wrap around
+//|       - `clip`: clip to the range
+//|       `clip` mode means that all indices that are too large are replaced by the 
+//|       index that addresses the last element along that axis. Note that this disables 
+//|       indexing with negative numbers.
+//|    Return a new array."""
+//|    ...
+//|
+
+enum CREATE_TAKE_MODE {
+    CREATE_TAKE_RAISE,
+    CREATE_TAKE_WRAP,
+    CREATE_TAKE_CLIP,
+};
+
+mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_out, MP_ARG_KW_ONLY, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_mode, MP_ARG_KW_ONLY, { .u_rom_obj = MP_ROM_NONE } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("input is not an array"));
+    }
+    ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
+    int8_t axis = 0;
+    if(args[2].u_obj == mp_const_none) {
+        // pass for now
+    } else { // i.e., axis is an integer
+        axis = mp_obj_get_int(args[2].u_obj);
+        if(axis < 0) axis += a->ndim;
+        if((axis < 0) || (axis > a->ndim - 1)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("index out of range"));
+        }
+    }
+
+    int32_t axis_len = (int32_t)a->shape[ULAB_MAX_DIMS - 1 - a->ndim + axis];
+    uint8_t mode;
+    
+    if(args[4].u_obj == mp_const_none) {
+        mode = CREATE_TAKE_RAISE;
+    } else {
+        GET_STR_DATA_LEN(args[4].u_obj, _mode, len);
+        if(memcmp(_mode, "raise", 5) == 0) {
+            mode = CREATE_TAKE_RAISE;
+        } else if(memcmp(_mode, "wrap", 4) == 0) {
+            mode = CREATE_TAKE_WRAP;
+        } else if(memcmp(_mode, "clip", 4) == 0) {
+            mode = CREATE_TAKE_CLIP;
+        } else {
+            mp_raise_ValueError(MP_ERROR_TEXT("mode should be raise, wrap or clip"));
+        }
+    }
+
+    size_t indices_len = (size_t)mp_obj_get_int(mp_obj_len_maybe(args[1].u_obj));
+
+    size_t *indices = m_new(size_t, indices_len);
+
+    mp_obj_iter_buf_t buf;
+    mp_obj_t item, iterable = mp_getiter(args[1].u_obj, &buf);
+
+    size_t i = 0;
+    while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        int32_t index = mp_obj_get_int(item);
+        if(mode == CREATE_TAKE_RAISE) {
+            if(index < 0) {
+                index += axis_len;
+            }
+            if((index < 0) || (index > axis_len - 1)) {
+                m_del(size_t, indices, indices_len);
+                mp_raise_ValueError(MP_ERROR_TEXT("index out of range"));
+            }
+        } else if(mode == CREATE_TAKE_WRAP) {
+            index %= axis_len;
+        } else { // mode == CREATE_TAKE_CLIP
+            if(index < 0) {
+                m_del(size_t, indices, indices_len);
+                mp_raise_ValueError(MP_ERROR_TEXT("index must not be negative"));
+            }
+            if(index > axis_len - 1) {
+                index = axis_len - 1;
+            }
+        }
+        indices[i] = (size_t)index;
+    }
+
+    m_del(size_t, indices, indices_len);
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(create_take_obj, 0, create_take);
+#endif /* ULAB_NUMPY_HAS_TAKE */
 
 #if ULAB_NUMPY_HAS_ZEROS
 //| def zeros(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray:
