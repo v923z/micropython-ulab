@@ -814,9 +814,9 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
-        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_INT, { .u_rom_obj = MP_ROM_NONE } },
-        { MP_QSTR_out, MP_ARG_KW_ONLY, { .u_rom_obj = MP_ROM_NONE } },
-        { MP_QSTR_mode, MP_ARG_KW_ONLY, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_axis, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_out, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -825,25 +825,31 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(MP_ERROR_TEXT("input is not an array"));
     }
+
     ndarray_obj_t *a = MP_OBJ_TO_PTR(args[0].u_obj);
     int8_t axis = 0;
+    int8_t axis_index = 0;
+    int32_t axis_len;
+    uint8_t mode = CREATE_TAKE_RAISE;
+    uint8_t ndim;
+
     if(args[2].u_obj == mp_const_none) {
-        // pass for now
+        axis_len = a->len;
+        ndim = 1;
     } else { // i.e., axis is an integer
         axis = mp_obj_get_int(args[2].u_obj);
+        ndim = a->ndim;
         if(axis < 0) axis += a->ndim;
         if((axis < 0) || (axis > a->ndim - 1)) {
             mp_raise_ValueError(MP_ERROR_TEXT("index out of range"));
         }
+        axis_index = ULAB_MAX_DIMS - a->ndim + axis;
+        axis_len = (int32_t)a->shape[axis_index];
     }
 
-    int32_t axis_len = (int32_t)a->shape[ULAB_MAX_DIMS - a->ndim + axis];
-    uint8_t mode;
-    
-    if(args[4].u_obj == mp_const_none) {
-        mode = CREATE_TAKE_RAISE;
-    } else {
-        GET_STR_DATA_LEN(args[4].u_obj, _mode, len);
+    size_t _len;
+    if(mp_obj_is_str(args[4].u_obj)) {
+        const char *_mode = mp_obj_str_get_data(args[4].u_obj, &_len);
         if(memcmp(_mode, "raise", 5) == 0) {
             mode = CREATE_TAKE_RAISE;
         } else if(memcmp(_mode, "wrap", 4) == 0) {
@@ -862,7 +868,7 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_obj_iter_buf_t buf;
     mp_obj_t item, iterable = mp_getiter(args[1].u_obj, &buf);
 
-    size_t i = 0;
+    size_t x = 0;
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         int32_t index = mp_obj_get_int(item);
         if(mode == CREATE_TAKE_RAISE) {
@@ -884,30 +890,59 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
                 index = axis_len - 1;
             }
         }
-        indices[i] = (size_t)index;
+        indices[x++] = (size_t)index;
     }
 
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
-    for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
-        shape[i] = a->shape[i];
-        if(i == (ULAB_MAX_DIMS - a->ndim + axis)) {
-            shape[i] = indices_len;
+    if(args[2].u_obj == mp_const_none) {
+        shape[ULAB_MAX_DIMS - 1] = indices_len;
+    } else {
+        for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
+            shape[i] = a->shape[i];
+            if(i == axis_index) {
+                shape[i] = indices_len;
+            }
         }
     }
 
     ndarray_obj_t *out = NULL;
     if(args[3].u_obj == mp_const_none) {
-        out = ndarray_new_dense_ndarray(a->ndim, shape, a->ndim);
+        // no output was supplied
+        out = ndarray_new_dense_ndarray(ndim, shape, a->dtype);
     } else {
         // TODO: deal with last argument being false!
-        out = ulab_tools_inspect_out(args[3].u_obj, a->dtype, a->ndim, shape, true);
+        out = ulab_tools_inspect_out(args[3].u_obj, a->dtype, ndim, shape, true);
     }
-    (void)out;
+
+    uint8_t *out_array = (uint8_t *)out->array;
+
+    if(args[2].u_obj == mp_const_none) { // flattened array
+        for(size_t i = 0; i < indices_len; i++) {
+            uint8_t *a_array = (uint8_t *)a->array;
+            size_t remainder = indices[i];
+            uint8_t j = ULAB_MAX_DIMS - 1;
+            do {
+                size_t div = (remainder / a->shape[j]);
+                a_array += remainder * a->strides[j];
+                remainder -= div * a->shape[j];
+                j--;
+            } while(j > ULAB_MAX_DIMS - a->ndim);
+            // NOTE: for floats and complexes, this might be 
+            // better with memcpy(out_array, a_array, a->itemsize)
+            for(uint8_t k = 0; k < a->itemsize; k++) {
+                out_array[k] = a_array[k];
+            }
+            out_array += a->itemsize;
+        }
+    } else {
+
+    }
+
     m_del(size_t, indices, indices_len);
-    return mp_const_none;
+    return MP_OBJ_FROM_PTR(out);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(create_take_obj, 0, create_take);
+MP_DEFINE_CONST_FUN_OBJ_KW(create_take_obj, 2, create_take);
 #endif /* ULAB_NUMPY_HAS_TAKE */
 
 #if ULAB_NUMPY_HAS_ZEROS
