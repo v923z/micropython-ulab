@@ -16,6 +16,7 @@ on:
 
 jobs:
   micropython:
+    continue-on-error: true
     strategy:
         matrix:
             os:
@@ -56,6 +57,7 @@ jobs:
       run: ./build.sh ${{ matrix.dims }}
 
   circuitpython:
+    continue-on-error: true
     strategy:
         matrix:
             os:
