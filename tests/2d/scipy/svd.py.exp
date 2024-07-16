@@ -1,0 +1,21 @@
+Zero Matrix S: True
+Zero Matrix Compare: True
+
+Identity Matrix S: True
+Identity Matrix Compare: True
+
+Diagonal Matrix S: False
+Diagonal Matrix Compare False
+
+Simultaneous 4D Rotation Compare: False
+
+3x2 Compare: False
+
+2x3 Compare: False
+
+2x2 Compare False
+
+10x15 Random Compare: False
+
+15x10 Random Compare: False
+
