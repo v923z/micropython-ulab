@@ -868,7 +868,7 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_obj_iter_buf_t buf;
     mp_obj_t item, iterable = mp_getiter(args[1].u_obj, &buf);
 
-    size_t x = 0;
+    size_t z = 0;
     while((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         int32_t index = mp_obj_get_int(item);
         if(mode == CREATE_TAKE_RAISE) {
@@ -890,7 +890,7 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
                 index = axis_len - 1;
             }
         }
-        indices[x++] = (size_t)index;
+        indices[z++] = (size_t)index;
     }
 
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
@@ -917,25 +917,75 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     uint8_t *out_array = (uint8_t *)out->array;
 
     if(args[2].u_obj == mp_const_none) { // flattened array
-        for(size_t i = 0; i < indices_len; i++) {
+        for(size_t x = 0; x < indices_len; x++) {
             uint8_t *a_array = (uint8_t *)a->array;
-            size_t remainder = indices[i];
-            uint8_t j = ULAB_MAX_DIMS - 1;
+            size_t remainder = indices[x];
+            uint8_t q = ULAB_MAX_DIMS - 1;
             do {
-                size_t div = (remainder / a->shape[j]);
-                a_array += remainder * a->strides[j];
-                remainder -= div * a->shape[j];
-                j--;
-            } while(j > ULAB_MAX_DIMS - a->ndim);
+                size_t div = (remainder / a->shape[q]);
+                a_array += remainder * a->strides[q];
+                remainder -= div * a->shape[q];
+                q--;
+            } while(q > ULAB_MAX_DIMS - a->ndim);
             // NOTE: for floats and complexes, this might be 
             // better with memcpy(out_array, a_array, a->itemsize)
-            for(uint8_t k = 0; k < a->itemsize; k++) {
-                out_array[k] = a_array[k];
+            for(uint8_t p = 0; p < a->itemsize; p++) {
+                out_array[p] = a_array[p];
             }
             out_array += a->itemsize;
         }
     } else {
+        for(size_t x = 0; x < indices_len; x++) {
+            uint8_t *a_array = (uint8_t *)a->array;
 
+            #if ULAB_MAX_DIMS > 3
+            size_t i = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 2
+                size_t j = 0;
+                do {
+                #endif
+                    #if ULAB_MAX_DIMS > 1
+                    size_t k = 0;
+                    do {
+                    #endif
+                        size_t l = 0;
+                        do {
+                            // NOTE: for floats and complexes, this might be 
+                            // better with memcpy(out_array, a_array, a->itemsize)
+                            for(uint8_t p = 0; p < a->itemsize; p++) {
+                                out_array[p] = a_array[p];
+                            }
+                            out_array += a->itemsize;
+                            a_array += a->strides[ULAB_MAX_DIMS - 1];
+                            l++;
+                        } while(l < a->shape[ULAB_MAX_DIMS - 1]);
+                    #if ULAB_MAX_DIMS > 1
+                        out_array -= out->strides[ULAB_MAX_DIMS - 1] * out->shape[ULAB_MAX_DIMS - 1];
+                        out_array += target->strides[ULAB_MAX_DIMS - 2];
+                        a_array -= a->strides[ULAB_MAX_DIMS - 1] * a->shape[ULAB_MAX_DIMS - 1];
+                        a_array += a->strides[ULAB_MAX_DIMS - 2];
+                        k++;
+                    } while(k < a->shape[ULAB_MAX_DIMS - 2]);
+                    #endif
+                #if ULAB_MAX_DIMS > 2
+                    out_array -= out->strides[ULAB_MAX_DIMS - 2] * out->shape[ULAB_MAX_DIMS-2];
+                    out_array += out->strides[ULAB_MAX_DIMS - 3];
+                    a_array -= a->strides[ULAB_MAX_DIMS - 2] * a->shape[ULAB_MAX_DIMS-2];
+                    a_array += a->strides[ULAB_MAX_DIMS - 3];
+                    j++;
+                } while(j < a->shape[ULAB_MAX_DIMS - 3]);
+                #endif
+            #if ULAB_MAX_DIMS > 3
+                out_array -= out->strides[ULAB_MAX_DIMS - 3] * out->shape[ULAB_MAX_DIMS-3];
+                out_array += out->strides[ULAB_MAX_DIMS - 4];
+                a_array -= a->strides[ULAB_MAX_DIMS - 3] * a->shape[ULAB_MAX_DIMS-3];
+                a_array += a->strides[ULAB_MAX_DIMS - 4];
+                i++;
+            } while(i < a->shape[ULAB_MAX_DIMS - 4]);
+            #endif
+        }
     }
 
     m_del(size_t, indices, indices_len);
