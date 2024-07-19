@@ -509,7 +509,7 @@ static size_t multiply_size(size_t a, size_t b) {
     return result;
 }
 
-ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype, uint8_t *buffer) {
+ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
     // Creates the base ndarray with shape, and initialises the values to straight 0s
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
@@ -536,10 +536,7 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
 
     // if the length is 0, still allocate a single item, so that contractions can be handled
     size_t len = multiply_size(ndarray->itemsize, MAX(1, ndarray->len));
-    uint8_t *array = buffer;
-    if(buffer == NULL) {
-        array = m_new0(byte, len);
-    }
+    uint8_t *array = m_new0(byte, len);
     // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
     // we could, perhaps, leave this step out, and initialise the array only, when needed
     ndarray->array = array;
@@ -555,24 +552,39 @@ ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dt
     // for(size_t i = ULAB_MAX_DIMS; i > 1; i--) {
     //     strides[i-2] = strides[i-1] * MAX(1, shape[i-1]);
     // }
-    return ndarray_new_ndarray(ndim, shape, NULL, dtype, NULL);
+    return ndarray_new_ndarray(ndim, shape, NULL, dtype);
 }
 
 ndarray_obj_t *ndarray_ndarray_from_buffer(uint8_t ndim, size_t *shape, uint8_t dtype, mp_obj_t inbuffer, size_t offset) {
     // creates a dense array from a buffer
 
-    uint8_t sz = ulab_binary_get_size(dtype);
-    size_t len = sz; 
-    for(uint8_t i = ULAB_MAX_DIMS; i > ULAB_MAX_DIMS - ndim; i--) {
-        len = multiply_size(len, shape[i - 1]);
-    }
     mp_buffer_info_t bufinfo;
     if(mp_get_buffer(inbuffer, &bufinfo, MP_BUFFER_READ)) {
+        ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
+        ndarray->base.type = &ulab_ndarray_type;
+        ndarray->dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
+        ndarray->boolean = dtype == NDARRAY_BOOL ? NDARRAY_BOOLEAN : NDARRAY_NUMERIC;
+        ndarray->ndim = ndim;
+        ndarray->len = ndim == 0 ? 0 : 1;
+        ndarray->itemsize = ulab_binary_get_size(dtype);
+        int32_t *_strides = strides_from_shape(shape, ndarray->dtype);
+        for(uint8_t i=ULAB_MAX_DIMS; i > ULAB_MAX_DIMS-ndim; i--) {
+            ndarray->shape[i - 1] = shape[i - 1];
+            ndarray->strides[i - 1] = _strides[i - 1];
+            ndarray->len = multiply_size(ndarray->len, shape[i - 1]);
+        }
+
+        if (SIZE_MAX / ndarray->itemsize <= ndarray->len) {
+            mp_raise_ValueError(MP_ERROR_TEXT("ndarray length overflows"));
+        }
+        size_t len = multiply_size(ndarray->itemsize, MAX(1, ndarray->len));
         if(len > (bufinfo.len - offset)) {
             mp_raise_ValueError(MP_ERROR_TEXT("buffer size is not compatible with shape"));
         }
         uint8_t *buffer = bufinfo.buf;
-        return ndarray_new_ndarray(ndim, shape, NULL, dtype, buffer + offset);
+        ndarray->array = buffer + offset;
+        ndarray->origin = buffer + offset;
+        return ndarray;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("can't read from input buffer"));
     }
@@ -673,7 +685,7 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
     if(source->boolean) {
         dtype = NDARRAY_BOOL;
     }
-    ndarray_obj_t *ndarray = ndarray_new_ndarray(source->ndim, source->shape, strides, dtype, NULL);
+    ndarray_obj_t *ndarray = ndarray_new_ndarray(source->ndim, source->shape, strides, dtype);
     ndarray_copy_array(source, ndarray, 0);
     return ndarray;
 }
@@ -1907,7 +1919,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             #if ULAB_SUPPORTS_COMPLEX
             if(self->dtype == NDARRAY_COMPLEX) {
                 int32_t *strides = strides_from_shape(self->shape, NDARRAY_FLOAT);
-                ndarray_obj_t *target = ndarray_new_ndarray(self->ndim, self->shape, strides, NDARRAY_FLOAT, NULL);
+                ndarray_obj_t *target = ndarray_new_ndarray(self->ndim, self->shape, strides, NDARRAY_FLOAT);
                 ndarray = MP_OBJ_TO_PTR(carray_abs(self, target));
             } else {
             #endif

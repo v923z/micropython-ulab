@@ -189,7 +189,7 @@ ndarray_obj_t *ndarray_from_iterable(mp_obj_t , uint8_t );
 ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t , size_t *, uint8_t );
 ndarray_obj_t *ndarray_ndarray_from_buffer(uint8_t , size_t *, uint8_t , mp_obj_t , size_t );
 ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *, uint8_t );
-ndarray_obj_t *ndarray_new_ndarray(uint8_t , size_t *, int32_t *, uint8_t , uint8_t *);
+ndarray_obj_t *ndarray_new_ndarray(uint8_t , size_t *, int32_t *, uint8_t );
 ndarray_obj_t *ndarray_new_linear_array(size_t , uint8_t );
 ndarray_obj_t *ndarray_new_view(ndarray_obj_t *, uint8_t , size_t *, int32_t *, int32_t );
 bool ndarray_is_dense(ndarray_obj_t *);
