@@ -833,7 +833,9 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     uint8_t mode = CREATE_TAKE_RAISE;
     uint8_t ndim;
 
+    // axis keyword argument
     if(args[2].u_obj == mp_const_none) {
+        // work with the flattened array
         axis_len = a->len;
         ndim = 1;
     } else { // i.e., axis is an integer
@@ -848,6 +850,7 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     }
 
     size_t _len;
+    // mode keyword argument
     if(mp_obj_is_str(args[4].u_obj)) {
         const char *_mode = mp_obj_str_get_data(args[4].u_obj, &_len);
         if(memcmp(_mode, "raise", 5) == 0) {
@@ -894,7 +897,7 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     }
 
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
-    if(args[2].u_obj == mp_const_none) {
+    if(args[2].u_obj == mp_const_none) { // flattened array
         shape[ULAB_MAX_DIMS - 1] = indices_len;
     } else {
         for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
@@ -914,9 +917,8 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
         out = ulab_tools_inspect_out(args[3].u_obj, a->dtype, ndim, shape, true);
     }
 
-    uint8_t *out_array = (uint8_t *)out->array;
-
     if(args[2].u_obj == mp_const_none) { // flattened array
+        uint8_t *out_array = (uint8_t *)out->array;
         for(size_t x = 0; x < indices_len; x++) {
             uint8_t *a_array = (uint8_t *)a->array;
             size_t remainder = indices[x];
@@ -935,8 +937,17 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
             out_array += a->itemsize;
         }
     } else {
+        // move the axis shape/stride to the leftmost position:
+        SWAP(size_t, a->shape[0], a->shape[axis]);
+        SWAP(size_t, out->shape[0], out->shape[axis]);
+        SWAP(int32_t, a->strides[0], a->strides[axis]);
+        SWAP(int32_t, out->strides[0], out->strides[axis]);
+
         for(size_t x = 0; x < indices_len; x++) {
             uint8_t *a_array = (uint8_t *)a->array;
+            uint8_t *out_array = (uint8_t *)out->array;
+            a_array += indices[x] * a->strides[0];
+            out_array += x * out->strides[0];
 
             #if ULAB_MAX_DIMS > 3
             size_t i = 0;
@@ -957,37 +968,46 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
                             for(uint8_t p = 0; p < a->itemsize; p++) {
                                 out_array[p] = a_array[p];
                             }
-                            out_array += a->itemsize;
+                            out_array += out->strides[ULAB_MAX_DIMS - 1];
                             a_array += a->strides[ULAB_MAX_DIMS - 1];
                             l++;
                         } while(l < a->shape[ULAB_MAX_DIMS - 1]);
                     #if ULAB_MAX_DIMS > 1
                         out_array -= out->strides[ULAB_MAX_DIMS - 1] * out->shape[ULAB_MAX_DIMS - 1];
-                        out_array += target->strides[ULAB_MAX_DIMS - 2];
+                        out_array += out->strides[ULAB_MAX_DIMS - 2];
                         a_array -= a->strides[ULAB_MAX_DIMS - 1] * a->shape[ULAB_MAX_DIMS - 1];
                         a_array += a->strides[ULAB_MAX_DIMS - 2];
                         k++;
                     } while(k < a->shape[ULAB_MAX_DIMS - 2]);
                     #endif
                 #if ULAB_MAX_DIMS > 2
-                    out_array -= out->strides[ULAB_MAX_DIMS - 2] * out->shape[ULAB_MAX_DIMS-2];
+                    out_array -= out->strides[ULAB_MAX_DIMS - 2] * out->shape[ULAB_MAX_DIMS - 2];
                     out_array += out->strides[ULAB_MAX_DIMS - 3];
-                    a_array -= a->strides[ULAB_MAX_DIMS - 2] * a->shape[ULAB_MAX_DIMS-2];
+                    a_array -= a->strides[ULAB_MAX_DIMS - 2] * a->shape[ULAB_MAX_DIMS - 2];
                     a_array += a->strides[ULAB_MAX_DIMS - 3];
                     j++;
                 } while(j < a->shape[ULAB_MAX_DIMS - 3]);
                 #endif
             #if ULAB_MAX_DIMS > 3
-                out_array -= out->strides[ULAB_MAX_DIMS - 3] * out->shape[ULAB_MAX_DIMS-3];
+                out_array -= out->strides[ULAB_MAX_DIMS - 3] * out->shape[ULAB_MAX_DIMS - 3];
                 out_array += out->strides[ULAB_MAX_DIMS - 4];
-                a_array -= a->strides[ULAB_MAX_DIMS - 3] * a->shape[ULAB_MAX_DIMS-3];
+                a_array -= a->strides[ULAB_MAX_DIMS - 3] * a->shape[ULAB_MAX_DIMS - 3];
                 a_array += a->strides[ULAB_MAX_DIMS - 4];
                 i++;
             } while(i < a->shape[ULAB_MAX_DIMS - 4]);
             #endif
         }
-    }
 
+        SWAP(size_t, a->shape[0], a->shape[axis]);
+        SWAP(size_t, out->shape[0], out->shape[axis]);
+        SWAP(int32_t, a->strides[0], a->strides[axis]);
+        SWAP(int32_t, out->strides[0], out->strides[axis]);
+
+        // m_del(size_t, a_shape, ULAB_MAX_DIMS);
+        // m_del(size_t, out_shape, ULAB_MAX_DIMS);
+        // m_del(int32_t, a_strides, ULAB_MAX_DIMS);
+        // m_del(int32_t, out_strides, ULAB_MAX_DIMS);
+    }
     m_del(size_t, indices, indices_len);
     return MP_OBJ_FROM_PTR(out);
 }
