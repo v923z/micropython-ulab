@@ -839,7 +839,7 @@ mp_obj_t create_frombuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             }
         }
 
-        size_t *shape = ndarray_shape_vector(0, 0, 0, 1);
+        size_t *shape = ndarray_shape_vector(0, 0, 0, len);
         uint8_t *buffer = bufinfo.buf;
         return ndarray_new_ndarray(1, shape, NULL, dtype, buffer + offset);
     }
