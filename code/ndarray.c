@@ -511,6 +511,7 @@ static size_t multiply_size(size_t a, size_t b) {
 
 ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype, uint8_t *buffer) {
     // Creates the base ndarray with shape, and initialises the values to straight 0s
+    // optionally, values can be supplied via the last argument
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
     ndarray->dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
@@ -539,10 +540,10 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
     uint8_t *array;
     array = buffer;
     if(array == NULL) {
+        // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
+        // we could, perhaps, leave this step out, and initialise the array only, when needed
         array = m_new0(byte, len);
     }
-    // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
-    // we could, perhaps, leave this step out, and initialise the array only, when needed
     ndarray->array = array;
     ndarray->origin = array;
     return ndarray;
@@ -566,7 +567,7 @@ ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dt
     for(size_t i = 0; i < _shape->len; i++) {
         shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[_shape->len - 1 - i]);
     }
-    return ndarray_new_dense_ndarray(_shape->len, shape, dtype);
+    return ndarray_new_ndarray(_shape->len, shape, NULL, dtype, NULL);
 }
 
 void ndarray_copy_array(ndarray_obj_t *source, ndarray_obj_t *target, uint8_t shift) {
@@ -664,7 +665,7 @@ ndarray_obj_t *ndarray_copy_view_convert_type(ndarray_obj_t *source, uint8_t dty
     if(dtype == source->dtype) {
         return ndarray_copy_view(source);
     }
-    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(source->ndim, source->shape, dtype);
+    ndarray_obj_t *ndarray = ndarray_new_ndarray(source->ndim, source->shape, NULL, dtype, NULL);
     uint8_t *sarray = (uint8_t *)source->array;
     uint8_t *array = (uint8_t *)ndarray->array;
 
@@ -828,10 +829,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_copy_obj, ndarray_copy);
 ndarray_obj_t *ndarray_new_linear_array(size_t len, uint8_t dtype) {
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
     if(len == 0) {
-        return ndarray_new_dense_ndarray(0, shape, dtype);
+        return ndarray_new_ndarray(0, shape, NULL, dtype, NULL);
     }
     shape[ULAB_MAX_DIMS-1] = len;
-    return ndarray_new_dense_ndarray(1, shape, dtype);
+    return ndarray_new_ndarray(1, shape, NULL, dtype, NULL);
 }
 
 ndarray_obj_t *ndarray_from_iterable(mp_obj_t obj, uint8_t dtype) {
@@ -872,7 +873,7 @@ ndarray_obj_t *ndarray_from_iterable(mp_obj_t obj, uint8_t dtype) {
         shape[ULAB_MAX_DIMS - i - 1] = shape[ndim - 1 - i];
     }
 
-    ndarray_obj_t *ndarray = ndarray_new_dense_ndarray(ndim, shape, dtype);
+    ndarray_obj_t *ndarray = ndarray_new_ndarray(ndim, shape, NULL, dtype, NULL);
     item = obj;
     for(uint8_t i = 0; i < ndim - 1; i++) {
         // if ndim > 1, descend into the hierarchy
@@ -2072,7 +2073,7 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
         if(inplace) {
             mp_raise_ValueError(MP_ERROR_TEXT("cannot assign new shape"));
         }
-        ndarray = ndarray_new_dense_ndarray(shape->len, new_shape, source->dtype);
+        ndarray = ndarray_new_ndarray(shape->len, new_shape, NULL, source->dtype, NULL);
         ndarray_copy_array(source, ndarray, 0);
     }
     return MP_OBJ_FROM_PTR(ndarray);
