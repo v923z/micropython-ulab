@@ -1,3 +1,9 @@
+Sat, 14 Sep 2024
+
+version 6.5.4
+
+    fix roll, when shift is 0
+
 Wed, 6 Mar 2024
 
 version 6.5.2

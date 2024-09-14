@@ -1190,6 +1190,12 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, ndarray->shape, ndarray->dtype);
 
     int32_t shift = mp_obj_get_int(args[1].u_obj);
+
+    if(shift == 0) {
+        ndarray_copy_array(ndarray, results, 0);
+        return MP_OBJ_FROM_PTR(results);
+    }
+
     int32_t _shift = shift < 0 ? -shift : shift;
 
     size_t counter;
