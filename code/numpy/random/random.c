@@ -41,7 +41,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_generator,
     MP_TYPE_FLAG_NONE,
     print, random_generator_print,
-    make_new, random_generator_make_new, 
+    make_new, random_generator_make_new,
     locals_dict, &random_generator_locals_dict
 );
 #else
@@ -76,11 +76,12 @@ mp_obj_t random_generator_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if(args[0] == mp_const_none) {
         #ifndef MICROPY_PY_RANDOM_SEED_INIT_FUNC
         mp_raise_ValueError(MP_ERROR_TEXT("no default seed"));
-        #endif
+        #else
         random_generator_obj_t *generator = m_new_obj(random_generator_obj_t);
         generator->base.type = &random_generator_type;
         generator->state = MICROPY_PY_RANDOM_SEED_INIT_FUNC;
         return MP_OBJ_FROM_PTR(generator);
+        #endif
     } else if(mp_obj_is_int(args[0])) {
         random_generator_obj_t *generator = m_new_obj(random_generator_obj_t);
         generator->base.type = &random_generator_type;
@@ -89,7 +90,7 @@ mp_obj_t random_generator_make_new(const mp_obj_type_t *type, size_t n_args, siz
     } else if(mp_obj_is_type(args[0], &mp_type_tuple)){
         mp_obj_tuple_t *seeds = MP_OBJ_TO_PTR(args[0]);
         mp_obj_t *items = m_new(mp_obj_t, seeds->len);
-        
+
         for(uint8_t i = 0; i < seeds->len; i++) {
             random_generator_obj_t *generator = m_new_obj(random_generator_obj_t);
             generator->base.type = &random_generator_type;
@@ -175,7 +176,7 @@ static mp_obj_t random_normal(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
     mp_float_t *array = (mp_float_t *)ndarray->array;
 
-    // numpy's random supports only dense output arrays, so we can simply 
+    // numpy's random supports only dense output arrays, so we can simply
     // loop through the elements in a linear fashion
     for(size_t i = 0; i < ndarray->len; i = i + 2) {
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
@@ -248,7 +249,7 @@ static mp_obj_t random_random(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         if(!mp_obj_is_type(out, &ulab_ndarray_type)) {
             mp_raise_TypeError(MP_ERROR_TEXT("out has wrong type"));
         }
-        
+
         ndarray = MP_OBJ_TO_PTR(out);
 
         if(ndarray->dtype != NDARRAY_FLOAT) {
@@ -283,10 +284,10 @@ static mp_obj_t random_random(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 
     mp_float_t *array = (mp_float_t *)ndarray->array;
 
-    // numpy's random supports only dense output arrays, so we can simply 
+    // numpy's random supports only dense output arrays, so we can simply
     // loop through the elements in a linear fashion
     for(size_t i = 0; i < ndarray->len; i++) {
-        
+
         #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
         uint32_t x = pcg32_next(&self->state);
         *array = (float)(int32_t)(x >> 8) * 0x1.0p-24f;
@@ -375,4 +376,3 @@ const mp_obj_module_t ulab_numpy_random_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_ulab_numpy_random_globals,
 };
-

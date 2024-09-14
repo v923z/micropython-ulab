@@ -25,9 +25,11 @@
 
 #if ULAB_SUPPORTS_COMPLEX
 
+//| import builtins
+//|
 //| import ulab.numpy
 
-//| def real(val):
+//| def real(val: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
 //|     """
 //|     Return the real part of the complex argument, which can be
 //|     either an ndarray, or a scalar."""
@@ -54,7 +56,7 @@ mp_obj_t carray_real(mp_obj_t _source) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(carray_real_obj, carray_real);
 
-//| def imag(val):
+//| def imag(val: ulab.numpy.ndarray) -> ulab.numpy.ndarray:
 //|     """
 //|     Return the imaginary part of the complex argument, which can be
 //|     either an ndarray, or a scalar."""
@@ -82,7 +84,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(carray_imag_obj, carray_imag);
 
 #if ULAB_NUMPY_HAS_CONJUGATE
 
-//| def conjugate(val):
+//| def conjugate(
+//|     val: builtins.complex | ulab.numpy.ndarray
+//| ) -> builtins.complex | ulab.numpy.ndarray:
 //|     """
 //|     Return the conjugate of the complex argument, which can be
 //|     either an ndarray, or a scalar."""

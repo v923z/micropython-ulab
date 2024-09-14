@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019-2022 Zoltán Vörös
+ * Copyright (c) 2019-2024 Zoltán Vörös
  *               2020 Jeff Epler for Adafruit Industries
  *               2020 Taku Fukada
 */
@@ -509,8 +509,9 @@ static size_t multiply_size(size_t a, size_t b) {
     return result;
 }
 
-ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype) {
+ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides, uint8_t dtype, uint8_t *buffer) {
     // Creates the base ndarray with shape, and initialises the values to straight 0s
+    // optionally, values can be supplied via the last argument
     ndarray_obj_t *ndarray = m_new_obj(ndarray_obj_t);
     ndarray->base.type = &ulab_ndarray_type;
     ndarray->dtype = dtype == NDARRAY_BOOL ? NDARRAY_UINT8 : dtype;
@@ -536,9 +537,13 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
 
     // if the length is 0, still allocate a single item, so that contractions can be handled
     size_t len = multiply_size(ndarray->itemsize, MAX(1, ndarray->len));
-    uint8_t *array = m_new0(byte, len);
-    // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
-    // we could, perhaps, leave this step out, and initialise the array only, when needed
+    uint8_t *array;
+    array = buffer;
+    if(array == NULL) {
+        // this should set all elements to 0, irrespective of the of the dtype (all bits are zero)
+        // we could, perhaps, leave this step out, and initialise the array only, when needed
+        array = m_new0(byte, len);
+    }
     ndarray->array = array;
     ndarray->origin = array;
     return ndarray;
@@ -547,24 +552,20 @@ ndarray_obj_t *ndarray_new_ndarray(uint8_t ndim, size_t *shape, int32_t *strides
 ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dtype) {
     // creates a dense array, i.e., one, where the strides are derived directly from the shapes
     // the function should work in the general n-dimensional case
-    int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    strides[ULAB_MAX_DIMS-1] = (int32_t)ulab_binary_get_size(dtype);
-    for(size_t i=ULAB_MAX_DIMS; i > 1; i--) {
-        strides[i-2] = strides[i-1] * MAX(1, shape[i-1]);
-    }
-    return ndarray_new_ndarray(ndim, shape, strides, dtype);
+    // int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    // strides[ULAB_MAX_DIMS - 1] = (int32_t)ulab_binary_get_size(dtype);
+    // for(size_t i = ULAB_MAX_DIMS; i > 1; i--) {
+    //     strides[i-2] = strides[i-1] * MAX(1, shape[i-1]);
+    // }
+    return ndarray_new_ndarray(ndim, shape, NULL, dtype, NULL);
 }
 
 ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dtype) {
     // creates a dense array from a tuple
     // the function should work in the general n-dimensional case
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    for(size_t i = 0; i < ULAB_MAX_DIMS; i++) {
-        if(i >= _shape->len) {
-            shape[ULAB_MAX_DIMS - 1 - i] = 0;
-        } else {
-            shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[i]);
-        }
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
+    for(size_t i = 0; i < _shape->len; i++) {
+        shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[_shape->len - 1 - i]);
     }
     return ndarray_new_dense_ndarray(_shape->len, shape, dtype);
 }
@@ -654,7 +655,7 @@ ndarray_obj_t *ndarray_copy_view(ndarray_obj_t *source) {
     if(source->boolean) {
         dtype = NDARRAY_BOOL;
     }
-    ndarray_obj_t *ndarray = ndarray_new_ndarray(source->ndim, source->shape, strides, dtype);
+    ndarray_obj_t *ndarray = ndarray_new_ndarray(source->ndim, source->shape, strides, dtype, NULL);
     ndarray_copy_array(source, ndarray, 0);
     return ndarray;
 }
@@ -921,7 +922,7 @@ ndarray_obj_t *ndarray_from_iterable(mp_obj_t obj, uint8_t dtype) {
     return ndarray;
 }
 
-STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_dtype, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(NDARRAY_FLOAT) } },
@@ -944,7 +945,7 @@ STATIC uint8_t ndarray_init_helper(size_t n_args, const mp_obj_t *pos_args, mp_m
     return _dtype;
 }
 
-STATIC mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t ndarray_make_new_core(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args, mp_map_t *kw_args) {
     uint8_t dtype = ndarray_init_helper(n_args, args, kw_args);
 
     if(mp_obj_is_type(args[0], &ulab_ndarray_type)) {
@@ -1888,7 +1889,7 @@ mp_obj_t ndarray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             #if ULAB_SUPPORTS_COMPLEX
             if(self->dtype == NDARRAY_COMPLEX) {
                 int32_t *strides = strides_from_shape(self->shape, NDARRAY_FLOAT);
-                ndarray_obj_t *target = ndarray_new_ndarray(self->ndim, self->shape, strides, NDARRAY_FLOAT);
+                ndarray_obj_t *target = ndarray_new_ndarray(self->ndim, self->shape, strides, NDARRAY_FLOAT, NULL);
                 ndarray = MP_OBJ_TO_PTR(carray_abs(self, target));
             } else {
             #endif
@@ -2021,7 +2022,7 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
         mp_obj_t *items = m_new(mp_obj_t, 1);
         items[0] = _shape;
         shape = mp_obj_new_tuple(1, items);
-    } else {
+    } else { // at this point it's certain that _shape is a tuple
         shape = MP_OBJ_TO_PTR(_shape);
     }
 
@@ -2072,11 +2073,7 @@ mp_obj_t ndarray_reshape_core(mp_obj_t oin, mp_obj_t _shape, bool inplace) {
         if(inplace) {
             mp_raise_ValueError(MP_ERROR_TEXT("cannot assign new shape"));
         }
-        if(mp_obj_is_type(_shape, &mp_type_tuple)) {
-            ndarray = ndarray_new_ndarray_from_tuple(shape, source->dtype);
-        } else {
-            ndarray = ndarray_new_linear_array(source->len, source->dtype);
-        }
+        ndarray = ndarray_new_dense_ndarray(shape->len, new_shape, source->dtype);
         ndarray_copy_array(source, ndarray, 0);
     }
     return MP_OBJ_FROM_PTR(ndarray);

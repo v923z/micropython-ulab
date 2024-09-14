@@ -33,7 +33,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 6.5.1
+#define ULAB_VERSION 6.5.4
 #define xstr(s) str(s)
 #define str(s) #s
 
@@ -43,13 +43,13 @@
 #define ULAB_VERSION_STRING xstr(ULAB_VERSION) xstr(-) xstr(ULAB_MAX_DIMS) xstr(D)
 #endif
 
-STATIC MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
+static MP_DEFINE_STR_OBJ(ulab_version_obj, ULAB_VERSION_STRING);
 
 #ifdef ULAB_HASH
-STATIC MP_DEFINE_STR_OBJ(ulab_sha_obj, xstr(ULAB_HASH));
+static MP_DEFINE_STR_OBJ(ulab_sha_obj, xstr(ULAB_HASH));
 #endif
 
-STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
+static const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #if ULAB_MAX_DIMS > 1
         #if NDARRAY_HAS_RESHAPE
             { MP_ROM_QSTR(MP_QSTR_reshape), MP_ROM_PTR(&ndarray_reshape_obj) },
@@ -78,7 +78,7 @@ STATIC const mp_rom_map_elem_t ulab_ndarray_locals_dict_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ulab_ndarray_locals_dict, ulab_ndarray_locals_dict_table);
 
 #if defined(MP_DEFINE_CONST_OBJ_TYPE)
 // MicroPython after-b41aaaa (Sept 19 2022).
@@ -192,7 +192,7 @@ const mp_obj_type_t ndarray_flatiter_type = {
 #endif
 #endif
 
-STATIC const mp_rom_map_elem_t ulab_globals_table[] = {
+static const mp_rom_map_elem_t ulab_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ulab) },
     { MP_ROM_QSTR(MP_QSTR___version__), MP_ROM_PTR(&ulab_version_obj) },
     #ifdef ULAB_HASH
@@ -217,7 +217,7 @@ STATIC const mp_rom_map_elem_t ulab_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT (
+static MP_DEFINE_CONST_DICT (
     mp_module_ulab_globals,
     ulab_globals_table
 );

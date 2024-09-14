@@ -1,6 +1,6 @@
 # ulab
 
-[![Documentation Status](https://readthedocs.org/projects/micropython-ulab-robert/badge/?version=latest)](https://micropython-ulab-robert.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/micropython-ulab/badge/?version=latest)](https://micropython-ulab.readthedocs.io/en/latest/index.html)
 
 `ulab` is a `numpy`-like array manipulation library for [micropython](http://micropython.org/) and [CircuitPython](https://circuitpython.org/).
 The module is written in C, defines compact containers (`ndarray`s) for numerical data of one to four
@@ -47,7 +47,7 @@ the `imag`, and `real` properties are automatically included.
 
 ## `numpy` and `scipy` functions
 
-In addition, `ulab` includes [universal functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-universal.html), [many `numpy` functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-functions.html), and functions from the [`numpy.fft`](https://micropython-ulab.readthedocs.io/en/latest/numpy-fft.html), [`numpy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/numpy-linalg.html), [`scipy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/scipy-linalg.html), [`scipy.optimize`](https://micropython-ulab.readthedocs.io/en/latest/scipy-optimize.html), [`scipy.signal`](https://micropython-ulab.readthedocs.io/en/latest/scipy-signal.html), and [`scipy.special`](https://micropython-ulab.readthedocs.io/en/latest/scipy-special.html) modules. A complete list of available routines can be found under [micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest).
+In addition, `ulab` includes [universal functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-universal.html), [many `numpy` functions](https://micropython-ulab.readthedocs.io/en/latest/numpy-functions.html), and functions from the [`numpy.fft`](https://micropython-ulab.readthedocs.io/en/latest/numpy-fft.html), [`numpy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/numpy-linalg.html), [`numpy.random`](https://micropython-ulab.readthedocs.io/en/latest/numpy-random.html), [`scipy.linalg`](https://micropython-ulab.readthedocs.io/en/latest/scipy-linalg.html), [`scipy.optimize`](https://micropython-ulab.readthedocs.io/en/latest/scipy-optimize.html), [`scipy.signal`](https://micropython-ulab.readthedocs.io/en/latest/scipy-signal.html), and [`scipy.special`](https://micropython-ulab.readthedocs.io/en/latest/scipy-special.html) modules. A complete list of available routines can be found under [micropython-ulab](https://micropython-ulab.readthedocs.io/en/latest).
 
 ## `ulab` utilities
 
@@ -112,7 +112,6 @@ of the user manual.
 1. `MaixPy` https://github.com/sipeed/MaixPy
 1. `OpenMV` https://github.com/openmv/openmv
 1. `pimoroni-pico` https://github.com/pimoroni/pimoroni-pico
-3. `pycom` https://pycom.io/
 
 ## Compiling
 
