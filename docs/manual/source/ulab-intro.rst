@@ -8,9 +8,10 @@ Enter ulab
 ``ulab`` is a ``numpy``-like module for ``micropython`` and its
 derivatives, meant to simplify and speed up common mathematical
 operations on arrays. ``ulab`` implements a small subset of ``numpy``
-and ``scipy``. The functions were chosen such that they might be useful
-in the context of a microcontroller. However, the project is a living
-one, and suggestions for new features are always welcome.
+and ``scipy``, as well as a number of functions manipulating byte
+arrays. The functions were chosen such that they might be useful in the
+context of a microcontroller. However, the project is a living one, and
+suggestions for new features are always welcome.
 
 This document discusses how you can use the library, starting from
 building your own firmware, through questions like what affects the
@@ -265,9 +266,9 @@ functions that are part of ``numpy``, you have to import ``numpy`` as
    p = np.array([1, 2, 3])
    np.polyval(p, x)
 
-There are a couple of exceptions to this rule, namely ``fft``, and
-``linalg``, which are sub-modules even in ``numpy``, thus you have to
-write them out as
+There are a couple of exceptions to this rule, namely ``fft``,
+``linalg``, and ``random``, which are sub-modules even in ``numpy``,
+thus you have to write them out as
 
 .. code:: python
 
