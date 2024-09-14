@@ -1,5 +1,11 @@
 Sat, 14 Sep 2024
 
+version 6.5.5
+
+    add scratchpad, out, log keyword arguments to spectrum
+
+Sat, 14 Sep 2024
+
 version 6.5.4
 
     fix roll, when shift is 0
