@@ -1186,13 +1186,19 @@ mp_obj_t numerical_roll(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_TypeError(MP_ERROR_TEXT("roll argument must be an ndarray"));
     }
     ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(args[0].u_obj);
-    uint8_t *array = ndarray->array;
     ndarray_obj_t *results = ndarray_new_dense_ndarray(ndarray->ndim, ndarray->shape, ndarray->dtype);
 
     int32_t shift = mp_obj_get_int(args[1].u_obj);
+
+    if(shift == 0) {
+        ndarray_copy_array(ndarray, results, 0);
+        return MP_OBJ_FROM_PTR(results);
+    }
+
     int32_t _shift = shift < 0 ? -shift : shift;
 
     size_t counter;
+    uint8_t *array = ndarray->array;
     uint8_t *rarray = (uint8_t *)results->array;
 
     if(args[2].u_obj == mp_const_none) { // roll the flattened array
