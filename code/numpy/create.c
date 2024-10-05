@@ -936,7 +936,7 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
             }
             out_array += a->itemsize;
         }
-    } else {
+    } else {     
         // move the axis shape/stride to the leftmost position:
         SWAP(size_t, a->shape[0], a->shape[axis]);
         SWAP(size_t, out->shape[0], out->shape[axis]);
@@ -998,15 +998,11 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
             #endif
         }
 
+        // revert back to the original order
         SWAP(size_t, a->shape[0], a->shape[axis]);
         SWAP(size_t, out->shape[0], out->shape[axis]);
         SWAP(int32_t, a->strides[0], a->strides[axis]);
         SWAP(int32_t, out->strides[0], out->strides[axis]);
-
-        // m_del(size_t, a_shape, ULAB_MAX_DIMS);
-        // m_del(size_t, out_shape, ULAB_MAX_DIMS);
-        // m_del(int32_t, a_strides, ULAB_MAX_DIMS);
-        // m_del(int32_t, out_strides, ULAB_MAX_DIMS);
     }
     m_del(size_t, indices, indices_len);
     return MP_OBJ_FROM_PTR(out);
