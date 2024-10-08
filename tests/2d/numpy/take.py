@@ -10,7 +10,7 @@ for dtype in dtypes:
     a = np.array(range(12), dtype=dtype).reshape((3, 4))
     print(np.take(a, (0, 10)))
 
-print('1D arrays')
+print('\n1D arrays')
 for dtype in dtypes:
     a = np.array(range(12), dtype=dtype)
     print('\na:', a)
@@ -19,7 +19,7 @@ for dtype in dtypes:
     indices = np.array([0, 2, 2, 1], dtype=np.uint8)
     print(np.take(a, indices))
 
-
+print('\n2D arrays')
 for dtype in dtypes:
     a = np.array(range(12), dtype=dtype).reshape((3, 4))
     print('\na:', a)

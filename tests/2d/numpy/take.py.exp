@@ -1,0 +1,105 @@
+flattened array
+array([0, 10], dtype=uint8)
+array([0, 10], dtype=int8)
+array([0, 10], dtype=uint16)
+array([0, 10], dtype=int16)
+array([0.0, 10.0], dtype=float64)
+
+1D arrays
+
+a: array([0, 1, 2, ..., 9, 10, 11], dtype=uint8)
+array([0, 2, 2, 1], dtype=uint8)
+array([0, 2, 2, 1], dtype=uint8)
+
+a: array([0, 1, 2, ..., 9, 10, 11], dtype=int8)
+array([0, 2, 2, 1], dtype=int8)
+array([0, 2, 2, 1], dtype=int8)
+
+a: array([0, 1, 2, ..., 9, 10, 11], dtype=uint16)
+array([0, 2, 2, 1], dtype=uint16)
+array([0, 2, 2, 1], dtype=uint16)
+
+a: array([0, 1, 2, ..., 9, 10, 11], dtype=int16)
+array([0, 2, 2, 1], dtype=int16)
+array([0, 2, 2, 1], dtype=int16)
+
+a: array([0.0, 1.0, 2.0, ..., 9.0, 10.0, 11.0], dtype=float64)
+array([0.0, 2.0, 2.0, 1.0], dtype=float64)
+array([0.0, 2.0, 2.0, 1.0], dtype=float64)
+
+2D arrays
+
+a: array([[0, 1, 2, 3],
+       [4, 5, 6, 7],
+       [8, 9, 10, 11]], dtype=uint8)
+
+first axis
+array([[0, 1, 2, 3],
+       [8, 9, 10, 11],
+       [8, 9, 10, 11],
+       [4, 5, 6, 7]], dtype=uint8)
+
+second axis
+array([[0, 2, 2, 1],
+       [2, 3, 4, 5],
+       [6, 7, 8, 9]], dtype=uint8)
+
+a: array([[0, 1, 2, 3],
+       [4, 5, 6, 7],
+       [8, 9, 10, 11]], dtype=int8)
+
+first axis
+array([[0, 1, 2, 3],
+       [8, 9, 10, 11],
+       [8, 9, 10, 11],
+       [4, 5, 6, 7]], dtype=int8)
+
+second axis
+array([[0, 2, 2, 1],
+       [2, 3, 4, 5],
+       [6, 7, 8, 9]], dtype=int8)
+
+a: array([[0, 1, 2, 3],
+       [4, 5, 6, 7],
+       [8, 9, 10, 11]], dtype=uint16)
+
+first axis
+array([[0, 1, 2, 3],
+       [8, 9, 10, 11],
+       [8, 9, 10, 11],
+       [4, 5, 6, 7]], dtype=uint16)
+
+second axis
+array([[0, 2, 2, 1],
+       [2, 3, 4, 5],
+       [6, 7, 8, 9]], dtype=uint16)
+
+a: array([[0, 1, 2, 3],
+       [4, 5, 6, 7],
+       [8, 9, 10, 11]], dtype=int16)
+
+first axis
+array([[0, 1, 2, 3],
+       [8, 9, 10, 11],
+       [8, 9, 10, 11],
+       [4, 5, 6, 7]], dtype=int16)
+
+second axis
+array([[0, 2, 2, 1],
+       [2, 3, 4, 5],
+       [6, 7, 8, 9]], dtype=int16)
+
+a: array([[0.0, 1.0, 2.0, 3.0],
+       [4.0, 5.0, 6.0, 7.0],
+       [8.0, 9.0, 10.0, 11.0]], dtype=float64)
+
+first axis
+array([[0.0, 1.0, 2.0, 3.0],
+       [8.0, 9.0, 10.0, 11.0],
+       [8.0, 9.0, 10.0, 11.0],
+       [4.0, 5.0, 6.0, 7.0]], dtype=float64)
+
+second axis
+array([[0.0, 2.0, 2.0, 1.0],
+       [2.0, 3.0, 4.0, 5.0],
+       [6.0, 7.0, 8.0, 9.0]], dtype=float64)
