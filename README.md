@@ -1,6 +1,6 @@
 # ulab
 
-[![Documentation Status](https://readthedocs.org/projects/micropython-ulab-robert/badge/?version=latest)](https://micropython-ulab-robert.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/micropython-ulab/badge/?version=latest)](https://micropython-ulab.readthedocs.io/en/latest/index.html)
 
 `ulab` is a `numpy`-like array manipulation library for [micropython](http://micropython.org/) and [CircuitPython](https://circuitpython.org/).
 The module is written in C, defines compact containers (`ndarray`s) for numerical data of one to four
@@ -112,7 +112,6 @@ of the user manual.
 1. `MaixPy` https://github.com/sipeed/MaixPy
 1. `OpenMV` https://github.com/openmv/openmv
 1. `pimoroni-pico` https://github.com/pimoroni/pimoroni-pico
-3. `pycom` https://pycom.io/
 
 ## Compiling
 

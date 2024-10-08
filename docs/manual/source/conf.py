@@ -29,7 +29,6 @@ author = 'Zoltán Vörös'
 # The full version, including alpha/beta/rc tags
 release = '6.6.0'
 
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be

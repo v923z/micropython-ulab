@@ -10,8 +10,12 @@ x = np.linspace(-np.pi, np.pi, num=8)
 y = np.sin(x)
 
 if use_ulab:
-    a, b = np.fft.fft(y)
-    c, d = np.fft.ifft(a, b)
+    if 'real' in dir(np):
+        a = np.fft.fft(y)
+        c = np.real(np.fft.ifft(a))
+    else:
+        a, b = np.fft.fft(y)
+        c, d = np.fft.ifft(a, b)
     # c should be equal to y
     cmp_result = []
     for p,q in zip(list(y), list(c)):
@@ -19,8 +23,12 @@ if use_ulab:
     print(cmp_result)
 
     z = np.zeros(len(x))
-    a, b = np.fft.fft(y, z)
-    c, d = np.fft.ifft(a, b)
+    if 'real' in dir(np):
+        a = np.fft.fft(y)
+        c = np.real(np.fft.ifft(a))
+    else:
+        a, b = np.fft.fft(y, z)
+        c, d = np.fft.ifft(a, b)
     # c should be equal to y
     cmp_result = []
     for p,q in zip(list(y), list(c)):

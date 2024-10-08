@@ -52,7 +52,9 @@ Here is an example without keyword arguments
     a = bytearray([1, 1, 0, 0, 0, 0, 0, 255])
     print('a: ', a)
     print()
-    print('unsigned integers: ', utils.from_uint32_buffer(a))
+    print('unsigned integers: ', utils.from_uint32_buffe
+    print('original vector:\n', y)
+    print('\nspectrum:\n', a)r(a))
     
     b = bytearray([1, 1, 0, 0, 0, 0, 0, 255])
     print('\nb:  ', b)
@@ -144,9 +146,53 @@ In addition to the Fourier transform and its inverse, ``ulab`` also
 sports a function called ``spectrogram``, which returns the absolute
 value of the Fourier transform, also known as the power spectrum. This
 could be used to find the dominant spectral component in a time series.
-The arguments are treated in the same way as in ``fft``, and ``ifft``.
-This means that, if the firmware was compiled with complex support, the
-input can also be a complex array.
+The positional arguments are treated in the same way as in ``fft``, and
+``ifft``. This means that, if the firmware was compiled with complex
+support and ``ULAB_FFT_IS_NUMPY_COMPATIBLE`` is defined to be 1 in
+``ulab.h``, the input can also be a complex array.
+
+And easy way to find out if the FFT is ``numpy``-compatible is to check
+the number of values ``fft.fft`` returns, when called with a single real
+argument of length other than 2:
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    if len(np.fft.fft(np.zeros(4))) == 2:
+        print('FFT is NOT numpy compatible (real and imaginary parts are treated separately)')
+    else:
+        print('FFT is numpy compatible (complex inputs/outputs)')
+
+.. parsed-literal::
+
+    FFT is numpy compatible (complex inputs/outputs)
+    
+    
+
+
+Depending on the ``numpy``-compatibility of the FFT, the ``spectrogram``
+function takes one or two positional arguments, and three keyword
+arguments. If the FFT is ``numpy`` compatible, one positional argument
+is allowed, and it is a 1D real or complex ``ndarray``. If the FFT is
+not ``numpy``-compatible, if a single argument is supplied, it will be
+treated as the real part of the input, and if two positional arguments
+are supplied, they are treated as the real and imaginary parts of the
+signal.
+
+The keyword arguments are as follows:
+
+1. ``scratchpad = None``: must be a 1D, dense, floating point array,
+   twice as long as the input array; the ``scratchpad`` will be used as
+   a temporary internal buffer to perform the Fourier transform; the
+   ``scratchpad`` can repeatedly be re-used.
+2. ``out = None``: must be a 1D, not necessarily dense, floating point
+   array that will store the results
+3. ``log = False``: must be either ``True``, or ``False``; if ``True``,
+   the ``spectrogram`` returns the logarithm of the absolute values of
+   the Fourier transform.
 
 .. code::
         
@@ -169,17 +215,24 @@ input can also be a complex array.
      array([0.0, 0.009775015390171337, 0.01954909674625918, ..., -0.5275140569487312, -0.5357931822978732, -0.5440211108893697], dtype=float64)
     
     spectrum:
-     array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
+     array([187.8635087634578, 315.3112063607119, 347.8814873399375, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
     
     
 
 
 As such, ``spectrogram`` is really just a shorthand for
-``np.sqrt(a*a + b*b)``, however, it saves significant amounts of RAM:
-the expression ``a*a + b*b`` has to allocate memory for ``a*a``,
-``b*b``, and finally, their sum. In contrast, ``spectrogram`` calculates
-the spectrum internally, and stores it in the memory segment that was
-reserved for the real part of the Fourier transform.
+``np.abs(np.fft.fft(signal))``, if the FFT is ``numpy``-compatible, or
+``np.sqrt(a*a + b*b)`` if the FFT returns the real (``a``) and imaginary
+(``b``) parts separately. However, ``spectrogram`` saves significant
+amounts of RAM: the expression ``a*a + b*b`` has to allocate memory for
+``a*a``, ``b*b``, and finally, their sum. Similarly, ``np.abs`` returns
+a new array. This issue is compounded even more, if ``np.log()`` is used
+on the absolute value.
+
+In contrast, ``spectrogram`` handles all calculations in the same
+internal arrays, and allows one to re-use previously reserved RAM. This
+can be especially useful in cases, when ``spectogram`` is called
+repeatedly, as in the snippet below.
 
 .. code::
         
@@ -188,25 +241,34 @@ reserved for the real part of the Fourier transform.
     from ulab import numpy as np
     from ulab import utils as utils
     
-    x = np.linspace(0, 10, num=1024)
-    y = np.sin(x)
+    n = 1024
+    t = np.linspace(0, 2 * np.pi, num=1024)
+    scratchpad = np.zeros(2 * n)
     
-    a, b = np.fft.fft(y)
+    for _ in range(10):
+        signal = np.sin(t)
+        utils.spectrogram(signal, out=signal, scratchpad=scratchpad, log=True)
     
-    print('\nspectrum calculated the hard way:\n', np.sqrt(a*a + b*b))
+    print('signal: ', signal)
     
-    a = utils.spectrogram(y)
+    for _ in range(10):
+        signal = np.sin(t)
+        out = np.log(utils.spectrogram(signal))
     
-    print('\nspectrum calculated the lazy way:\n', a)
+    print('out: ', out)
 
 .. parsed-literal::
 
-    
-    spectrum calculated the hard way:
-     array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
-    
-    spectrum calculated the lazy way:
-     array([187.8635087634579, 315.3112063607119, 347.8814873399374, ..., 84.45888934298905, 347.8814873399374, 315.3112063607118], dtype=float64)
+    signal:  array([-27.38260169844543, 6.237834411021073, -0.4038327279002965, ..., -0.9795967096969854, -0.4038327279002969, 6.237834411021073], dtype=float64)
+    out:  array([-27.38260169844543, 6.237834411021073, -0.4038327279002965, ..., -0.9795967096969854, -0.4038327279002969, 6.237834411021073], dtype=float64)
     
     
+
+
+Note that ``scratchpad`` is reserved only once, and then is re-used in
+the first loop. By assigning ``signal`` to the output, we save
+additional RAM. This approach avoids the usual problem of memory
+fragmentation, which would happen in the second loop, where both
+``spectrogram``, and ``np.log`` must reserve RAM in each iteration.
+
 

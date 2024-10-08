@@ -2330,12 +2330,12 @@ future version of ``ulab``.
     
     a = np.array(range(9), dtype=np.float)
     print("a:\t", a)
-    print("a < 5:\t", a[a < 5])
+    print("a[a < 5]:\t", a[a < 5])
 
 .. parsed-literal::
 
     a:	 array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
-    a < 5:	 array([0.0, 1.0, 2.0, 3.0, 4.0], dtype=float)
+    a[a < 5]:	 array([0.0, 1.0, 2.0, 3.0, 4.0], dtype=float)
     
     
 

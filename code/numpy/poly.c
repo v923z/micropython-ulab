@@ -121,7 +121,7 @@ mp_obj_t poly_polyfit(size_t n_args, const mp_obj_t *args) {
     ndarray_obj_t *beta = ndarray_new_linear_array(deg+1, NDARRAY_FLOAT);
     mp_float_t *betav = (mp_float_t *)beta->array;
     // x[0..(deg+1)] contains now the product X^T * y; we can get rid of y
-    m_del(float, y, leny);
+    m_del(mp_float_t, y, leny);
 
     // now, we calculate beta, i.e., we apply prod = (X^T * X)^(-1) on x = X^T * y; x is a column vector now
     for(uint8_t i=0; i < deg+1; i++) {
