@@ -274,3 +274,31 @@ bool ulab_tools_mp_obj_is_scalar(mp_obj_t obj) {
     }
     #endif
 }
+
+ndarray_obj_t *ulab_tools_inspect_out(mp_obj_t out, uint8_t dtype, uint8_t ndim, size_t *shape, bool dense_only) {
+    if(!mp_obj_is_type(out, &ulab_ndarray_type)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("out has wrong type"));
+    }
+    ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(out);
+    
+    if(ndarray->dtype != dtype) {
+        mp_raise_ValueError(MP_ERROR_TEXT("out array has wrong dtype"));
+    }
+
+    if(ndarray->ndim != ndim) {
+        mp_raise_ValueError(MP_ERROR_TEXT("out array has wrong dimension"));
+    }
+
+    for(uint8_t i = 0; i < ULAB_MAX_DIMS; i++) {
+        if(ndarray->shape[i] != shape[i]) {
+            mp_raise_ValueError(MP_ERROR_TEXT("out array has wrong shape"));
+        }
+    }
+
+    if(dense_only) {
+        if(!ndarray_is_dense(ndarray)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("output array must be contiguous"));
+        }
+    }
+    return ndarray;
+}

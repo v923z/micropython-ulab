@@ -559,6 +559,10 @@
 #define ULAB_NUMPY_HAS_SUM              (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_TAKE
+#define ULAB_NUMPY_HAS_TAKE             (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_TRACE
 #define ULAB_NUMPY_HAS_TRACE            (1)
 #endif

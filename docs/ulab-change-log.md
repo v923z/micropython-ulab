@@ -1,3 +1,9 @@
+Wed, 9 Oct 2024
+
+version 6.6.0
+
+    add numpy.take
+
 Sat, 14 Sep 2024
 
 version 6.5.5

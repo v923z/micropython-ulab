@@ -3,8 +3,8 @@ Numpy functions
 ===============
 
 This section of the manual discusses those functions that were adapted
-from ``numpy``. Starred functions accept complex arrays as arguments, if
-the firmware was compiled with complex support.
+from ``numpy``. Functions with an asterisk accept complex arrays as
+arguments, if the firmware was compiled with complex support.
 
 1.  `numpy.all\* <#all>`__
 2.  `numpy.any\* <#any>`__
@@ -51,9 +51,10 @@ the firmware was compiled with complex support.
 43. `numpy.sort_complex\* <#sort_complex>`__
 44. `numpy.std <#std>`__
 45. `numpy.sum <#sum>`__
-46. `numpy.trace <#trace>`__
-47. `numpy.trapz <#trapz>`__
-48. `numpy.where <#where>`__
+46. `numpy.take\* <#take>`__
+47. `numpy.trace <#trace>`__
+48. `numpy.trapz <#trapz>`__
+49. `numpy.where <#where>`__
 
 all
 ---
@@ -1981,6 +1982,66 @@ array. Otherwise, the calculation is along the given axis.
     sum, flat array:  45.0
     sum, horizontal:  array([6.0, 15.0, 24.0], dtype=float64)
     std, vertical:  array([12.0, 15.0, 18.0], dtype=float64)
+    
+    
+
+
+take
+----
+
+``numpy``:
+https://numpy.org/doc/stable/reference/generated/numpy.take.html
+
+The ``take`` method takes elements from an array along an axis. The
+function accepts two positional arguments, the array, and the indices,
+which is either a ``python`` iterable, or a one-dimensional ``ndarray``,
+as well as three keyword arguments, the ``axis``, which can be ``None``,
+or an integer, ``out``, which can be ``None``, or an ``ndarray`` with
+the proper dimensions, and ``mode``, which can be one of the strings
+``raise``, ``wrap``, or ``clip``. This last argument determines how
+out-of-bounds indices will be treated. The default value is ``raise``,
+which raises an exception. ``wrap`` takes the indices modulo the length
+of the ``axis``, while ``clip`` pegs the values at the 0, and the length
+of the ``axis``. If ``axis`` is ``None``, then ``take`` operates on the
+flattened array.
+
+The function can be regarded as a method of advanced slicing: as opposed
+to standard slicing, where the indices are distributed uniformly and in
+either increasing or decreasing order, ``take`` can take indices in an
+arbitrary order.
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    
+    a = np.array(range(12)).reshape((3, 4))
+    print('\na:', a)
+    
+    print('\nslices taken along first axis')
+    print(np.take(a, (0, 2, 2, 1), axis=0))
+    
+    print('\nslices taken along second axis')
+    print(np.take(a, (0, 2, 2, 1), axis=1))
+
+.. parsed-literal::
+
+    
+    a: array([[0.0, 1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0, 7.0],
+           [8.0, 9.0, 10.0, 11.0]], dtype=float64)
+    
+    slices taken along first axis
+    array([[0.0, 1.0, 2.0, 3.0],
+           [8.0, 9.0, 10.0, 11.0],
+           [8.0, 9.0, 10.0, 11.0],
+           [4.0, 5.0, 6.0, 7.0]], dtype=float64)
+    
+    slices taken along second axis
+    array([[0.0, 2.0, 2.0, 1.0],
+           [2.0, 3.0, 4.0, 5.0],
+           [6.0, 7.0, 8.0, 9.0]], dtype=float64)
     
     
 

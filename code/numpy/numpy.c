@@ -291,6 +291,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_SUM
         { MP_ROM_QSTR(MP_QSTR_sum), MP_ROM_PTR(&numerical_sum_obj) },
     #endif
+    #if ULAB_NUMPY_HAS_TAKE
+        { MP_ROM_QSTR(MP_QSTR_take), MP_ROM_PTR(&create_take_obj) },
+    #endif
     // functions of the poly sub-module
     #if ULAB_NUMPY_HAS_POLYFIT
         { MP_ROM_QSTR(MP_QSTR_polyfit), MP_ROM_PTR(&poly_polyfit_obj) },
