@@ -942,10 +942,10 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     #if ULAB_MAX_DIMS > 1
     } else {     
         // move the axis shape/stride to the leftmost position:
-        SWAP(size_t, a->shape[0], a->shape[axis]);
-        SWAP(size_t, out->shape[0], out->shape[axis]);
-        SWAP(int32_t, a->strides[0], a->strides[axis]);
-        SWAP(int32_t, out->strides[0], out->strides[axis]);
+        SWAP(size_t, a->shape[0], a->shape[axis_index]);
+        SWAP(size_t, out->shape[0], out->shape[axis_index]);
+        SWAP(int32_t, a->strides[0], a->strides[axis_index]);
+        SWAP(int32_t, out->strides[0], out->strides[axis_index]);
 
         for(size_t x = 0; x < indices_len; x++) {
             uint8_t *a_array = (uint8_t *)a->array;
@@ -991,10 +991,10 @@ mp_obj_t create_take(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
         }
 
         // revert back to the original order
-        SWAP(size_t, a->shape[0], a->shape[axis]);
-        SWAP(size_t, out->shape[0], out->shape[axis]);
-        SWAP(int32_t, a->strides[0], a->strides[axis]);
-        SWAP(int32_t, out->strides[0], out->strides[axis]);
+        SWAP(size_t, a->shape[0], a->shape[axis_index]);
+        SWAP(size_t, out->shape[0], out->shape[axis_index]);
+        SWAP(int32_t, a->strides[0], a->strides[axis_index]);
+        SWAP(int32_t, out->strides[0], out->strides[axis_index]);
     }
     #endif /* ULAB_MAX_DIMS > 1 */
     m_del(size_t, indices, indices_len);
