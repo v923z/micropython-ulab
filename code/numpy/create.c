@@ -781,8 +781,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 //|    a: ulab.numpy.ndarray,
 //|    indices: _ArrayLike,
 //|    axis: Optional[int] = None,
-//|    out: ulab.numpy.ndarray,
-//|    mode: ) -> ulab.numpy.ndarray:
+//|    out: Optional[ulab.numpy.ndarray] = None,
+//|    mode: Optional[str] = None) -> ulab.numpy.ndarray:
 //|    """
 //|    .. param: a
 //|       The source array.
@@ -800,6 +800,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(create_ones_obj, 0, create_ones);
 //|       `clip` mode means that all indices that are too large are replaced by the 
 //|       index that addresses the last element along that axis. Note that this disables 
 //|       indexing with negative numbers.
+//|    
 //|    Return a new array."""
 //|    ...
 //|
