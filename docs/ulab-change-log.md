@@ -1,3 +1,9 @@
+Sun, 24 Nov 2024
+
+version 6.6.1
+
+    fix compilation error, for complexes
+
 Wed, 9 Oct 2024
 
 version 6.6.0
