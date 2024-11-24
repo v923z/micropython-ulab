@@ -286,7 +286,7 @@ mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     uint8_t *array = (uint8_t *)in->array;
 
-    #if ULAB_FFT_IS_NUMPY_COMPATIBLE // ULAB_SUPPORTS_COMPLEX is automatically true
+    #if ULAB_FFT_IS_NUMPY_COMPATIBLE & ULAB_SUPPORTS_COMPLEX
     if(in->dtype == NDARRAY_COMPLEX) {
         uint8_t sz = 2 * sizeof(mp_float_t);
         for(size_t i = 0; i < len; i++) {
