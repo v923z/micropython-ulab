@@ -17,4 +17,5 @@
 #include "../ndarray.h"
 
 MP_DECLARE_CONST_FUN_OBJ_KW(filter_convolve_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(filter_oaconvolve_obj);
 #endif
