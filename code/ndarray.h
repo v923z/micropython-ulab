@@ -391,6 +391,17 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
         l++;\
     } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
 
+#define INDEX_LOOP(results, type_left, type_index, larray, lstrides, iarray, istrides)\
+    uint8_t *array = (uint8_t *)results->array;\
+    size_t l = 0;\
+    do {\
+        size_t offset = lstrides[ULAB_MAX_DIMS - 1] * *((type_index *)(iarray));\
+        *((type_left *)array) = *((type_left *)(larray + offset));\
+        array += results->strides[ULAB_MAX_DIMS - 1];\
+        iarray += istrides[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+
 #endif /* ULAB_MAX_DIMS == 1 */
 
 #if ULAB_MAX_DIMS == 2
@@ -461,6 +472,25 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
         (larray) += (lstrides)[ULAB_MAX_DIMS - 2];\
         (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+        k++;\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+
+#define INDEX_LOOP(results, type_left, type_index, larray, lstrides, iarray, istrides)\
+    uint8_t *array = (uint8_t *)results->array;\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            size_t offset = lstrides[ULAB_MAX_DIMS - 1] * *((type_index *)(iarray));\
+            *((type_left *)array) = *((type_left *)(larray + offset));\
+            array += results->strides[ULAB_MAX_DIMS - 1];\
+            iarray += istrides[ULAB_MAX_DIMS - 1];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+        (array) -= (results->strides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (array) += (results->strides)[ULAB_MAX_DIMS - 2];\
+        (iarray) -= (istrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+        (iarray) += (istrides)[ULAB_MAX_DIMS - 2];\
         k++;\
     } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
 
@@ -566,6 +596,33 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
         (larray) += (lstrides)[ULAB_MAX_DIMS - 3];\
         (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+        j++;\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+
+#define INDEX_LOOP(results, type_left, type_index, larray, lstrides, iarray, istrides)\
+    uint8_t *array = (uint8_t *)results->array;\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                size_t offset = lstrides[ULAB_MAX_DIMS - 1] * *((type_index *)(iarray));\
+                *((type_left *)array) = *((type_left *)(larray + offset));\
+                array += results->strides[ULAB_MAX_DIMS - 1];\
+                iarray += istrides[ULAB_MAX_DIMS - 1];\
+                l++;\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+            (array) -= (results->strides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (array) += (results->strides)[ULAB_MAX_DIMS - 2];\
+            (iarray) -= (istrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+            (iarray) += (istrides)[ULAB_MAX_DIMS - 2];\
+            k++;\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (array) -= (results->strides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (array) += (results->strides)[ULAB_MAX_DIMS - 3];\
+        (iarray) -= (istrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+        (iarray) += (istrides)[ULAB_MAX_DIMS - 3];\
         j++;\
     } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
 
@@ -703,6 +760,41 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
         (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
         (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
         (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
+        i++;\
+    } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
+
+#define INDEX_LOOP(results, type_left, type_index, larray, lstrides, iarray, istrides)\
+    uint8_t *array = (uint8_t *)results->array;\
+    size_t i = 0;\
+    do {\
+        size_t j = 0;\
+        do {\
+            size_t k = 0;\
+            do {\
+                size_t l = 0;\
+                do {\
+                    size_t offset = lstrides[ULAB_MAX_DIMS - 1] * *((type_index *)(iarray));\
+                    *((type_left *)array) = *((type_left *)(larray + offset));\
+                    array += results->strides[ULAB_MAX_DIMS - 1];\
+                    iarray += istrides[ULAB_MAX_DIMS - 1];\
+                    l++;\
+                } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+                (array) -= (results->strides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (array) += (results->strides)[ULAB_MAX_DIMS - 2];\
+                (iarray) -= (istrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS-1];\
+                (iarray) += (istrides)[ULAB_MAX_DIMS - 2];\
+                k++;\
+            } while(k < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (array) -= (results->strides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (array) += (results->strides)[ULAB_MAX_DIMS - 3];\
+            (iarray) -= (istrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS-2];\
+            (iarray) += (istrides)[ULAB_MAX_DIMS - 3];\
+            j++;\
+        } while(j < (results)->shape[ULAB_MAX_DIMS - 3]);\
+        (array) -= (results->strides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (array) += (results->strides)[ULAB_MAX_DIMS - 4];\
+        (iarray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS-3];\
+        (iarray) += (lstrides)[ULAB_MAX_DIMS - 4];\
         i++;\
     } while(i < (results)->shape[ULAB_MAX_DIMS - 4]);\
 
