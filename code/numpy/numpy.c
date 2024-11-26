@@ -216,11 +216,6 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_CONVOLVE
         { MP_ROM_QSTR(MP_QSTR_convolve), MP_ROM_PTR(&filter_convolve_obj) },
     #endif
-    #if ULAB_NUMPY_HAS_FFT_MODULE
-        #if ULAB_NUMPY_HAS_CONVOLVE
-            { MP_ROM_QSTR(MP_QSTR_oaconvolve), MP_ROM_PTR(&filter_oaconvolve_obj) },
-        #endif
-    #endif
     // functions of the numerical sub-module
     #if ULAB_NUMPY_HAS_ALL
         { MP_ROM_QSTR(MP_QSTR_all), MP_ROM_PTR(&numerical_all_obj) },
