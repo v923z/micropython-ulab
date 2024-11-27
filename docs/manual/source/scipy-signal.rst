@@ -2,9 +2,10 @@
 scipy.signal
 ============
 
-This module defines the single function:
+This module defines the functions:
 
 1. `scipy.signal.sosfilt <#sosfilt>`__
+2. `scipy.signal.oaconvolve <#oaconvolve>`__
 
 sosfilt
 -------
@@ -64,6 +65,39 @@ initial values are assumed to be 0.
     ========================================
     zf:  array([[37242.0, 74835.0],
     	 [1026187.0, 1936542.0]], dtype=float)
+
+oaconvolve
+-------
+
+``scipy``:
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.oaconvolve.html
+
+Convolve two N-dimensional arrays using the overlap-add method.
+
+Convolve in1 and in2 using the overlap-add method. Similarly to numpy.convolve, 
+this method works in full mode and other modes can be obtained by slicing the result?
+
+This is generally much faster than linear convolve for large arrays (n > ~500), 
+and generally much faster than fftconvolve (not implemented yet in ulab) when one array is much larger 
+than the other (e.g. for a matched filter algorithm), but can be slower when only a few output values 
+are needed or when the arrays are very similar in shape, and can only output float arrays (int or object array inputs will be cast to float).
+
+.. code::
+        
+    # code to be run in micropython
+    
+    from ulab import numpy as np
+    from ulab import scipy as spy
+    
+    x = np.array((1,2,3))
+    y = np.array((1,10,100,1000))
+    result = spy.signal.oaconvolve(x, y)
+    print('result: ', result)
+
+.. parsed-literal::
+
+    result:  array([1.0, 12.00024, 123.0001, 1230.0, 2300.0, 3000.0], dtype=float32)
+    
     
     
 
