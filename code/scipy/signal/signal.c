@@ -10,6 +10,7 @@
  *               2020 Scott Shawcroft for Adafruit Industries
  *               2020-2021 Zoltán Vörös
  *               2020 Taku Fukada
+ *               2024 Edouard Leroy (oaconvolve implementation)
 */
 
 #include <math.h>
@@ -19,7 +20,7 @@
 #include "../../ulab.h"
 #include "../../ndarray.h"
 #include "../../numpy/carray/carray_tools.h"
-#include "../../numpy/fft/fft_tools.h" // For fft
+#include "../../numpy/fft/fft_tools.h"
 #include "../../ulab_tools.h"
 
 #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT & ULAB_MAX_DIMS > 1
@@ -124,8 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(signal_sosfilt_obj, 2, signal_sosfilt);
 
 #if ULAB_SCIPY_SIGNAL_HAS_OACONVOLVE
 
-mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
-{
+mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         {MP_QSTR_v, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
@@ -134,8 +134,7 @@ mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type) || !mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type))
-    {
+    if (!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type) || !mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type)) {
         mp_raise_TypeError(MP_ERROR_TEXT("oa convolve arguments must be ndarrays"));
     }
 
@@ -143,15 +142,13 @@ mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     ndarray_obj_t *c = MP_OBJ_TO_PTR(args[1].u_obj);
 // deal with linear arrays only
 #if ULAB_MAX_DIMS > 1
-    if ((a->ndim != 1) || (c->ndim != 1))
-    {
+    if ((a->ndim != 1) || (c->ndim != 1)) {
         mp_raise_TypeError(MP_ERROR_TEXT("convolve arguments must be linear arrays"));
     }
 #endif
     size_t signal_len = a->len;
     size_t kernel_len = c->len;
-    if (signal_len == 0 || kernel_len == 0)
-    {
+    if (signal_len == 0 || kernel_len == 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("convolve arguments must not be empty"));
     }
 
@@ -159,16 +156,14 @@ mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     size_t segment_len = kernel_len; // Min segment size, at least size of kernel
     size_t fft_size = 1;
-    while (fft_size < segment_len + kernel_len - 1)
-    {
+    while (fft_size < segment_len + kernel_len - 1) {
         fft_size *= 2; // Find smallest power of 2 for fft size
     }
     segment_len = fft_size - kernel_len + 1; // Final segment size
     size_t output_len = signal_len + kernel_len - 1;
     uint8_t dtype = NDARRAY_FLOAT;
 #if ULAB_SUPPORTS_COMPLEX
-    if ((a->dtype == NDARRAY_COMPLEX) || (c->dtype == NDARRAY_COMPLEX))
-    {
+    if ((a->dtype == NDARRAY_COMPLEX) || (c->dtype == NDARRAY_COMPLEX)) {
         dtype = NDARRAY_COMPLEX;
     }
 #endif
@@ -184,20 +179,16 @@ mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     uint8_t *signal_array = (uint8_t *)a->array;
 
     // Copy kernel data
-    if (c->dtype == NDARRAY_COMPLEX)
-    {
-        for (size_t i = 0; i < kernel_len; i++)
-        {
+    if (c->dtype == NDARRAY_COMPLEX) {
+        for (size_t i = 0; i < kernel_len; i++){
             memcpy(kernel_fft_array, kernel_array, sz);
             kernel_fft_array += 2;
             kernel_array += c->strides[ULAB_MAX_DIMS - 1];
         }
     }
-    else
-    {
+    else {
         mp_float_t (*func)(void *) = ndarray_get_float_function(c->dtype);
-        for (size_t i = 0; i < kernel_len; i++)
-        {
+        for (size_t i = 0; i < kernel_len; i++) {
             // real part; the imaginary part is 0, no need to assign
             *kernel_fft_array = func(kernel_array);
             kernel_fft_array += 2;
@@ -213,28 +204,22 @@ mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     size_t current_segment_size = segment_len;
     mp_float_t (*funca)(void *) = ndarray_get_float_function(a->dtype);
 
-    for (size_t i = 0; i < signal_len; i += segment_len)
-    {
+    for (size_t i = 0; i < signal_len; i += segment_len) {
         // Check if remaining data is less than segment length
-        if (i + segment_len > signal_len)
-        {
+        if (i + segment_len > signal_len) {
             current_segment_size = signal_len - i;
         }
         // Load segment in buffer
         memset(segment_fft_array, 0, fft_size * sz); // Reset buffer to zero
-        if (a->dtype == NDARRAY_COMPLEX)
-        {
-            for (size_t k = 0; k < current_segment_size; k++)
-            {
+        if (a->dtype == NDARRAY_COMPLEX) {
+            for (size_t k = 0; k < current_segment_size; k++){
                 memcpy(segment_fft_array, signal_array, sz);
                 segment_fft_array += 2;
                 signal_array += a->strides[ULAB_MAX_DIMS - 1];
             }
         }
-        else
-        {
-            for (size_t k = 0; k < current_segment_size; k++)
-            {
+        else {
+            for (size_t k = 0; k < current_segment_size; k++) {
                 // real part; the imaginary part is 0, no need to assign
                 *segment_fft_array = funca(signal_array);
                 segment_fft_array += 2;
@@ -247,8 +232,7 @@ mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         fft_kernel(segment_fft_array, fft_size, 1);
 
         // Product of kernel and segment fft (complex multiplication)
-        for (size_t j = 0; j < fft_size; j++)
-        {
+        for (size_t j = 0; j < fft_size; j++) {
             real = segment_fft_array[j * 2] * kernel_fft_array[j * 2] - segment_fft_array[j * 2 + 1] * kernel_fft_array[j * 2 + 1];
             imag = segment_fft_array[j * 2] * kernel_fft_array[j * 2 + 1] + segment_fft_array[j * 2 + 1] * kernel_fft_array[j * 2];
             segment_fft_array[j * 2] = real;
@@ -258,13 +242,10 @@ mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         fft_kernel(segment_fft_array, fft_size, -1);
 
         #if ULAB_SUPPORTS_COMPLEX
-        if (dtype == NDARRAY_COMPLEX)
-        {
+        if (dtype == NDARRAY_COMPLEX) {
             // Overlap, Add and normalized inverse fft
-            for (size_t j = 0; j < fft_size * 2; j++)
-            {
-                if ((i * 2 + j) < (output_len * 2))
-                {
+            for (size_t j = 0; j < fft_size * 2; j++) {
+                if ((i * 2 + j) < (output_len * 2)) {
                     output_array[i * 2 + j] += (segment_fft_array[j] / fft_size);
                 }
             }
@@ -273,14 +254,11 @@ mp_obj_t signal_oaconvolve(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         #endif
         
         
-        for (size_t j = 0; j < fft_size; j++)
-        {
-            if ((i + j) < (output_len)) // adds only real part
-            {
+        for (size_t j = 0; j < fft_size; j++) {
+            if ((i + j) < (output_len)) { // adds only real part
                 output_array[i + j] += (segment_fft_array[j * 2] / fft_size);
             }
-        }
-        
+        }   
     }
     return MP_OBJ_FROM_PTR(output);
 }
