@@ -1,4 +1,3 @@
-
 /*
  * This file is part of the micropython-ulab project,
  *
@@ -20,6 +19,8 @@
 #include "signal/signal.h"
 #include "special/special.h"
 #include "linalg/linalg.h"
+#include "integrate/integrate.h"
+
 
 #if ULAB_HAS_SCIPY
 
@@ -28,6 +29,9 @@
 
 static const mp_rom_map_elem_t ulab_scipy_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_scipy) },
+    #if ULAB_SCIPY_HAS_INTEGRATE_MODULE
+        { MP_ROM_QSTR(MP_QSTR_integrate), MP_ROM_PTR(&ulab_scipy_integrate_module) },
+    #endif
     #if ULAB_SCIPY_HAS_LINALG_MODULE
         { MP_ROM_QSTR(MP_QSTR_linalg), MP_ROM_PTR(&ulab_scipy_linalg_module) },
     #endif
