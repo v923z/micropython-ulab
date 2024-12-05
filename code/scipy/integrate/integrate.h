@@ -1,6 +1,6 @@
 
 /*
- * This file is not part of the micropython-ulab project,
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *

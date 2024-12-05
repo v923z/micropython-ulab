@@ -2,6 +2,9 @@
 USERMODULES_DIR := $(USERMOD_DIR)
 
 # Add all C files to SRC_USERMOD.
+#if ULAB_SCIPY_HAS_INTEGRATE_MODULE
+SRC_USERMOD += $(USERMODULES_DIR)/scipy/integrate/integrate.c
+#endif
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/linalg/linalg.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/optimize/optimize.c
 SRC_USERMOD += $(USERMODULES_DIR)/scipy/signal/signal.c

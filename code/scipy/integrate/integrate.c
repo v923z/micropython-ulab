@@ -1,5 +1,5 @@
 /*
- * This file is not part of the micropython-ulab project,
+ * This file is part of the micropython-ulab project,
  *
  * https://github.com/v923z/micropython-ulab
  *
@@ -261,9 +261,11 @@ static mp_obj_t integrate_quad(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t n = (uint16_t)args[3].u_int;
+#if 0
     if(n < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("levels should be > 0"));
     }
+#endif	
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
     
     mp_obj_t res[2];
@@ -355,9 +357,11 @@ static mp_obj_t integrate_romberg(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t steps = (uint16_t)args[3].u_int;
+# if 0	
     if(steps < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("steps should be > 0"));
     }
+#endif 	
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
     
     return mp_obj_new_float(qromb(fun, a, b, steps, eps)); 
@@ -442,9 +446,11 @@ static mp_obj_t integrate_simpson(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t steps = (uint16_t)args[3].u_int;
+#if 0	
     if(steps < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("steps should be > 0"));
     }
+#endif	
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
     
     return mp_obj_new_float(qasi(fun, a, b, steps, eps)); 
@@ -606,9 +612,11 @@ static mp_obj_t integrate_quadgk(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t order = (uint16_t)args[3].u_int;
+#if 0	
     if(order < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("levels should be > 0"));
     }
+#endif	
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
     
     mp_obj_t res[2];
