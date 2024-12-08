@@ -258,14 +258,21 @@ static mp_obj_t integrate_quad(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
     }
 
+	// iterate over args 1, 2, and 4
+	// arg 3 will be handled by MP_ARG_INT above. 
+	for (int i=1; i<=4; i*=2) {
+		type = mp_obj_get_type(args[i].u_obj); 
+		if (type != &mp_type_float && type != &mp_type_int) {
+	        mp_raise_msg_varg(&mp_type_TypeError,
+	            MP_ERROR_TEXT("can't convert arg %d from %s to float"), i, mp_obj_get_type_str(args[i].u_obj));
+		}			
+	}
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t n = (uint16_t)args[3].u_int;
-#if 0
-    if(n < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("levels should be > 0"));
-    }
-#endif	
+	if (n < 1) {
+		mp_raise_ValueError(MP_ERROR_TEXT("levels needs to be a positive integer"));
+    }			
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
     
     mp_obj_t res[2];
@@ -354,14 +361,21 @@ static mp_obj_t integrate_romberg(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
     }
 
+	// iterate over args 1, 2, and 4
+	// arg 3 will be handled by MP_ARG_INT above. 
+	for (int i=1; i<=4; i*=2) {
+		type = mp_obj_get_type(args[i].u_obj); 
+		if (type != &mp_type_float && type != &mp_type_int) {
+	        mp_raise_msg_varg(&mp_type_TypeError,
+	            MP_ERROR_TEXT("can't convert arg %d from %s to float"), i, mp_obj_get_type_str(args[i].u_obj));
+		}			
+	}
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t steps = (uint16_t)args[3].u_int;
-# if 0	
-    if(steps < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("steps should be > 0"));
-    }
-#endif 	
+	if (steps < 1) {
+		mp_raise_ValueError(MP_ERROR_TEXT("steps needs to be a positive integer"));
+    }			
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
     
     return mp_obj_new_float(qromb(fun, a, b, steps, eps)); 
@@ -443,14 +457,21 @@ static mp_obj_t integrate_simpson(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
     }
 
+	// iterate over args 1, 2, and 4
+	// arg 3 will be handled by MP_ARG_INT above. 
+	for (int i=1; i<=4; i*=2) {
+		type = mp_obj_get_type(args[i].u_obj); 
+		if (type != &mp_type_float && type != &mp_type_int) {
+	        mp_raise_msg_varg(&mp_type_TypeError,
+	            MP_ERROR_TEXT("can't convert arg %d from %s to float"), i, mp_obj_get_type_str(args[i].u_obj));
+		}			
+	}
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t steps = (uint16_t)args[3].u_int;
-#if 0	
-    if(steps < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("steps should be > 0"));
-    }
-#endif	
+	if (steps < 1) {
+		mp_raise_ValueError(MP_ERROR_TEXT("steps needs to be a positive integer"));
+    }			
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
     
     return mp_obj_new_float(qasi(fun, a, b, steps, eps)); 
@@ -609,14 +630,21 @@ static mp_obj_t integrate_quadgk(size_t n_args, const mp_obj_t *pos_args, mp_map
         mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
     }
 
+	// iterate over args 1, 2, and 4
+	// arg 3 will be handled by MP_ARG_INT above. 
+	for (int i=1; i<=4; i*=2) {
+		type = mp_obj_get_type(args[i].u_obj); 
+		if (type != &mp_type_float && type != &mp_type_int) {
+	        mp_raise_msg_varg(&mp_type_TypeError,
+	            MP_ERROR_TEXT("can't convert arg %d from %s to float"), i, mp_obj_get_type_str(args[i].u_obj));
+		}			
+	}
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t order = (uint16_t)args[3].u_int;
-#if 0	
-    if(order < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("levels should be > 0"));
-    }
-#endif	
+	if (order < 1) {
+		mp_raise_ValueError(MP_ERROR_TEXT("order needs to be a positive integer"));
+    }			
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
     
     mp_obj_t res[2];
