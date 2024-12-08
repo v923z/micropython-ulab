@@ -225,6 +225,30 @@ int8_t tools_get_axis(mp_obj_t axis, uint8_t ndim) {
     return ax;
 }
 
+mp_obj_t ulab_tools_restore_dims(mp_obj_t *result, mp_obj_t keepdims, mp_obj_t axis, uint8_t ndim) {
+    // restores the contracted dimension, if keepdims is True
+    ndarray_obj_t *_result = MP_OBJ_TO_PTR(result);
+    if(keepdims == mp_const_true) {
+        _result->ndim += 1;
+        int8_t = tools_get_axis(axis, _result->ndim + 1);
+
+        // shift values from the right to the left in the strides and shape arrays
+        for(uint8_t i = ULAB_MAX_DIMS - _result->ndim + ax - 1; i > 0; i--) {
+            _result->shape[i - 1] = _result->shape[i];
+            _result->strides[i - 1] = _result->strides[i];
+        }
+        _result->shape[ULAB_MAX_DIMS - _result->ndim + ax] = 1;
+        _result->strides[ULAB_MAX_DIMS - _result->ndim + ax] = _result->strides[ULAB_MAX_DIMS - _result->ndim + ax + 1];
+    }
+
+    if(keepdims == mp_const_false) {
+        if(results->ndim == 0) { // return a scalar here
+            return mp_binary_get_val_array(results->dtype, results->array, 0);
+        }
+    }
+    return result;
+}
+
 #if ULAB_MAX_DIMS > 1
 ndarray_obj_t *tools_object_is_square(mp_obj_t obj) {
     // Returns an ndarray, if the object is a square ndarray,

@@ -34,6 +34,7 @@ void *ndarray_set_float_function(uint8_t );
 
 shape_strides tools_reduce_axes(ndarray_obj_t *, mp_obj_t );
 int8_t tools_get_axis(mp_obj_t , uint8_t );
+mp_obj_t ulab_tools_restore_dims(mp_obj_t *, mp_obj_t , mp_obj_t , uint8_t );
 ndarray_obj_t *tools_object_is_square(mp_obj_t );
 
 uint8_t ulab_binary_get_size(uint8_t );
