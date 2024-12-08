@@ -398,6 +398,32 @@
 #define ULAB_NUMPY_HAS_WHERE            (1)
 #endif
 
+// the integrate module; functions of the integrate module still have
+// to be defined separately
+#ifndef ULAB_SCIPY_HAS_INTEGRATE_MODULE
+#define ULAB_SCIPY_HAS_INTEGRATE_MODULE        (1)
+#endif
+
+#ifndef ULAB_INTEGRATE_HAS_QUAD
+#define ULAB_INTEGRATE_HAS_QUAD			(1)
+#endif
+
+#ifndef ULAB_INTEGRATE_HAS_ROMBERG
+#define ULAB_INTEGRATE_HAS_ROMBERG			(1)
+#endif
+
+
+#ifndef ULAB_INTEGRATE_HAS_SIMPSON
+#define ULAB_INTEGRATE_HAS_SIMPSON			(1)
+#endif
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+// we compile quadgk only when we have _DOUBLE 
+#ifndef ULAB_INTEGRATE_HAS_QUADGK
+#define ULAB_INTEGRATE_HAS_QUADGK			(1)
+#endif
+#endif
+
 // the linalg module; functions of the linalg module still have
 // to be defined separately
 #ifndef ULAB_NUMPY_HAS_LINALG_MODULE
