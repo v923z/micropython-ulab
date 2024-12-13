@@ -59,8 +59,8 @@ fi
 
 bash test-common.sh "${dims}" "$PROG"
 
-# Build with double-precision float.
-make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE CFLAGS_EXTRA+=-DULAB_MAX_DIMS=$dims CFLAGS_EXTRA+=-DULAB_HASH=$GIT_HASH BUILD=build-nanbox-$dims PROG=micropython-nanbox-$dims
+# Build with single-precision float.
+make -C micropython/ports/unix -j${NPROC} USER_C_MODULES="${HERE}" DEBUG=1 STRIP=: MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 CFLAGS_EXTRA=-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT CFLAGS_EXTRA+=-DULAB_MAX_DIMS=$dims CFLAGS_EXTRA+=-DULAB_HASH=$GIT_HASH BUILD=build-nanbox-$dims PROG=micropython-nanbox-$dims
 
 # The unix nanbox variant builds as a 32-bit executable and requires gcc-multilib.
 # macOS doesn't support i386 builds so only build on linux.
