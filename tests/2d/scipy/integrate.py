@@ -1,13 +1,8 @@
 import sys
 from math import *
+from ulab import scipy 
 
 # this test is meaningful only if ulab is compiled with ulab.scipy.integrate
-try:
-    from ulab import scipy 
-except Exception as e:
-    print ("could not import ulab.scipy: ", e)
-    sys.exit(1) 
-
 try:
     if str(type(scipy.integrate)) != "<class 'module'>":
         print ("scipy.integrate is not available")
