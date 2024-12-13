@@ -18,4 +18,3 @@ functions = ( scipy.integrate.quad, scipy.integrate.romberg, scipy.integrate.sim
 for function in functions:
 	    print (function(f, a, b))
 
-
