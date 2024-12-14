@@ -39,7 +39,24 @@
 #include "../../ulab_tools.h"
 #include "integrate.h"
 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 ULAB_DEFINE_FLOAT_CONST(etolerance, MICROPY_FLOAT_CONST(1e-14), 0x283424dcUL, 0x3e901b2b29a4692bULL);
+#define MACHEPS        MICROPY_FLOAT_CONST(1e-17)
+#else
+ULAB_DEFINE_FLOAT_CONST(etolerance, MICROPY_FLOAT_CONST(1e-8), 0x358637cfUL, 0x3e7010c6f7d42d18ULL);
+#define MACHEPS        MICROPY_FLOAT_CONST(1e-8)
+#endif
+
+#define ZERO           MICROPY_FLOAT_CONST(0.0)
+#define POINT_TWO_FIVE MICROPY_FLOAT_CONST(0.25)
+#define ONE            MICROPY_FLOAT_CONST(1.0)
+#define TWO            MICROPY_FLOAT_CONST(2.0)
+#define FOUR           MICROPY_FLOAT_CONST(4.0)
+#define SIX            MICROPY_FLOAT_CONST(6.0)
+#define TEN            MICROPY_FLOAT_CONST(10.0)
+#define FIFTEEN        MICROPY_FLOAT_CONST(15.0)
+#define EPS_5          MICROPY_FLOAT_CONST(1e-5)
+
 
 static mp_float_t integrate_python_call(const mp_obj_type_t *type, mp_obj_t fun, mp_float_t x, mp_obj_t *fargs, uint8_t nparams) {
     // Helper function for calculating the value of f(x, a, b, c, ...),
@@ -51,7 +68,7 @@ static mp_float_t integrate_python_call(const mp_obj_type_t *type, mp_obj_t fun,
 
 // sign helper function
 int sign(mp_float_t x) {
-    if (x >= 0) 
+    if (x >= ZERO) 
         return 1;
     else
         return -1;
@@ -68,7 +85,7 @@ mp_float_t exp_sinh_opt_d(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_
     mp_obj_t fargs[1];
     mp_float_t h2 = integrate_python_call(type, fun, a + d/2, fargs, 0) - integrate_python_call(type, fun, (a + d*2)*4, fargs, 0);
     int i = 1, j = 32;                   // j=32 is optimal to find r
-    if (MICROPY_FLOAT_C_FUN(isfinite)(h2) && MICROPY_FLOAT_C_FUN(fabs)(h2) > 1e-5) {    // if |h2| > 2^-16
+    if (isfinite(h2) && MICROPY_FLOAT_C_FUN(fabs)(h2) > EPS_5) {    // if |h2| > 2^-16
         mp_float_t r, fl, fr, h, s = 0, lfl, lfr, lr = 2;
         do {                                  // find max j such that fl and fr are finite
             j /= 2;
@@ -76,8 +93,8 @@ mp_float_t exp_sinh_opt_d(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_
             fl = integrate_python_call(type, fun, a + d/r, fargs, 0);
             fr = integrate_python_call(type, fun, (a + d*r)*r*r, fargs, 0);
             h = fl - fr;
-        } while (j > 1 && !MICROPY_FLOAT_C_FUN(isfinite)(h));
-        if (j > 1 && MICROPY_FLOAT_C_FUN(isfinite)(h) && sign(h) != sign(h2)) {
+        } while (j > 1 && !isfinite(h));
+        if (j > 1 && isfinite(h) && sign(h) != sign(h2)) {
             lfl = fl;                         // last fl=f(a+d/r)
             lfr = fr;                         // last fr=f(a+d*r)*r*r
             do {                              // bisect in 4 iterations
@@ -86,7 +103,7 @@ mp_float_t exp_sinh_opt_d(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_
                 fl = integrate_python_call(type, fun, a + d/r, fargs, 0);
                 fr = integrate_python_call(type, fun, (a + d*r)*r*r, fargs, 0);
                 h = fl - fr;
-                if (MICROPY_FLOAT_C_FUN(isfinite)(h)) {
+                if (isfinite(h)) {
                     s += MICROPY_FLOAT_C_FUN(fabs)(h);  // sum |h| to remove noisy cases
                     if (sign(h) == sign(h2)) {
                         i += j;               // search right half
@@ -101,8 +118,8 @@ mp_float_t exp_sinh_opt_d(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_
             if (s > eps) {                    // if sum of |h| > eps
                 h = lfl - lfr;                // use last fl and fr before the sign change
                 r = lr;                       // use last r before the sign change
-                if (h != 0)                   // if last diff != 0, back up r by one step
-                    r /= 2;
+                if (h != ZERO)                   // if last diff != 0, back up r by one step
+                    r /= TWO;
                 if (MICROPY_FLOAT_C_FUN(fabs)(lfl) < MICROPY_FLOAT_C_FUN(fabs)(lfr))
                     d /= r;                   // move d closer to the finite endpoint
                 else
@@ -118,8 +135,8 @@ mp_float_t exp_sinh_opt_d(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_
 mp_float_t quad(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint16_t n, mp_float_t eps, mp_float_t *e) {
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     mp_obj_t fargs[1];
-    const mp_float_t tol = 10*eps;
-    mp_float_t c = 0, d = 1, s, sign = 1, v, h = 2;
+    const mp_float_t tol = TEN*eps;
+    mp_float_t c = ZERO, d = ONE, s, sign = ONE, v, h = TWO;
     int k = 0, mode = 0;                   // Tanh-Sinh = 0, Exp-Sinh = 1, Sinh-Sinh = 2
     if (b < a) {                                // swap bounds
         v = b;
@@ -127,18 +144,18 @@ mp_float_t quad(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint1
         a = v;
         sign = -1;
     }
-    if (MICROPY_FLOAT_C_FUN(isfinite)(a) && MICROPY_FLOAT_C_FUN(isfinite)(b)) {
-        c = (a+b)/2;
-        d = (b-a)/2;
+    if (isfinite(a) && isfinite(b)) {
+        c = (a+b)/TWO;
+        d = (b-a)/TWO;
         v = c;
     }
-    else if (MICROPY_FLOAT_C_FUN(isfinite)(a)) {
+    else if (isfinite(a)) {
         mode = 1;                               // Exp-Sinh
         d = exp_sinh_opt_d(fun, a, eps, d);
         c = a;
         v = a+d;
     }
-    else if (MICROPY_FLOAT_C_FUN(isfinite)(b)) {
+    else if (isfinite(b)) {
         mode = 1;                               // Exp-Sinh
         // d = -d;
         d = exp_sinh_opt_d(fun, b, eps, -d);
@@ -148,29 +165,29 @@ mp_float_t quad(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint1
     }
     else {
         mode = 2;                               // Sinh-Sinh
-        v = 0;
+        v = ZERO;
     }
     s = integrate_python_call(type, fun, v, fargs, 0);
     do {
-        mp_float_t p = 0, q, fp = 0, fm = 0, t, eh;
-        h /= 2;
+        mp_float_t p = ZERO, q, fp = ZERO, fm = ZERO, t, eh;
+        h /= TWO;
         t = eh = MICROPY_FLOAT_C_FUN(exp)(h);
-        if (k > 0)
+        if (k > ZERO)
            eh *= eh;
         if (mode == 0) {                        // Tanh-Sinh
             do {
-                mp_float_t u = MICROPY_FLOAT_C_FUN(exp)(1/t-t);      // = exp(-2*sinh(j*h)) = 1/exp(sinh(j*h))^2
-                mp_float_t r = 2*u/(1+u);       // = 1 - tanh(sinh(j*h))
-                mp_float_t w = (t+1/t)*r/(1+u); // = cosh(j*h)/cosh(sinh(j*h))^2
+                mp_float_t u = MICROPY_FLOAT_C_FUN(exp)(ONE / t - t); // = exp(-2*sinh(j*h)) = 1/exp(sinh(j*h))^2
+                mp_float_t r = TWO * u / (ONE + u);                   // = 1 - tanh(sinh(j*h))
+                mp_float_t w = (t + ONE / t) * r / (ONE + u);         // = cosh(j*h)/cosh(sinh(j*h))^2
                 mp_float_t x = d*r;
                 if (a+x > a) {                  // if too close to a then reuse previous fp
                     mp_float_t y = integrate_python_call(type, fun, a+x, fargs, 0);
-                    if (MICROPY_FLOAT_C_FUN(isfinite)(y))
+                    if (isfinite(y))
                         fp = y;                 // if f(x) is finite, add to local sum
                 }
                 if (b-x < b) {                  // if too close to a then reuse previous fp
                     mp_float_t y = integrate_python_call(type, fun, b-x, fargs, 0);
-                    if (MICROPY_FLOAT_C_FUN(isfinite)(y))
+                    if (isfinite(y))
                         fm = y;                 // if f(x) is finite, add to local sum
                 }
                 q = w*(fp+fm);
@@ -179,32 +196,32 @@ mp_float_t quad(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint1
             } while (MICROPY_FLOAT_C_FUN(fabs)(q) > eps*MICROPY_FLOAT_C_FUN(fabs)(p));
         }
         else {
-            t /= 2;
+            t /= TWO;
             do {
-                mp_float_t r = MICROPY_FLOAT_C_FUN(exp)(t-.25/t);    // = exp(sinh(j*h))
+                mp_float_t r = MICROPY_FLOAT_C_FUN(exp)(t - POINT_TWO_FIVE / t);    // = exp(sinh(j*h))
                 mp_float_t x, y, w = r;
-                q = 0;
+                q = ZERO;
                 if (mode == 1) {                // Exp-Sinh
                     x = c + d/r;
                     if (x == c)                 // if x hit the finite endpoint then break
                         break;
                     y = integrate_python_call(type, fun, x, fargs, 0);
-                    if (MICROPY_FLOAT_C_FUN(isfinite)(y))    // if f(x) is finite, add to local sum
+                    if (isfinite(y))    // if f(x) is finite, add to local sum
                         q += y/w;
                 }
                 else {                          // Sinh-Sinh
-                    r = (r-1/r)/2;              // = sinh(sinh(j*h))
-                    w = (w+1/w)/2;              // = cosh(sinh(j*h))
+                    r = (r - ONE / r) / TWO;              // = sinh(sinh(j*h))
+                    w = (w + ONE / w) / TWO;              // = cosh(sinh(j*h))
                     x = c - d*r;
                     y = integrate_python_call(type, fun, x, fargs, 0);
-                    if (MICROPY_FLOAT_C_FUN(isfinite)(y))    // if f(x) is finite, add to local sum
+                    if (isfinite(y))    // if f(x) is finite, add to local sum
                         q += y*w;
                 }
                 x = c + d*r;
                 y = integrate_python_call(type, fun, x, fargs, 0);
-                if (MICROPY_FLOAT_C_FUN(isfinite)(y))        // if f(x) is finite, add to local sum
+                if (isfinite(y))        // if f(x) is finite, add to local sum
                     q += y*w;
-                q *= t+.25/t;                   // q *= cosh(j*h)
+                q *= t + POINT_TWO_FIVE / t;                   // q *= cosh(j*h)
                 p += q;
                 t *= eh;
             } while (MICROPY_FLOAT_C_FUN(fabs)(q) > eps*MICROPY_FLOAT_C_FUN(fabs)(p));
@@ -303,12 +320,12 @@ mp_float_t qromb(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint
     for (i = 1; i < n; ++i) {
         unsigned long long k = 1UL << i;
         unsigned long long s = 1;
-        mp_float_t sum = 0;
+        mp_float_t sum = ZERO;
         mp_float_t *Rt;
-        h /= 2;
+        h /= TWO;
         for (j = 1; j < k; j += 2)
             sum += integrate_python_call(type, fun, a+j*h, fargs, 0);
-        Ru[0] = h*sum + Ro[0]/2;
+        Ru[0] = h*sum + Ro[0] / TWO;
         for (j = 1; j <= i; ++j) {
             s <<= 2;
             Ru[j] = (s*Ru[j-1] - Ro[j-1])/(s-1);
@@ -392,17 +409,17 @@ mp_float_t as(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, mp_floa
               mp_float_t fb, mp_float_t v, mp_float_t eps, int n, mp_float_t t) {
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     mp_obj_t fargs[1];
-    mp_float_t h = (b-a)/2;
-    mp_float_t f1 = integrate_python_call(type, fun, a + h/2, fargs, 0);
-    mp_float_t f2 = integrate_python_call(type, fun, b - h/2, fargs, 0);
-    mp_float_t sl = h*(fa + 4*f1 + fm)/6;
-    mp_float_t sr = h*(fm + 4*f2 + fb)/6;
+    mp_float_t h = (b-a) / TWO;
+    mp_float_t f1 = integrate_python_call(type, fun, a + h / TWO, fargs, 0);
+    mp_float_t f2 = integrate_python_call(type, fun, b - h / TWO, fargs, 0);
+    mp_float_t sl = h*(fa + FOUR * f1 + fm) / SIX;
+    mp_float_t sr = h*(fm + FOUR * f2 + fb) / SIX;
     mp_float_t s = sl+sr;
-    mp_float_t d = (s-v)/15;
+    mp_float_t d = (s-v) / FIFTEEN;
     mp_float_t m = a+h;
     if (n <= 0 || MICROPY_FLOAT_C_FUN(fabs)(d) < eps)
         return t + s + d; // note: fabs(d) can be used as error estimate
-    eps /= 2;
+    eps /= TWO;
     --n;
     t = as(fun, a, m, fa, f1, fm, sl, eps, n, t);
     return as(fun, m, b, fm, f2, fb, sr, eps, n, t);
@@ -414,7 +431,7 @@ mp_float_t qasi(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, int n
     mp_float_t fa = integrate_python_call(type, fun, a, fargs, 0);
     mp_float_t fm = integrate_python_call(type, fun, (a+b)/2, fargs, 0);
     mp_float_t fb = integrate_python_call(type, fun, b, fargs, 0);
-    mp_float_t v = (fa+4*fm+fb)*(b-a)/6;
+    mp_float_t v = (fa + FOUR * fm + fb) * (b-a) / SIX;
     return as(fun, a, b, fa, fm, fb, v, eps, n, 0);
 }
 
@@ -487,67 +504,67 @@ MP_DEFINE_CONST_FUN_OBJ_KW(integrate_simpson_obj, 2, integrate_simpson);
 mp_float_t gk(mp_float_t (*fun)(mp_float_t), mp_float_t c, mp_float_t d, mp_float_t *err) {
 // abscissas and weights pre-calculated with Legendre Stieltjes polynomials
     static const mp_float_t abscissas[21] = {
-        0.00000000000000000e+00,
-        7.65265211334973338e-02,
-        1.52605465240922676e-01,
-        2.27785851141645078e-01,
-        3.01627868114913004e-01,
-        3.73706088715419561e-01,
-        4.43593175238725103e-01,
-        5.10867001950827098e-01,
-        5.75140446819710315e-01,
-        6.36053680726515025e-01,
-        6.93237656334751385e-01,
-        7.46331906460150793e-01,
-        7.95041428837551198e-01,
-        8.39116971822218823e-01,
-        8.78276811252281976e-01,
-        9.12234428251325906e-01,
-        9.40822633831754754e-01,
-        9.63971927277913791e-01,
-        9.81507877450250259e-01,
-        9.93128599185094925e-01,
-        9.98859031588277664e-01,
+        MICROPY_FLOAT_CONST(0.00000000000000000e+00),
+        MICROPY_FLOAT_CONST(7.65265211334973338e-02),
+        MICROPY_FLOAT_CONST(1.52605465240922676e-01),
+        MICROPY_FLOAT_CONST(2.27785851141645078e-01),
+        MICROPY_FLOAT_CONST(3.01627868114913004e-01),
+        MICROPY_FLOAT_CONST(3.73706088715419561e-01),
+        MICROPY_FLOAT_CONST(4.43593175238725103e-01),
+        MICROPY_FLOAT_CONST(5.10867001950827098e-01),
+        MICROPY_FLOAT_CONST(5.75140446819710315e-01),
+        MICROPY_FLOAT_CONST(6.36053680726515025e-01),
+        MICROPY_FLOAT_CONST(6.93237656334751385e-01),
+        MICROPY_FLOAT_CONST(7.46331906460150793e-01),
+        MICROPY_FLOAT_CONST(7.95041428837551198e-01),
+        MICROPY_FLOAT_CONST(8.39116971822218823e-01),
+        MICROPY_FLOAT_CONST(8.78276811252281976e-01),
+        MICROPY_FLOAT_CONST(9.12234428251325906e-01),
+        MICROPY_FLOAT_CONST(9.40822633831754754e-01),
+        MICROPY_FLOAT_CONST(9.63971927277913791e-01),
+        MICROPY_FLOAT_CONST(9.81507877450250259e-01),
+        MICROPY_FLOAT_CONST(9.93128599185094925e-01),
+        MICROPY_FLOAT_CONST(9.98859031588277664e-01),
     };
     static const mp_float_t weights[21] = {
-        7.66007119179996564e-02,
-        7.63778676720807367e-02,
-        7.57044976845566747e-02,
-        7.45828754004991890e-02,
-        7.30306903327866675e-02,
-        7.10544235534440683e-02,
-        6.86486729285216193e-02,
-        6.58345971336184221e-02,
-        6.26532375547811680e-02,
-        5.91114008806395724e-02,
-        5.51951053482859947e-02,
-        5.09445739237286919e-02,
-        4.64348218674976747e-02,
-        4.16688733279736863e-02,
-        3.66001697582007980e-02,
-        3.12873067770327990e-02,
-        2.58821336049511588e-02,
-        2.03883734612665236e-02,
-        1.46261692569712530e-02,
-        8.60026985564294220e-03,
-        3.07358371852053150e-03,
+        MICROPY_FLOAT_CONST(7.66007119179996564e-02),
+        MICROPY_FLOAT_CONST(7.63778676720807367e-02),
+        MICROPY_FLOAT_CONST(7.57044976845566747e-02),
+        MICROPY_FLOAT_CONST(7.45828754004991890e-02),
+        MICROPY_FLOAT_CONST(7.30306903327866675e-02),
+        MICROPY_FLOAT_CONST(7.10544235534440683e-02),
+        MICROPY_FLOAT_CONST(6.86486729285216193e-02),
+        MICROPY_FLOAT_CONST(6.58345971336184221e-02),
+        MICROPY_FLOAT_CONST(6.26532375547811680e-02),
+        MICROPY_FLOAT_CONST(5.91114008806395724e-02),
+        MICROPY_FLOAT_CONST(5.51951053482859947e-02),
+        MICROPY_FLOAT_CONST(5.09445739237286919e-02),
+        MICROPY_FLOAT_CONST(4.64348218674976747e-02),
+        MICROPY_FLOAT_CONST(4.16688733279736863e-02),
+        MICROPY_FLOAT_CONST(3.66001697582007980e-02),
+        MICROPY_FLOAT_CONST(3.12873067770327990e-02),
+        MICROPY_FLOAT_CONST(2.58821336049511588e-02),
+        MICROPY_FLOAT_CONST(2.03883734612665236e-02),
+        MICROPY_FLOAT_CONST(1.46261692569712530e-02),
+        MICROPY_FLOAT_CONST(8.60026985564294220e-03),
+        MICROPY_FLOAT_CONST(3.07358371852053150e-03),
     };
     static const mp_float_t gauss_weights[10] = {
-        1.52753387130725851e-01,
-        1.49172986472603747e-01,
-        1.42096109318382051e-01,
-        1.31688638449176627e-01,
-        1.18194531961518417e-01,
-        1.01930119817240435e-01,
-        8.32767415767047487e-02,
-        6.26720483341090636e-02,
-        4.06014298003869413e-02,
-        1.76140071391521183e-02,
+        MICROPY_FLOAT_CONST(1.52753387130725851e-01),
+        MICROPY_FLOAT_CONST(1.49172986472603747e-01),
+        MICROPY_FLOAT_CONST(1.42096109318382051e-01),
+        MICROPY_FLOAT_CONST(1.31688638449176627e-01),
+        MICROPY_FLOAT_CONST(1.18194531961518417e-01),
+        MICROPY_FLOAT_CONST(1.01930119817240435e-01),
+        MICROPY_FLOAT_CONST(8.32767415767047487e-02),
+        MICROPY_FLOAT_CONST(6.26720483341090636e-02),
+        MICROPY_FLOAT_CONST(4.06014298003869413e-02),
+        MICROPY_FLOAT_CONST(1.76140071391521183e-02),
     };
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     mp_obj_t fargs[1];
-    mp_float_t p = 0; // kronrod quadrature sum
-    mp_float_t q = 0; // gauss quadrature sum
+    mp_float_t p = ZERO; // kronrod quadrature sum
+    mp_float_t q = ZERO; // gauss quadrature sum
     mp_float_t fp, fm;
     mp_float_t e;
     int i;
@@ -565,24 +582,24 @@ mp_float_t gk(mp_float_t (*fun)(mp_float_t), mp_float_t c, mp_float_t d, mp_floa
         p += (fp + fm) * weights[i];
     }
     *err = MICROPY_FLOAT_C_FUN(fabs)(p - q);
-    e = MICROPY_FLOAT_C_FUN(fabs)(2*p*1e-17); // optional, to take 1e-17 MachEps prec. into account
+    e = MICROPY_FLOAT_C_FUN(fabs)(2 * p * MACHEPS); // optional, to take 1e-17 MachEps prec. into account
     if (*err < e)
         *err = e;
     return p;
 }
 
 mp_float_t qakro(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, int n, mp_float_t tol, mp_float_t eps, mp_float_t *err) {
-    mp_float_t c = (a+b)/2;
-    mp_float_t d = (b-a)/2;
+    mp_float_t c = (a+b) / TWO;
+    mp_float_t d = (b-a) / TWO;
     mp_float_t e;
     mp_float_t r = gk(fun, c, d, &e);
     mp_float_t s = d*r;
     mp_float_t t = MICROPY_FLOAT_C_FUN(fabs)(s*tol);
-    if (tol == 0)
+    if (tol == ZERO)
         tol = t;
     if (n > 0 && t < e && tol < e) {
-        s = qakro(fun, a, c, n-1, t/2, eps, err);
-        s += qakro(fun, c, b, n-1, t/2, eps, &e);
+        s = qakro(fun, a, c, n-1, t / TWO, eps, err);
+        s += qakro(fun, c, b, n-1, t / TWO, eps, &e);
         *err += e;
         return s;
     }

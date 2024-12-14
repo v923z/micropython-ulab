@@ -400,8 +400,6 @@
 
 // the integrate module; functions of the integrate module still have
 // to be defined separately
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-// we compile integrate only when we have _DOUBLE 
 #ifndef ULAB_SCIPY_HAS_INTEGRATE_MODULE
 #define ULAB_SCIPY_HAS_INTEGRATE_MODULE        (1)
 #endif
@@ -421,7 +419,6 @@
 
 #ifndef ULAB_INTEGRATE_HAS_QUADGK
 #define ULAB_INTEGRATE_HAS_QUADGK			(1)
-#endif
 #endif
 
 // the linalg module; functions of the linalg module still have
