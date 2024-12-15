@@ -17,8 +17,8 @@
 
 extern const mp_obj_module_t ulab_scipy_integrate_module;
 
-#if ULAB_INTEGRATE_HAS_QUAD
-MP_DECLARE_CONST_FUN_OBJ_KW(optimize_quad_obj);
+#if ULAB_INTEGRATE_HAS_TANHSINH
+MP_DECLARE_CONST_FUN_OBJ_KW(optimize_tanhsinh_obj);
 #endif
 #if ULAB_INTEGRATE_HAS_ROMBERG
 MP_DECLARE_CONST_FUN_OBJ_KW(optimize_romberg_obj);
@@ -26,8 +26,8 @@ MP_DECLARE_CONST_FUN_OBJ_KW(optimize_romberg_obj);
 #if ULAB_INTEGRATE_HAS_SIMPSON
 MP_DECLARE_CONST_FUN_OBJ_KW(optimize_simpson_obj);
 #endif
-#if ULAB_INTEGRATE_HAS_QUADGK
-MP_DECLARE_CONST_FUN_OBJ_KW(optimize_quadgk_obj);
+#if ULAB_INTEGRATE_HAS_QUAD
+MP_DECLARE_CONST_FUN_OBJ_KW(optimize_quad_obj);
 #endif
 
 #endif /* _SCIPY_INTEGRATE_ */

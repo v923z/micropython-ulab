@@ -75,7 +75,7 @@ int sign(mp_float_t x) {
 }        
 
 
-#if ULAB_INTEGRATE_HAS_QUAD
+#if ULAB_INTEGRATE_HAS_TANHSINH
 // Tanh-Sinh, Sinh-Sinh and Exp-Sinh quadrature
 // https://www.genivia.com/qthsh.html
 
@@ -132,7 +132,7 @@ mp_float_t exp_sinh_opt_d(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_
 
 
 // integrate function f, range a..b, max levels n, error tolerance eps
-mp_float_t quad(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint16_t n, mp_float_t eps, mp_float_t *e) {
+mp_float_t tanhsinh(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint16_t n, mp_float_t eps, mp_float_t *e) {
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     mp_obj_t fargs[1];
     const mp_float_t tol = TEN*eps;
@@ -235,29 +235,28 @@ mp_float_t quad(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint1
     return sign*d*s*h;                          // result with estimated relative error e
 }
 
-//| def quad(
+//| def tanhsinh(
 //|     fun: Callable[[float], float],
 //|     a: float,
 //|     b: float,
 //|     *,
 //|     levels: int = 6
-//|     eps: float = 1e-14,
+//|     eps: float = etolerance
 //| ) -> float:
 //|     """
 //|     :param callable f: The function to integrate
-//|     :param float a: The left side of the interval
-//|     :param float b: The right side of the interval
+//|     :param float a: The lower integration limit
+//|     :param float b: The upper integration limit
 //|     :param float levels: The number of levels to perform (6..7 is optimal)
-//|     :param float eps: The error tolerance value
+//|     :param float eps: The error tolerance value 
 //|
-//|     Find a solution (zero) of the function ``f(x)`` on the interval
-//|     (``a``..``b``) using the bisection method.  The result is accurate to within
-//|     ``xtol`` unless more than ``maxiter`` steps are required."""
-//|     ...
+//|     Find a quadrature of the function ``f(x)`` on the interval
+//|     (``a``..``b``) using an optimized double exponential.  The result is accurate to within
+//|     ``eps`` unless more than ``levels`` levels are required."""
 //|
 
 
-static mp_obj_t integrate_quad(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t integrate_tanhsinh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
@@ -272,7 +271,7 @@ static mp_obj_t integrate_quad(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_obj_t fun = args[0].u_obj;
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a callable"));
     }
 
 	// iterate over args 1, 2, and 4
@@ -294,20 +293,20 @@ static mp_obj_t integrate_quad(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     
     mp_obj_t res[2];
     mp_float_t e;
-    res[0] = mp_obj_new_float(quad(fun, a, b, n, eps, &e));
+    res[0] = mp_obj_new_float(tanhsinh(fun, a, b, n, eps, &e));
     res[1] = mp_obj_new_float(e);
     return mp_obj_new_tuple(2, res); 
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(integrate_quad_obj, 2, integrate_quad);
-#endif /* ULAB_INTEGRATE_HAS_QUAD */
+MP_DEFINE_CONST_FUN_OBJ_KW(integrate_tanhsinh_obj, 2, integrate_tanhsinh);
+#endif /* ULAB_INTEGRATE_HAS_TANHSINH */
 
 #if ULAB_INTEGRATE_HAS_ROMBERG
 // Romberg quadrature
 // This function is deprecated as of SciPy 1.12.0 and will be removed in SciPy 1.15.0. Please use scipy.integrate.quad instead. 
 // https://en.wikipedia.org/wiki/Romberg%27s_method, https://www.genivia.com/qthsh.html, 
 // https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.romberg.html (which is different 
-// insofar it expects an array of function values). 
+// insofar as the latter expects an array of function values). 
 
 mp_float_t qromb(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint16_t n, mp_float_t eps) {
     const mp_obj_type_t *type = mp_obj_get_type(fun);
@@ -345,12 +344,12 @@ mp_float_t qromb(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint
 //|     b: float,
 //|     *,
 //|     steps: int = 100
-//|     eps: float = 1e-14,
+//|     eps: float = etolerance
 //| ) -> float:
 //|     """
 //|     :param callable f: The function to integrate
-//|     :param float a: The left side of the interval
-//|     :param float b: The right side of the interval
+//|     :param float a: The lower integration limit
+//|     :param float b: The upper integration limit
 //|     :param float steps: The number of equidistant steps
 //|     :param float eps: The tolerance value
 //|
@@ -375,7 +374,7 @@ static mp_obj_t integrate_romberg(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_obj_t fun = args[0].u_obj;
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a callable"));
     }
 
 	// iterate over args 1, 2, and 4
@@ -441,12 +440,12 @@ mp_float_t qasi(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, int n
 //|     b: float,
 //|     *,
 //|     steps: int = 100
-//|     eps: float = 1e-14,
+//|     eps: float = etolerance
 //| ) -> float:
 //|     """
 //|     :param callable f: The function to integrate
-//|     :param float a: The left side of the interval
-//|     :param float b: The right side of the interval
+//|     :param float a: The lower integration limit
+//|     :param float b: The upper integration limit
 //|     :param float steps: The number of equidistant steps
 //|     :param float eps: The tolerance value
 //|
@@ -497,7 +496,7 @@ static mp_obj_t integrate_simpson(size_t n_args, const mp_obj_t *pos_args, mp_ma
 MP_DEFINE_CONST_FUN_OBJ_KW(integrate_simpson_obj, 2, integrate_simpson);
 #endif /* ULAB_INTEGRATE_HAS_SIMPSON */
 
-#if ULAB_INTEGRATE_HAS_QUADGK
+#if ULAB_INTEGRATE_HAS_QUAD
 // Adaptive Gauss-Kronrod (G10,K21) quadrature
 // https://en.wikipedia.org/wiki/Gauss%E2%80%93Kronrod_quadrature_formula, https://www.genivia.com/qthsh.html
 
@@ -608,18 +607,18 @@ mp_float_t qakro(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, int 
 }
 
 
-//| def quadgk(
+//| def quad(
 //|     fun: Callable[[float], float],
 //|     a: float,
 //|     b: float,
 //|     *,
 //|     order: int = 5
-//|     eps: float = 1e-14,
+//|     eps: float = etolerance
 //| ) -> float:
 //|     """
 //|     :param callable f: The function to integrate
-//|     :param float a: The left side of the interval
-//|     :param float b: The right side of the interval
+//|     :param float a: The lower integration limit
+//|     :param float b: The upper integration limit
 //|     :param float order: Order of quadrature integration. Default is 5.
 //|     :param float eps: The tolerance value
 //|
@@ -629,7 +628,7 @@ mp_float_t qakro(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, int 
 //|     ...
 //|
 
-static mp_obj_t integrate_quadgk(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t integrate_quad(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
@@ -644,7 +643,7 @@ static mp_obj_t integrate_quadgk(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_obj_t fun = args[0].u_obj;
     const mp_obj_type_t *type = mp_obj_get_type(fun);
     if(!MP_OBJ_TYPE_HAS_SLOT(type, call)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a function"));
+        mp_raise_TypeError(MP_ERROR_TEXT("first argument must be a callable"));
     }
 
 	// iterate over args 1, 2, and 4
@@ -671,13 +670,13 @@ static mp_obj_t integrate_quadgk(size_t n_args, const mp_obj_t *pos_args, mp_map
     return mp_obj_new_tuple(2, res); 
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(integrate_quadgk_obj, 2, integrate_quadgk);
-#endif /* ULAB_INTEGRATE_HAS_QUADGK */
+MP_DEFINE_CONST_FUN_OBJ_KW(integrate_quad_obj, 2, integrate_quad);
+#endif /* ULAB_INTEGRATE_HAS_QUAD */
 
 static const mp_rom_map_elem_t ulab_scipy_integrate_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_integrate) },
-#if ULAB_INTEGRATE_HAS_QUAD	
-    { MP_ROM_QSTR(MP_QSTR_quad), MP_ROM_PTR(&integrate_quad_obj) },
+#if ULAB_INTEGRATE_HAS_TANHSINH
+    { MP_ROM_QSTR(MP_QSTR_tanhsinh), MP_ROM_PTR(&integrate_tanhsinh_obj) },
 #endif
 #if ULAB_INTEGRATE_HAS_ROMBERG	
     { MP_ROM_QSTR(MP_QSTR_romberg), MP_ROM_PTR(&integrate_romberg_obj) },
@@ -685,8 +684,8 @@ static const mp_rom_map_elem_t ulab_scipy_integrate_globals_table[] = {
 #if ULAB_INTEGRATE_HAS_SIMPSON	
     { MP_ROM_QSTR(MP_QSTR_simpson), MP_ROM_PTR(&integrate_simpson_obj) },
 #endif
-#if ULAB_INTEGRATE_HAS_QUADGK	
-    { MP_ROM_QSTR(MP_QSTR_quadgk), MP_ROM_PTR(&integrate_quadgk_obj) },
+#if ULAB_INTEGRATE_HAS_QUAD	
+    { MP_ROM_QSTR(MP_QSTR_quad), MP_ROM_PTR(&integrate_quad_obj) },
 #endif	
 };
 
