@@ -162,6 +162,15 @@ void *ndarray_set_float_function(uint8_t dtype) {
 }
 #endif /* NDARRAY_BINARY_USES_FUN_POINTER */
 
+int8_t tools_get_axis(mp_obj_t axis, uint8_t ndim) {
+    int8_t ax = mp_obj_get_int(axis);
+    if(ax < 0) ax += ndim;
+    if((ax < 0) || (ax > ndim - 1)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("axis is out of bounds"));
+    }
+    return ax;
+}
+
 shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
     // TODO: replace numerical_reduce_axes with this function, wherever applicable
     // This function should be used, whenever a tensor is contracted;
@@ -172,30 +181,28 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
     }
     shape_strides _shape_strides;
 
+    _shape_strides.increment = 0;
+    // this is the contracted dimension (won't be overwritten for axis == None)
+    _shape_strides.ndim = 0;
+
+    if(axis == mp_const_none) {
+        _shape_strides.shape = ndarray->shape;
+        _shape_strides.strides = ndarray->strides;
+        return _shape_strides;
+    }
+
     size_t *shape = m_new(size_t, ULAB_MAX_DIMS + 1);
     _shape_strides.shape = shape;
     int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS + 1);
     _shape_strides.strides = strides;
 
-    _shape_strides.increment = 0;
-    // this is the contracted dimension (won't be overwritten for axis == None)
-    _shape_strides.ndim = 0;
-
     memcpy(_shape_strides.shape, ndarray->shape, sizeof(size_t) * ULAB_MAX_DIMS);
     memcpy(_shape_strides.strides, ndarray->strides, sizeof(int32_t) * ULAB_MAX_DIMS);
-
-    if(axis == mp_const_none) {
-        return _shape_strides;
-    }
 
     uint8_t index = ULAB_MAX_DIMS - 1; // value of index for axis == mp_const_none (won't be overwritten)
 
     if(axis != mp_const_none) { // i.e., axis is an integer
-        int8_t ax = mp_obj_get_int(axis);
-        if(ax < 0) ax += ndarray->ndim;
-        if((ax < 0) || (ax > ndarray->ndim - 1)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("index out of range"));
-        }
+        int8_t ax = tools_get_axis(axis, ndarray->ndim);
         index = ULAB_MAX_DIMS - ndarray->ndim + ax;
         _shape_strides.ndim = ndarray->ndim - 1;
     }
@@ -216,37 +223,33 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
     return _shape_strides;
 }
 
-int8_t tools_get_axis(mp_obj_t axis, uint8_t ndim) {
-    int8_t ax = mp_obj_get_int(axis);
-    if(ax < 0) ax += ndim;
-    if((ax < 0) || (ax > ndim - 1)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("axis is out of bounds"));
-    }
-    return ax;
-}
 
-mp_obj_t ulab_tools_restore_dims(mp_obj_t *result, mp_obj_t keepdims, mp_obj_t axis, uint8_t ndim) {
+mp_obj_t ulab_tools_restore_dims(ndarray_obj_t *results, mp_obj_t keepdims, mp_obj_t axis) {
     // restores the contracted dimension, if keepdims is True
-    ndarray_obj_t *_result = MP_OBJ_TO_PTR(result);
+    return MP_OBJ_FROM_PTR(results);
     if(keepdims == mp_const_true) {
-        _result->ndim += 1;
-        int8_t = tools_get_axis(axis, _result->ndim + 1);
-
+        mp_printf(MP_PYTHON_PRINTER, "keepdims");
+        results->ndim += 1;
+        int8_t ax = tools_get_axis(axis, results->ndim + 1);
+        printf("%d\n", ax);
+        for(int8_t i = ULAB_MAX_DIMS - 1; i >= 0; i--) {
+        printf("(%ld)\n", results->shape[i]);
+        }
+        mp_float_t *a = (mp_float_t *)results->array;
+        printf("%f\n", *a);
         // shift values from the right to the left in the strides and shape arrays
-        for(uint8_t i = ULAB_MAX_DIMS - _result->ndim + ax - 1; i > 0; i--) {
-            _result->shape[i - 1] = _result->shape[i];
-            _result->strides[i - 1] = _result->strides[i];
+        for(uint8_t i = 0; i < ULAB_MAX_DIMS - 1 - results->ndim + ax; i++) {
+            results->shape[i] = results->shape[i + 1];
+            results->strides[i] = results->strides[i + 1];
         }
-        _result->shape[ULAB_MAX_DIMS - _result->ndim + ax] = 1;
-        _result->strides[ULAB_MAX_DIMS - _result->ndim + ax] = _result->strides[ULAB_MAX_DIMS - _result->ndim + ax + 1];
+        results->shape[ULAB_MAX_DIMS - 1 - results->ndim  + ax] = 1;
+        results->strides[ULAB_MAX_DIMS - 1 - results->ndim  + ax + 1] = results->strides[ULAB_MAX_DIMS - 1 - results->ndim  + ax];
     }
 
-    if(keepdims == mp_const_false) {
-        if(results->ndim == 0) { // return a scalar here
-            return mp_binary_get_val_array(results->dtype, results->array, 0);
-        }
+    if((keepdims == mp_const_false) && (results->ndim == 0)) { // return a scalar here
+        return mp_binary_get_val_array(results->dtype, results->array, 0);
     }
-    return result;
+    return MP_OBJ_FROM_PTR(results);
 }
 
 #if ULAB_MAX_DIMS > 1
