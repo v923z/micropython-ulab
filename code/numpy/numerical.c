@@ -372,7 +372,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 mp_float_t norm = (mp_float_t)_shape_strides.shape[0];
                 // re-wind the array here
                 farray = (mp_float_t *)results->array;
-                for(size_t i=0; i < results->len; i++) {
+                for(size_t i = 0; i < results->len; i++) {
                     *farray++ *= norm;
                 }
             }
@@ -397,9 +397,9 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 RUN_MEAN_STD(mp_float_t, array, farray, _shape_strides, div, isStd);
             }
         }
-        // return(ulab_tools_restore_dims(results, keepdims, axis));
-        return MP_OBJ_FROM_PTR(results);
+        return ulab_tools_restore_dims(ndarray, results, keepdims, _shape_strides);
     }
+    // we should never get to this point
     return mp_const_none;
 }
 #endif
@@ -439,7 +439,7 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
     }
 }
 
-static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
+static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t keepdims, mp_obj_t axis, uint8_t optype) {
     // TODO: treat the flattened array
     if(ndarray->len == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("attempt to get (arg)min/(arg)max of empty sequence"));
@@ -519,7 +519,9 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
 
         numerical_reduce_axes(ndarray, ax, shape, strides);
-        uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
+
+        uint8_t index = _shape_strides.axis;
 
         ndarray_obj_t *results = NULL;
 
@@ -548,8 +550,9 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         if(results->len == 1) {
             return mp_binary_get_val_array(results->dtype, results->array, 0);
         }
-        return MP_OBJ_FROM_PTR(results);
+        return ulab_tools_restore_dims(ndarray, results, keepdims, _shape_strides);
     }
+    // we should never get to this point
     return mp_const_none;
 }
 #endif
@@ -599,7 +602,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_ARGMIN:
             case NUMERICAL_ARGMAX:
                 COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
-                return numerical_argmin_argmax_ndarray(ndarray, axis, optype);
+                return numerical_argmin_argmax_ndarray(ndarray, keepdims, axis, optype);
             case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
                 COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
@@ -1423,6 +1426,66 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
 
 mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_SUM);
+    // static const mp_arg_t allowed_args[] = {
+    //     { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
+    //     { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+    //     { MP_QSTR_keepdims, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_FALSE } },
+    // };
+
+    // mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    // mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // mp_obj_t oin = args[0].u_obj;
+    // mp_obj_t axis = args[1].u_obj;
+    // mp_obj_t keepdims = args[2].u_obj;
+
+    // if((axis != mp_const_none) && (!mp_obj_is_int(axis))) {
+    //     mp_raise_TypeError(MP_ERROR_TEXT("axis must be None, or an integer"));
+    // }
+
+    // ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
+    // if(!mp_obj_is_int(axis) & (axis != mp_const_none)) {
+    //     mp_raise_TypeError(MP_ERROR_TEXT("axis must be None, or an integer"));
+    // }
+    
+    // shape_strides _shape_strides;
+
+    // _shape_strides.increment = 0;
+    // // this is the contracted dimension (won't be overwritten for axis == None)
+    // _shape_strides.ndim = 0;
+
+    // size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
+    // _shape_strides.shape = shape;
+    // int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
+    // _shape_strides.strides = strides;
+
+    // memcpy(_shape_strides.shape, ndarray->shape, sizeof(size_t) * ULAB_MAX_DIMS);
+    // memcpy(_shape_strides.strides, ndarray->strides, sizeof(int32_t) * ULAB_MAX_DIMS);
+
+    // uint8_t index = ULAB_MAX_DIMS - 1; // value of index for axis == mp_const_none (won't be overwritten)
+
+    // if(axis != mp_const_none) { // i.e., axis is an integer
+    //     int8_t ax = tools_get_axis(axis, ndarray->ndim);
+    //     index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+    //     _shape_strides.ndim = ndarray->ndim - 1;
+    // }
+
+    // // move the value stored at index to the leftmost position, and align everything else to the right
+    // _shape_strides.shape[0] = ndarray->shape[index];
+    // _shape_strides.strides[0] = ndarray->strides[index];
+    // for(uint8_t i = 0; i < index; i++) {
+    //     // entries to the right of index must be shifted by one position to the left
+    //     _shape_strides.shape[i + 1] = ndarray->shape[i];
+    //     _shape_strides.strides[i + 1] = ndarray->strides[i];
+    // }
+
+    // if(_shape_strides.ndim != 0) {
+    //     _shape_strides.increment = 1;
+    // }
+
+
+    // return mp_const_none;
+
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sum_obj, 1, numerical_sum);

@@ -199,18 +199,18 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
     memcpy(_shape_strides.shape, ndarray->shape, sizeof(size_t) * ULAB_MAX_DIMS);
     memcpy(_shape_strides.strides, ndarray->strides, sizeof(int32_t) * ULAB_MAX_DIMS);
 
-    uint8_t index = ULAB_MAX_DIMS - 1; // value of index for axis == mp_const_none (won't be overwritten)
+    _shape_strides.axis = ULAB_MAX_DIMS - 1; // value of index for axis == mp_const_none (won't be overwritten)
 
     if(axis != mp_const_none) { // i.e., axis is an integer
         int8_t ax = tools_get_axis(axis, ndarray->ndim);
-        index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        _shape_strides.axis = ULAB_MAX_DIMS - ndarray->ndim + ax;
         _shape_strides.ndim = ndarray->ndim - 1;
     }
 
     // move the value stored at index to the leftmost position, and align everything else to the right
-    _shape_strides.shape[0] = ndarray->shape[index];
-    _shape_strides.strides[0] = ndarray->strides[index];
-    for(uint8_t i = 0; i < index; i++) {
+    _shape_strides.shape[0] = ndarray->shape[_shape_strides.axis];
+    _shape_strides.strides[0] = ndarray->strides[_shape_strides.axis];
+    for(uint8_t i = 0; i < _shape_strides.axis; i++) {
         // entries to the right of index must be shifted by one position to the left
         _shape_strides.shape[i + 1] = ndarray->shape[i];
         _shape_strides.strides[i + 1] = ndarray->strides[i];
@@ -220,35 +220,36 @@ shape_strides tools_reduce_axes(ndarray_obj_t *ndarray, mp_obj_t axis) {
         _shape_strides.increment = 1;
     }
 
+    if(_shape_strides.ndim == 0) {
+        _shape_strides.ndim = 1;
+        _shape_strides.shape[ULAB_MAX_DIMS - 1] = 1;
+        _shape_strides.strides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
+    }
+
     return _shape_strides;
 }
 
-
-mp_obj_t ulab_tools_restore_dims(ndarray_obj_t *results, mp_obj_t keepdims, mp_obj_t axis) {
+mp_obj_t ulab_tools_restore_dims(ndarray_obj_t *ndarray, ndarray_obj_t *results, mp_obj_t keepdims, shape_strides _shape_strides) {
     // restores the contracted dimension, if keepdims is True
-    return MP_OBJ_FROM_PTR(results);
-    if(keepdims == mp_const_true) {
-        mp_printf(MP_PYTHON_PRINTER, "keepdims");
-        results->ndim += 1;
-        int8_t ax = tools_get_axis(axis, results->ndim + 1);
-        printf("%d\n", ax);
-        for(int8_t i = ULAB_MAX_DIMS - 1; i >= 0; i--) {
-        printf("(%ld)\n", results->shape[i]);
-        }
-        mp_float_t *a = (mp_float_t *)results->array;
-        printf("%f\n", *a);
-        // shift values from the right to the left in the strides and shape arrays
-        for(uint8_t i = 0; i < ULAB_MAX_DIMS - 1 - results->ndim + ax; i++) {
-            results->shape[i] = results->shape[i + 1];
-            results->strides[i] = results->strides[i + 1];
-        }
-        results->shape[ULAB_MAX_DIMS - 1 - results->ndim  + ax] = 1;
-        results->strides[ULAB_MAX_DIMS - 1 - results->ndim  + ax + 1] = results->strides[ULAB_MAX_DIMS - 1 - results->ndim  + ax];
-    }
-
-    if((keepdims == mp_const_false) && (results->ndim == 0)) { // return a scalar here
+    if((ndarray->ndim == 1) && (keepdims != mp_const_true)) {
+        // since the original array has already been contracted and 
+        // we don't want to keep the dimensions here, we have to return a scalar
         return mp_binary_get_val_array(results->dtype, results->array, 0);
     }
+
+    if(keepdims == mp_const_true) {
+        results->ndim += 1;
+        for(int8_t i = 0; i < ULAB_MAX_DIMS; i++) {
+            results->shape[i] = ndarray->shape[i];
+        }
+        results->shape[_shape_strides.axis] = 1;
+
+        results->strides[ULAB_MAX_DIMS - 1] = ndarray->itemsize;
+        for(uint8_t i = ULAB_MAX_DIMS; i > 1; i--) {
+            results->strides[i - 2] = results->strides[i - 1] * results->shape[i - 1];
+        }
+    }
+
     return MP_OBJ_FROM_PTR(results);
 }
 

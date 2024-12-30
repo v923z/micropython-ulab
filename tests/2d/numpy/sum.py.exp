@@ -1,0 +1,80 @@
+array([0, 1, 2, ..., 9, 10, 11], dtype=uint8)
+array([[0, 1, 2, 3],
+       [4, 5, 6, 7],
+       [8, 9, 10, 11]], dtype=uint8)
+
+66
+66
+array([66], dtype=uint8)
+
+66
+array([12, 15, 18, 21], dtype=uint8)
+array([6, 22, 38], dtype=uint8)
+array([[12, 15, 18, 21]], dtype=uint8)
+array([[6],
+       [22],
+       [38]], dtype=uint8)
+array([0, 1, 2, ..., 9, 10, 11], dtype=int8)
+array([[0, 1, 2, 3],
+       [4, 5, 6, 7],
+       [8, 9, 10, 11]], dtype=int8)
+
+66
+66
+array([66], dtype=int8)
+
+66
+array([12, 15, 18, 21], dtype=int8)
+array([6, 22, 38], dtype=int8)
+array([[12, 15, 18, 21]], dtype=int8)
+array([[6],
+       [22],
+       [38]], dtype=int8)
+array([0, 1, 2, ..., 9, 10, 11], dtype=uint16)
+array([[0, 1, 2, 3],
+       [4, 5, 6, 7],
+       [8, 9, 10, 11]], dtype=uint16)
+
+66
+66
+array([66], dtype=uint16)
+
+66
+array([12, 15, 18, 21], dtype=uint16)
+array([6, 22, 38], dtype=uint16)
+array([[12, 15, 18, 21]], dtype=uint16)
+array([[6],
+       [22],
+       [38]], dtype=uint16)
+array([0, 1, 2, ..., 9, 10, 11], dtype=int8)
+array([[0, 1, 2, 3],
+       [4, 5, 6, 7],
+       [8, 9, 10, 11]], dtype=int8)
+
+66
+66
+array([66], dtype=int8)
+
+66
+array([12, 15, 18, 21], dtype=int8)
+array([6, 22, 38], dtype=int8)
+array([[12, 15, 18, 21]], dtype=int8)
+array([[6],
+       [22],
+       [38]], dtype=int8)
+array([0.0, 1.0, 2.0, ..., 9.0, 10.0, 11.0], dtype=float64)
+array([[0.0, 1.0, 2.0, 3.0],
+       [4.0, 5.0, 6.0, 7.0],
+       [8.0, 9.0, 10.0, 11.0]], dtype=float64)
+
+66.0
+66.0
+array([66.0], dtype=float64)
+
+66.0
+array([12.0, 15.0, 18.0, 21.0], dtype=float64)
+array([6.0, 22.0, 38.0], dtype=float64)
+array([[12.0, 15.0, 18.0, 21.0]], dtype=float64)
+array([[6.0],
+       [22.0],
+       [38.0]], dtype=float64)
