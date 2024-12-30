@@ -1426,66 +1426,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(numerical_std_obj, 1, numerical_std);
 
 mp_obj_t numerical_sum(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return numerical_function(n_args, pos_args, kw_args, NUMERICAL_SUM);
-    // static const mp_arg_t allowed_args[] = {
-    //     { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
-    //     { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
-    //     { MP_QSTR_keepdims, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_FALSE } },
-    // };
-
-    // mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    // mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    // mp_obj_t oin = args[0].u_obj;
-    // mp_obj_t axis = args[1].u_obj;
-    // mp_obj_t keepdims = args[2].u_obj;
-
-    // if((axis != mp_const_none) && (!mp_obj_is_int(axis))) {
-    //     mp_raise_TypeError(MP_ERROR_TEXT("axis must be None, or an integer"));
-    // }
-
-    // ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
-    // if(!mp_obj_is_int(axis) & (axis != mp_const_none)) {
-    //     mp_raise_TypeError(MP_ERROR_TEXT("axis must be None, or an integer"));
-    // }
-    
-    // shape_strides _shape_strides;
-
-    // _shape_strides.increment = 0;
-    // // this is the contracted dimension (won't be overwritten for axis == None)
-    // _shape_strides.ndim = 0;
-
-    // size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    // _shape_strides.shape = shape;
-    // int32_t *strides = m_new(int32_t, ULAB_MAX_DIMS);
-    // _shape_strides.strides = strides;
-
-    // memcpy(_shape_strides.shape, ndarray->shape, sizeof(size_t) * ULAB_MAX_DIMS);
-    // memcpy(_shape_strides.strides, ndarray->strides, sizeof(int32_t) * ULAB_MAX_DIMS);
-
-    // uint8_t index = ULAB_MAX_DIMS - 1; // value of index for axis == mp_const_none (won't be overwritten)
-
-    // if(axis != mp_const_none) { // i.e., axis is an integer
-    //     int8_t ax = tools_get_axis(axis, ndarray->ndim);
-    //     index = ULAB_MAX_DIMS - ndarray->ndim + ax;
-    //     _shape_strides.ndim = ndarray->ndim - 1;
-    // }
-
-    // // move the value stored at index to the leftmost position, and align everything else to the right
-    // _shape_strides.shape[0] = ndarray->shape[index];
-    // _shape_strides.strides[0] = ndarray->strides[index];
-    // for(uint8_t i = 0; i < index; i++) {
-    //     // entries to the right of index must be shifted by one position to the left
-    //     _shape_strides.shape[i + 1] = ndarray->shape[i];
-    //     _shape_strides.strides[i + 1] = ndarray->strides[i];
-    // }
-
-    // if(_shape_strides.ndim != 0) {
-    //     _shape_strides.increment = 1;
-    // }
-
-
-    // return mp_const_none;
-
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(numerical_sum_obj, 1, numerical_sum);
