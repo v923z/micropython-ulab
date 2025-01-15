@@ -274,7 +274,7 @@ static mp_obj_t numerical_sum_mean_std_iterable(mp_obj_t oin, uint8_t optype, si
     }
 }
 
-static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype, size_t ddof) {
+static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, mp_obj_t keepdims, uint8_t optype, size_t ddof) {
     COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
     uint8_t *array = (uint8_t *)ndarray->array;
     shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
@@ -372,7 +372,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 mp_float_t norm = (mp_float_t)_shape_strides.shape[0];
                 // re-wind the array here
                 farray = (mp_float_t *)results->array;
-                for(size_t i=0; i < results->len; i++) {
+                for(size_t i = 0; i < results->len; i++) {
                     *farray++ *= norm;
                 }
             }
@@ -380,7 +380,7 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
             bool isStd = optype == NUMERICAL_STD ? 1 : 0;
             results = ndarray_new_dense_ndarray(_shape_strides.ndim, _shape_strides.shape, NDARRAY_FLOAT);
             farray = (mp_float_t *)results->array;
-            // we can return the 0 array here, if the degrees of freedom is larger than the length of the axis
+            // we can return the 0 array here, if the degrees of freedom are larger than the length of the axis
             if((optype == NUMERICAL_STD) && (_shape_strides.shape[0] <= ddof)) {
                 return MP_OBJ_FROM_PTR(results);
             }
@@ -397,11 +397,9 @@ static mp_obj_t numerical_sum_mean_std_ndarray(ndarray_obj_t *ndarray, mp_obj_t 
                 RUN_MEAN_STD(mp_float_t, array, farray, _shape_strides, div, isStd);
             }
         }
-        if(results->ndim == 0) { // return a scalar here
-            return mp_binary_get_val_array(results->dtype, results->array, 0);
-        }
-        return MP_OBJ_FROM_PTR(results);
+        return ulab_tools_restore_dims(ndarray, results, keepdims, _shape_strides);
     }
+    // we should never get to this point
     return mp_const_none;
 }
 #endif
@@ -441,7 +439,7 @@ static mp_obj_t numerical_argmin_argmax_iterable(mp_obj_t oin, uint8_t optype) {
     }
 }
 
-static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t axis, uint8_t optype) {
+static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t keepdims, mp_obj_t axis, uint8_t optype) {
     // TODO: treat the flattened array
     if(ndarray->len == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("attempt to get (arg)min/(arg)max of empty sequence"));
@@ -521,7 +519,9 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         int32_t *strides = m_new0(int32_t, ULAB_MAX_DIMS);
 
         numerical_reduce_axes(ndarray, ax, shape, strides);
-        uint8_t index = ULAB_MAX_DIMS - ndarray->ndim + ax;
+        shape_strides _shape_strides = tools_reduce_axes(ndarray, axis);
+
+        uint8_t index = _shape_strides.axis;
 
         ndarray_obj_t *results = NULL;
 
@@ -550,8 +550,9 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         if(results->len == 1) {
             return mp_binary_get_val_array(results->dtype, results->array, 0);
         }
-        return MP_OBJ_FROM_PTR(results);
+        return ulab_tools_restore_dims(ndarray, results, keepdims, _shape_strides);
     }
+    // we should never get to this point
     return mp_const_none;
 }
 #endif
@@ -560,6 +561,7 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
         { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_keepdims, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_FALSE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -567,6 +569,8 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_obj_t oin = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
+    mp_obj_t keepdims = args[2].u_obj;
+
     if((axis != mp_const_none) && (!mp_obj_is_int(axis))) {
         mp_raise_TypeError(MP_ERROR_TEXT("axis must be None, or an integer"));
     }
@@ -598,11 +602,11 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_ARGMIN:
             case NUMERICAL_ARGMAX:
                 COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
-                return numerical_argmin_argmax_ndarray(ndarray, axis, optype);
+                return numerical_argmin_argmax_ndarray(ndarray, keepdims, axis, optype);
             case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
                 COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
-                return numerical_sum_mean_std_ndarray(ndarray, axis, optype, 0);
+                return numerical_sum_mean_std_ndarray(ndarray, axis, keepdims, optype, 0);
             default:
                 mp_raise_NotImplementedError(MP_ERROR_TEXT("operation is not implemented on ndarrays"));
         }
@@ -1385,6 +1389,7 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } } ,
         { MP_QSTR_axis, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
         { MP_QSTR_ddof, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_keepdims, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_FALSE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1393,6 +1398,8 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     mp_obj_t oin = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
     size_t ddof = args[2].u_int;
+    mp_obj_t keepdims = args[2].u_obj;
+
     if((axis != mp_const_none) && (mp_obj_get_int(axis) != 0) && (mp_obj_get_int(axis) != 1)) {
         // this seems to pass with False, and True...
         mp_raise_ValueError(MP_ERROR_TEXT("axis must be None, or an integer"));
@@ -1401,7 +1408,7 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         return numerical_sum_mean_std_iterable(oin, NUMERICAL_STD, ddof);
     } else if(mp_obj_is_type(oin, &ulab_ndarray_type)) {
         ndarray_obj_t *ndarray = MP_OBJ_TO_PTR(oin);
-        return numerical_sum_mean_std_ndarray(ndarray, axis, NUMERICAL_STD, ddof);
+        return numerical_sum_mean_std_ndarray(ndarray, axis, keepdims, NUMERICAL_STD, ddof);
     } else {
         mp_raise_TypeError(MP_ERROR_TEXT("input must be tuple, list, range, or ndarray"));
     }

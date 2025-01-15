@@ -1,3 +1,15 @@
+Mon, 30 Dec 2024
+
+version 6.7.1
+
+    add keepdims keyword argument to numerical functions
+
+Sun, 15 Dec 2024
+
+version 6.7.0
+
+    add scipy.integrate module
+
 Sun, 24 Nov 2024
 
 version 6.6.1
