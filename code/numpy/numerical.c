@@ -603,8 +603,9 @@ static mp_obj_t numerical_function(size_t n_args, const mp_obj_t *pos_args, mp_m
             case NUMERICAL_ARGMAX:
                 COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
                 return numerical_argmin_argmax_ndarray(ndarray, keepdims, axis, optype);
-            case NUMERICAL_SUM:
             case NUMERICAL_MEAN:
+            case NUMERICAL_STD:
+            case NUMERICAL_SUM:
                 COMPLEX_DTYPE_NOT_IMPLEMENTED(ndarray->dtype)
                 return numerical_sum_mean_std_ndarray(ndarray, axis, keepdims, optype, 0);
             default:
@@ -1398,7 +1399,7 @@ mp_obj_t numerical_std(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     mp_obj_t oin = args[0].u_obj;
     mp_obj_t axis = args[1].u_obj;
     size_t ddof = args[2].u_int;
-    mp_obj_t keepdims = args[2].u_obj;
+    mp_obj_t keepdims = args[3].u_obj;
 
     if((axis != mp_const_none) && (mp_obj_get_int(axis) != 0) && (mp_obj_get_int(axis) != 1)) {
         // this seems to pass with False, and True...
