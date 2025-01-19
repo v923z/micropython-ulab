@@ -1,3 +1,9 @@
+Sun, 19 Jan 2025
+
+version 6.7.2
+
+    fix keepdims for std, remove redundant macros from numerical.h, update documentation
+
 Mon, 30 Dec 2024
 
 version 6.7.1
