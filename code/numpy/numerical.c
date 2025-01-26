@@ -546,10 +546,6 @@ static mp_obj_t numerical_argmin_argmax_ndarray(ndarray_obj_t *ndarray, mp_obj_t
         }
 
         m_del(int32_t, strides, ULAB_MAX_DIMS);
-
-        if(results->len == 1) {
-            return mp_binary_get_val_array(results->dtype, results->array, 0);
-        }
         return ulab_tools_restore_dims(ndarray, results, keepdims, _shape_strides);
     }
     // we should never get to this point

@@ -1,3 +1,9 @@
+Sun, 26 Jan 2025
+
+version 6.7.3
+
+    fix keepdims for min, max, argmin, argmax
+    
 Sun, 19 Jan 2025
 
 version 6.7.2
