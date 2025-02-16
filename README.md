@@ -112,6 +112,7 @@ of the user manual.
 1. `MaixPy` https://github.com/sipeed/MaixPy
 1. `OpenMV` https://github.com/openmv/openmv
 1. `pimoroni-pico` https://github.com/pimoroni/pimoroni-pico
+1. `Tulip Creative Computer` https://github.com/shorepine/tulipcc 
 
 ## Compiling
 
