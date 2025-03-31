@@ -1,0 +1,6 @@
+array([0, 40, 20], dtype=uint8)
+array([4.3, 0.2, 0.2, 4.3], dtype=float64)
+array([50, 60, 70, 80, 90], dtype=uint8)
+array([1.5, 4.3], dtype=float64)
+array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=uint8)
+array([0.5, 1.5, 0.2, 4.3], dtype=float64)

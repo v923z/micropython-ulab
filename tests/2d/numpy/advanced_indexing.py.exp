@@ -1,0 +1,4 @@
+array([[0, 40],
+       [10, 20]], dtype=uint8)
+array([[4.3, 0.2],
+       [0.2, 4.3]], dtype=float64)
