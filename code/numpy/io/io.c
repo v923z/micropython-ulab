@@ -338,7 +338,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         buffer[read] = '\0';
         offset = buffer;
         while(*offset != '\0') {
-            if(*offset == comment_char) {
+            while(*offset == comment_char) {
                 // clear the line till the end, or the buffer's end
                 while((*offset != '\0')) {
                     offset++;
@@ -425,7 +425,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         offset = buffer;
 
         while(*offset != '\0') {
-            if(*offset == comment_char) {
+            while(*offset == comment_char) {
                 // clear the line till the end, or the buffer's end
                 while((*offset != '\0')) {
                     offset++;
