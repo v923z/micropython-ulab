@@ -1,2 +1,3 @@
-random() shape: (1, 2)
-normal() shape: (3, 3)
+array shape: (1, 2)
+array shape: (1, 2)
+array shape: (1, 2)
