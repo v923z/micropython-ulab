@@ -57,7 +57,7 @@ const mp_obj_type_t random_generator_type = {
 void random_generator_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     random_generator_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(MP_PYTHON_PRINTER, "Gnerator() at 0x%p", self);
+    mp_printf(MP_PYTHON_PRINTER, "Generator() at 0x%p", self);
 }
 
 mp_obj_t random_generator_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -149,12 +149,9 @@ static mp_obj_t random_normal(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
             ndarray = ndarray_new_linear_array((size_t)mp_obj_get_int(size), NDARRAY_FLOAT);
         } else if(mp_obj_is_type(size, &mp_type_tuple)) {
             mp_obj_tuple_t *_shape = MP_OBJ_TO_PTR(size);
-            if(_shape->len > ULAB_MAX_DIMS) {
-                mp_raise_ValueError(MP_ERROR_TEXT("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
-            }
             ndarray = ndarray_new_ndarray_from_tuple(_shape, NDARRAY_FLOAT);
         } else { // input type not supported
-            mp_raise_TypeError(MP_ERROR_TEXT("shape must be None, and integer or a tuple of integers"));
+            mp_raise_TypeError(MP_ERROR_TEXT("shape must be None, an integer or a tuple of integers"));
         }
     } else {
         // return single value
@@ -221,27 +218,16 @@ static mp_obj_t random_random(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_obj_t out = args[2].u_obj;
 
     ndarray_obj_t *ndarray = NULL;
-    size_t *shape = m_new(size_t, ULAB_MAX_DIMS);
-    uint8_t ndim = 1;
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
 
     if(size != mp_const_none) {
         if(mp_obj_is_int(size)) {
             shape[ULAB_MAX_DIMS - 1] = (size_t)mp_obj_get_int(size);
         } else if(mp_obj_is_type(size, &mp_type_tuple)) {
             mp_obj_tuple_t *_shape = MP_OBJ_TO_PTR(size);
-            if(_shape->len > ULAB_MAX_DIMS) {
-                mp_raise_ValueError(MP_ERROR_TEXT("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
-            }
-            ndim = _shape->len;
-            for(size_t i = 0; i < ULAB_MAX_DIMS; i++) {
-                if(i >= ndim) {
-                    shape[ULAB_MAX_DIMS - 1 - i] = 0;
-                } else {
-                    shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[i]);
-                }
-            }
+            ndarray = ndarray_new_ndarray_from_tuple(_shape, NDARRAY_FLOAT);
         } else { // input type not supported
-            mp_raise_TypeError(MP_ERROR_TEXT("shape must be None, and integer or a tuple of integers"));
+            mp_raise_TypeError(MP_ERROR_TEXT("shape must be None, an integer or a tuple of integers"));
         }
     }
 
@@ -267,7 +253,8 @@ static mp_obj_t random_random(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         }
     } else { // out == None
         if(size != mp_const_none) {
-            ndarray = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
+            mp_obj_tuple_t *_shape = MP_OBJ_TO_PTR(size);
+            ndarray = ndarray_new_ndarray_from_tuple(_shape, NDARRAY_FLOAT);
         } else {
             // return single value
             mp_float_t value;
@@ -336,13 +323,9 @@ static mp_obj_t random_uniform(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         return mp_obj_new_float(value);
     } else if(mp_obj_is_type(size, &mp_type_tuple)) {
         mp_obj_tuple_t *_shape = MP_OBJ_TO_PTR(size);
-        // TODO: this could be reduced, if the inspection was in the ndarray_new_ndarray_from_tuple function
-        if(_shape->len > ULAB_MAX_DIMS) {
-            mp_raise_ValueError(MP_ERROR_TEXT("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
-        }
         ndarray = ndarray_new_ndarray_from_tuple(_shape, NDARRAY_FLOAT);
     } else { // input type not supported
-        mp_raise_TypeError(MP_ERROR_TEXT("shape must be None, and integer or a tuple of integers"));
+        mp_raise_TypeError(MP_ERROR_TEXT("shape must be None, an integer or a tuple of integers"));
     }
 
     mp_float_t *array = (mp_float_t *)ndarray->array;
