@@ -563,6 +563,9 @@ ndarray_obj_t *ndarray_new_dense_ndarray(uint8_t ndim, size_t *shape, uint8_t dt
 ndarray_obj_t *ndarray_new_ndarray_from_tuple(mp_obj_tuple_t *_shape, uint8_t dtype) {
     // creates a dense array from a tuple
     // the function should work in the general n-dimensional case
+    if(_shape->len > ULAB_MAX_DIMS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("maximum number of dimensions is " MP_STRINGIFY(ULAB_MAX_DIMS)));
+    }
     size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
     for(size_t i = 0; i < _shape->len; i++) {
         shape[ULAB_MAX_DIMS - 1 - i] = mp_obj_get_int(_shape->items[_shape->len - 1 - i]);
