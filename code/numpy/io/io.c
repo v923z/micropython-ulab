@@ -751,16 +751,32 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
     int error;
 
+    size_t len_comment;
+    char *comments;
+
+    if(mp_obj_is_str(args[5].u_obj)) {
+        const char *_comments = mp_obj_str_get_data(args[5].u_obj, &len_comment);
+        comments = (char *)_comments;
+    } else {
+        len_comment = 2;
+        comments = m_new(char, len_comment);
+        comments[0] = '#';
+        comments[1] = ' ';
+    }
+
     if(mp_obj_is_str(args[3].u_obj)) {
         size_t _len;
-        if(mp_obj_is_str(args[5].u_obj)) {
-            const char *comments = mp_obj_str_get_data(args[5].u_obj, &_len);
-            stream_p->write(stream, comments, _len, &error);
-        } else {
-            stream_p->write(stream, "# ", 2, &error);
-        }
         const char *header = mp_obj_str_get_data(args[3].u_obj, &_len);
-        stream_p->write(stream, header, _len, &error);
+
+        stream_p->write(stream, comments, len_comment, &error);
+
+        // We can't write the header in the single chunk, for it might contain line breaks
+        for(size_t i = 0; i < _len; header++, i++) {
+            stream_p->write(stream, header, 1, &error);
+            if((*header == '\n') && (i < _len)) {
+                stream_p->write(stream, comments, len_comment, &error);
+            }
+        }
         stream_p->write(stream, "\n", 1, &error);
     }
 
@@ -799,16 +815,19 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
     #endif
 
-    if(mp_obj_is_str(args[4].u_obj)) {
+    if(mp_obj_is_str(args[4].u_obj)) { // footer string
         size_t _len;
-        if(mp_obj_is_str(args[5].u_obj)) {
-            const char *comments = mp_obj_str_get_data(args[5].u_obj, &_len);
-            stream_p->write(stream, comments, _len, &error);
-        } else {
-            stream_p->write(stream, "# ", 2, &error);
-        }
         const char *footer = mp_obj_str_get_data(args[4].u_obj, &_len);
-        stream_p->write(stream, footer, _len, &error);
+
+        stream_p->write(stream, comments, len_comment, &error);
+
+        // We can't write the header in the single chunk, for it might contain line breaks
+        for(size_t i = 0; i < _len; footer++, i++) {
+            stream_p->write(stream, footer, 1, &error);
+            if((*footer == '\n') && (i < _len)) {
+                stream_p->write(stream, comments, len_comment, &error);
+            }
+        }
         stream_p->write(stream, "\n", 1, &error);
     }
 
