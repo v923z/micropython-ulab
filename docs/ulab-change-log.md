@@ -3,6 +3,11 @@ Thu, 29 May 2025
 version 6.7.5
 
     fix typo and shape in radnom module
+Sun, 16 Mar 2025
+
+version 6.7.4
+
+    re-name integration constants to avoid name clash with EPS ports
 
 Sun, 26 Jan 2025
 
