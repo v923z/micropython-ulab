@@ -619,48 +619,14 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
 
     uint8_t *array = (uint8_t *)ndarray->array;
 
-    #if ULAB_MAX_DIMS > 3
-    size_t i = 0;
-    do {
-    #endif
-        #if ULAB_MAX_DIMS > 2
-        size_t j = 0;
-        do {
-        #endif
-            #if ULAB_MAX_DIMS > 1
-            size_t k = 0;
-            do {
-            #endif
-                size_t l = 0;
-                do {
-                    memcpy(buffer+offset, array, sz);
-                    offset += sz;
-                    if(offset == ULAB_IO_BUFFER_SIZE) {
-                        stream_p->write(stream, buffer, offset, &error);
-                        offset = 0;
-                    }
-                    array += ndarray->strides[ULAB_MAX_DIMS - 1];
-                    l++;
-                } while(l <  ndarray->shape[ULAB_MAX_DIMS - 1]);
-            #if ULAB_MAX_DIMS > 1
-                array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
-                array += ndarray->strides[ULAB_MAX_DIMS - 2];
-                k++;
-            } while(k <  ndarray->shape[ULAB_MAX_DIMS - 2]);
-            #endif
-        #if ULAB_MAX_DIMS > 2
-            array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
-            array += ndarray->strides[ULAB_MAX_DIMS - 3];
-            j++;
-        } while(j <  ndarray->shape[ULAB_MAX_DIMS - 3]);
-        #endif
-    #if ULAB_MAX_DIMS > 3
-        array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
-        array += ndarray->strides[ULAB_MAX_DIMS - 4];
-        i++;
-    } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
-    #endif
-
+    ITERATOR_HEAD();
+        memcpy(buffer+offset, array, sz);
+        offset += sz;
+        if(offset == ULAB_IO_BUFFER_SIZE) {
+            stream_p->write(stream, buffer, offset, &error);
+            offset = 0;
+        }
+    ITERATOR_TAIL(ndarray, array);
     stream_p->write(stream, buffer, offset, &error);
     stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
 
