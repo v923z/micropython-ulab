@@ -5,5 +5,6 @@ except ImportError:
 
 rng = np.random.Generator(1234)
 
-random_array = rng.random((1, 2))
-print("random() shape:", random_array.shape)
+for generator in (rng.normal, rng.random, rng.uniform):
+    random_array = generator(size=(1, 2))
+    print("array shape:", random_array.shape)
