@@ -760,7 +760,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
         (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 2] * (_source_)->shape[ULAB_MAX_DIMS - 2];\
         (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 3];\
         _j_++;\
-    } while(j < (_source_)->shape[ULAB_MAX_DIMS - 3]);
+    } while(_j_ < (_source_)->shape[ULAB_MAX_DIMS - 3]);
 
 #endif /* ULAB_MAX_DIMS == 3 */
 
