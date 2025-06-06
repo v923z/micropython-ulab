@@ -1,5 +1,11 @@
 Fri, 06 Jun 2025
 
+version 6.8.0
+
+    expose ndim property
+
+Fri, 06 Jun 2025
+
 version 6.7.7
 
     fix ndarray type inference for micropython objects
