@@ -7,7 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
- *               2020-2021 Zoltán Vörös
+ *               2020-2025 Zoltán Vörös
 */
 
 #ifndef _NDARRAY_PROPERTIES_
@@ -34,6 +34,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_flatiter_make_new_obj, ndarray_flatiter_make_n
 
 #if NDARRAY_HAS_ITEMSIZE
 MP_DEFINE_CONST_FUN_OBJ_1(ndarray_itemsize_obj, ndarray_itemsize);
+#endif
+
+#if NDARRAY_HAS_NDIM
+MP_DEFINE_CONST_FUN_OBJ_1(ndarray_ndim_obj, ndarray_ndim);
 #endif
 
 #if NDARRAY_HAS_SHAPE

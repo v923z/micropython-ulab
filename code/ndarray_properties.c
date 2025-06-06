@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Zoltán Vörös
+ * Copyright (c) 2021-2025 Zoltán Vörös
  *
 */
 
@@ -40,6 +40,11 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             #if NDARRAY_HAS_ITEMSIZE
             case MP_QSTR_itemsize:
                 dest[0] = ndarray_itemsize(self_in);
+                break;
+            #endif
+            #if NDARRAY_HAS_NDIM
+            case MP_QSTR_ndim:
+                dest[0] = ndarray_ndim(self_in);
                 break;
             #endif
             #if NDARRAY_HAS_SHAPE

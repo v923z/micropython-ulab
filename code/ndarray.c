@@ -1398,6 +1398,13 @@ mp_obj_t ndarray_itemsize(mp_obj_t self_in) {
 }
 #endif
 
+#if NDARRAY_HAS_NDIM
+mp_obj_t ndarray_ndim(mp_obj_t self_in) {
+    ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->ndim);
+}
+#endif
+
 #if NDARRAY_HAS_SHAPE
 mp_obj_t ndarray_shape(mp_obj_t self_in) {
     ndarray_obj_t *self = MP_OBJ_TO_PTR(self_in);
