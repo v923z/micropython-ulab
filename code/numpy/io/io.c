@@ -338,7 +338,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         buffer[read] = '\0';
         offset = buffer;
         while(*offset != '\0') {
-            if(*offset == comment_char) {
+            while(*offset == comment_char) {
                 // clear the line till the end, or the buffer's end
                 while((*offset != '\0')) {
                     offset++;
@@ -425,7 +425,7 @@ static mp_obj_t io_loadtxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
         offset = buffer;
 
         while(*offset != '\0') {
-            if(*offset == comment_char) {
+            while(*offset == comment_char) {
                 // clear the line till the end, or the buffer's end
                 while((*offset != '\0')) {
                     offset++;
@@ -619,48 +619,14 @@ static mp_obj_t io_save(mp_obj_t file, mp_obj_t ndarray_) {
 
     uint8_t *array = (uint8_t *)ndarray->array;
 
-    #if ULAB_MAX_DIMS > 3
-    size_t i = 0;
-    do {
-    #endif
-        #if ULAB_MAX_DIMS > 2
-        size_t j = 0;
-        do {
-        #endif
-            #if ULAB_MAX_DIMS > 1
-            size_t k = 0;
-            do {
-            #endif
-                size_t l = 0;
-                do {
-                    memcpy(buffer+offset, array, sz);
-                    offset += sz;
-                    if(offset == ULAB_IO_BUFFER_SIZE) {
-                        stream_p->write(stream, buffer, offset, &error);
-                        offset = 0;
-                    }
-                    array += ndarray->strides[ULAB_MAX_DIMS - 1];
-                    l++;
-                } while(l <  ndarray->shape[ULAB_MAX_DIMS - 1]);
-            #if ULAB_MAX_DIMS > 1
-                array -= ndarray->strides[ULAB_MAX_DIMS - 1] * ndarray->shape[ULAB_MAX_DIMS-1];
-                array += ndarray->strides[ULAB_MAX_DIMS - 2];
-                k++;
-            } while(k <  ndarray->shape[ULAB_MAX_DIMS - 2]);
-            #endif
-        #if ULAB_MAX_DIMS > 2
-            array -= ndarray->strides[ULAB_MAX_DIMS - 2] * ndarray->shape[ULAB_MAX_DIMS-2];
-            array += ndarray->strides[ULAB_MAX_DIMS - 3];
-            j++;
-        } while(j <  ndarray->shape[ULAB_MAX_DIMS - 3]);
-        #endif
-    #if ULAB_MAX_DIMS > 3
-        array -= ndarray->strides[ULAB_MAX_DIMS - 3] * ndarray->shape[ULAB_MAX_DIMS-3];
-        array += ndarray->strides[ULAB_MAX_DIMS - 4];
-        i++;
-    } while(i <  ndarray->shape[ULAB_MAX_DIMS - 4]);
-    #endif
-
+    ITERATOR_HEAD();
+        memcpy(buffer+offset, array, sz);
+        offset += sz;
+        if(offset == ULAB_IO_BUFFER_SIZE) {
+            stream_p->write(stream, buffer, offset, &error);
+            offset = 0;
+        }
+    ITERATOR_TAIL(ndarray, array);
     stream_p->write(stream, buffer, offset, &error);
     stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
 
@@ -751,16 +717,32 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     char *buffer = m_new(char, ULAB_IO_BUFFER_SIZE);
     int error;
 
+    size_t len_comment;
+    char *comments;
+
+    if(mp_obj_is_str(args[5].u_obj)) {
+        const char *_comments = mp_obj_str_get_data(args[5].u_obj, &len_comment);
+        comments = (char *)_comments;
+    } else {
+        len_comment = 2;
+        comments = m_new(char, len_comment);
+        comments[0] = '#';
+        comments[1] = ' ';
+    }
+
     if(mp_obj_is_str(args[3].u_obj)) {
         size_t _len;
-        if(mp_obj_is_str(args[5].u_obj)) {
-            const char *comments = mp_obj_str_get_data(args[5].u_obj, &_len);
-            stream_p->write(stream, comments, _len, &error);
-        } else {
-            stream_p->write(stream, "# ", 2, &error);
-        }
         const char *header = mp_obj_str_get_data(args[3].u_obj, &_len);
-        stream_p->write(stream, header, _len, &error);
+
+        stream_p->write(stream, comments, len_comment, &error);
+
+        // We can't write the header in the single chunk, for it might contain line breaks
+        for(size_t i = 0; i < _len; header++, i++) {
+            stream_p->write(stream, header, 1, &error);
+            if((*header == '\n') && (i < _len)) {
+                stream_p->write(stream, comments, len_comment, &error);
+            }
+        }
         stream_p->write(stream, "\n", 1, &error);
     }
 
@@ -799,16 +781,19 @@ static mp_obj_t io_savetxt(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     } while(k < ndarray->shape[ULAB_MAX_DIMS - 2]);
     #endif
 
-    if(mp_obj_is_str(args[4].u_obj)) {
+    if(mp_obj_is_str(args[4].u_obj)) { // footer string
         size_t _len;
-        if(mp_obj_is_str(args[5].u_obj)) {
-            const char *comments = mp_obj_str_get_data(args[5].u_obj, &_len);
-            stream_p->write(stream, comments, _len, &error);
-        } else {
-            stream_p->write(stream, "# ", 2, &error);
-        }
         const char *footer = mp_obj_str_get_data(args[4].u_obj, &_len);
-        stream_p->write(stream, footer, _len, &error);
+
+        stream_p->write(stream, comments, len_comment, &error);
+
+        // We can't write the header in the single chunk, for it might contain line breaks
+        for(size_t i = 0; i < _len; footer++, i++) {
+            stream_p->write(stream, footer, 1, &error);
+            if((*footer == '\n') && (i < _len)) {
+                stream_p->write(stream, comments, len_comment, &error);
+            }
+        }
         stream_p->write(stream, "\n", 1, &error);
     }
 

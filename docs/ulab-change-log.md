@@ -1,8 +1,15 @@
 Thu, 29 May 2025
 
+version 6.7.6
+
+    loadtxt can deal with multi-line comments
+
+Thu, 29 May 2025
+
 version 6.7.5
 
     fix typo and shape in radnom module
+
 Sun, 16 Mar 2025
 
 version 6.7.4

@@ -260,48 +260,14 @@ static mp_obj_t compare_isinf_isfinite(mp_obj_t _x, uint8_t mask) {
         }
         uint8_t *xarray = (uint8_t *)x->array;
 
-        #if ULAB_MAX_DIMS > 3
-        size_t i = 0;
-        do {
-        #endif
-            #if ULAB_MAX_DIMS > 2
-            size_t j = 0;
-            do {
-            #endif
-                #if ULAB_MAX_DIMS > 1
-                size_t k = 0;
-                do {
-                #endif
-                    size_t l = 0;
-                    do {
-                        mp_float_t value = *(mp_float_t *)xarray;
-                        if(isnan(value)) {
-                            *rarray++ = 0;
-                        } else {
-                            *rarray++ = isinf(value) ? mask : 1 - mask;
-                        }
-                        xarray += x->strides[ULAB_MAX_DIMS - 1];
-                        l++;
-                    } while(l < x->shape[ULAB_MAX_DIMS - 1]);
-                #if ULAB_MAX_DIMS > 1
-                    xarray -= x->strides[ULAB_MAX_DIMS - 1] * x->shape[ULAB_MAX_DIMS-1];
-                    xarray += x->strides[ULAB_MAX_DIMS - 2];
-                    k++;
-                } while(k < x->shape[ULAB_MAX_DIMS - 2]);
-                #endif
-            #if ULAB_MAX_DIMS > 2
-                xarray -= x->strides[ULAB_MAX_DIMS - 2] * x->shape[ULAB_MAX_DIMS-2];
-                xarray += x->strides[ULAB_MAX_DIMS - 3];
-                j++;
-            } while(j < x->shape[ULAB_MAX_DIMS - 3]);
-            #endif
-        #if ULAB_MAX_DIMS > 3
-            xarray -= x->strides[ULAB_MAX_DIMS - 3] * x->shape[ULAB_MAX_DIMS-3];
-            xarray += x->strides[ULAB_MAX_DIMS - 4];
-            i++;
-        } while(i < x->shape[ULAB_MAX_DIMS - 4]);
-        #endif
-
+        ITERATOR_HEAD();
+            mp_float_t value = *(mp_float_t *)xarray;
+            if(isnan(value)) {
+                *rarray++ = 0;
+            } else {
+                *rarray++ = isinf(value) ? mask : 1 - mask;
+            }
+        ITERATOR_TAIL(x, xarray);
         return MP_OBJ_FROM_PTR(results);
     } else {
         mp_raise_TypeError(MP_ERROR_TEXT("wrong input type"));

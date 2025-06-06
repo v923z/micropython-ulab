@@ -709,4 +709,89 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
 #endif /* ULAB_MAX_DIMS == 4 */
 #endif /* ULAB_HAS_FUNCTION_ITERATOR */
 
+
+// iterator macro for traversing arrays over all dimensions
+#if ULAB_MAX_DIMS == 1
+#define ITERATOR_HEAD()\
+    size_t _l_ = 0;\
+    do {
+
+#define ITERATOR_TAIL(_source_, _source_array_)\
+    (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
+    _l_++;\
+    } while(_l_ < (_source_)->shape[ULAB_MAX_DIMS - 1]);
+
+#endif /* ULAB_MAX_DIMS == 1 */
+
+#if ULAB_MAX_DIMS == 2
+#define ITERATOR_HEAD()\
+    size_t _k_ = 0;\
+    do {\
+        size_t _l_ = 0;\
+        do {
+
+#define ITERATOR_TAIL(_source_, _source_array_)\
+        (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
+        _l_++;\
+        } while(_l_ < (_source_)->shape[ULAB_MAX_DIMS - 1]);\
+        (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 1] * (_source_)->shape[ULAB_MAX_DIMS - 1];\
+        (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 2];\
+        _k_++;\
+    } while(_k_ < (_source_)->shape[ULAB_MAX_DIMS - 2]);
+#endif /* ULAB_MAX_DIMS == 2 */
+
+#if ULAB_MAX_DIMS == 3
+#define ITERATOR_HEAD()\
+    size_t _j_ = 0;\
+    do {\
+        size_t _k_ = 0;\
+        do {\
+            size_t _l_ = 0;\
+            do {
+
+#define ITERATOR_TAIL(_source_, _source_array_)\
+            (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
+            _l_++;\
+            } while(_l_ < (_source_)->shape[ULAB_MAX_DIMS - 1]);\
+            (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 1] * (_source_)->shape[ULAB_MAX_DIMS - 1];\
+            (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 2];\
+            _k_++;\
+        } while(_k_ < (_source_)->shape[ULAB_MAX_DIMS - 2]);\
+    (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 2] * (_source_)->shape[ULAB_MAX_DIMS - 2];\
+    (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 3];\
+    j++;\
+    } while(j < (_source_)->shape[ULAB_MAX_DIMS - 3]);
+
+#endif /* ULAB_MAX_DIMS == 3 */
+
+#if ULAB_MAX_DIMS == 4
+#define ITERATOR_HEAD()\
+    size_t _i_ = 0;\
+    do {\
+        size_t _j_ = 0;\
+        do {\
+            size_t _k_ = 0;\
+            do {\
+                size_t _l_ = 0;\
+                do {
+
+#define ITERATOR_TAIL(_source_, _source_array_)\
+                (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
+                _l_++;\
+                } while(_l_ < (_source_)->shape[ULAB_MAX_DIMS - 1]);\
+                (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 1] * (_source_)->shape[ULAB_MAX_DIMS - 1];\
+                (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 2];\
+                _k_++;\
+            } while(_k_ < (_source_)->shape[ULAB_MAX_DIMS - 2]);\
+        (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 2] * (_source_)->shape[ULAB_MAX_DIMS - 2];\
+        (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 3];\
+        _j_++;\
+        } while(_j_ < (_source_)->shape[ULAB_MAX_DIMS - 3]);\
+        (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 3] * (_source_)->shape[ULAB_MAX_DIMS - 3];\
+        (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 4];\
+        _i_++;\
+    } while(_i_ < (_source_)->shape[ULAB_MAX_DIMS - 4]);
+#endif /* ULAB_MAX_DIMS == 4 */
+
+
 #endif
