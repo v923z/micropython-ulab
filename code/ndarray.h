@@ -232,6 +232,10 @@ mp_obj_t ndarray_dtype(mp_obj_t );
 mp_obj_t ndarray_itemsize(mp_obj_t );
 #endif
 
+#if NDARRAY_HAS_NDIM
+mp_obj_t ndarray_ndim(mp_obj_t );
+#endif
+
 #if NDARRAY_HAS_SIZE
 mp_obj_t ndarray_size(mp_obj_t );
 #endif

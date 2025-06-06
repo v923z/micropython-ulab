@@ -245,6 +245,10 @@
 #define NDARRAY_HAS_ITEMSIZE            (1)
 #endif
 
+#ifndef NDARRAY_HAS_NDIM
+#define NDARRAY_HAS_NDIM                (1)
+#endif
+
 #ifndef NDARRAY_HAS_RESHAPE
 #define NDARRAY_HAS_RESHAPE             (1)
 #endif
