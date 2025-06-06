@@ -731,8 +731,8 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
         do {
 
 #define ITERATOR_TAIL(_source_, _source_array_)\
-        (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
-        _l_++;\
+            (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
+            _l_++;\
         } while(_l_ < (_source_)->shape[ULAB_MAX_DIMS - 1]);\
         (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 1] * (_source_)->shape[ULAB_MAX_DIMS - 1];\
         (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 2];\
@@ -750,16 +750,16 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
             do {
 
 #define ITERATOR_TAIL(_source_, _source_array_)\
-            (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
-            _l_++;\
+                (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
+                _l_++;\
             } while(_l_ < (_source_)->shape[ULAB_MAX_DIMS - 1]);\
             (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 1] * (_source_)->shape[ULAB_MAX_DIMS - 1];\
             (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 2];\
             _k_++;\
         } while(_k_ < (_source_)->shape[ULAB_MAX_DIMS - 2]);\
-    (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 2] * (_source_)->shape[ULAB_MAX_DIMS - 2];\
-    (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 3];\
-    j++;\
+        (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 2] * (_source_)->shape[ULAB_MAX_DIMS - 2];\
+        (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 3];\
+        _j_++;\
     } while(j < (_source_)->shape[ULAB_MAX_DIMS - 3]);
 
 #endif /* ULAB_MAX_DIMS == 3 */
@@ -776,16 +776,16 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
                 do {
 
 #define ITERATOR_TAIL(_source_, _source_array_)\
-                (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
-                _l_++;\
+                    (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 1];\
+                    _l_++;\
                 } while(_l_ < (_source_)->shape[ULAB_MAX_DIMS - 1]);\
                 (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 1] * (_source_)->shape[ULAB_MAX_DIMS - 1];\
                 (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 2];\
                 _k_++;\
             } while(_k_ < (_source_)->shape[ULAB_MAX_DIMS - 2]);\
-        (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 2] * (_source_)->shape[ULAB_MAX_DIMS - 2];\
-        (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 3];\
-        _j_++;\
+            (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 2] * (_source_)->shape[ULAB_MAX_DIMS - 2];\
+            (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 3];\
+            _j_++;\
         } while(_j_ < (_source_)->shape[ULAB_MAX_DIMS - 3]);\
         (_source_array_) -= (_source_)->strides[ULAB_MAX_DIMS - 3] * (_source_)->shape[ULAB_MAX_DIMS - 3];\
         (_source_array_) += (_source_)->strides[ULAB_MAX_DIMS - 4];\
