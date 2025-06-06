@@ -1,3 +1,9 @@
+Fri, 06 Jun 2025
+
+version 6.7.7
+
+    fix ndarray type inference for micropython objects
+
 Thu, 29 May 2025
 
 version 6.7.6

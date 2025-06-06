@@ -1482,7 +1482,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
 
     if(mp_obj_is_int(obj)) {
         int32_t ivalue = mp_obj_get_int(obj);
-        if((ivalue < -32767) || (ivalue > 32767)) {
+        if((ivalue < -32768) || (ivalue > 65535)) {
             // the integer value clearly does not fit the ulab integer types, so move on to float
             ndarray = ndarray_new_linear_array(1, NDARRAY_FLOAT);
             mp_float_t *array = (mp_float_t *)ndarray->array;
@@ -1490,7 +1490,7 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t obj, uint8_t other_type) {
         } else {
             uint8_t dtype;
             if(ivalue < 0) {
-                if(ivalue > -128) {
+                if(ivalue >= -128) {
                     dtype = NDARRAY_INT8;
                 } else {
                     dtype = NDARRAY_INT16;

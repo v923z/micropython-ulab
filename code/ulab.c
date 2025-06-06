@@ -33,7 +33,7 @@
 #include "user/user.h"
 #include "utils/utils.h"
 
-#define ULAB_VERSION 6.7.6
+#define ULAB_VERSION 6.7.7
 #define xstr(s) str(s)
 #define str(s) #s
 
