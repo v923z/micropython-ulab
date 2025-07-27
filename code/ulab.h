@@ -117,6 +117,10 @@
 #define NDARRAY_HAS_BINARY_OP_LESS_EQUAL    (1)
 #endif
 
+#ifndef NDARRAY_HAS_BINARY_OP_MODULO
+#define NDARRAY_HAS_BINARY_OP_MODULO        (1)
+#endif
+
 #ifndef NDARRAY_HAS_BINARY_OP_MORE
 #define NDARRAY_HAS_BINARY_OP_MORE          (1)
 #endif
