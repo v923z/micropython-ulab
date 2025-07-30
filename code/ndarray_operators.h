@@ -22,6 +22,7 @@ mp_obj_t ndarray_binary_logical(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size
 mp_obj_t ndarray_binary_floor_divide(ndarray_obj_t *, ndarray_obj_t *, uint8_t , size_t *, int32_t *, int32_t *);
 
 mp_obj_t ndarray_inplace_ams(ndarray_obj_t *, ndarray_obj_t *, int32_t *, uint8_t );
+mp_obj_t ndarray_inplace_modulo(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 mp_obj_t ndarray_inplace_power(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 
@@ -619,6 +620,92 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
         } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
             (larray) -= (lstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
             (larray) += (lstrides)[ULAB_MAX_DIMS - 4];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
+        j++;\
+    } while(j < (results)->shape[ULAB_MAX_DIMS - 4]);\
+} while(0)
+#endif /* ULAB_MAX_DIMS == 4 */
+
+
+#define INPLACE_MODULO_FLOAT1(results, type_right, larray, rarray, rstrides)\
+({\
+    size_t l = 0;\
+    do {\
+        *((mp_float_t *)larray) = MICROPY_FLOAT_C_FUN(fmod)(*((mp_float_t *)(larray)), *((type_right *)(rarray)));\
+        (larray) += (results)->strides[ULAB_MAX_DIMS - 1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 1];\
+        l++;\
+    } while(l < (results)->shape[ULAB_MAX_DIMS - 1]);\
+})
+
+
+#if ULAB_MAX_DIMS == 1
+#define INPLACE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
+    INPLACE_MODULO_FLOAT1((results), type_right, (larray), (rarray), (rstrides));\
+} while(0)
+#endif /* ULAB_MAX_DIMS == 1 */
+
+
+#if ULAB_MAX_DIMS == 2
+#define INLINE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
+    size_t l = 0;\
+    do {\
+        INPLACE_MODULO_FLOAT1((results), type_right, (larray), (rarray), (rstrides));\
+        (larray) -= (results)->strides[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+        (larray) += (results)->strides[ULAB_MAX_DIMS - 2];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+        l++;\
+    } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
+} while(0)
+#endif /* ULAB_MAX_DIMS == 2 */
+
+#if ULAB_MAX_DIMS == 3
+#define INLINE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
+    size_t k = 0;\
+    do {\
+        size_t l = 0;\
+        do {\
+            INPLACE_MODULO_FLOAT1((results), type_right, (larray), (rarray), (rstrides));\
+            (larray) -= (results)->strides[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+            (larray) += (results)->strides[ULAB_MAX_DIMS - 2];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+            l++;\
+        } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
+        (larray) -= (results)->strides[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+        (larray) += (results)->strides[ULAB_MAX_DIMS - 3];\
+        (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+        (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+        k++;\
+    } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
+} while(0)
+#endif /* ULAB_MAX_DIMS == 3 */
+
+#if ULAB_MAX_DIMS == 4
+#define INLINE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
+    size_t j = 0;\
+    do {\
+        size_t k = 0;\
+        do {\
+            size_t l = 0;\
+            do {\
+                INPLACE_MODULO_FLOAT1((results), type_right, (larray), (rarray), (rstrides));\
+                (larray) -= (results)->strides[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+                (larray) += (results)->strides[ULAB_MAX_DIMS - 2];\
+                (rarray) -= (rstrides)[ULAB_MAX_DIMS - 1] * (results)->shape[ULAB_MAX_DIMS - 1];\
+                (rarray) += (rstrides)[ULAB_MAX_DIMS - 2];\
+                l++;\
+            } while(l < (results)->shape[ULAB_MAX_DIMS - 2]);\
+            (larray) -= (results)->strides[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+            (larray) += (results)->strides[ULAB_MAX_DIMS - 3];\
+            (rarray) -= (rstrides)[ULAB_MAX_DIMS - 2] * (results)->shape[ULAB_MAX_DIMS - 2];\
+            (rarray) += (rstrides)[ULAB_MAX_DIMS - 3];\
+            k++;\
+        } while(k < (results)->shape[ULAB_MAX_DIMS - 3]);\
+            (larray) -= (results)->strides[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
+            (larray) += (results)->strides[ULAB_MAX_DIMS - 4];\
             (rarray) -= (rstrides)[ULAB_MAX_DIMS - 3] * (results)->shape[ULAB_MAX_DIMS - 3];\
             (rarray) += (rstrides)[ULAB_MAX_DIMS - 4];\
         j++;\

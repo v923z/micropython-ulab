@@ -1173,6 +1173,29 @@ mp_obj_t ndarray_inplace_ams(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rs
 }
 #endif /* NDARRAY_HAS_INPLACE_ADD || NDARRAY_HAS_INPLACE_MULTIPLY || NDARRAY_HAS_INPLACE_SUBTRACT */
 
+
+#if NDARRAY_HAS_INPLACE_MODULO
+mp_obj_t ndarray_inplace_modulo(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides) {
+    if((lhs->dtype != NDARRAY_FLOAT) && (rhs->dtype == NDARRAY_FLOAT)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("results cannot be cast to specified type"));
+    }
+    if(lhs->dtype == NDARRAY_FLOAT) {
+        if(rhs->dtype == NDARRAY_UINT8) {
+            INLINE_MODULO_FLOAT_LOOP(lhs, uint8_t, larray, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_UINT8) {
+            INLINE_MODULO_FLOAT_LOOP(lhs, int8_t, larray, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_UINT16) {
+            INLINE_MODULO_FLOAT_LOOP(lhs, uint16_t, larray, rarray, rstrides);
+        } else if(rhs->dtype == NDARRAY_INT16) {
+            INLINE_MODULO_FLOAT_LOOP(lhs, int16_t, larray, rarray, rstrides);
+        } else {
+            INLINE_MODULO_FLOAT_LOOP(lhs, mp_float_t, larray, rarray, rstrides);
+        }
+    }
+    return MP_OBJ_FROM_PTR(lhs);
+}
+#endif /* NDARRAY_HAS_INPLACE_MODULO */
+
 #if NDARRAY_HAS_INPLACE_TRUE_DIVIDE
 mp_obj_t ndarray_inplace_divide(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t *rstrides) {
 
