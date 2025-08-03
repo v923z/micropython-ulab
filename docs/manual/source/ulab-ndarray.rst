@@ -1814,12 +1814,12 @@ array.
 Binary operators
 ================
 
-``ulab`` implements the ``+``, ``-``, ``*``, ``/``, ``**``, ``<``,
-``>``, ``<=``, ``>=``, ``==``, ``!=``, ``+=``, ``-=``, ``*=``, ``/=``,
-``**=`` binary operators, as well as the ``AND``, ``OR``, ``XOR``
-bit-wise operators that work element-wise. Note that the bit-wise
-operators will raise an exception, if either of the operands is of
-``float`` or ``complex`` type.
+``ulab`` implements the ``+``, ``-``, ``*``, ``/``, ``**``, ``%``,
+``<``, ``>``, ``<=``, ``>=``, ``==``, ``!=``, ``+=``, ``-=``, ``*=``,
+``/=``, ``**=``, ``%=`` binary operators, as well as the ``AND``,
+``OR``, ``XOR`` bit-wise operators that work element-wise. Note that the
+bit-wise operators will raise an exception, if either of the operands is
+of ``float`` or ``complex`` type.
 
 Broadcasting is available, meaning that the two operands do not even
 have to have the same shape. If the lengths along the respective axes
