@@ -1912,7 +1912,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ndarray_transpose_obj, ndarray_transpose);
 mp_obj_t ndarray_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
-        { MP_QSTR_axis, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_axes, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1928,15 +1928,15 @@ mp_obj_t ndarray_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     int32_t *strides = m_new(int32_t, self->ndim);
     uint8_t *order = m_new(uint8_t, self->ndim);
 
-    mp_obj_t axis = args[1].u_obj;
+    mp_obj_t axes = args[1].u_obj;
 
-    if(axis == mp_const_none) {
+    if(axes == mp_const_none) {
         // simply swap the order of the axes
         for(uint8_t i = 0; i < self->ndim; i++) {
             order[i] = self->ndim - 1 - i;
         }
     } else {
-        if(!mp_obj_is_type(axis, &mp_type_tuple)) {
+        if(!mp_obj_is_type(axes, &mp_type_tuple)) {
             mp_raise_TypeError(MP_ERROR_TEXT("keyword argument must be tuple of integers"));
         }
         // start with the straight array, and then swap only those specified in the argument
@@ -1944,14 +1944,14 @@ mp_obj_t ndarray_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
             order[i] = i;
         }
 
-        mp_obj_tuple_t *axes = MP_OBJ_TO_PTR(axis);
+        mp_obj_tuple_t *axes_tuple = MP_OBJ_TO_PTR(axes);
 
-        if(axes->len > self->ndim) {
+        if(axes_tuple->len > self->ndim) {
             mp_raise_ValueError(MP_ERROR_TEXT("too many axes specified"));
         }
 
-        for(uint8_t i = 0; i < axes->len; i++) {
-            int32_t ax = mp_obj_get_int(axes->items[i]);
+        for(uint8_t i = 0; i < axes_tuple->len; i++) {
+            int32_t ax = mp_obj_get_int(axes_tuple->items[i]);
             if((ax >= self->ndim) || (ax < 0)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("axis index out of bounds"));
             } else {
