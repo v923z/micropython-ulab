@@ -64,7 +64,7 @@ void ndarray_properties_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             #endif
             #if NDARRAY_HAS_TRANSPOSE
             case MP_QSTR_T:
-                dest[0] = ndarray_transpose(self_in);
+                dest[0] = ndarray_T(self_in);
                 break;
             #endif
             #if ULAB_SUPPORTS_COMPLEX

@@ -265,9 +265,16 @@ MP_DECLARE_CONST_FUN_OBJ_1(ndarray_tolist_obj);
 #endif
 
 #if NDARRAY_HAS_TRANSPOSE
+mp_obj_t ndarray_T(mp_obj_t );
+MP_DECLARE_CONST_FUN_OBJ_1(ndarray_T_obj);
+#if ULAB_MAX_DIMS == 1
 mp_obj_t ndarray_transpose(mp_obj_t );
 MP_DECLARE_CONST_FUN_OBJ_1(ndarray_transpose_obj);
-#endif
+#else
+mp_obj_t ndarray_transpose(size_t , const mp_obj_t *, mp_map_t *);
+MP_DECLARE_CONST_FUN_OBJ_KW(ndarray_transpose_obj);
+#endif /* ULAB_MAX_DIMS == 1 */
+#endif /* NDARRAY_HAS_TRANSPOSE */
 
 #if ULAB_NUMPY_HAS_NDINFO
 mp_obj_t ndarray_info(mp_obj_t );
