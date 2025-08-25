@@ -23,6 +23,23 @@
 #include "carray/carray_tools.h"
 #include "compare.h"
 
+#ifdef ULAB_NUMPY_HAS_BINCOUNT
+mp_obj_t compare_bincount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
+        { MP_QSTR_weights, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_minlength, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(compare_bincount_obj, 1, compare_bincount);
+#endif /* ULAB_NUMPY_HAS_BINCOUNT */
+
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
     ndarray_obj_t *lhs = ndarray_from_mp_obj(x1, 0);
     ndarray_obj_t *rhs = ndarray_from_mp_obj(x2, 0);

@@ -23,6 +23,7 @@ enum COMPARE_FUNCTION_TYPE {
     COMPARE_CLIP,
 };
 
+MP_DECLARE_CONST_FUN_OBJ_KW(compare_bincount_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(compare_clip_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_equal_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(compare_isfinite_obj);
