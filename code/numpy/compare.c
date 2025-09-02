@@ -80,6 +80,10 @@ mp_obj_t compare_bincount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         if((size_t)minlength > length) {
             length = minlength;
         }
+    } else {
+        if(input->len == 0) {
+            length = 0;
+        }
     }
 
     ndarray_obj_t *result = NULL;
@@ -92,6 +96,15 @@ mp_obj_t compare_bincount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
             mp_raise_TypeError(MP_ERROR_TEXT("input must be an ndarray"));
         }
         weights = MP_OBJ_TO_PTR(args[1].u_obj);
+        if(weights->len < input->len) {
+            mp_raise_ValueError(MP_ERROR_TEXT("the weights and list don't have the same length"));
+        }
+        #if ULAB_SUPPORTS_COMPLEX
+        if(weights->dtype == NDARRAY_COMPLEX) {
+            mp_raise_TypeError(MP_ERROR_TEXT("cannot cast weigths to float"));
+        }
+        #endif /* ULAB_SUPPORTS_COMPLEX */
+
         result = ndarray_new_linear_array(length, NDARRAY_FLOAT);
     }
     
@@ -113,37 +126,27 @@ mp_obj_t compare_bincount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         }
     } else {
         mp_float_t *rarray = (mp_float_t *)result->array;
+
+        mp_float_t (*get_weights)(void *) = ndarray_get_float_function(weights->dtype);
+        uint8_t *warray = (uint8_t *)weights->array;
+
         if(input->dtype == NDARRAY_UINT8) {
             uint8_t *iarray = (uint8_t *)input->array;
             for(size_t i = 0; i < input->len; i++) {
-                rarray[*iarray] += MICROPY_FLOAT_CONST(1.0);
+                rarray[*iarray] += get_weights(warray);
                 iarray += stride;
+                warray += weights->strides[ULAB_MAX_DIMS - 1];
             }
         } else if(input->dtype == NDARRAY_UINT16) {
             uint16_t *iarray = (uint16_t *)input->array;
             for(size_t i = 0; i < input->len; i++) {
-                rarray[*iarray] += MICROPY_FLOAT_CONST(1.0);
+                rarray[*iarray] += get_weights(warray);
                 iarray += stride;
+                warray += weights->strides[ULAB_MAX_DIMS - 1];
             }
         }
     }
-
-    if(weights != NULL) {        
-        mp_float_t (*get_weights)(void *) = ndarray_get_float_function(weights->dtype);
-        mp_float_t *rarray = (mp_float_t *)result->array;
-        uint8_t *warray = (uint8_t *)weights->array;
-        
-        size_t fill_length = result->len;
-        if(weights->len < result->len) {
-            fill_length = weights->len;
-        }
-
-        for(size_t i = 0; i < fill_length; i++) {
-            *rarray = *rarray * get_weights(warray);
-            rarray++;
-            warray += weights->strides[ULAB_MAX_DIMS - 1];
-        }
-    }
+    
     return MP_OBJ_FROM_PTR(result);
 }
 
