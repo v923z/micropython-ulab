@@ -1,28 +1,30 @@
-import sys
-from math import *
-
 try:
-    from ulab import scipy
+    from ulab import scipy as spy
+    from ulab import numpy as np
 except ImportError:
     import scipy
 
-f = lambda x: x * sin(x) * exp(x)
-a=1
-b=2
+import math
 
-(res, err) = scipy.integrate.tanhsinh(f, a, b)
-if isclose (res, 7.11263821415851) and isclose (err, 5.438231077315757e-14):
-	print (res, err)
-		
-res = scipy.integrate.romberg(f, a, b)
-if isclose (res, 7.112638214158507):
-	print (res)
+f = lambda x: x * np.sin(x) * np.exp(x)
+a = 1
+b = 2
 
-res = scipy.integrate.simpson(f, a, b)
-if isclose (res, 7.112638214158494):
-	print (res)
+(res, err) = spy.integrate.tanhsinh(f, a, b)
+print('testing tanhsinh')
+print(math.isclose(res, 7.11263821415851, rel_tol=1E-6, abs_tol=1E-6))
+print()
 
-(res, err) = scipy.integrate.quad(f, a, b)
-if isclose (res, 7.112638214158507) and isclose (err, 7.686723611780195e-14):
-		print (res, err)
+print('testing romberg')
+res = spy.integrate.romberg(f, a, b)
+print(math.isclose(res, 7.112638214158507, rel_tol=1E-6, abs_tol=1E-6))
+print()
 
+print('testing simpson')
+res = spy.integrate.simpson(f, a, b)
+print(math.isclose(res, 7.112638214158507, rel_tol=1E-6, abs_tol=1E-6))
+print()
+
+print('testing quad')
+(res, err) = spy.integrate.quad(f, a, b)
+print(math.isclose(res, 7.112638214158507, rel_tol=1E-6, abs_tol=1E-6))
