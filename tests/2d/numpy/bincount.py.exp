@@ -1,0 +1,41 @@
+array([1, 2, 0, 3], dtype=uint16)
+array([1, 2, 0, 3], dtype=uint16)
+array([1, 0, 2, 0, 1], dtype=uint16)
+array([1, 0, 2, 0, 1], dtype=uint16)
+array([1, 0, 2, 0, 1, 0, 0, 0], dtype=uint16)
+array([1, 0, 2, 0, 1, 0, 0, 0], dtype=uint16)
+array([], dtype=uint16)
+array([0, 0, 0, 0, 0, 0, 0, 0], dtype=uint16)
+array([], dtype=uint16)
+array([0, 0, 0, 0, 0, 0, 0, 0], dtype=uint16)
+array([1, 0, 1, 1], dtype=uint8)
+array([1.0, 5.0, 0.0, 4.0], dtype=float64)
+array([1, 0, 1, 1], dtype=uint8)
+array([1.0, 5.0, 0.0, 4.0], dtype=float64)
+array([0.0, 2.0, 0.0, 0.0], dtype=float64)
+array([0.0, 2.0, 0.0, 0.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+array([0.0, 0.0, 6.0, 4.0], dtype=float64)
+cannot cast array data from dtype
+cannot cast array data from dtype
+cannot cast array data from dtype
+object too deep for desired array
+object too deep for desired array
+object too deep for desired array
+object too deep for desired array
+object too deep for desired array
+the weights and list don't have the same length
+the weights and list don't have the same length
+minlength must not be negative
+minlength must not be negative
+cannot cast weigths to float
+cannot cast weigths to float
+1 1 1001

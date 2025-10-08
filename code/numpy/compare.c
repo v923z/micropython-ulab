@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020-2021 Zoltán Vörös
+ * Copyright (c) 2020-2025 Zoltán Vörös
  *               2020 Jeff Epler for Adafruit Industries
 */
 
@@ -22,6 +22,136 @@
 #include "../ulab_tools.h"
 #include "carray/carray_tools.h"
 #include "compare.h"
+
+#ifdef ULAB_NUMPY_HAS_BINCOUNT
+mp_obj_t compare_bincount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE} } ,
+        { MP_QSTR_weights, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_minlength, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_rom_obj = MP_ROM_NONE } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(!mp_obj_is_type(args[0].u_obj, &ulab_ndarray_type)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("input must be an ndarray"));
+    }
+    ndarray_obj_t *input = MP_OBJ_TO_PTR(args[0].u_obj);
+
+    #if ULAB_MAX_DIMS > 1
+    // no need to check anything, if the maximum number of dimensions is 1
+    if(input->ndim != 1) {
+        mp_raise_ValueError(MP_ERROR_TEXT("object too deep for desired array"));
+    }
+    #endif
+    if((input->dtype != NDARRAY_UINT8) && (input->dtype != NDARRAY_UINT16)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("cannot cast array data from dtype"));
+    }
+
+    // first find the maximum of the array, and figure out how long the result should be
+    size_t length = 0;
+    int32_t stride = input->strides[ULAB_MAX_DIMS - 1];
+    if(input->dtype == NDARRAY_UINT8) {
+        uint8_t *iarray = (uint8_t *)input->array;
+        for(size_t i = 0; i < input->len; i++) {
+            if(*iarray > length) {
+                length = *iarray;
+            }
+            iarray += stride;
+        }
+    } else if(input->dtype == NDARRAY_UINT16) {
+        stride /= 2;
+        uint16_t *iarray = (uint16_t *)input->array;
+        for(size_t i = 0; i < input->len; i++) {
+            if(*iarray > length) {
+                length = *iarray;
+            }
+            iarray += stride;
+        }
+    }
+    length += 1;
+
+    if(args[2].u_obj != mp_const_none) {
+        int32_t minlength = mp_obj_get_int(args[2].u_obj);
+        if(minlength < 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("minlength must not be negative"));
+        }
+        if((size_t)minlength > length) {
+            length = minlength;
+        }
+    } else {
+        if(input->len == 0) {
+            length = 0;
+        }
+    }
+
+    ndarray_obj_t *result = NULL;
+    ndarray_obj_t *weights = NULL;
+
+    if(args[1].u_obj == mp_const_none) {
+        result = ndarray_new_linear_array(length, NDARRAY_UINT16);
+    } else {
+        if(!mp_obj_is_type(args[1].u_obj, &ulab_ndarray_type)) {
+            mp_raise_TypeError(MP_ERROR_TEXT("input must be an ndarray"));
+        }
+        weights = MP_OBJ_TO_PTR(args[1].u_obj);
+        if(weights->len < input->len) {
+            mp_raise_ValueError(MP_ERROR_TEXT("the weights and list don't have the same length"));
+        }
+        #if ULAB_SUPPORTS_COMPLEX
+        if(weights->dtype == NDARRAY_COMPLEX) {
+            mp_raise_TypeError(MP_ERROR_TEXT("cannot cast weigths to float"));
+        }
+        #endif /* ULAB_SUPPORTS_COMPLEX */
+
+        result = ndarray_new_linear_array(length, NDARRAY_FLOAT);
+    }
+    
+    // now we can do the binning
+    if(result->dtype == NDARRAY_UINT16) {
+        uint16_t *rarray = (uint16_t *)result->array;
+        if(input->dtype == NDARRAY_UINT8) {
+            uint8_t *iarray = (uint8_t *)input->array;
+            for(size_t i = 0; i < input->len; i++) {
+                rarray[*iarray] += 1;
+                iarray += stride;
+            }
+        } else if(input->dtype == NDARRAY_UINT16) {
+            uint16_t *iarray = (uint16_t *)input->array;
+            for(size_t i = 0; i < input->len; i++) {
+                rarray[*iarray] += 1;
+                iarray += stride;
+            }
+        }
+    } else {
+        mp_float_t *rarray = (mp_float_t *)result->array;
+
+        mp_float_t (*get_weights)(void *) = ndarray_get_float_function(weights->dtype);
+        uint8_t *warray = (uint8_t *)weights->array;
+
+        if(input->dtype == NDARRAY_UINT8) {
+            uint8_t *iarray = (uint8_t *)input->array;
+            for(size_t i = 0; i < input->len; i++) {
+                rarray[*iarray] += get_weights(warray);
+                iarray += stride;
+                warray += weights->strides[ULAB_MAX_DIMS - 1];
+            }
+        } else if(input->dtype == NDARRAY_UINT16) {
+            uint16_t *iarray = (uint16_t *)input->array;
+            for(size_t i = 0; i < input->len; i++) {
+                rarray[*iarray] += get_weights(warray);
+                iarray += stride;
+                warray += weights->strides[ULAB_MAX_DIMS - 1];
+            }
+        }
+    }
+    
+    return MP_OBJ_FROM_PTR(result);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(compare_bincount_obj, 1, compare_bincount);
+#endif /* ULAB_NUMPY_HAS_BINCOUNT */
 
 static mp_obj_t compare_function(mp_obj_t x1, mp_obj_t x2, uint8_t op) {
     ndarray_obj_t *lhs = ndarray_from_mp_obj(x1, 0);

@@ -374,6 +374,10 @@
 #endif
 
 // functions that compare arrays
+#ifndef ULAB_NUMPY_HAS_BINCOUNT
+#define ULAB_NUMPY_HAS_BINCOUNT         (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_CLIP
 #define ULAB_NUMPY_HAS_CLIP             (1)
 #endif
@@ -413,7 +417,7 @@
 // the integrate module; functions of the integrate module still have
 // to be defined separately
 #ifndef ULAB_SCIPY_HAS_INTEGRATE_MODULE
-#define ULAB_SCIPY_HAS_INTEGRATE_MODULE        (1)
+#define ULAB_SCIPY_HAS_INTEGRATE_MODULE     (1)
 #endif
 
 #ifndef ULAB_INTEGRATE_HAS_TANHSINH

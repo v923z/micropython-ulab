@@ -1,3 +1,9 @@
+Wed, 3 Sep 2025
+
+version 6.10.0
+
+    add bincount
+    
 Fri, 06 Jun 2025
 
 version 6.8.0

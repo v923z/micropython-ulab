@@ -169,6 +169,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_ZEROS
         { MP_ROM_QSTR(MP_QSTR_zeros), MP_ROM_PTR(&create_zeros_obj) },
     #endif
+    #if ULAB_NUMPY_HAS_BINCOUNT
+        { MP_ROM_QSTR(MP_QSTR_bincount), MP_ROM_PTR(&compare_bincount_obj) },
+    #endif
     #if ULAB_NUMPY_HAS_CLIP
         { MP_ROM_QSTR(MP_QSTR_clip), MP_ROM_PTR(&compare_clip_obj) },
     #endif
