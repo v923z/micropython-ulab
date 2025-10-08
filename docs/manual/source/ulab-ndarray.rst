@@ -1564,6 +1564,9 @@ dimensions is larger than 1.
     
 
 
+The method also accepts the ``axes`` keyword argument, if permutation of
+the returned axes is required.
+
 The transpose of the array can also be gotten through the ``T``
 property:
 
