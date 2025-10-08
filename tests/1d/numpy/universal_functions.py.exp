@@ -1,33 +1,102 @@
+testing sin
 True
+
+testing cos
 True
+
+testing tan
 True
+
+testing sinh
 True
+
+testing cosh:
 True
+
+testing tanh
 True
+
+testing asin
 True
+
+testing acos
 True
+
+testing atan
 True
+
+testing acosh
 True
+
+testing asinh
 True
-180.0
-3.141592653589793
-3.0
-4.0
-1.772453850905516
-2.718281828459045
-1.0
-1.0
-1.0
+
+testing degrees
 True
-[True, True, True, True]
+
+testing radians
+True
+
+testing floor
+True
+
+testing ceil
+True
+
+testing sqrt
+True
+
+testing exp
+True
+
+testing log
+True
+
+testing log2
+True
+
+testing log10
+True
+
+testing expm1
+True
+
+testing arctan2
+True
+
+testing arctan2
+True
+
+testing arctan2
+True
+
+testing arctan2
+True
+
+testing sin
 [True, True, True, True, True]
+
+testing cos
 [True, True, True, True, True]
+
+testing tan
 [True, True, True, True, True]
+
+testing sinh
 [True, True, True, True, True]
+
+testing cosh
 [True, True, True, True, True]
+
+testing tanh
 [True, True, True, True, True]
+
+testing sinc
 [True, True, True, True, True]
+
+testing erf
 [True, True, True, True, True]
+
+testing erfc
 [True, True, True, True, True]
-[True, True, True, True]
-[True, True, True]
+

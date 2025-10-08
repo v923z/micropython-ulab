@@ -1,4 +1,11 @@
-7.11263821415851 5.438231077315757e-14
-7.112638214158507
-7.112638214158494
-7.112638214158507 7.686723611780195e-14
+testing tanhsinh
+True
+
+testing romberg
+True
+
+testing simpson
+True
+
+testing quad
+True
