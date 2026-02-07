@@ -365,6 +365,10 @@
 #define ULAB_NUMPY_HAS_LOGSPACE         (1)
 #endif
 
+#ifndef ULAB_NUMPY_HAS_MESHGRID
+#define ULAB_NUMPY_HAS_MESHGRID         (1)
+#endif
+
 #ifndef ULAB_NUMPY_HAS_ONES
 #define ULAB_NUMPY_HAS_ONES             (1)
 #endif

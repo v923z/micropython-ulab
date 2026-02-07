@@ -747,6 +747,143 @@ mp_obj_t create_logspace(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 MP_DEFINE_CONST_FUN_OBJ_KW(create_logspace_obj, 2, create_logspace);
 #endif
 
+#if ULAB_NUMPY_HAS_MESHGRID
+//| def meshgrid(*xi, indexing="xy"):
+//|     """
+//|     .. param: xi
+//|        1-D arrays representing the coordinates of a grid
+//|     .. param: indexing
+//|        "xy" (Cartesian) or "ij" (matrix) indexing of output
+//| 
+//|     Return a tuple of coordinate matrices from coordinate vectors.
+//|     Implements the NumPy equivalent with copy=True and sparse=False."""
+//|     ...
+
+mp_obj_t create_meshgrid(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_indexing, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_rom_obj = MP_ROM_QSTR(MP_QSTR_xy) } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(0, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if(!mp_obj_is_str(args[0].u_obj)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("indexing should be 'xy' or 'ij'"));
+    }
+    bool cartesian = true;
+    const char *_indexing = mp_obj_str_get_str(args[0].u_obj);
+    if(strcmp(_indexing, "ij") == 0) {
+        cartesian = false;
+    } else if (strcmp(_indexing, "xy") != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("indexing must be 'xy' or 'ij'"));
+    }
+
+    if(n_args == 0) {
+        return mp_const_empty_tuple;
+    }
+    if(n_args > ULAB_MAX_DIMS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("too many input arrays"));
+    }
+    
+    size_t *shape = m_new0(size_t, ULAB_MAX_DIMS);
+    size_t shape_offset = ULAB_MAX_DIMS - n_args;
+    for(size_t i = 0; i < n_args; i++) {
+        if(!mp_obj_is_type(pos_args[i], &ulab_ndarray_type)) {
+            mp_raise_TypeError(MP_ERROR_TEXT("arguments must be ndarrays"));
+        }
+        ndarray_obj_t *in = MP_OBJ_TO_PTR(pos_args[i]);
+        if(in->ndim != 1) {
+            mp_raise_ValueError(MP_ERROR_TEXT("arguments must be 1D arrays"));
+        }
+        shape[shape_offset + i] = in->shape[ULAB_MAX_DIMS - 1];
+    }
+    if(cartesian && n_args >= 2) {
+        SWAP(size_t, shape[shape_offset], shape[shape_offset + 1]);
+    }
+
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_args, NULL));
+    for(size_t p = 0; p < n_args; p++) {
+        ndarray_obj_t *source = MP_OBJ_TO_PTR(pos_args[p]);
+        ndarray_obj_t *target = ndarray_new_dense_ndarray(n_args, shape, source->dtype);
+        uint8_t *tarray = (uint8_t *)target->array;
+        uint8_t *sarray = (uint8_t *)source->array;
+        size_t itemsize = source->itemsize;
+        int32_t source_stride = source->strides[ULAB_MAX_DIMS - 1];
+
+        size_t active_axis_index = p;
+        if(cartesian && n_args >= 2) {
+            if(p == 0) {
+                active_axis_index = 1;
+            } else if(p == 1) {
+                active_axis_index = 0;
+            }
+        }
+        size_t active_dim_ulab = shape_offset + active_axis_index;
+
+        #if ULAB_MAX_DIMS > 3
+        size_t i = 0;
+        do {
+        #endif
+            #if ULAB_MAX_DIMS > 2
+            size_t j = 0;
+            do {
+            #endif
+                #if ULAB_MAX_DIMS > 1
+                size_t k = 0;
+                do {
+                #endif
+                    size_t l = 0;
+                    do {
+                        // Determine the index in the source array based on
+                        // which loop corresponds to the active dimension
+                        size_t source_index = 0;
+                        #if ULAB_MAX_DIMS > 3
+                        if(active_dim_ulab == ULAB_MAX_DIMS - 4) {
+                            source_index = i;
+                        }
+                        #endif
+                        #if ULAB_MAX_DIMS > 2
+                        if(active_dim_ulab == ULAB_MAX_DIMS - 3) {
+                            source_index = j;
+                        }
+                        #endif
+                        #if ULAB_MAX_DIMS > 1
+                        if(active_dim_ulab == ULAB_MAX_DIMS - 2) {
+                            source_index = k;
+                        }
+                        #endif
+                        if(active_dim_ulab == ULAB_MAX_DIMS - 1) {
+                            source_index = l;
+                        }
+
+                        memcpy(tarray, sarray + (source_index * source_stride), itemsize);
+                        tarray += itemsize;
+                        
+                        l++;
+                    } while(l < target->shape[ULAB_MAX_DIMS - 1]);
+                #if ULAB_MAX_DIMS > 1
+                    k++;
+                } while(k < target->shape[ULAB_MAX_DIMS - 2]);
+                #endif
+            #if ULAB_MAX_DIMS > 2
+                j++;
+            } while(j < target->shape[ULAB_MAX_DIMS - 3]);
+            #endif
+        #if ULAB_MAX_DIMS > 3
+            i++;
+        } while(i < target->shape[ULAB_MAX_DIMS - 4]);
+        #endif
+
+        tuple->items[p] = MP_OBJ_FROM_PTR(target);
+    }
+
+    m_del(size_t, shape, ULAB_MAX_DIMS);
+    return MP_OBJ_FROM_PTR(tuple);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(create_meshgrid_obj, 0, create_meshgrid);
+#endif
+
 #if ULAB_NUMPY_HAS_ONES
 //| def ones(shape: Union[int, Tuple[int, ...]], *, dtype: _DType = ulab.numpy.float) -> ulab.numpy.ndarray:
 //|    """

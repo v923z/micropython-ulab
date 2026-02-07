@@ -163,6 +163,9 @@ static const mp_rom_map_elem_t ulab_numpy_globals_table[] = {
     #if ULAB_NUMPY_HAS_LOGSPACE
         { MP_ROM_QSTR(MP_QSTR_logspace), MP_ROM_PTR(&create_logspace_obj) },
     #endif
+    #if ULAB_NUMPY_HAS_MESHGRID
+        { MP_ROM_QSTR(MP_QSTR_meshgrid), MP_ROM_PTR(&create_meshgrid_obj) },
+    #endif
     #if ULAB_NUMPY_HAS_ONES
         { MP_ROM_QSTR(MP_QSTR_ones), MP_ROM_PTR(&create_ones_obj) },
     #endif

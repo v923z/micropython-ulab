@@ -1,0 +1,55 @@
+--- 4D xy ---
+array([[[[10]]],
+
+       [[[10]]]], dtype=uint8)
+array([[[[20]]],
+
+       [[[30]]]], dtype=uint8)
+array([[[[40]]],
+
+       [[[40]]]], dtype=uint8)
+array([[[[50]]],
+
+       [[[50]]]], dtype=uint8)
+
+--- 4D ij ---
+array([[[[10]],
+
+       [[10]]]], dtype=uint8)
+array([[[[20]],
+
+       [[30]]]], dtype=uint8)
+array([[[[40]],
+
+       [[40]]]], dtype=uint8)
+array([[[[50]],
+
+       [[50]]]], dtype=uint8)
+
+=== 4D Strides ===
+--- XY ---
+array([[[[10, 10]]],
+
+       [[[10, 10]]]], dtype=uint8)
+array([[[[0, 0]]],
+
+       [[[3, 3]]]], dtype=uint8)
+array([[[[50, 50]]],
+
+       [[[50, 50]]]], dtype=uint8)
+array([[[[9, 8]]],
+
+       [[[9, 8]]]], dtype=uint8)
+--- IJ ---
+array([[[[10, 10]],
+
+       [[10, 10]]]], dtype=uint8)
+array([[[[0, 0]],
+
+       [[3, 3]]]], dtype=uint8)
+array([[[[50, 50]],
+
+       [[50, 50]]]], dtype=uint8)
+array([[[[9, 8]],
+
+       [[9, 8]]]], dtype=uint8)

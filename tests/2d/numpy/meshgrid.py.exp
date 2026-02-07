@@ -1,0 +1,27 @@
+--- 2D xy ---
+array([[1, 2, 3],
+       [1, 2, 3]], dtype=uint8)
+array([[10, 10, 10],
+       [20, 20, 20]], dtype=uint8)
+
+--- 2D ij ---
+array([[1, 1],
+       [2, 2],
+       [3, 3]], dtype=uint8)
+array([[10, 20],
+       [10, 20],
+       [10, 20]], dtype=uint8)
+
+=== 2D Strides ===
+--- XY ---
+array([[0, 2],
+       [0, 2],
+       [0, 2]], dtype=uint8)
+array([[30, 30],
+       [20, 20],
+       [10, 10]], dtype=uint8)
+--- IJ ---
+array([[0, 0, 0],
+       [2, 2, 2]], dtype=uint8)
+array([[30, 20, 10],
+       [30, 20, 10]], dtype=uint8)
