@@ -292,7 +292,7 @@ mp_obj_t ndarray_binary_modulo(ndarray_obj_t *lhs, ndarray_obj_t *rhs,
         }
     } else if(lhs->dtype == NDARRAY_UINT16) {
         if(rhs->dtype == NDARRAY_UINT8) {
-            results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT8);
+            results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_UINT16);
             BINARY_LOOP(results, uint16_t, uint16_t, uint8_t, larray, lstrides, rarray, rstrides, %);
         } else if(rhs->dtype == NDARRAY_INT8) {
             results = ndarray_new_dense_ndarray(ndim, shape, NDARRAY_FLOAT);
