@@ -166,7 +166,7 @@
 #endif
 
 #ifndef NDARRAY_HAS_INPLACE_MODULO
-#define NDARRAY_HAS_INPLACE_MODU            (1)
+#define NDARRAY_HAS_INPLACE_MODULO          (1)
 #endif
 
 #ifndef NDARRAY_HAS_INPLACE_MULTIPLY
