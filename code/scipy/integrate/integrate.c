@@ -242,7 +242,7 @@ mp_float_t tanhsinh(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, u
 //|     a: float,
 //|     b: float,
 //|     *,
-//|     levels: int = 6
+//|     levels: int = 6,
 //|     eps: float = etolerance
 //| ) -> float:
 //|     """
