@@ -9,18 +9,18 @@
  *
  * References:
  * - Dr. Robert van Engelen, Improving the mp_float_t Exponential Quadrature Tanh-Sinh, Sinh-Sinh and Exp-Sinh Formulas,
- *   2021, https://www.genivia.com/qthsh.html 
+ *   2021, https://www.genivia.com/qthsh.html
  * - Borwein, Bailey & Girgensohn, "Experimentation in Mathematics - Computational Paths to Discovery", A K Peters,
  *   2003, pages 312-313
- * - Joren Vanherck, Bart Sorée, Wim Magnus, Tanh-sinh quadrature for single and multiple integration using 
+ * - Joren Vanherck, Bart Sorée, Wim Magnus, Tanh-sinh quadrature for single and multiple integration using
  *   floating-point arithmetic, 2020, https://arxiv.org/abs/2007.15057
  * - Tanh-Sinh quadrature, Wikipedia, https://en.wikipedia.org/wiki/Tanh-sinh_quadrature
  * - Romberg's method, Wikipedia, https://en.wikipedia.org/wiki/Romberg%27s_method
  * - Adaptive Simpson's method, Wikipedia, https://en.wikipedia.org/wiki/Adaptive_Simpson%27s_method
  * - Gauss–Kronrod quadrature formula, Wikipedia, https://en.wikipedia.org/wiki/Gauss%E2%80%93Kronrod_quadrature_formula
- *  
- * This module provides four integration methods, and thus deviates from scipy.integrate a bit. 
- * As for the pros and cons of the different methods please consult the literature above. 
+ *
+ * This module provides four integration methods, and thus deviates from scipy.integrate a bit.
+ * As for the pros and cons of the different methods please consult the literature above.
  * The code was ported to Micropython from Dr. Engelen's paper and used with his written kind permission
  * - quad    - Tanh-Sinh, Sinh-Sinh and Exp-Sinh quadrature
  * - romberg - Romberg quadrature
@@ -38,6 +38,8 @@
 #include "../../ulab.h"
 #include "../../ulab_tools.h"
 #include "integrate.h"
+
+#if ULAB_SCIPY_HAS_INTEGRATE_MODULE
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 ULAB_DEFINE_FLOAT_CONST(etolerance, MICROPY_FLOAT_CONST(1e-14), 0x283424dcUL, 0x3e901b2b29a4692bULL);
@@ -68,11 +70,11 @@ static mp_float_t integrate_python_call(const mp_obj_type_t *type, mp_obj_t fun,
 
 // sign helper function
 int sign(mp_float_t x) {
-    if (x >= ULAB_ZERO) 
+    if (x >= ULAB_ZERO)
         return 1;
     else
         return -1;
-}        
+}
 
 
 #if ULAB_INTEGRATE_HAS_TANHSINH
@@ -248,7 +250,7 @@ mp_float_t tanhsinh(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, u
 //|     :param float a: The lower integration limit
 //|     :param float b: The upper integration limit
 //|     :param float levels: The number of levels to perform (6..7 is optimal)
-//|     :param float eps: The error tolerance value 
+//|     :param float eps: The error tolerance value
 //|
 //|     Find a quadrature of the function ``f(x)`` on the interval
 //|     (``a``..``b``) using an optimized double exponential.  The result is accurate to within
@@ -275,27 +277,27 @@ static mp_obj_t integrate_tanhsinh(size_t n_args, const mp_obj_t *pos_args, mp_m
     }
 
 	// iterate over args 1, 2, and 4
-	// arg 3 will be handled by MP_ARG_INT above. 
+	// arg 3 will be handled by MP_ARG_INT above.
 	for (int i=1; i<=4; i*=2) {
-		type = mp_obj_get_type(args[i].u_obj); 
+		type = mp_obj_get_type(args[i].u_obj);
 		if (type != &mp_type_float && type != &mp_type_int) {
 	        mp_raise_msg_varg(&mp_type_TypeError,
 	            MP_ERROR_TEXT("can't convert arg %d from %s to float"), i, mp_obj_get_type_str(args[i].u_obj));
-		}			
+		}
 	}
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t n = (uint16_t)args[3].u_int;
 	if (n < 1) {
 		mp_raise_ValueError(MP_ERROR_TEXT("levels needs to be a positive integer"));
-    }			
+    }
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
-    
+
     mp_obj_t res[2];
     mp_float_t e;
     res[0] = mp_obj_new_float(tanhsinh(fun, a, b, n, eps, &e));
     res[1] = mp_obj_new_float(e);
-    return mp_obj_new_tuple(2, res); 
+    return mp_obj_new_tuple(2, res);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(integrate_tanhsinh_obj, 2, integrate_tanhsinh);
@@ -303,10 +305,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(integrate_tanhsinh_obj, 2, integrate_tanhsinh);
 
 #if ULAB_INTEGRATE_HAS_ROMBERG
 // Romberg quadrature
-// This function is deprecated as of SciPy 1.12.0 and will be removed in SciPy 1.15.0. Please use scipy.integrate.quad instead. 
-// https://en.wikipedia.org/wiki/Romberg%27s_method, https://www.genivia.com/qthsh.html, 
-// https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.romberg.html (which is different 
-// insofar as the latter expects an array of function values). 
+// This function is deprecated as of SciPy 1.12.0 and will be removed in SciPy 1.15.0. Please use scipy.integrate.quad instead.
+// https://en.wikipedia.org/wiki/Romberg%27s_method, https://www.genivia.com/qthsh.html,
+// https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.romberg.html (which is different
+// insofar as the latter expects an array of function values).
 
 mp_float_t qromb(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint16_t n, mp_float_t eps) {
     const mp_obj_type_t *type = mp_obj_get_type(fun);
@@ -378,23 +380,23 @@ static mp_obj_t integrate_romberg(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
 
 	// iterate over args 1, 2, and 4
-	// arg 3 will be handled by MP_ARG_INT above. 
+	// arg 3 will be handled by MP_ARG_INT above.
 	for (int i=1; i<=4; i*=2) {
-		type = mp_obj_get_type(args[i].u_obj); 
+		type = mp_obj_get_type(args[i].u_obj);
 		if (type != &mp_type_float && type != &mp_type_int) {
 	        mp_raise_msg_varg(&mp_type_TypeError,
 	            MP_ERROR_TEXT("can't convert arg %d from %s to float"), i, mp_obj_get_type_str(args[i].u_obj));
-		}			
+		}
 	}
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t steps = (uint16_t)args[3].u_int;
 	if (steps < 1) {
 		mp_raise_ValueError(MP_ERROR_TEXT("steps needs to be a positive integer"));
-    }			
+    }
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
-    
-    return mp_obj_new_float(qromb(fun, a, b, steps, eps)); 
+
+    return mp_obj_new_float(qromb(fun, a, b, steps, eps));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(integrate_romberg_obj, 2, integrate_romberg);
@@ -474,23 +476,23 @@ static mp_obj_t integrate_simpson(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
 
 	// iterate over args 1, 2, and 4
-	// arg 3 will be handled by MP_ARG_INT above. 
+	// arg 3 will be handled by MP_ARG_INT above.
 	for (int i=1; i<=4; i*=2) {
-		type = mp_obj_get_type(args[i].u_obj); 
+		type = mp_obj_get_type(args[i].u_obj);
 		if (type != &mp_type_float && type != &mp_type_int) {
 	        mp_raise_msg_varg(&mp_type_TypeError,
 	            MP_ERROR_TEXT("can't convert arg %d from %s to float"), i, mp_obj_get_type_str(args[i].u_obj));
-		}			
+		}
 	}
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t steps = (uint16_t)args[3].u_int;
 	if (steps < 1) {
 		mp_raise_ValueError(MP_ERROR_TEXT("steps needs to be a positive integer"));
-    }			
+    }
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
-    
-    return mp_obj_new_float(qasi(fun, a, b, steps, eps)); 
+
+    return mp_obj_new_float(qasi(fun, a, b, steps, eps));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(integrate_simpson_obj, 2, integrate_simpson);
@@ -647,27 +649,27 @@ static mp_obj_t integrate_quad(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     }
 
 	// iterate over args 1, 2, and 4
-	// arg 3 will be handled by MP_ARG_INT above. 
+	// arg 3 will be handled by MP_ARG_INT above.
 	for (int i=1; i<=4; i*=2) {
-		type = mp_obj_get_type(args[i].u_obj); 
+		type = mp_obj_get_type(args[i].u_obj);
 		if (type != &mp_type_float && type != &mp_type_int) {
 	        mp_raise_msg_varg(&mp_type_TypeError,
 	            MP_ERROR_TEXT("can't convert arg %d from %s to float"), i, mp_obj_get_type_str(args[i].u_obj));
-		}			
+		}
 	}
     mp_float_t a = mp_obj_get_float(args[1].u_obj);
     mp_float_t b = mp_obj_get_float(args[2].u_obj);
     uint16_t order = (uint16_t)args[3].u_int;
 	if (order < 1) {
 		mp_raise_ValueError(MP_ERROR_TEXT("order needs to be a positive integer"));
-    }			
+    }
     mp_float_t eps = mp_obj_get_float(args[4].u_obj);
-    
+
     mp_obj_t res[2];
     mp_float_t e;
     res[0] = mp_obj_new_float(qakro(fun, a, b, order, 0, eps, &e));
     res[1] = mp_obj_new_float(e);
-    return mp_obj_new_tuple(2, res); 
+    return mp_obj_new_tuple(2, res);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(integrate_quad_obj, 2, integrate_quad);
@@ -678,15 +680,15 @@ static const mp_rom_map_elem_t ulab_scipy_integrate_globals_table[] = {
 #if ULAB_INTEGRATE_HAS_TANHSINH
     { MP_ROM_QSTR(MP_QSTR_tanhsinh), MP_ROM_PTR(&integrate_tanhsinh_obj) },
 #endif
-#if ULAB_INTEGRATE_HAS_ROMBERG	
+#if ULAB_INTEGRATE_HAS_ROMBERG
     { MP_ROM_QSTR(MP_QSTR_romberg), MP_ROM_PTR(&integrate_romberg_obj) },
-#endif	
-#if ULAB_INTEGRATE_HAS_SIMPSON	
+#endif
+#if ULAB_INTEGRATE_HAS_SIMPSON
     { MP_ROM_QSTR(MP_QSTR_simpson), MP_ROM_PTR(&integrate_simpson_obj) },
 #endif
-#if ULAB_INTEGRATE_HAS_QUAD	
+#if ULAB_INTEGRATE_HAS_QUAD
     { MP_ROM_QSTR(MP_QSTR_quad), MP_ROM_PTR(&integrate_quad_obj) },
-#endif	
+#endif
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_ulab_scipy_integrate_globals, ulab_scipy_integrate_globals_table);
@@ -699,3 +701,4 @@ const mp_obj_module_t ulab_scipy_integrate_module = {
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_integrate, ulab_scipy_integrate_module);
 #endif
 
+#endif // ULAB_SCIPY_HAS_INTEGRATE_MODULE

@@ -20,6 +20,8 @@
 #include "../../ndarray.h"
 #include "../../numpy/carray/carray_tools.h"
 
+#if ULAB_SCIPY_HAS_SIGNAL_MODULE
+
 #if ULAB_SCIPY_SIGNAL_HAS_SOSFILT & ULAB_MAX_DIMS > 1
 static void signal_sosfilt_array(mp_float_t *x, const mp_float_t *coeffs, mp_float_t *zf, const size_t len) {
     for(size_t i=0; i < len; i++) {
@@ -136,3 +138,5 @@ const mp_obj_module_t ulab_scipy_signal_module = {
 #if CIRCUITPY_ULAB
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_signal, ulab_scipy_signal_module);
 #endif
+
+#endif // ULAB_SCIPY_HAS_SIGNAL_MODULE

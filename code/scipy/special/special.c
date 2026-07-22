@@ -18,6 +18,8 @@
 #include "../../ulab.h"
 #include "../../numpy/vector.h"
 
+#if ULAB_SCIPY_HAS_SPECIAL_MODULE
+
 static const mp_rom_map_elem_t ulab_scipy_special_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_special) },
     #if ULAB_SCIPY_SPECIAL_HAS_ERF
@@ -43,3 +45,5 @@ const mp_obj_module_t ulab_scipy_special_module = {
 #if CIRCUITPY_ULAB
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_special, ulab_scipy_special_module);
 #endif
+
+#endif // ULAB_SCIPY_HAS_SPECIAL_MODULE
