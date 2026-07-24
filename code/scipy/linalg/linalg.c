@@ -278,4 +278,5 @@ const mp_obj_module_t ulab_scipy_linalg_module = {
 #if CIRCUITPY_ULAB
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_linalg, ulab_scipy_linalg_module);
 #endif
-#endif
+
+#endif // ULAB_SCIPY_HAS_LINALG_MODULE

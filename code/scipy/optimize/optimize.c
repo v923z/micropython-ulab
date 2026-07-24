@@ -22,6 +22,8 @@
 #include "../../ulab_tools.h"
 #include "optimize.h"
 
+#if ULAB_SCIPY_HAS_OPTIMIZE_MODULE
+
 ULAB_DEFINE_FLOAT_CONST(xtolerance, MICROPY_FLOAT_CONST(2.4e-7), 0x3480d959UL, 0x3e901b2b29a4692bULL);
 ULAB_DEFINE_FLOAT_CONST(rtolerance, MICROPY_FLOAT_CONST(0.0), 0UL, 0ULL);
 
@@ -415,3 +417,5 @@ const mp_obj_module_t ulab_scipy_optimize_module = {
 #if CIRCUITPY_ULAB
 MP_REGISTER_MODULE(MP_QSTR_ulab_dot_scipy_dot_optimize, ulab_scipy_optimize_module);
 #endif
+
+#endif // ULAB_SCIPY_HAS_OPTIMIZE_MODULE
