@@ -720,6 +720,9 @@ ndarray_obj_t *ndarray_from_mp_obj(mp_obj_t , uint8_t );
 #endif /* ULAB_MAX_DIMS == 4 */
 #endif /* ULAB_HAS_FUNCTION_ITERATOR */
 
+#define INTEGER_TRUE_DIVIDE_LOOP(results, type_left, type_right, larray, lstrides, rarray, rstrides)\
+    BINARY_LOOP(results, mp_float_t, type_left, type_right, larray, lstrides, rarray, rstrides, / (mp_float_t))
+
 
 // iterator macro for traversing arrays over all dimensions
 #if ULAB_MAX_DIMS == 1
