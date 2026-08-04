@@ -345,7 +345,7 @@ mp_float_t qromb(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, uint
 //|     a: float,
 //|     b: float,
 //|     *,
-//|     steps: int = 100
+//|     steps: int = 100,
 //|     eps: float = etolerance
 //| ) -> float:
 //|     """
@@ -441,7 +441,7 @@ mp_float_t qasi(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, int n
 //|     a: float,
 //|     b: float,
 //|     *,
-//|     steps: int = 100
+//|     steps: int = 100,
 //|     eps: float = etolerance
 //| ) -> float:
 //|     """
@@ -614,7 +614,7 @@ mp_float_t qakro(mp_float_t (*fun)(mp_float_t), mp_float_t a, mp_float_t b, int 
 //|     a: float,
 //|     b: float,
 //|     *,
-//|     order: int = 5
+//|     order: int = 5,
 //|     eps: float = etolerance
 //| ) -> float:
 //|     """
