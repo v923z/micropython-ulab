@@ -30,7 +30,7 @@ jobs:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
     - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.12"
 
@@ -45,10 +45,10 @@ jobs:
         gcc --version
         python3 --version
     - name: Checkout ulab
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Checkout micropython repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: micropython/micropython
         path: micropython
@@ -71,7 +71,7 @@ jobs:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
     - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.12"
 
@@ -81,7 +81,7 @@ jobs:
         python3 --version
 
     - name: Checkout ulab
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Install requirements
       run: |
