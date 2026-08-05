@@ -74,6 +74,11 @@
 #define NDARRAY_PRINT_THRESHOLD             10
 #define NDARRAY_PRINT_EDGEITEMS             3
 
+// determines whether an array's dtype should be printed with the array
+#ifndef ULAB_PRINT_DTYPE
+#define ULAB_PRINT_DTYPE                    (1)
+#endif
+
 // determines, whether the dtype is an object, or simply a character
 // the object implementation is numpythonic, but requires more space
 #ifndef ULAB_HAS_DTYPE_OBJECT
