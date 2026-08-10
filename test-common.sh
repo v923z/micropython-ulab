@@ -7,7 +7,7 @@ do
     for level2 in numpy scipy utils complex; do
         rm -f *.exp
         if [ ! -d tests/"$level1"/"$level2" ]; then
-            break;
+            continue;
         fi
         for file in tests/"$level1"/"$level2"/*.py; do
             if [ ! -f "$file"".exp"  ]; then
@@ -24,4 +24,3 @@ do
 	    fi
     done
 done
-
