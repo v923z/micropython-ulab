@@ -1,9 +1,9 @@
 
 array:
  array([0, 1, 2, 3, 4, 5, 6, 7], dtype=uint8)
-
-square root:
- array([0.0, 1.0, 1.414213562373095, 1.732050807568877, 2.0, 2.23606797749979, 2.449489742783178, 2.645751311064591], dtype=float64)
+square root: shape (8,)
+dtypes match
+values match reference
 
 array:
  array([[[0, 1],
@@ -11,19 +11,15 @@ array:
 
        [[4, 5],
        [6, 7]]], dtype=uint8)
-
-square root:
- array([[[0.0, 1.0],
-       [1.414213562373095, 1.732050807568877]],
-
-       [[2.0, 2.23606797749979],
-       [2.449489742783178, 2.645751311064591]]], dtype=float64)
+square root: shape (2, 2, 2)
+dtypes match
+values match reference
 
 array:
  array([0, 1, 2, 3, 4, 5, 6, 7], dtype=int8)
-
-square root:
- array([0.0, 1.0, 1.414213562373095, 1.732050807568877, 2.0, 2.23606797749979, 2.449489742783178, 2.645751311064591], dtype=float64)
+square root: shape (8,)
+dtypes match
+values match reference
 
 array:
  array([[[0, 1],
@@ -31,19 +27,15 @@ array:
 
        [[4, 5],
        [6, 7]]], dtype=int8)
-
-square root:
- array([[[0.0, 1.0],
-       [1.414213562373095, 1.732050807568877]],
-
-       [[2.0, 2.23606797749979],
-       [2.449489742783178, 2.645751311064591]]], dtype=float64)
+square root: shape (2, 2, 2)
+dtypes match
+values match reference
 
 array:
  array([0, 1, 2, 3, 4, 5, 6, 7], dtype=uint16)
-
-square root:
- array([0.0, 1.0, 1.414213562373095, 1.732050807568877, 2.0, 2.23606797749979, 2.449489742783178, 2.645751311064591], dtype=float64)
+square root: shape (8,)
+dtypes match
+values match reference
 
 array:
  array([[[0, 1],
@@ -51,19 +43,15 @@ array:
 
        [[4, 5],
        [6, 7]]], dtype=uint16)
-
-square root:
- array([[[0.0, 1.0],
-       [1.414213562373095, 1.732050807568877]],
-
-       [[2.0, 2.23606797749979],
-       [2.449489742783178, 2.645751311064591]]], dtype=float64)
+square root: shape (2, 2, 2)
+dtypes match
+values match reference
 
 array:
  array([0, 1, 2, 3, 4, 5, 6, 7], dtype=int16)
-
-square root:
- array([0.0, 1.0, 1.414213562373095, 1.732050807568877, 2.0, 2.23606797749979, 2.449489742783178, 2.645751311064591], dtype=float64)
+square root: shape (8,)
+dtypes match
+values match reference
 
 array:
  array([[[0, 1],
@@ -71,19 +59,15 @@ array:
 
        [[4, 5],
        [6, 7]]], dtype=int16)
-
-square root:
- array([[[0.0, 1.0],
-       [1.414213562373095, 1.732050807568877]],
-
-       [[2.0, 2.23606797749979],
-       [2.449489742783178, 2.645751311064591]]], dtype=float64)
+square root: shape (2, 2, 2)
+dtypes match
+values match reference
 
 array:
  array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], dtype=float64)
-
-square root:
- array([0.0, 1.0, 1.414213562373095, 1.732050807568877, 2.0, 2.23606797749979, 2.449489742783178, 2.645751311064591], dtype=float64)
+square root: shape (8,)
+dtypes match
+values match reference
 
 array:
  array([[[0.0, 1.0],
@@ -91,19 +75,15 @@ array:
 
        [[4.0, 5.0],
        [6.0, 7.0]]], dtype=float64)
-
-square root:
- array([[[0.0, 1.0],
-       [1.414213562373095, 1.732050807568877]],
-
-       [[2.0, 2.23606797749979],
-       [2.449489742783178, 2.645751311064591]]], dtype=float64)
+square root: shape (2, 2, 2)
+dtypes match
+values match reference
 
 array:
  array([0.0+0.0j, 1.0+0.0j, 2.0+0.0j, 3.0+0.0j, 4.0+0.0j, 5.0+0.0j, 6.0+0.0j, 7.0+0.0j], dtype=complex)
-
-square root:
- array([0.0+0.0j, 1.0+0.0j, 1.414213562373095+0.0j, 1.732050807568877+0.0j, 2.0+0.0j, 2.23606797749979+0.0j, 2.449489742783178+0.0j, 2.645751311064591+0.0j], dtype=complex)
+square root: shape (8,)
+dtypes match
+values match reference
 
 array:
  array([[[0.0+0.0j, 1.0+0.0j],
@@ -111,29 +91,24 @@ array:
 
        [[4.0+0.0j, 5.0+0.0j],
        [6.0+0.0j, 7.0+0.0j]]], dtype=complex)
-
-square root:
- array([[[0.0+0.0j, 1.0+0.0j],
-       [1.414213562373095+0.0j, 1.732050807568877+0.0j]],
-
-       [[2.0+0.0j, 2.23606797749979+0.0j],
-       [2.449489742783178+0.0j, 2.645751311064591+0.0j]]], dtype=complex)
+square root: shape (2, 2, 2)
+dtypes match
+values match reference
 
 
 array:
  array([0.0+0.0j, 0.0+1.0j, 2.0+2.0j, 3.0-3.0j], dtype=complex)
-
-square root:
- array([0.0+0.0j, 0.7071067811865476+0.7071067811865475j, 1.553773974030037+0.6435942529055827j, 1.902976705995016-0.7882387605032136j], dtype=complex)
+square root: shape (4,)
+dtypes match
+values match reference
 
 
 array:
  array([[0.0+0.0j, 0.0+1.0j, 2.0+2.0j, 3.0-3.0j],
        [0.0+0.0j, 0.0+1.0j, 2.0+2.0j, 3.0-3.0j]], dtype=complex)
-
-square root:
- array([[0.0+0.0j, 0.7071067811865476+0.7071067811865475j, 1.553773974030037+0.6435942529055827j, 1.902976705995016-0.7882387605032136j],
-       [0.0+0.0j, 0.7071067811865476+0.7071067811865475j, 1.553773974030037+0.6435942529055827j, 1.902976705995016-0.7882387605032136j]], dtype=complex)
+square root: shape (2, 4)
+dtypes match
+values match reference
 
 
 array:
@@ -142,10 +117,6 @@ array:
 
        [[0.0+0.0j, 0.0+1.0j],
        [2.0+2.0j, 3.0-3.0j]]], dtype=complex)
-
-square root:
- array([[[0.0+0.0j, 0.7071067811865476+0.7071067811865475j],
-       [1.553773974030037+0.6435942529055827j, 1.902976705995016-0.7882387605032136j]],
-
-       [[0.0+0.0j, 0.7071067811865476+0.7071067811865475j],
-       [1.553773974030037+0.6435942529055827j, 1.902976705995016-0.7882387605032136j]]], dtype=complex)
+square root: shape (2, 2, 2)
+dtypes match
+values match reference

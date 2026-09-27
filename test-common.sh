@@ -5,9 +5,9 @@ micropython="$2"
 for level1 in $(printf "%dd " $(seq 1 ${dims}))
 do
     for level2 in numpy scipy utils complex; do
-        rm -f *.exp
+        rm -f *.exp *.out
         if [ ! -d tests/"$level1"/"$level2" ]; then
-            break;
+            continue;
         fi
         for file in tests/"$level1"/"$level2"/*.py; do
             if [ ! -f "$file"".exp"  ]; then

@@ -8,6 +8,7 @@ on:
     - 'tests/**'
     - '.github/workflows/**'
     - 'build*.sh'
+    - 'test-common.sh'
     - 'requirements*.txt'
   release:
     types: [published]
