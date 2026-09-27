@@ -7,9 +7,12 @@ import math
 
 dtypes = (np.uint8, np.int8, np.uint16, np.int16)
 
+# Keep the values within the range of every integer dtype. Casting an
+# out-of-range float to a small integer type is undefined behaviour in C,
+# and the result differs between architectures (e.g. x86-64 and arm64).
 for dtype in dtypes:
-    print(np.logspace(0, 10, num=5, endpoint=False, dtype=dtype))
-    print(np.logspace(0, 10, num=5, endpoint=True, dtype=dtype))
+    print(np.logspace(0, 2, num=5, endpoint=False, dtype=dtype))
+    print(np.logspace(0, 2, num=5, endpoint=True, dtype=dtype))
 
 
 reference = [1.0, 100.0, 10000.0, 1000000.0, 100000000.0]
