@@ -648,7 +648,7 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 
 
 #if ULAB_MAX_DIMS == 2
-#define INLINE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
+#define INPLACE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
     size_t l = 0;\
     do {\
         INPLACE_MODULO_FLOAT1((results), type_right, (larray), (rarray), (rstrides));\
@@ -662,7 +662,7 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 #endif /* ULAB_MAX_DIMS == 2 */
 
 #if ULAB_MAX_DIMS == 3
-#define INLINE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
+#define INPLACE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
     size_t k = 0;\
     do {\
         size_t l = 0;\
@@ -684,7 +684,7 @@ mp_obj_t ndarray_inplace_divide(ndarray_obj_t *, ndarray_obj_t *, int32_t *);
 #endif /* ULAB_MAX_DIMS == 3 */
 
 #if ULAB_MAX_DIMS == 4
-#define INLINE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
+#define INPLACE_MODULO_FLOAT_LOOP(results, type_right, larray, rarray, rstrides) do {\
     size_t j = 0;\
     do {\
         size_t k = 0;\

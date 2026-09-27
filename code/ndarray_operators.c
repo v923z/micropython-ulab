@@ -1184,15 +1184,15 @@ mp_obj_t ndarray_inplace_modulo(ndarray_obj_t *lhs, ndarray_obj_t *rhs, int32_t 
     if(lhs->dtype == NDARRAY_FLOAT) {
         // Float lhs: use fmod since C does not support %= for floating-point types.
         if(rhs->dtype == NDARRAY_UINT8) {
-            INLINE_MODULO_FLOAT_LOOP(lhs, uint8_t, larray, rarray, rstrides);
+            INPLACE_MODULO_FLOAT_LOOP(lhs, uint8_t, larray, rarray, rstrides);
         } else if(rhs->dtype == NDARRAY_INT8) {
-            INLINE_MODULO_FLOAT_LOOP(lhs, int8_t, larray, rarray, rstrides);
+            INPLACE_MODULO_FLOAT_LOOP(lhs, int8_t, larray, rarray, rstrides);
         } else if(rhs->dtype == NDARRAY_UINT16) {
-            INLINE_MODULO_FLOAT_LOOP(lhs, uint16_t, larray, rarray, rstrides);
+            INPLACE_MODULO_FLOAT_LOOP(lhs, uint16_t, larray, rarray, rstrides);
         } else if(rhs->dtype == NDARRAY_INT16) {
-            INLINE_MODULO_FLOAT_LOOP(lhs, int16_t, larray, rarray, rstrides);
+            INPLACE_MODULO_FLOAT_LOOP(lhs, int16_t, larray, rarray, rstrides);
         } else {
-            INLINE_MODULO_FLOAT_LOOP(lhs, mp_float_t, larray, rarray, rstrides);
+            INPLACE_MODULO_FLOAT_LOOP(lhs, mp_float_t, larray, rarray, rstrides);
         }
     } else if(lhs->dtype == NDARRAY_UINT8) {
         if(rhs->dtype == NDARRAY_UINT8) {
