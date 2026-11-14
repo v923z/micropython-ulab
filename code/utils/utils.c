@@ -354,7 +354,7 @@ mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
     uint8_t spectrum_sz = out->strides[ULAB_MAX_DIMS - 1] / sizeof(mp_float_t);
 
     for(size_t i = 0; i < len; i++) {
-        #if ULAB_FFT_IS_NUMPY_COMPATIBLE
+        #if ULAB_FFT_IS_NUMPY_COMPATIBLE & ULAB_SUPPORTS_COMPLEX
         *spectrum = MICROPY_FLOAT_C_FUN(sqrt)(*tmp * *tmp + *(tmp + 1) * *(tmp + 1));
         tmp += 2;
         #else
@@ -369,7 +369,7 @@ mp_obj_t utils_spectrogram(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 
     if(scratchpad_object == mp_const_none) {
         tmp -= len;
-        #if ULAB_FFT_IS_NUMPY_COMPATIBLE
+        #if ULAB_FFT_IS_NUMPY_COMPATIBLE & ULAB_SUPPORTS_COMPLEX
         tmp -= len;
         #endif
         m_del(mp_float_t, tmp, 2 * len);
