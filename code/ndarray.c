@@ -1002,7 +1002,7 @@ static ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tu
 }
 
 void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
-    if(values->len == 0) {
+    if((view->len == 0) || (values->len == 0)) {
         return;
     }
     uint8_t ndim = 0;
