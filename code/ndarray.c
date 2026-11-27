@@ -1002,7 +1002,9 @@ static ndarray_obj_t *ndarray_view_from_slices(ndarray_obj_t *ndarray, mp_obj_tu
 }
 
 void ndarray_assign_view(ndarray_obj_t *view, ndarray_obj_t *values) {
-    if((view->len == 0) || (values->len == 0)) {
+    // A view with ndim == 0 (all indices are integers) refers to a single
+    // element, even though its len is 0, so it must still be assigned.
+    if(((view->ndim > 0) && (view->len == 0)) || (values->len == 0)) {
         return;
     }
     uint8_t ndim = 0;
